@@ -1,0 +1,35 @@
+run = "npm run dev"
+modules = ["nodejs-20"]
+hidden = [".config", "tsconfig.json", "tsconfig.node.json", "vite.config.js", ".gitignore"]
+entrypoint = "src/App.tsx"
+
+[nix]
+channel = "stable-24_05"
+
+[unitTest]
+language = "nodejs"
+
+[deployment]
+deploymentTarget = "static"
+build = ["npm", "run", "build"]
+publicDir = "dist"
+
+[[ports]]
+localPort = 5173
+externalPort = 80
+
+[[ports]]
+localPort = 5174
+externalPort = 3000
+
+[workflows]
+runButton = "Run"
+
+[[workflows.workflow]]
+name = "Run"
+author = 39649477
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"

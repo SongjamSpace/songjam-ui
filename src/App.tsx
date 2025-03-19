@@ -2,11 +2,47 @@ import { useState, useEffect } from "react";
 import "./App.css";
 import Background from "./components/Background";
 import Logo from "./components/Logo";
+import {
+  Button,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  TextareaAutosize,
+  Dialog,
+  DialogContent,
+  DialogActions,
+  IconButton,
+  Box,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { LoadingButton } from "@mui/lab";
 
 export default function App() {
   const [connectWallet, setConnectWallet] = useState(false);
-  const [spaceUrl, setSpaceUrl] = useState("");
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const navigate = useNavigate();
+  const [spaceUrl, setSpaceUrl] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const joinSpace = async (spaceUrl: string) => {
+    if (isLoading) return;
+    setIsLoading(true);
+    // x.com/i/spaces/1nAKEgjnRRkJL
+    const spaceId = spaceUrl.split("/").pop();
+    const res = await axios.post(
+      `${import.meta.env.VITE_JAM_SERVER_URL}/join-space`,
+      {
+        spaceId,
+      }
+    );
+    if (res.data.status === "success") {
+      navigate(`/${spaceId}`);
+    }
+    setIsLoading(false);
+  };
 
   useEffect(() => {
     document.body.className = "dark";
@@ -21,12 +57,13 @@ export default function App() {
           <span>SongJam</span>
         </div>
         <div className="nav-controls">
-          <button
+          <Button
+            variant="contained"
             onClick={() => setConnectWallet(true)}
             className="connect-wallet"
           >
             {connectWallet ? "Connected" : "Connect Wallet"}
-          </button>
+          </Button>
         </div>
       </nav>
 
@@ -52,69 +89,94 @@ export default function App() {
               Instantly convert Twitter Spaces content into text with AI
               precision
             </p>
-            <div className="space-input">
-              <input
-                type="text"
+            <Box className="space-input" display="flex" gap={2}>
+              <TextField
+                fullWidth
                 placeholder="Paste your X space URL here to try it now"
-                onChange={(e) => setSpaceUrl(e.target.value)}
+                onChange={(e) => {
+                  if (isLoading) return;
+                  setSpaceUrl(e.target.value);
+                }}
+                variant="outlined"
               />
-            </div>
+              <LoadingButton
+                loading={isLoading}
+                variant="contained"
+                className="primary"
+                onClick={() => joinSpace(spaceUrl)}
+              >
+                Transcribe
+              </LoadingButton>
+            </Box>
           </div>
         </div>
         <div className="cta-buttons">
-          <button className="primary" onClick={() => setShowConfirmation(true)}>
+          <Button
+            variant="contained"
+            className="primary"
+            onClick={() => setShowConfirmation(true)}
+          >
             Start Free Trial
-          </button>
-          <button className="secondary">View Pricing</button>
-          {showConfirmation && (
-            <div className="confirmation-overlay">
-              <div className="confirmation-dialog">
-                <p className="instruction">
-                  Please accept SongJam as a speaker to begin recording
-                </p>
-                <div className="space-preview">
-                  <div className="space-header">
-                    <div className="space-info">
-                      <span className="live-indicator">LIVE</span>
-                      <h3>Your Space</h3>
-                    </div>
-                    <div className="space-stats">
-                      <span>🎯 2.1K listening</span>
-                    </div>
+          </Button>
+          <Button variant="outlined" className="secondary">
+            View Pricing
+          </Button>
+
+          <Dialog
+            open={showConfirmation}
+            onClose={() => setShowConfirmation(false)}
+            maxWidth="sm"
+            fullWidth
+          >
+            <DialogContent>
+              <IconButton
+                onClick={() => setShowConfirmation(false)}
+                sx={{ position: "absolute", right: 8, top: 8 }}
+              >
+                <CloseIcon />
+              </IconButton>
+              <p className="instruction">
+                Please accept SongJam as a speaker to begin recording
+              </p>
+              <div className="space-preview">
+                <div className="space-header">
+                  <div className="space-info">
+                    <span className="live-indicator">LIVE</span>
+                    <h3>Your Space</h3>
                   </div>
-                  <div className="speaker-request">
-                    <div className="agent-profile">
-                      <div className="agent-avatar">🤖</div>
-                      <div className="agent-info">
-                        <h4>SongJam_agent</h4>
-                        <p>Requesting to join as speaker</p>
-                      </div>
-                    </div>
-                    <div className="action-buttons">
-                      <button
-                        className="accept"
-                        onClick={() => setShowConfirmation(false)}
-                      >
-                        Accept
-                      </button>
-                      <button
-                        className="deny"
-                        onClick={() => setShowConfirmation(false)}
-                      >
-                        Deny
-                      </button>
-                    </div>
+                  <div className="space-stats">
+                    <span>🎯 2.1K listening</span>
                   </div>
                 </div>
-                <button
-                  className="close-button"
-                  onClick={() => setShowConfirmation(false)}
-                >
-                  Close
-                </button>
+                <div className="speaker-request">
+                  <div className="agent-profile">
+                    <div className="agent-avatar">🤖</div>
+                    <div className="agent-info">
+                      <h4>SongJam_agent</h4>
+                      <p>Requesting to join as speaker</p>
+                    </div>
+                  </div>
+                  <div className="action-buttons">
+                    <button
+                      className="accept"
+                      onClick={() => setShowConfirmation(false)}
+                    >
+                      Accept
+                    </button>
+                    <button
+                      className="deny"
+                      onClick={() => setShowConfirmation(false)}
+                    >
+                      Deny
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setShowConfirmation(false)}>Close</Button>
+            </DialogActions>
+          </Dialog>
         </div>
         <div className="trust-badges">
           <span>Powered by</span>
@@ -245,83 +307,42 @@ export default function App() {
         <p>Got a beefy project or custom request? Drop us a line</p>
         <form className="contact-form">
           <div className="form-group">
-            <input type="text" placeholder="Name" />
+            <TextField fullWidth placeholder="Name" variant="outlined" />
           </div>
-          <div className="form-group phone-input">
-            <select className="country-select">
-              <option value="+93">🇦🇫 +93</option>
-              <option value="+355">🇦🇱 +355</option>
-              <option value="+213">🇩🇿 +213</option>
-              <option value="+376">🇦🇩 +376</option>
-              <option value="+244">🇦🇴 +244</option>
-              <option value="+54">🇦🇷 +54</option>
-              <option value="+374">🇦🇲 +374</option>
-              <option value="+61">🇦🇺 +61</option>
-              <option value="+43">🇦🇹 +43</option>
-              <option value="+994">🇦🇿 +994</option>
-              <option value="+973">🇧🇭 +973</option>
-              <option value="+880">🇧🇩 +880</option>
-              <option value="+32">🇧🇪 +32</option>
-              <option value="+55">🇧🇷 +55</option>
-              <option value="+359">🇧🇬 +359</option>
-              <option value="+1">🇨🇦 +1</option>
-              <option value="+86">🇨🇳 +86</option>
-              <option value="+45">🇩🇰 +45</option>
-              <option value="+20">🇪🇬 +20</option>
-              <option value="+358">🇫🇮 +358</option>
-              <option value="+33">🇫🇷 +33</option>
-              <option value="+49">🇩🇪 +49</option>
-              <option value="+30">🇬🇷 +30</option>
-              <option value="+852">🇭🇰 +852</option>
-              <option value="+36">🇭🇺 +36</option>
-              <option value="+91">🇮🇳 +91</option>
-              <option value="+62">🇮🇩 +62</option>
-              <option value="+98">🇮🇷 +98</option>
-              <option value="+353">🇮🇪 +353</option>
-              <option value="+972">🇮🇱 +972</option>
-              <option value="+39">🇮🇹 +39</option>
-              <option value="+81">🇯🇵 +81</option>
-              <option value="+962">🇯🇴 +962</option>
-              <option value="+254">🇰🇪 +254</option>
-              <option value="+82">🇰🇷 +82</option>
-              <option value="+965">🇰🇼 +965</option>
-              <option value="+60">🇲🇾 +60</option>
-              <option value="+52">🇲🇽 +52</option>
-              <option value="+377">🇲🇨 +377</option>
-              <option value="+31">🇳🇱 +31</option>
-              <option value="+64">🇳🇿 +64</option>
-              <option value="+47">🇳🇴 +47</option>
-              <option value="+92">🇵🇰 +92</option>
-              <option value="+51">🇵🇪 +51</option>
-              <option value="+63">🇵🇭 +63</option>
-              <option value="+48">🇵🇱 +48</option>
-              <option value="+351">🇵🇹 +351</option>
-              <option value="+974">🇶🇦 +974</option>
-              <option value="+40">🇷🇴 +40</option>
-              <option value="+7">🇷🇺 +7</option>
-              <option value="+966">🇸🇦 +966</option>
-              <option value="+65">🇸🇬 +65</option>
-              <option value="+27">🇿🇦 +27</option>
-              <option value="+34">🇪🇸 +34</option>
-              <option value="+46">🇸🇪 +46</option>
-              <option value="+41">🇨🇭 +41</option>
-              <option value="+886">🇹🇼 +886</option>
-              <option value="+66">🇹🇭 +66</option>
-              <option value="+90">🇹🇷 +90</option>
-              <option value="+971">🇦🇪 +971</option>
-              <option value="+44">🇬🇧 +44</option>
-              <option value="+1">🇺🇸 +1</option>
-              <option value="+84">🇻🇳 +84</option>
-            </select>
-            <input type="tel" placeholder="Phone Number" />
+          <Box
+            className="form-group phone-input"
+            display="flex"
+            gap={2}
+            alignItems={"center"}
+          >
+            <FormControl className="country-select">
+              <Select defaultValue="+1">
+                <MenuItem value="+1">🇺🇸 +1</MenuItem>
+                <MenuItem value="+44">🇬🇧 +44</MenuItem>
+                <MenuItem value="+91">🇮🇳 +91</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField
+              fullWidth
+              type="tel"
+              placeholder="Phone Number"
+              variant="outlined"
+            />
+          </Box>
+          <div className="form-group">
+            <TextField
+              fullWidth
+              type="email"
+              placeholder="Email"
+              variant="outlined"
+            />
           </div>
           <div className="form-group">
-            <input type="email" placeholder="Email" />
+            <TextareaAutosize placeholder="How can we help?" />
           </div>
-          <div className="form-group">
-            <textarea placeholder="How can we help?" rows={4}></textarea>
-          </div>
-          <button type="submit" className="primary">Submit</button>
+          <Button type="submit" variant="contained" className="primary">
+            Submit
+          </Button>
         </form>
       </section>
 

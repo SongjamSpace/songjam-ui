@@ -4,14 +4,18 @@
   --bg-primary: #0f172a;
   --bg-secondary: #1e293b;
   --accent: #60a5fa;
-  --gradient-start: #60A5FA;
-  --gradient-middle: #8B5CF6;
-  --gradient-end: #EC4899;
+  --gradient-start: #60a5fa;
+  --gradient-middle: #8b5cf6;
+  --gradient-end: #ec4899;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 body {
@@ -49,7 +53,8 @@ main.landing {
   font-style: italic;
 }
 
-nav, section {
+nav,
+section {
   position: relative;
   z-index: 1;
 }
@@ -66,7 +71,12 @@ nav {
 .logo {
   font-size: 1.5rem;
   font-weight: 600;
-  background: linear-gradient(135deg, var(--gradient-start) 30%, var(--gradient-middle) 60%, var(--gradient-end) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--gradient-start) 30%,
+    var(--gradient-middle) 60%,
+    var(--gradient-end) 100%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -104,20 +114,34 @@ nav {
 }
 
 .hero::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
   width: 200px;
   height: 2px;
-  background: linear-gradient(90deg, transparent, var(--gradient-start), var(--gradient-middle), var(--gradient-end), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--gradient-start),
+    var(--gradient-middle),
+    var(--gradient-end),
+    transparent
+  );
   animation: glow 2s infinite;
 }
 
 @keyframes glow {
-  0%, 100% { opacity: 0.3; width: 150px; }
-  50% { opacity: 1; width: 250px; }
+  0%,
+  100% {
+    opacity: 0.3;
+    width: 150px;
+  }
+  50% {
+    opacity: 1;
+    width: 250px;
+  }
 }
 
 .animated-title {
@@ -129,7 +153,12 @@ nav {
   font-size: 3.5rem;
   margin-bottom: 1rem;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end));
+  background: linear-gradient(
+    135deg,
+    var(--gradient-start),
+    var(--gradient-middle),
+    var(--gradient-end)
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: titleFloat 3s ease-in-out infinite;
@@ -174,13 +203,23 @@ nav {
 }
 
 @keyframes titleFloat {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 @keyframes subtitleFloat {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-5px); }
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
 }
 
 .cta-buttons {
@@ -190,7 +229,12 @@ nav {
 }
 
 button.primary {
-  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end));
+  background: linear-gradient(
+    135deg,
+    var(--gradient-start),
+    var(--gradient-middle),
+    var(--gradient-end)
+  );
   color: white;
   border: none;
   padding: 0.8rem 1.5rem;
@@ -203,13 +247,18 @@ button.primary {
 }
 
 button.primary::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: left 0.5s ease;
 }
 
@@ -254,13 +303,17 @@ button.secondary {
 }
 
 .feature::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -50%;
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 60%
+  );
   transform: rotate(0deg);
   transition: transform 0.5s ease;
   pointer-events: none;
@@ -268,7 +321,7 @@ button.secondary {
 
 .feature:hover {
   transform: translateY(-5px) rotateX(5deg);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .feature:hover::before {
@@ -313,7 +366,12 @@ button.secondary {
 .stat-number {
   font-size: 2.5rem;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end));
+  background: linear-gradient(
+    135deg,
+    var(--gradient-start),
+    var(--gradient-middle),
+    var(--gradient-end)
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -350,7 +408,12 @@ button.secondary {
   margin-top: 1rem;
   font-size: 0.8rem;
   font-weight: 500;
-  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end));
+  background: linear-gradient(
+    135deg,
+    var(--gradient-start),
+    var(--gradient-middle),
+    var(--gradient-end)
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -382,7 +445,12 @@ button.secondary {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end));
+  background: linear-gradient(
+    135deg,
+    var(--gradient-start),
+    var(--gradient-middle),
+    var(--gradient-end)
+  );
   color: white;
   display: flex;
   align-items: center;
@@ -394,27 +462,44 @@ button.secondary {
 }
 
 .step-number::after {
-  content: '';
+  content: "";
   position: absolute;
   top: -2px;
   left: -2px;
   right: -2px;
   bottom: -2px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end));
+  background: linear-gradient(
+    135deg,
+    var(--gradient-start),
+    var(--gradient-middle),
+    var(--gradient-end)
+  );
   opacity: 0.5;
   z-index: -1;
   animation: pulseBorder 2s ease-in-out infinite;
 }
 
 @keyframes pulseGlow {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 @keyframes pulseBorder {
-  0%, 100% { transform: scale(1); opacity: 0.5; }
-  50% { transform: scale(1.2); opacity: 0; }
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0;
+  }
 }
 
 .step h4 {
@@ -603,16 +688,23 @@ button.secondary {
   background: var(--bg-primary);
 }
 
-.honors h2, .honors p {
+.honors h2,
+.honors p {
   margin-bottom: 1rem;
   font-size: 2rem;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end));
+  background: linear-gradient(
+    135deg,
+    var(--gradient-start),
+    var(--gradient-middle),
+    var(--gradient-end)
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.honors > p, .contact > p {
+.honors > p,
+.contact > p {
   font-size: 1rem;
   margin-bottom: 3rem;
   background: none;
@@ -672,7 +764,12 @@ button.secondary {
   margin-bottom: 1rem;
   font-size: 2rem;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end));
+  background: linear-gradient(
+    135deg,
+    var(--gradient-start),
+    var(--gradient-middle),
+    var(--gradient-end)
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }

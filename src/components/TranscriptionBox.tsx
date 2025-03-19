@@ -6,6 +6,7 @@ import styled from "@emotion/styled";
 import { Box, Button, Typography } from "@mui/material";
 import { Theme } from "@mui/material/styles";
 import axios from "axios";
+import { LoadingButton } from "@mui/lab";
 
 const TranscriptionContainer = styled.div`
   width: 60%;
@@ -111,18 +112,28 @@ const TimeStamp = styled(Typography)`
 `;
 
 const TranscriptionText = styled(Typography)`
-  font-size: 1.2rem;
-  line-height: 1.8;
+  font-size: 1rem;
+  line-height: 2;
   font-family: "Inter", sans-serif;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.3px;
+  font-weight: 400;
 
   background: linear-gradient(
-    45deg,
-    ${({ theme }) => theme.palette.text.primary} 30%,
-    ${({ theme }) => `${theme.palette.text.primary}99`} 100%
+    135deg,
+    ${({ theme }) => theme.palette.text.primary} 0%,
+    ${({ theme }) => theme.palette.primary.main} 50%,
+    ${({ theme }) => theme.palette.text.primary} 100%
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-size: 200% auto;
+  animation: shine 8s linear infinite;
+
+  @keyframes shine {
+    to {
+      background-position: 200% center;
+    }
+  }
 `;
 
 export const TranscriptionBox = ({ spaceId }: { spaceId: string }) => {
@@ -190,15 +201,17 @@ export const TranscriptionBox = ({ spaceId }: { spaceId: string }) => {
               variant="body1"
               sx={{
                 wordBreak: "break-word",
+                textShadow: "0 1px 2px rgba(0,0,0,0.1)",
+                padding: "4px 0",
               }}
             >
-              {transcription.transcription}
+              {transcription.transcription.trim()}
             </TranscriptionText>
           </TranscriptionRow>
         ))}
       </TranscriptionContainer>
       <Box>
-        <Button
+        <LoadingButton
           variant="contained"
           className="primary"
           onClick={async () => {
@@ -213,7 +226,7 @@ export const TranscriptionBox = ({ spaceId }: { spaceId: string }) => {
           }}
         >
           Leave Space
-        </Button>
+        </LoadingButton>
       </Box>
     </Box>
   );

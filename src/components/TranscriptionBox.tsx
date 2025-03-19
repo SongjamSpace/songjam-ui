@@ -146,6 +146,7 @@ export const TranscriptionBox = ({ spaceId }: { spaceId: string }) => {
   );
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [transcriptionDocs, setTranscriptionDocs] = useState<any[]>([]);
 
   useEffect(() => {
     if (scrollContainerRef.current && transcriptions) {
@@ -153,6 +154,20 @@ export const TranscriptionBox = ({ spaceId }: { spaceId: string }) => {
         top: scrollContainerRef.current.scrollHeight,
         behavior: "smooth",
       });
+    }
+  }, [transcriptions]);
+
+  useEffect(() => {
+    if (transcriptions) {
+      const messages: string[] = [];
+      const uniqueTranscripts = [];
+      for (const doc of transcriptions) {
+        if (!messages.includes(doc.transcription)) {
+          uniqueTranscripts.push(doc);
+          messages.push(doc.transcription);
+        }
+      }
+      setTranscriptionDocs(uniqueTranscripts);
     }
   }, [transcriptions]);
 
@@ -192,7 +207,7 @@ export const TranscriptionBox = ({ spaceId }: { spaceId: string }) => {
     >
       <StyledHeader variant="h4">Space Transcription</StyledHeader>
       <TranscriptionContainer ref={scrollContainerRef}>
-        {transcriptions?.map((transcription) => (
+        {transcriptionDocs?.map((transcription) => (
           <TranscriptionRow key={transcription.createdAt}>
             <TimeStamp variant="caption">
               {formatTimestamp(transcription.createdAt)}
@@ -214,6 +229,7 @@ export const TranscriptionBox = ({ spaceId }: { spaceId: string }) => {
         <LoadingButton
           variant="contained"
           className="primary"
+          loading={isLoading}
           onClick={async () => {
             setIsLoading(true);
             await axios.post(

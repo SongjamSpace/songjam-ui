@@ -36,7 +36,7 @@ export default function App() {
       `${import.meta.env.VITE_JAM_SERVER_URL}/join-space`,
       {
         spaceId,
-      }
+      },
     );
     if (res.data.status === "success") {
       navigate(`/${spaceId}`);
@@ -269,22 +269,6 @@ export default function App() {
           </div>
           <div className="honor-item">
             <img
-              src="/logos/polkadot.png"
-              alt="Polkadot"
-              className="honor-logo"
-            />
-            <span>Polkadot</span>
-          </div>
-          <div className="honor-item">
-            <img
-              src="/logos/oniforce.png"
-              alt="ONI Force"
-              className="honor-logo"
-            />
-            <span>ONI Force</span>
-          </div>
-          <div className="honor-item">
-            <img
               src="/logos/moonbeam.png"
               alt="Moonbeam"
               className="honor-logo"
@@ -298,6 +282,22 @@ export default function App() {
               className="honor-logo"
             />
             <span>Nethermind</span>
+          </div>
+          <div className="honor-item">
+            <img
+              src="/logos/oniforce.png"
+              alt="ONI Force"
+              className="honor-logo"
+            />
+            <span>ONI Force</span>
+          </div>
+          <div className="honor-item">
+            <img
+              src="/logos/polkadot.png"
+              alt="Polkadot"
+              className="honor-logo"
+            />
+            <span>Polkadot</span>
           </div>
         </div>
       </section>

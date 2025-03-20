@@ -325,12 +325,17 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                 boxShadow: "0 12px 40px rgba(59, 130, 246, 0.2)"
               }
             }}>
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-                <Box>
-                  <Typography variant="h6" sx={{ color: "#60a5fa", mb: 2 }}>
-                    Twitter Thread Generator
-                  </Typography>
-                  <Box sx={{ display: 'flex', gap: 2 }}>
+              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
+                <Typography variant="h6" sx={{ color: "#60a5fa" }}>
+                  Twitter Thread Generator
+                </Typography>
+                <Typography variant="caption" sx={{ color: "#60a5fa" }}>
+                  Each tweet is within the 280 character limit
+                </Typography>
+              </Box>
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle1" sx={{ mb: 2 }}>Thread Settings</Typography>
+                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
                   <TextField
                     select
                     label="Numbering Style"
@@ -355,20 +360,7 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                     <MenuItem value="">None</MenuItem>
                   </TextField>
                 </Box>
-                <Button
-                  variant="contained"
-                  sx={{
-                    background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-                    color: 'white',
-                    '&:hover': {
-                      background: "linear-gradient(135deg, #2563eb, #7c3aed)"
-                    }
-                  }}
-                >
-                  Remix Space
-                </Button>
               </Box>
-              <Box sx={{ mt: 3 }}>
               {[
                 "🧵 Unpacking the future of Web3 Social Platforms: Key insights from our groundbreaking Space featuring industry leaders, tech visionaries, and web3 builders. A thread on decentralization, governance, and the evolution of digital communities... 👇",
 
@@ -457,8 +449,20 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                   </Box>
                 </Paper>
               ))}
-            </Box>
-          </Paper>
+              <Button
+                variant="contained"
+                sx={{
+                  background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+                  color: 'white',
+                  mt: 2,
+                  '&:hover': {
+                    background: "linear-gradient(135deg, #2563eb, #7c3aed)"
+                  }
+                }}
+              >
+                Remix Space
+              </Button>
+            </Paper>
           )}
 
           {/* Transcript Section */}

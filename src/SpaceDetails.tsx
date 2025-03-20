@@ -61,9 +61,12 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
         top: 0,
         left: 0,
         right: 0,
-        height: "40vh",
-        background: "linear-gradient(135deg, rgba(96, 165, 250, 0.1), rgba(139, 92, 246, 0.1), rgba(236, 72, 153, 0.1))",
-        pointerEvents: "none"
+        height: "60vh",
+        background: "linear-gradient(135deg, rgba(96, 165, 250, 0.15), rgba(139, 92, 246, 0.12), rgba(236, 72, 153, 0.1))",
+        opacity: 0.7,
+        pointerEvents: "none",
+        maskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 70%, rgba(0,0,0,0) 100%)",
+        WebkitMaskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 70%, rgba(0,0,0,0) 100%)"
       }
     }}>
       {space && (

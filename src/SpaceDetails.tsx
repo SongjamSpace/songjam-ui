@@ -329,52 +329,77 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                 <Typography variant="h6" sx={{ color: "#60a5fa" }}>
                   Twitter Thread Generator
                 </Typography>
-                <Button 
-                  startIcon={<ContentCopyIcon />}
-                  size="small"
-                  sx={{ color: "white" }}
-                  onClick={() => navigator.clipboard.writeText(mockThread)}
-                >
-                  Copy Thread
-                </Button>
+                <Typography variant="caption" sx={{ color: "#60a5fa" }}>
+                  Each tweet is within the 280 character limit
+                </Typography>
               </Box>
-              <Typography 
-                sx={{ 
-                  whiteSpace: "pre-line",
-                  fontSize: "1.1rem",
-                  lineHeight: 1.6,
-                  fontFamily: "monospace",
-                  mb: 2
-                }}
-              >
-                {`🧵 Key insights from our Web3 Social Platforms Space:
-
-1/ The future of decentralized identity is taking shape! Our experts discussed how self-sovereign identity could revolutionize social media authentication.
-
-2/ Token-gated communities are becoming more sophisticated. We're seeing a shift from simple ownership requirements to complex participation-based access.
-
-3/ The privacy vs transparency debate is heating up. The consensus? We need a hybrid approach that protects user data while maintaining platform integrity.
-
-4/ 2024 Predictions: 
-- Rise of modular social platforms
-- Integration with DeFi protocols
-- Enhanced data portability
-- More focus on user governance
-
-5/ @crypto_sarah dropped some 🔥 insights on scalable governance models. Her framework for progressive decentralization is a must-read for Web3 builders.
-
-6/ The most engaging moment? Our heated debate on data ownership rights. The community was split on whether users should have full control over their social graph.
-
-7/ What's next for Web3 social?
-- Better UX for non-crypto natives
-- Interoperable identity systems
-- Real-world governance implementation
-- Enhanced privacy tools
-
-🎤 Thanks to all our speakers and listeners! Follow for more Web3 insights.
-
-/end`}
-              </Typography>
+              {[
+                "🧵 Key insights from our Web3 Social Platforms Space:",
+                
+                "1/ The future of decentralized identity is taking shape! Our experts discussed how self-sovereign identity could revolutionize social media authentication.",
+                
+                "2/ Token-gated communities are becoming more sophisticated. We're seeing a shift from simple ownership requirements to complex participation-based access.",
+                
+                "3/ The privacy vs transparency debate is heating up. The consensus? We need a hybrid approach that protects user data while maintaining platform integrity.",
+                
+                "4/ 2024 Predictions:\n- Rise of modular social platforms\n- Integration with DeFi protocols\n- Enhanced data portability\n- More focus on user governance",
+                
+                "5/ @crypto_sarah dropped some 🔥 insights on scalable governance models. Her framework for progressive decentralization is a must-read for Web3 builders.",
+                
+                "6/ The most engaging moment? Our heated debate on data ownership rights. The community was split on whether users should have full control over their social graph.",
+                
+                "7/ What's next for Web3 social?\n- Better UX for non-crypto natives\n- Interoperable identity systems\n- Real-world governance implementation\n- Enhanced privacy tools",
+                
+                "🎤 Thanks to all our speakers and listeners! Follow for more Web3 insights.\n\n/end"
+              ].map((tweet, index) => (
+                <Paper key={index} sx={{
+                  background: "rgba(255,255,255,0.05)",
+                  p: 2,
+                  borderRadius: 2,
+                  mb: 2,
+                  position: "relative",
+                  "&:hover": {
+                    background: "rgba(255,255,255,0.08)"
+                  }
+                }}>
+                  <Typography 
+                    sx={{ 
+                      whiteSpace: "pre-line",
+                      fontSize: "1.1rem",
+                      lineHeight: 1.6,
+                      fontFamily: "monospace",
+                      pr: 4
+                    }}
+                  >
+                    {tweet}
+                  </Typography>
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      position: "absolute",
+                      right: 8,
+                      bottom: 8,
+                      color: tweet.length > 280 ? "#ef4444" : "#60a5fa"
+                    }}
+                  >
+                    {tweet.length}/280
+                  </Typography>
+                  <Button
+                    startIcon={<ContentCopyIcon />}
+                    size="small"
+                    sx={{
+                      position: "absolute",
+                      right: 8,
+                      top: 8,
+                      color: "white",
+                      minWidth: "auto"
+                    }}
+                    onClick={() => navigator.clipboard.writeText(tweet)}
+                  >
+                    Copy
+                  </Button>
+                </Paper>
+              ))}
             </Paper>
           )}
 

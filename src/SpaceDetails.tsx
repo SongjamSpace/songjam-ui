@@ -333,6 +333,34 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                   Each tweet is within the 280 character limit
                 </Typography>
               </Box>
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle1" sx={{ mb: 2 }}>Thread Settings</Typography>
+                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                  <TextField
+                    select
+                    label="Numbering Style"
+                    defaultValue="1/"
+                    size="small"
+                    sx={{ minWidth: 120 }}
+                  >
+                    <MenuItem value="1/">1/</MenuItem>
+                    <MenuItem value="(1)">(1)</MenuItem>
+                    <MenuItem value="">None</MenuItem>
+                  </TextField>
+                  <TextField
+                    select
+                    label="Thread Indicator"
+                    defaultValue="🧵"
+                    size="small"
+                    sx={{ minWidth: 120 }}
+                  >
+                    <MenuItem value="🧵">🧵</MenuItem>
+                    <MenuItem value="📝">📝</MenuItem>
+                    <MenuItem value="Thread:">Thread:</MenuItem>
+                    <MenuItem value="">None</MenuItem>
+                  </TextField>
+                </Box>
+              </Box>
               {[
                 "🧵 Unpacking the future of Web3 Social Platforms: Key insights from our groundbreaking Space featuring industry leaders, tech visionaries, and web3 builders. A thread on decentralization, governance, and the evolution of digital communities... 👇",
                 
@@ -384,20 +412,34 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                   >
                     {tweet.length}/280
                   </Typography>
-                  <Button
-                    startIcon={<ContentCopyIcon />}
-                    size="small"
-                    sx={{
-                      position: "absolute",
-                      right: 8,
-                      top: 8,
-                      color: "white",
-                      minWidth: "auto"
-                    }}
-                    onClick={() => navigator.clipboard.writeText(tweet)}
-                  >
-                    Copy
-                  </Button>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mt: 2,
+                    pt: 1,
+                    borderTop: '1px solid rgba(255,255,255,0.1)'
+                  }}>
+                    <Typography 
+                      variant="caption" 
+                      sx={{ 
+                        color: tweet.length > 280 ? "#ef4444" : "#60a5fa"
+                      }}
+                    >
+                      {tweet.length}/280
+                    </Typography>
+                    <Button
+                      startIcon={<ContentCopyIcon />}
+                      size="small"
+                      sx={{
+                        color: "white",
+                        minWidth: "auto"
+                      }}
+                      onClick={() => navigator.clipboard.writeText(tweet)}
+                    >
+                      Copy
+                    </Button>
+                  </Box>
                 </Paper>
               ))}
             </Paper>

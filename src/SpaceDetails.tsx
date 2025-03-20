@@ -51,22 +51,42 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
 
   return (
     <Box sx={{ 
-      background: "linear-gradient(to bottom, #0f172a, #1e293b)",
+      background: "linear-gradient(135deg, #0f172a, #1e293b)",
       minHeight: "100vh",
-      color: "white"
+      color: "white",
+      position: "relative",
+      "&::before": {
+        content: '""',
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        height: "40vh",
+        background: "linear-gradient(135deg, rgba(96, 165, 250, 0.1), rgba(139, 92, 246, 0.1), rgba(236, 72, 153, 0.1))",
+        pointerEvents: "none"
+      }
     }}>
       {space && (
-        <Box sx={{ maxWidth: "800px", margin: "0 auto", padding: 4 }}>
+        <Box sx={{ 
+          maxWidth: "800px", 
+          margin: "0 auto", 
+          padding: { xs: 2, sm: 3, md: 4 },
+          position: "relative",
+          zIndex: 1
+        }}>
           {/* Header */}
           <Box sx={{ mb: 4, position: "relative" }}>
             <Typography variant="overline" 
               sx={{ 
                 color: "#60a5fa",
-                background: "rgba(59, 130, 246, 0.1)",
-                padding: "4px 12px",
-                borderRadius: "16px",
+                background: "linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))",
+                padding: "6px 16px",
+                borderRadius: "20px",
                 display: "inline-block",
-                mb: 2
+                mb: 2,
+                letterSpacing: "0.1em",
+                fontWeight: 600,
+                fontSize: "0.75rem"
               }}>
               LIVE TRANSCRIPT
             </Typography>
@@ -89,11 +109,13 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
           {/* Navigation Controls */}
           <Box sx={{ 
             display: 'flex', 
-            gap: 2, 
-            mb: 3,
-            borderRadius: 2,
-            background: "rgba(30, 41, 59, 0.7)",
-            p: 1
+            gap: 1, 
+            mb: 4,
+            borderRadius: "16px",
+            background: "rgba(255, 255, 255, 0.03)",
+            backdropFilter: "blur(10px)",
+            p: 1,
+            border: "1px solid rgba(255, 255, 255, 0.05)"
           }}>
             <Button
               variant={activeSection === 'summary' ? 'contained' : 'text'}
@@ -135,12 +157,17 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
 
           {/* Speakers */}
           <Paper sx={{
-            background: "rgba(30, 41, 59, 0.7)",
+            background: "rgba(255, 255, 255, 0.02)",
             backdropFilter: "blur(10px)",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            borderRadius: 2,
-            p: 3,
-            mb: 4
+            border: "1px solid rgba(255, 255, 255, 0.05)",
+            borderRadius: 3,
+            p: 4,
+            mb: 4,
+            transition: "all 0.3s ease",
+            "&:hover": {
+              background: "rgba(255, 255, 255, 0.03)",
+              transform: "translateY(-2px)"
+            }
           }}>
             <Typography variant="h6" sx={{ mb: 2 }}>Speakers</Typography>
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
@@ -180,12 +207,18 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
           {/* AI Summary Card */}
           {activeSection === 'summary' && (
             <Paper sx={{
-              background: "linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.2))",
+              background: "linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.1))",
               backdropFilter: "blur(10px)",
               border: "1px solid rgba(59, 130, 246, 0.2)",
-              borderRadius: 2,
-              p: 3,
-              mb: 4
+              borderRadius: 3,
+              p: 4,
+              mb: 4,
+              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+              transition: "all 0.3s ease",
+              "&:hover": {
+                transform: "translateY(-2px)",
+                boxShadow: "0 12px 40px rgba(59, 130, 246, 0.2)"
+              }
             }}>
               <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
                 <Typography variant="h6" sx={{ color: "#60a5fa" }}>

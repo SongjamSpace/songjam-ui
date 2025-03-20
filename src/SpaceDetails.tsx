@@ -229,63 +229,6 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
             </Button>
           </Box>
 
-          {/* Speakers */}
-          <Paper
-            sx={{
-              background: "rgba(255, 255, 255, 0.02)",
-              backdropFilter: "blur(10px)",
-              border: "1px solid rgba(255, 255, 255, 0.05)",
-              borderRadius: 3,
-              p: 4,
-              mb: 4,
-              transition: "all 0.3s ease",
-              "&:hover": {
-                background: "rgba(255, 255, 255, 0.03)",
-                transform: "translateY(-2px)",
-              },
-            }}
-          >
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              Speakers
-            </Typography>
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
-              {space.admins?.map((admin) => (
-                <Box
-                  key={admin.user_id}
-                  component="a"
-                  href={`https://twitter.com/${admin.twitter_screen_name}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1,
-                    textDecoration: "none",
-                    color: "inherit",
-                    background: "rgba(255,255,255,0.05)",
-                    p: 1,
-                    borderRadius: 2,
-                    transition: "all 0.2s",
-                    "&:hover": {
-                      background: "rgba(255,255,255,0.1)",
-                      transform: "translateY(-2px)",
-                    },
-                  }}
-                >
-                  <Avatar src={admin.avatar_url} alt={admin.display_name} />
-                  <Box>
-                    <Typography sx={{ fontWeight: "bold" }}>
-                      {admin.display_name}
-                    </Typography>
-                    <Typography sx={{ color: "#60a5fa" }}>
-                      @{admin.twitter_screen_name}
-                    </Typography>
-                  </Box>
-                </Box>
-              ))}
-            </Box>
-          </Paper>
-
           {/* Summary Card */}
           {activeSection === "summary" && (
             <Paper
@@ -411,6 +354,65 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                     </Button>
                   </Paper>
                 </Box>
+              </Box>
+            </Paper>
+          )}
+
+          {/* Speakers */}
+          {activeSection === "summary" && (
+            <Paper
+              sx={{
+                background: "rgba(255, 255, 255, 0.02)",
+                backdropFilter: "blur(10px)",
+                border: "1px solid rgba(255, 255, 255, 0.05)",
+                borderRadius: 3,
+                p: 4,
+                mb: 4,
+                transition: "all 0.3s ease",
+                "&:hover": {
+                  background: "rgba(255, 255, 255, 0.03)",
+                  transform: "translateY(-2px)",
+                },
+              }}
+            >
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Speakers
+              </Typography>
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+                {space.admins?.map((admin) => (
+                  <Box
+                    key={admin.user_id}
+                    component="a"
+                    href={`https://twitter.com/${admin.twitter_screen_name}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      textDecoration: "none",
+                      color: "inherit",
+                      background: "rgba(255,255,255,0.05)",
+                      p: 1,
+                      borderRadius: 2,
+                      transition: "all 0.2s",
+                      "&:hover": {
+                        background: "rgba(255,255,255,0.1)",
+                        transform: "translateY(-2px)",
+                      },
+                    }}
+                  >
+                    <Avatar src={admin.avatar_url} alt={admin.display_name} />
+                    <Box>
+                      <Typography sx={{ fontWeight: "bold" }}>
+                        {admin.display_name}
+                      </Typography>
+                      <Typography sx={{ color: "#60a5fa" }}>
+                        @{admin.twitter_screen_name}
+                      </Typography>
+                    </Box>
+                  </Box>
+                ))}
               </Box>
             </Paper>
           )}

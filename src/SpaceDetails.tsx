@@ -360,10 +360,9 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                       alignItems: "center",
                       justifyContent: "flex-end",
                       background:
-                        "linear-gradient(180deg, rgba(15,23,42,0) 0%, rgba(15,23,42,0.85) 35%, rgba(15,23,42,0.95) 65%, rgba(15,23,42,1) 100%)",
+                        "linear-gradient(to bottom, rgba(15,23,42,0) 0%, rgba(15,23,42,1) 25%)",
                       padding: 3,
                       textAlign: "center",
-                      backdropFilter: "blur(8px)",
                     }}
                   >
                     {!hasAccess && (

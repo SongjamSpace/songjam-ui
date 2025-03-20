@@ -390,17 +390,24 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                     background: "rgba(255,255,255,0.08)"
                   }
                 }}>
-                  <Typography 
-                    sx={{ 
-                      whiteSpace: "pre-line",
-                      fontSize: "1.1rem",
-                      lineHeight: 1.6,
-                      fontFamily: "monospace",
-                      pr: 4
+                  <TextField
+                    multiline
+                    fullWidth
+                    defaultValue={tweet}
+                    variant="standard"
+                    InputProps={{
+                      sx: { 
+                        whiteSpace: "pre-line",
+                        fontSize: "1.1rem",
+                        lineHeight: 1.6,
+                        fontFamily: "monospace",
+                        color: "white",
+                        '&:before': { borderColor: 'rgba(255,255,255,0.1)' },
+                        '&:hover:before': { borderColor: 'rgba(255,255,255,0.2) !important' },
+                        '&:after': { borderColor: '#60a5fa' }
+                      }
                     }}
-                  >
-                    {tweet}
-                  </Typography>
+                  />
                   <Typography 
                     variant="caption" 
                     sx={{ 

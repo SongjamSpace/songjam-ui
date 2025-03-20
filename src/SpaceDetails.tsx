@@ -337,10 +337,12 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                     lineHeight: 1.6,
                     maxHeight: "400px",
                     overflow: "hidden",
-                    maskImage:
-                      "linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%)",
-                    WebkitMaskImage:
-                      "linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%)",
+                    ...(hasAccess ? {} : {
+                      maskImage:
+                        "linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%)",
+                      WebkitMaskImage:
+                        "linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%)",
+                    }),
                   }}
                 >
                   {mockAISummary}
@@ -363,59 +365,59 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                       textAlign: "center",
                     }}
                   >
-                  {!hasAccess && (
-                    <Paper
-                      elevation={24}
-                      sx={{
-                        mt: 2,
-                        background: "rgba(30, 41, 59, 0.95)",
-                        borderRadius: 3,
-                        p: 2.5,
-                        backdropFilter: "blur(20px)",
-                        border: "1px solid rgba(96, 165, 250, 0.2)",
-                        maxWidth: "300px",
-                        width: "100%",
-                      }}
-                    >
-                      <Typography
-                        variant="h5"
+                    {!hasAccess && (
+                      <Paper
+                        elevation={24}
                         sx={{
-                          mb: 1,
-                          background: "linear-gradient(135deg, #60a5fa, #8b5cf6)",
-                          WebkitBackgroundClip: "text",
-                          color: "transparent",
-                          fontWeight: "bold",
+                          mt: 2,
+                          background: "rgba(30, 41, 59, 0.95)",
+                          borderRadius: 3,
+                          p: 2.5,
+                          backdropFilter: "blur(20px)",
+                          border: "1px solid rgba(96, 165, 250, 0.2)",
+                          maxWidth: "300px",
+                          width: "100%",
                         }}
                       >
-                        Unlock Full Access
-                      </Typography>
-                      <Typography sx={{ mb: 3, color: "#94a3b8" }}>
-                        Get complete access to this space for just $1 USDT
-                      </Typography>
-                      
-                      <Button
-                        variant="contained"
-                        fullWidth
-                        size="large"
-                        onClick={() => setHasAccess(true)}
-                        sx={{
-                          background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-                          py: 1.5,
-                          borderRadius: 2,
-                          "&:hover": {
-                            background:
-                              "linear-gradient(135deg, #2563eb, #7c3aed)",
-                            transform: "translateY(-2px)",
-                            boxShadow: "0 10px 20px rgba(59, 130, 246, 0.3)",
-                          },
-                          transition: "all 0.3s ease",
-                        }}
-                      >
-                        Pay $1 USDT
-                      </Button>
-                    </Paper>
-                  )}
-                </Box>
+                        <Typography
+                          variant="h5"
+                          sx={{
+                            mb: 1,
+                            background: "linear-gradient(135deg, #60a5fa, #8b5cf6)",
+                            WebkitBackgroundClip: "text",
+                            color: "transparent",
+                            fontWeight: "bold",
+                          }}
+                        >
+                          Unlock Full Access
+                        </Typography>
+                        <Typography sx={{ mb: 3, color: "#94a3b8" }}>
+                          Get complete access to this space for just $1 USDT
+                        </Typography>
+
+                        <Button
+                          variant="contained"
+                          fullWidth
+                          size="large"
+                          onClick={() => setHasAccess(true)}
+                          sx={{
+                            background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+                            py: 1.5,
+                            borderRadius: 2,
+                            "&:hover": {
+                              background:
+                                "linear-gradient(135deg, #2563eb, #7c3aed)",
+                              transform: "translateY(-2px)",
+                              boxShadow: "0 10px 20px rgba(59, 130, 246, 0.3)",
+                            },
+                            transition: "all 0.3s ease",
+                          }}
+                        >
+                          Pay $1 USDT
+                        </Button>
+                      </Paper>
+                    )}
+                  </Box>
                 )}
               </Box>
             </Paper>

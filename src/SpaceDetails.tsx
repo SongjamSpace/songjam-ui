@@ -26,6 +26,7 @@ const SpaceDetails: React.FC = () => {
   const { spaceId } = useParams<{ spaceId: string }>();
   const [space, setSpace] = useState<Space | null>(null);
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+  const [activeSection, setActiveSection] = useState<'summary' | 'timeline' | 'transcript'>('summary');
 
   useEffect(() => {
     if (!spaceId) return;
@@ -85,8 +86,49 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
             </Box>
           </Box>
 
+          {/* Navigation Controls */}
+          <Box sx={{ 
+            display: 'flex', 
+            gap: 2, 
+            mb: 3,
+            borderRadius: 2,
+            background: "rgba(30, 41, 59, 0.7)",
+            p: 1
+          }}>
+            <Button
+              variant={activeSection === 'summary' ? 'contained' : 'text'}
+              onClick={() => setActiveSection('summary')}
+              sx={{ 
+                color: 'white',
+                '&.MuiButton-contained': { bgcolor: '#60a5fa' }
+              }}
+            >
+              AI Summary
+            </Button>
+            <Button
+              variant={activeSection === 'timeline' ? 'contained' : 'text'}
+              onClick={() => setActiveSection('timeline')}
+              sx={{ 
+                color: 'white',
+                '&.MuiButton-contained': { bgcolor: '#60a5fa' }
+              }}
+            >
+              Timeline
+            </Button>
+            <Button
+              variant={activeSection === 'transcript' ? 'contained' : 'text'}
+              onClick={() => setActiveSection('transcript')}
+              sx={{ 
+                color: 'white',
+                '&.MuiButton-contained': { bgcolor: '#60a5fa' }
+              }}
+            >
+              Transcript
+            </Button>
+          </Box>
+
           {/* AI Summary Card */}
-          <Paper sx={{
+          {activeSection === 'summary' && <Paper sx={{
             background: "linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.2))",
             backdropFilter: "blur(10px)",
             border: "1px solid rgba(59, 130, 246, 0.2)",
@@ -171,7 +213,7 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
           </Paper>
 
           {/* Timeline */}
-          <Paper sx={{
+          {activeSection === 'timeline' && <Paper sx={{
             background: "rgba(30, 41, 59, 0.7)",
             backdropFilter: "blur(10px)",
             border: "1px solid rgba(255, 255, 255, 0.1)",
@@ -204,7 +246,35 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                 </TimelineItem>
               ))}
             </Timeline>
-          </Paper>
+          </Paper>}
+
+          {/* Transcript Section */}
+          {activeSection === 'transcript' && (
+            <Paper sx={{
+              background: "rgba(30, 41, 59, 0.7)",
+              backdropFilter: "blur(10px)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              borderRadius: 2,
+              p: 3
+            }}>
+              <Typography variant="h6" sx={{ mb: 3 }}>Full Transcript</Typography>
+              <Box sx={{ maxHeight: '60vh', overflowY: 'auto' }}>
+                {space.segments?.map((segment: Segment, index: number) => (
+                  <Box key={index} sx={{
+                    background: "rgba(255,255,255,0.05)",
+                    p: 2,
+                    borderRadius: 2,
+                    mb: 2
+                  }}>
+                    <Typography>{segment.text}</Typography>
+                    <Typography variant="caption" sx={{ color: "#60a5fa" }}>
+                      {formatSeconds(segment.start)}
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
+            </Paper>
+          )}
         </Box>
       )}
     </Box>

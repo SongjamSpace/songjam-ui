@@ -457,8 +457,8 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                   </Box>
                 </Paper>
               ))}
-
             </Box>
+            </Paper>
           )}
 
           {/* Transcript Section */}

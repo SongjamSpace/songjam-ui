@@ -353,15 +353,15 @@ export default function App() {
             <img src="/logos/product-hunt.png" alt="Product Hunt" />
             <span>Product Hunt</span>
           </a>
-          <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="social-link">
+          <a href="https://github.com/nusic-fm" target="_blank" rel="noopener noreferrer" className="social-link">
             <img src="/logos/github.png" alt="GitHub" />
             <span>GitHub</span>
           </a>
-          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="social-link">
+          <a href="https://x.com/SongJamHQ" target="_blank" rel="noopener noreferrer" className="social-link">
             <img src="/logos/twitter.png" alt="Twitter" />
             <span>Twitter</span>
           </a>
-          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="social-link">
+          <a href="https://www.linkedin.com/company/songjam/" target="_blank" rel="noopener noreferrer" className="social-link">
             <img src="/logos/linkedin.png" alt="LinkedIn" />
             <span>LinkedIn</span>
           </a>

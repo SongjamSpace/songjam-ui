@@ -557,10 +557,11 @@ button.secondary {
 }
 
 .social-links {
-  display: flex;
-  justify-content: center;
-  gap: 3rem;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  max-width: 800px;
+  margin: 0 auto;
+  gap: 2rem;
 }
 
 .social-link {
@@ -571,6 +572,7 @@ button.secondary {
   text-decoration: none;
   color: var(--text-secondary);
   transition: transform 0.3s ease;
+  padding: 0 1rem;
 }
 
 .social-link:hover {

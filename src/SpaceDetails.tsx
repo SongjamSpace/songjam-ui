@@ -193,11 +193,11 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                 },
               }}
             >
-              Memorable Moments
+              AI Threadoor
             </Button>
             <Button
-              variant={activeSection === "threadoor" ? "contained" : "text"}
-              onClick={() => setActiveSection("threadoor")}
+              variant={activeSection === "moments" ? "contained" : "text"}
+              onClick={() => setActiveSection("moments")}
               sx={{
                 color: "white",
                 "&.MuiButton-contained": {
@@ -608,19 +608,9 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                     <Typography sx={{ color: "#60a5fa" }}>
                       @{moment.speaker}
                     </Typography>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      <Typography variant="caption" sx={{ color: "#60a5fa" }}>
-                        {moment.timestamp}
-                      </Typography>
-                      <Button
-                        startIcon={<ContentCopyIcon />}
-                        size="small"
-                        sx={{ color: "white", minWidth: "auto" }}
-                        onClick={() => navigator.clipboard.writeText(moment.quote)}
-                      >
-                        Copy
-                      </Button>
-                    </Box>
+                    <Typography variant="caption" sx={{ color: "#60a5fa" }}>
+                      {moment.timestamp}
+                    </Typography>
                   </Box>
                 </Paper>
               ))}

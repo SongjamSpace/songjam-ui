@@ -334,10 +334,10 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                     whiteSpace: "pre-line",
                     fontSize: "1.1rem",
                     lineHeight: 1.6,
-                    maxHeight: '200px',
+                    maxHeight: '400px',
                     overflow: 'hidden',
-                    maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)',
-                    WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)',
+                    maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%)',
+                    WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%)',
                   }}
                 >
                   {mockAISummary}
@@ -345,15 +345,15 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                 <Box
                   sx={{
                     position: 'absolute',
-                    top: 0,
+                    top: '60%',
                     left: 0,
                     right: 0,
                     bottom: 0,
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'linear-gradient(to bottom, rgba(15,23,42,0) 0%, rgba(15,23,42,0.95) 50%)',
+                    justifyContent: 'flex-end',
+                    background: 'linear-gradient(to bottom, rgba(15,23,42,0) 0%, rgba(15,23,42,1) 40%)',
                     padding: 3,
                     textAlign: 'center',
                   }}

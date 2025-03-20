@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getSpace, Segment, Space } from "./services/db/spaces.service";
@@ -78,11 +77,11 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
               <Chip 
                 icon={<AutorenewIcon />} 
                 label={`${space.total_live_listeners} listening`}
-                sx={{ background: "rgba(255,255,255,0.1)" }}
+                sx={{ background: "var(--bg-secondary)" }}
               />
               <Chip 
                 label={`${space.total_replay_watched} replays`}
-                sx={{ background: "rgba(255,255,255,0.1)" }}
+                sx={{ background: "var(--bg-secondary)" }}
               />
             </Box>
           </Box>
@@ -101,7 +100,9 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
               onClick={() => setActiveSection('summary')}
               sx={{ 
                 color: 'white',
-                '&.MuiButton-contained': { bgcolor: '#60a5fa' }
+                '&.MuiButton-contained': { 
+                  background: "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))"
+                }
               }}
             >
               AI Summary
@@ -111,7 +112,9 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
               onClick={() => setActiveSection('timeline')}
               sx={{ 
                 color: 'white',
-                '&.MuiButton-contained': { bgcolor: '#60a5fa' }
+                '&.MuiButton-contained': { 
+                  background: "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))"
+                }
               }}
             >
               Timeline
@@ -121,7 +124,9 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
               onClick={() => setActiveSection('transcript')}
               sx={{ 
                 color: 'white',
-                '&.MuiButton-contained': { bgcolor: '#60a5fa' }
+                '&.MuiButton-contained': { 
+                  background: "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))"
+                }
               }}
             >
               Transcript

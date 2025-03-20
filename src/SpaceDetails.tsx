@@ -334,23 +334,23 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                 </Typography>
               </Box>
               {[
-                "🧵 Key insights from our Web3 Social Platforms Space:",
+                "🧵 Unpacking the future of Web3 Social Platforms: Key insights from our groundbreaking Space featuring industry leaders, tech visionaries, and web3 builders. A thread on decentralization, governance, and the evolution of digital communities... 👇",
                 
-                "1/ The future of decentralized identity is taking shape! Our experts discussed how self-sovereign identity could revolutionize social media authentication.",
+                "1/ The future of decentralized identity is revolutionizing social media! Our panel of experts discussed how self-sovereign identity systems are enabling users to maintain complete control over their digital presence while ensuring platform security and accountability. #Web3 #Identity",
                 
-                "2/ Token-gated communities are becoming more sophisticated. We're seeing a shift from simple ownership requirements to complex participation-based access.",
+                "2/ Token-gated communities are evolving beyond simple ownership requirements! We're witnessing a transformation towards dynamic access models that factor in participation metrics, contribution history, and reputation scores. This creates more engaged and valuable communities. 🔑",
                 
-                "3/ The privacy vs transparency debate is heating up. The consensus? We need a hybrid approach that protects user data while maintaining platform integrity.",
+                "3/ The privacy vs transparency debate sparked intense discussion. The consensus? A sophisticated hybrid approach is emerging where users can selectively reveal data while maintaining core privacy. This enables both platform integrity and user sovereignty. Key examples shared: 🔐",
                 
-                "4/ 2024 Predictions:\n- Rise of modular social platforms\n- Integration with DeFi protocols\n- Enhanced data portability\n- More focus on user governance",
+                "4/ 2024 Predictions from our expert panel:\n\n- Rise of modular social platforms with plug-and-play components\n- Deep integration with DeFi protocols for tokenized engagement\n- Enhanced data portability standards\n- User-driven governance frameworks\n- AI-powered content curation",
                 
-                "5/ @crypto_sarah dropped some 🔥 insights on scalable governance models. Her framework for progressive decentralization is a must-read for Web3 builders.",
+                "5/ Spotlight on @crypto_sarah's revolutionary insights on scalable governance! Her framework for progressive decentralization introduces innovative concepts like reputation-weighted voting, delegate pools, and automated policy enforcement. This could reshape how DAOs operate. 🚀",
                 
-                "6/ The most engaging moment? Our heated debate on data ownership rights. The community was split on whether users should have full control over their social graph.",
+                "6/ The Space's most engaging segment? Our heated debate on data ownership rights! The community was split between full user control of social graphs vs platform-managed systems. Important nuances emerged around data portability, platform sustainability, and user privacy. 🤔",
                 
-                "7/ What's next for Web3 social?\n- Better UX for non-crypto natives\n- Interoperable identity systems\n- Real-world governance implementation\n- Enhanced privacy tools",
+                "7/ What's next for Web3 social?\n\n- Seamless UX that hides complexity from non-crypto users\n- Cross-chain identity and reputation systems\n- Real-world governance implementation at scale\n- Zero-knowledge privacy tools\n- Decentralized content moderation\n\n#Web3Social #Future",
                 
-                "🎤 Thanks to all our speakers and listeners! Follow for more Web3 insights.\n\n/end"
+                "🎤 Huge thanks to our brilliant speakers and engaged audience! This conversation showcased the rapid evolution of Web3 social platforms. Follow us for more deep dives into the future of decentralized technology.\n\nSave this thread for future reference! 🔖\n\n/end"
               ].map((tweet, index) => (
                 <Paper key={index} sx={{
                   background: "rgba(255,255,255,0.05)",

@@ -388,54 +388,7 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                     <Typography sx={{ mb: 3, color: "#94a3b8" }}>
                       Get complete access to this space for just $1 USDT
                     </Typography>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        gap: 2,
-                        mb: 2.5,
-                      }}
-                    >
-                      <Box sx={{ textAlign: "center" }}>
-                        <img
-                          src="/logos/base.png"
-                          alt="Base"
-                          style={{ width: 40, height: 40, marginBottom: 8 }}
-                        />
-                        <Typography
-                          variant="caption"
-                          sx={{ color: "#94a3b8", display: "block" }}
-                        >
-                          Base
-                        </Typography>
-                      </Box>
-                      <Box sx={{ textAlign: "center" }}>
-                        <img
-                          src="/logos/ethereum.png"
-                          alt="Ethereum"
-                          style={{ width: 40, height: 40, marginBottom: 8 }}
-                        />
-                        <Typography
-                          variant="caption"
-                          sx={{ color: "#94a3b8", display: "block" }}
-                        >
-                          Ethereum
-                        </Typography>
-                      </Box>
-                      <Box sx={{ textAlign: "center" }}>
-                        <img
-                          src="/logos/solana.png"
-                          alt="Solana"
-                          style={{ width: 40, height: 40, marginBottom: 8 }}
-                        />
-                        <Typography
-                          variant="caption"
-                          sx={{ color: "#94a3b8", display: "block" }}
-                        >
-                          Solana
-                        </Typography>
-                      </Box>
-                    </Box>
+                    
                     <Button
                       variant="contained"
                       fullWidth

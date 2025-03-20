@@ -328,15 +328,61 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                   </Button>
                 </Box>
               </Box>
-              <Typography
-                sx={{
-                  whiteSpace: "pre-line",
-                  fontSize: "1.1rem",
-                  lineHeight: 1.6,
-                }}
-              >
-                {mockAISummary}
-              </Typography>
+              <Box sx={{ position: 'relative' }}>
+                <Typography
+                  sx={{
+                    whiteSpace: "pre-line",
+                    fontSize: "1.1rem",
+                    lineHeight: 1.6,
+                    maxHeight: '100px',
+                    overflow: 'hidden',
+                    maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)',
+                    WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)',
+                  }}
+                >
+                  {mockAISummary}
+                </Typography>
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'linear-gradient(to bottom, rgba(15,23,42,0) 0%, rgba(15,23,42,0.9) 30%, rgba(15,23,42,1) 100%)',
+                    padding: 3,
+                    textAlign: 'center',
+                  }}
+                >
+                  <Typography variant="h6" sx={{ mb: 2, color: '#60a5fa' }}>
+                    Unlock Full Access
+                  </Typography>
+                  <Typography sx={{ mb: 3 }}>
+                    Get complete access to this space for just $1 USDT
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                    <Chip label="Ethereum" sx={{ background: '#627EEA' }} />
+                    <Chip label="Solana" sx={{ background: '#14F195' }} />
+                    <Chip label="Base" sx={{ background: '#0052FF' }} />
+                  </Box>
+                  <Button
+                    variant="contained"
+                    onClick={() => setHasAccess(true)}
+                    sx={{
+                      background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
+                      },
+                    }}
+                  >
+                    Pay $1 USDT
+                  </Button>
+                </Box>
+              </Box>
             </Paper>
           )}
 

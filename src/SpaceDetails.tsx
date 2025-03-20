@@ -56,12 +56,11 @@ const SpaceDetails: React.FC = () => {
   useEffect(() => {
     if (space) {
       const filtered = space.segments?.filter((segment) =>
-        segment.text.toLowerCase().includes(searchTerm.toLowerCase())
+        segment.text.toLowerCase().includes(searchTerm.toLowerCase()),
       );
       setFilteredTranscript(filtered || []);
     }
   }, [searchTerm, space]); // Update filteredTranscript on searchTerm or space change
-
 
   const mockAISummary = `🤖 Summary:
 
@@ -71,6 +70,8 @@ This Space explored the future of web3 social platforms with industry experts. K
 • Analysis of token-gated communities
 • Debate on privacy vs transparency
 • Predictions for 2024 trends
+
+A diverse group of experts and enthusiasts contributed to this lively discussion.
 
 Most engaging moment: The heated debate about data ownership rights at 23:45.
 Standout speaker: @crypto_sarah with insights on scalable governance models.`;
@@ -328,67 +329,113 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                   </Button>
                 </Box>
               </Box>
-              <Box sx={{ position: 'relative' }}>
+              <Box sx={{ position: "relative" }}>
                 <Typography
                   sx={{
                     whiteSpace: "pre-line",
                     fontSize: "1.1rem",
                     lineHeight: 1.6,
-                    maxHeight: '400px',
-                    overflow: 'hidden',
-                    maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%)',
-                    WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%)',
+                    maxHeight: "400px",
+                    overflow: "hidden",
+                    maskImage:
+                      "linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%)",
+                    WebkitMaskImage:
+                      "linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%)",
                   }}
                 >
                   {mockAISummary}
                 </Typography>
                 <Box
                   sx={{
-                    position: 'absolute',
-                    top: '55%',
+                    position: "absolute",
+                    top: "55%",
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'flex-end',
-                    background: 'linear-gradient(to bottom, rgba(15,23,42,0) 0%, rgba(15,23,42,1) 25%)',
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "flex-end",
+                    background:
+                      "linear-gradient(to bottom, rgba(15,23,42,0) 0%, rgba(15,23,42,1) 25%)",
                     padding: 3,
-                    textAlign: 'center',
+                    textAlign: "center",
                   }}
                 >
                   <Paper
                     elevation={24}
                     sx={{
                       mt: 4,
-                      background: 'rgba(30, 41, 59, 0.95)',
+                      background: "rgba(30, 41, 59, 0.95)",
                       borderRadius: 4,
                       p: 4,
-                      backdropFilter: 'blur(20px)',
-                      border: '1px solid rgba(96, 165, 250, 0.2)',
-                      maxWidth: '400px',
-                      width: '100%',
+                      backdropFilter: "blur(20px)",
+                      border: "1px solid rgba(96, 165, 250, 0.2)",
+                      maxWidth: "400px",
+                      width: "100%",
                     }}
                   >
-                    <Typography variant="h5" sx={{ mb: 1, background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)', WebkitBackgroundClip: 'text', color: 'transparent', fontWeight: 'bold' }}>
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        mb: 1,
+                        background: "linear-gradient(135deg, #60a5fa, #8b5cf6)",
+                        WebkitBackgroundClip: "text",
+                        color: "transparent",
+                        fontWeight: "bold",
+                      }}
+                    >
                       Unlock Full Access
                     </Typography>
-                    <Typography sx={{ mb: 3, color: '#94a3b8' }}>
+                    <Typography sx={{ mb: 3, color: "#94a3b8" }}>
                       Get complete access to this space for just $1 USDT
                     </Typography>
-                    <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, mb: 4 }}>
-                      <Box sx={{ textAlign: 'center' }}>
-                        <img src="/logos/ethereum.svg" alt="Ethereum" style={{ width: 40, height: 40, marginBottom: 8 }} />
-                        <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block' }}>Ethereum</Typography>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        gap: 3,
+                        mb: 4,
+                      }}
+                    >
+                      <Box sx={{ textAlign: "center" }}>
+                        <img
+                          src="/logos/base.png"
+                          alt="Base"
+                          style={{ width: 40, height: 40, marginBottom: 8 }}
+                        />
+                        <Typography
+                          variant="caption"
+                          sx={{ color: "#94a3b8", display: "block" }}
+                        >
+                          Base
+                        </Typography>
                       </Box>
-                      <Box sx={{ textAlign: 'center' }}>
-                        <img src="/logos/solana.svg" alt="Solana" style={{ width: 40, height: 40, marginBottom: 8 }} />
-                        <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block' }}>Solana</Typography>
+                      <Box sx={{ textAlign: "center" }}>
+                        <img
+                          src="/logos/ethereum.png"
+                          alt="Ethereum"
+                          style={{ width: 40, height: 40, marginBottom: 8 }}
+                        />
+                        <Typography
+                          variant="caption"
+                          sx={{ color: "#94a3b8", display: "block" }}
+                        >
+                          Ethereum
+                        </Typography>
                       </Box>
-                      <Box sx={{ textAlign: 'center' }}>
-                        <img src="/logos/base.svg" alt="Base" style={{ width: 40, height: 40, marginBottom: 8 }} />
-                        <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block' }}>Base</Typography>
+                      <Box sx={{ textAlign: "center" }}>
+                        <img
+                          src="/logos/solana.png"
+                          alt="Solana"
+                          style={{ width: 40, height: 40, marginBottom: 8 }}
+                        />
+                        <Typography
+                          variant="caption"
+                          sx={{ color: "#94a3b8", display: "block" }}
+                        >
+                          Solana
+                        </Typography>
                       </Box>
                     </Box>
                     <Button
@@ -397,15 +444,16 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                       size="large"
                       onClick={() => setHasAccess(true)}
                       sx={{
-                        background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                        background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
                         py: 1.5,
                         borderRadius: 2,
-                        '&:hover': {
-                          background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
-                          transform: 'translateY(-2px)',
-                          boxShadow: '0 10px 20px rgba(59, 130, 246, 0.3)',
+                        "&:hover": {
+                          background:
+                            "linear-gradient(135deg, #2563eb, #7c3aed)",
+                          transform: "translateY(-2px)",
+                          boxShadow: "0 10px 20px rgba(59, 130, 246, 0.3)",
                         },
-                        transition: 'all 0.3s ease',
+                        transition: "all 0.3s ease",
                       }}
                     >
                       Pay $1 USDT
@@ -646,7 +694,8 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
           {activeSection === "moments" && (
             <Paper
               sx={{
-                background: "linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.1))",
+                background:
+                  "linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.1))",
                 backdropFilter: "blur(10px)",
                 border: "1px solid rgba(59, 130, 246, 0.2)",
                 borderRadius: 3,
@@ -659,20 +708,23 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
               </Typography>
               {[
                 {
-                  quote: "The future of web3 social isn't about replacing traditional platforms - it's about empowering users with true digital ownership.",
+                  quote:
+                    "The future of web3 social isn't about replacing traditional platforms - it's about empowering users with true digital ownership.",
                   speaker: "crypto_sarah",
-                  timestamp: "12:35"
+                  timestamp: "12:35",
                 },
                 {
-                  quote: "When we talk about decentralized identity, we're really talking about the foundation of digital trust.",
+                  quote:
+                    "When we talk about decentralized identity, we're really talking about the foundation of digital trust.",
                   speaker: "web3_builder",
-                  timestamp: "23:15"
+                  timestamp: "23:15",
                 },
                 {
-                  quote: "Token-gated communities are just the beginning. The real innovation comes from dynamic access models that evolve with participation.",
+                  quote:
+                    "Token-gated communities are just the beginning. The real innovation comes from dynamic access models that evolve with participation.",
                   speaker: "defi_max",
-                  timestamp: "45:20"
-                }
+                  timestamp: "45:20",
+                },
               ].map((moment, index) => (
                 <Paper
                   key={index}
@@ -686,7 +738,7 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                     "&:hover": {
                       transform: "translateY(-2px)",
                       background: "rgba(255,255,255,0.08)",
-                    }
+                    },
                   }}
                 >
                   <Typography
@@ -695,12 +747,18 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                       fontSize: "1.1rem",
                       fontStyle: "italic",
                       mb: 2,
-                      lineHeight: 1.6
+                      lineHeight: 1.6,
                     }}
                   >
                     "{moment.quote}"
                   </Typography>
-                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
                     <Typography sx={{ color: "#60a5fa" }}>
                       @{moment.speaker}
                     </Typography>
@@ -712,7 +770,9 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                         startIcon={<ContentCopyIcon />}
                         size="small"
                         sx={{ color: "white", minWidth: "auto" }}
-                        onClick={() => navigator.clipboard.writeText(moment.quote)}
+                        onClick={() =>
+                          navigator.clipboard.writeText(moment.quote)
+                        }
                       >
                         Copy
                       </Button>
@@ -747,7 +807,8 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                 onChange={(e) => setSearchTerm(e.target.value)}
                 fullWidth
                 sx={{ mb: 2 }}
-              /> {/* Added search bar */}
+              />{" "}
+              {/* Added search bar */}
               <Box sx={{ maxHeight: "60vh", overflowY: "auto" }}>
                 {filteredTranscript.map((segment: Segment, index: number) => (
                   <Box

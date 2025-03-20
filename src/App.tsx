@@ -18,7 +18,6 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { LoadingButton } from "@mui/lab";
 
 export default function App() {
   const [connectWallet, setConnectWallet] = useState(false);
@@ -100,14 +99,14 @@ export default function App() {
                   }}
                   variant="outlined"
                 />
-                <LoadingButton
-                  loading={isLoading}
+                <Button
+                  disabled={isLoading}
                   variant="contained"
                   className="primary"
                   onClick={() => joinSpace(spaceUrl)}
                 >
-                  Transcribe
-                </LoadingButton>
+                  {isLoading ? "Loading..." : "Transcribe"}
+                </Button>
               </Box>
               <Button 
                 onClick={() => joinSpace("https://twitter.com/i/spaces/1nAKEgjnRRkJL")}

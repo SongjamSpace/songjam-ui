@@ -368,7 +368,7 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                   Remix Space
                 </Button>
               </Box>
-              <Box>
+              <Box sx={{ mt: 3 }}>
               {[
                 "🧵 Unpacking the future of Web3 Social Platforms: Key insights from our groundbreaking Space featuring industry leaders, tech visionaries, and web3 builders. A thread on decentralization, governance, and the evolution of digital communities... 👇",
 
@@ -457,7 +457,7 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                   </Box>
                 </Paper>
               ))}
-              
+
             </Paper>
           )}
 

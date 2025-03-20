@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getSpace, Segment, Space } from "./services/db/spaces.service";
@@ -128,45 +129,47 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
           </Box>
 
           {/* AI Summary Card */}
-          {activeSection === 'summary' && <Paper sx={{
-            background: "linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.2))",
-            backdropFilter: "blur(10px)",
-            border: "1px solid rgba(59, 130, 246, 0.2)",
-            borderRadius: 2,
-            p: 3,
-            mb: 4
-          }}>
-            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-              <Typography variant="h6" sx={{ color: "#60a5fa" }}>
-                AI Summary
-              </Typography>
-              <Box>
-                <Button 
-                  startIcon={<ShareIcon />}
-                  size="small"
-                  sx={{ mr: 1, color: "white" }}
-                >
-                  Share
-                </Button>
-                <Button
-                  startIcon={<BookmarkIcon />}
-                  size="small"
-                  sx={{ color: "white" }}
-                >
-                  Save
-                </Button>
+          {activeSection === 'summary' && (
+            <Paper sx={{
+              background: "linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.2))",
+              backdropFilter: "blur(10px)",
+              border: "1px solid rgba(59, 130, 246, 0.2)",
+              borderRadius: 2,
+              p: 3,
+              mb: 4
+            }}>
+              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+                <Typography variant="h6" sx={{ color: "#60a5fa" }}>
+                  AI Summary
+                </Typography>
+                <Box>
+                  <Button 
+                    startIcon={<ShareIcon />}
+                    size="small"
+                    sx={{ mr: 1, color: "white" }}
+                  >
+                    Share
+                  </Button>
+                  <Button
+                    startIcon={<BookmarkIcon />}
+                    size="small"
+                    sx={{ color: "white" }}
+                  >
+                    Save
+                  </Button>
+                </Box>
               </Box>
-            </Box>
-            <Typography 
-              sx={{ 
-                whiteSpace: "pre-line",
-                fontSize: "1.1rem",
-                lineHeight: 1.6
-              }}
-            >
-              {mockAISummary}
-            </Typography>
-          </Paper>
+              <Typography 
+                sx={{ 
+                  whiteSpace: "pre-line",
+                  fontSize: "1.1rem",
+                  lineHeight: 1.6
+                }}
+              >
+                {mockAISummary}
+              </Typography>
+            </Paper>
+          )}
 
           {/* Speakers */}
           <Paper sx={{
@@ -213,40 +216,42 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
           </Paper>
 
           {/* Timeline */}
-          {activeSection === 'timeline' && <Paper sx={{
-            background: "rgba(30, 41, 59, 0.7)",
-            backdropFilter: "blur(10px)",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            borderRadius: 2,
-            p: 3
-          }}>
-            <Typography variant="h6" sx={{ mb: 3 }}>Transcript Timeline</Typography>
-            <Timeline>
-              {space.segments?.map((segment: Segment, index: number) => (
-                <TimelineItem key={index}>
-                  <TimelineSeparator>
-                    <TimelineDot sx={{ bgcolor: "#60a5fa" }} />
-                    {index < (space.segments?.length ?? 0) - 1 && (
-                      <TimelineConnector sx={{ bgcolor: "rgba(96, 165, 250, 0.3)" }} />
-                    )}
-                  </TimelineSeparator>
-                  <TimelineContent>
-                    <Box sx={{
-                      background: "rgba(255,255,255,0.05)",
-                      p: 2,
-                      borderRadius: 2,
-                      mb: 2
-                    }}>
-                      <Typography>{segment.text}</Typography>
-                      <Typography variant="caption" sx={{ color: "#60a5fa" }}>
-                        {formatSeconds(segment.start)}
-                      </Typography>
-                    </Box>
-                  </TimelineContent>
-                </TimelineItem>
-              ))}
-            </Timeline>
-          </Paper>}
+          {activeSection === 'timeline' && (
+            <Paper sx={{
+              background: "rgba(30, 41, 59, 0.7)",
+              backdropFilter: "blur(10px)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              borderRadius: 2,
+              p: 3
+            }}>
+              <Typography variant="h6" sx={{ mb: 3 }}>Transcript Timeline</Typography>
+              <Timeline>
+                {space.segments?.map((segment: Segment, index: number) => (
+                  <TimelineItem key={index}>
+                    <TimelineSeparator>
+                      <TimelineDot sx={{ bgcolor: "#60a5fa" }} />
+                      {index < (space.segments?.length ?? 0) - 1 && (
+                        <TimelineConnector sx={{ bgcolor: "rgba(96, 165, 250, 0.3)" }} />
+                      )}
+                    </TimelineSeparator>
+                    <TimelineContent>
+                      <Box sx={{
+                        background: "rgba(255,255,255,0.05)",
+                        p: 2,
+                        borderRadius: 2,
+                        mb: 2
+                      }}>
+                        <Typography>{segment.text}</Typography>
+                        <Typography variant="caption" sx={{ color: "#60a5fa" }}>
+                          {formatSeconds(segment.start)}
+                        </Typography>
+                      </Box>
+                    </TimelineContent>
+                  </TimelineItem>
+                ))}
+              </Timeline>
+            </Paper>
+          )}
 
           {/* Transcript Section */}
           {activeSection === 'transcript' && (

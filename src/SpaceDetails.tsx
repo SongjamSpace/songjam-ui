@@ -36,7 +36,7 @@ const SpaceDetails: React.FC = () => {
   const [space, setSpace] = useState<Space | null>(null);
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const [activeSection, setActiveSection] = useState<
-    "summary" | "timeline" | "transcript" | "threadoor"
+    "summary" | "timeline" | "transcript" | "threadoor" | "moments"
   >("summary");
 
   useEffect(() => {
@@ -194,6 +194,19 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
               }}
             >
               AI Threadoor
+            </Button>
+            <Button
+              variant={activeSection === "moments" ? "contained" : "text"}
+              onClick={() => setActiveSection("moments")}
+              sx={{
+                color: "white",
+                "&.MuiButton-contained": {
+                  background:
+                    "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
+                },
+              }}
+            >
+              Memorable Moments
             </Button>
           </Box>
 
@@ -527,6 +540,77 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                     >
                       Copy
                     </Button>
+                  </Box>
+                </Paper>
+              ))}
+            </Paper>
+          )}
+
+          {/* Memorable Moments Section */}
+          {activeSection === "moments" && (
+            <Paper
+              sx={{
+                background: "linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.1))",
+                backdropFilter: "blur(10px)",
+                border: "1px solid rgba(59, 130, 246, 0.2)",
+                borderRadius: 3,
+                p: 4,
+                mb: 4,
+              }}
+            >
+              <Typography variant="h6" sx={{ color: "#60a5fa", mb: 3 }}>
+                Memorable Moments
+              </Typography>
+              {[
+                {
+                  quote: "The future of web3 social isn't about replacing traditional platforms - it's about empowering users with true digital ownership.",
+                  speaker: "crypto_sarah",
+                  timestamp: "12:35"
+                },
+                {
+                  quote: "When we talk about decentralized identity, we're really talking about the foundation of digital trust.",
+                  speaker: "web3_builder",
+                  timestamp: "23:15"
+                },
+                {
+                  quote: "Token-gated communities are just the beginning. The real innovation comes from dynamic access models that evolve with participation.",
+                  speaker: "defi_max",
+                  timestamp: "45:20"
+                }
+              ].map((moment, index) => (
+                <Paper
+                  key={index}
+                  sx={{
+                    background: "rgba(255,255,255,0.05)",
+                    p: 3,
+                    borderRadius: 2,
+                    mb: 2,
+                    position: "relative",
+                    transition: "all 0.2s ease",
+                    "&:hover": {
+                      transform: "translateY(-2px)",
+                      background: "rgba(255,255,255,0.08)",
+                    }
+                  }}
+                >
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontSize: "1.1rem",
+                      fontStyle: "italic",
+                      mb: 2,
+                      lineHeight: 1.6
+                    }}
+                  >
+                    "{moment.quote}"
+                  </Typography>
+                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <Typography sx={{ color: "#60a5fa" }}>
+                      @{moment.speaker}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: "#60a5fa" }}>
+                      {moment.timestamp}
+                    </Typography>
                   </Box>
                 </Paper>
               ))}

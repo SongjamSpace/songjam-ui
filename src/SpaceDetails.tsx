@@ -40,6 +40,8 @@ const SpaceDetails: React.FC = () => {
   >("summary");
   const [searchTerm, setSearchTerm] = useState(""); // Added search term state
   const [filteredTranscript, setFilteredTranscript] = useState<Segment[]>([]); // Added filtered transcript state
+  const [hasAccess, setHasAccess] = useState(false);
+  const [isPaymentPending, setIsPaymentPending] = useState(false);
 
   useEffect(() => {
     if (!spaceId) return;
@@ -179,6 +181,7 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                     "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
                 },
               }}
+              disabled={!hasAccess}
             >
               Timeline
             </Button>
@@ -192,6 +195,7 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                     "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
                 },
               }}
+              disabled={!hasAccess}
             >
               Transcript
             </Button>
@@ -205,6 +209,7 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                     "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
                 },
               }}
+              disabled={!hasAccess}
             >
               AI Threadoor
             </Button>
@@ -218,6 +223,7 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                     "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
                 },
               }}
+              disabled={!hasAccess}
             >
               Memorable Moments
             </Button>
@@ -427,6 +433,7 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                       background: "linear-gradient(135deg, #2563eb, #7c3aed)",
                     },
                   }}
+                  disabled={!hasAccess}
                 >
                   Remix Thread
                 </Button>

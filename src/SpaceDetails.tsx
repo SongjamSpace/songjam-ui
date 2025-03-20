@@ -315,6 +315,7 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                     startIcon={<ContentCopyIcon />}
                     size="small"
                     sx={{ mr: 1, color: "white" }}
+                    disabled={!hasAccess}
                   >
                     Copy
                   </Button>
@@ -322,6 +323,7 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                     startIcon={<BookmarkIcon />}
                     size="small"
                     sx={{ color: "white" }}
+                    disabled={!hasAccess}
                   >
                     Save
                   </Button>

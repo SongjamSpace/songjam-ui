@@ -62,9 +62,7 @@ const SpaceDetails: React.FC = () => {
     }
   }, [searchTerm, space]); // Update filteredTranscript on searchTerm or space change
 
-  const mockAISummary = `🤖 Summary:
-
-This Space explored the future of web3 social platforms with industry experts. Key points:
+  const mockAISummary = `This Space explored the future of web3 social platforms with industry experts. Key points:
 
 • Discussion of decentralized identity solutions
 • Analysis of token-gated communities

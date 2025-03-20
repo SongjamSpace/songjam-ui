@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getSpace, Segment, Space } from "./services/db/spaces.service";
-import { Box, Typography, Avatar, Paper, Chip, Button } from "@mui/material";
+import { Box, Typography, Avatar, Paper, Chip, Button, TextField, MenuItem } from "@mui/material";
 import {
   Timeline,
   TimelineConnector,

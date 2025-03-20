@@ -89,24 +89,32 @@ export default function App() {
               Instantly convert Twitter Spaces content into text with AI
               precision
             </p>
-            <Box className="space-input" display="flex" gap={2}>
-              <TextField
-                fullWidth
-                placeholder="Paste your X space URL here to try it now"
-                onChange={(e) => {
-                  if (isLoading) return;
-                  setSpaceUrl(e.target.value);
-                }}
-                variant="outlined"
-              />
-              <LoadingButton
-                loading={isLoading}
-                variant="contained"
-                className="primary"
-                onClick={() => joinSpace(spaceUrl)}
+            <Box className="space-input" display="flex" flexDirection="column" gap={2}>
+              <Box display="flex" gap={2}>
+                <TextField
+                  fullWidth
+                  placeholder="Paste your X space URL here to try it now"
+                  onChange={(e) => {
+                    if (isLoading) return;
+                    setSpaceUrl(e.target.value);
+                  }}
+                  variant="outlined"
+                />
+                <LoadingButton
+                  loading={isLoading}
+                  variant="contained"
+                  className="primary"
+                  onClick={() => joinSpace(spaceUrl)}
+                >
+                  Transcribe
+                </LoadingButton>
+              </Box>
+              <Button 
+                onClick={() => joinSpace("https://twitter.com/i/spaces/1nAKEgjnRRkJL")}
+                sx={{ alignSelf: 'center' }}
               >
-                Transcribe
-              </LoadingButton>
+                Try a demo space →
+              </Button>
             </Box>
           </div>
         </div>

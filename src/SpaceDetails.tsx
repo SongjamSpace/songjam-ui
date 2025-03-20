@@ -325,13 +325,27 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                 boxShadow: "0 12px 40px rgba(59, 130, 246, 0.2)"
               }
             }}>
-              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-                <Typography variant="h6" sx={{ color: "#60a5fa" }}>
-                  Twitter Thread Generator
-                </Typography>
-                <Typography variant="caption" sx={{ color: "#60a5fa" }}>
-                  Each tweet is within the 280 character limit
-                </Typography>
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+                <Box>
+                  <Typography variant="h6" sx={{ color: "#60a5fa", mb: 1 }}>
+                    Twitter Thread Generator
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: "#60a5fa" }}>
+                    Each tweet is within the 280 character limit
+                  </Typography>
+                </Box>
+                <Button
+                  variant="contained"
+                  sx={{
+                    background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+                    color: 'white',
+                    '&:hover': {
+                      background: "linear-gradient(135deg, #2563eb, #7c3aed)"
+                    }
+                  }}
+                >
+                  Remix Space
+                </Button>
               </Box>
               <Box sx={{ mb: 3 }}>
                 <Typography variant="subtitle1" sx={{ mb: 2 }}>Thread Settings</Typography>
@@ -449,19 +463,7 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                   </Box>
                 </Paper>
               ))}
-              <Button
-                variant="contained"
-                sx={{
-                  background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-                  color: 'white',
-                  mt: 2,
-                  '&:hover': {
-                    background: "linear-gradient(135deg, #2563eb, #7c3aed)"
-                  }
-                }}
-              >
-                Remix Space
-              </Button>
+              
             </Paper>
           )}
 

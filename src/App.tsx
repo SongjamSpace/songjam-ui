@@ -346,6 +346,28 @@ export default function App() {
         </form>
       </section>
 
+      <section className="social-media">
+        <h2>Connect With Us</h2>
+        <div className="social-links">
+          <a href="https://www.producthunt.com" target="_blank" rel="noopener noreferrer" className="social-link">
+            <img src="/logos/product-hunt.png" alt="Product Hunt" />
+            <span>Product Hunt</span>
+          </a>
+          <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="social-link">
+            <img src="/logos/github.png" alt="GitHub" />
+            <span>GitHub</span>
+          </a>
+          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="social-link">
+            <img src="/logos/twitter.png" alt="Twitter" />
+            <span>Twitter</span>
+          </a>
+          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="social-link">
+            <img src="/logos/linkedin.png" alt="LinkedIn" />
+            <span>LinkedIn</span>
+          </a>
+        </div>
+      </section>
+
       <footer className="footer">
         <p>&copy; SongJam 2025. All rights reserved.</p>
       </footer>

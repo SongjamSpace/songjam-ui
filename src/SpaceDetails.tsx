@@ -363,13 +363,13 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                   <Paper
                     elevation={24}
                     sx={{
-                      mt: 4,
+                      mt: 2,
                       background: "rgba(30, 41, 59, 0.95)",
-                      borderRadius: 4,
-                      p: 4,
+                      borderRadius: 3,
+                      p: 2.5,
                       backdropFilter: "blur(20px)",
                       border: "1px solid rgba(96, 165, 250, 0.2)",
-                      maxWidth: "400px",
+                      maxWidth: "300px",
                       width: "100%",
                     }}
                   >
@@ -392,8 +392,8 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                       sx={{
                         display: "flex",
                         justifyContent: "center",
-                        gap: 3,
-                        mb: 4,
+                        gap: 2,
+                        mb: 2.5,
                       }}
                     >
                       <Box sx={{ textAlign: "center" }}>

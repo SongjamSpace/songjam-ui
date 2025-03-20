@@ -18,6 +18,7 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { LoadingButton } from "@mui/lab";
 
 export default function App() {
   const [connectWallet, setConnectWallet] = useState(false);
@@ -88,32 +89,24 @@ export default function App() {
               Instantly convert Twitter Spaces content into text with AI
               precision
             </p>
-            <Box className="space-input" display="flex" flexDirection="column" gap={2}>
-              <Box display="flex" gap={2}>
-                <TextField
-                  fullWidth
-                  placeholder="Paste your X space URL here to try it now"
-                  onChange={(e) => {
-                    if (isLoading) return;
-                    setSpaceUrl(e.target.value);
-                  }}
-                  variant="outlined"
-                />
-                <Button
-                  disabled={isLoading}
-                  variant="contained"
-                  className="primary"
-                  onClick={() => joinSpace(spaceUrl)}
-                >
-                  {isLoading ? "Loading..." : "Transcribe"}
-                </Button>
-              </Box>
-              <Button 
-                onClick={() => joinSpace("https://twitter.com/i/spaces/1nAKEgjnRRkJL")}
-                sx={{ alignSelf: 'center' }}
+            <Box className="space-input" display="flex" gap={2}>
+              <TextField
+                fullWidth
+                placeholder="Paste your X space URL here to try it now"
+                onChange={(e) => {
+                  if (isLoading) return;
+                  setSpaceUrl(e.target.value);
+                }}
+                variant="outlined"
+              />
+              <LoadingButton
+                loading={isLoading}
+                variant="contained"
+                className="primary"
+                onClick={() => joinSpace(spaceUrl)}
               >
-                Try a demo space →
-              </Button>
+                Transcribe
+              </LoadingButton>
             </Box>
           </div>
         </div>

@@ -346,7 +346,7 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                 <Box
                   sx={{
                     position: "absolute",
-                    top: "50%",
+                    top: "45%",
                     left: 0,
                     right: 0,
                     bottom: 0,

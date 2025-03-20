@@ -38,15 +38,28 @@ const SpaceDetails: React.FC = () => {
   const [activeSection, setActiveSection] = useState<
     "summary" | "timeline" | "transcript" | "threadoor" | "moments"
   >("summary");
+  const [searchTerm, setSearchTerm] = useState(""); // Added search term state
+  const [filteredTranscript, setFilteredTranscript] = useState<Segment[]>([]); // Added filtered transcript state
 
   useEffect(() => {
     if (!spaceId) return;
     const fetchSpace = async () => {
       const space = await getSpace(spaceId);
       setSpace(space as Space);
+      setFilteredTranscript(space?.segments || []); // Initialize filteredTranscript
     };
     fetchSpace();
   }, [spaceId]);
+
+  useEffect(() => {
+    if (space) {
+      const filtered = space.segments?.filter((segment) =>
+        segment.text.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredTranscript(filtered || []);
+    }
+  }, [searchTerm, space]); // Update filteredTranscript on searchTerm or space change
+
 
   const mockAISummary = `🤖 Summary:
 
@@ -644,8 +657,16 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
               <Typography variant="h6" sx={{ mb: 3 }}>
                 Full Transcript
               </Typography>
+              <TextField
+                label="Search Transcript"
+                variant="outlined"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                fullWidth
+                sx={{ mb: 2 }}
+              /> {/* Added search bar */}
               <Box sx={{ maxHeight: "60vh", overflowY: "auto" }}>
-                {space.segments?.map((segment: Segment, index: number) => (
+                {filteredTranscript.map((segment: Segment, index: number) => (
                   <Box
                     key={index}
                     sx={{

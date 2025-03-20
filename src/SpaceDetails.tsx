@@ -148,7 +148,7 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
           <Box
             sx={{
               display: "flex",
-              gap: 1,
+              justifyContent: "space-between",
               mb: 4,
               borderRadius: "16px",
               background: "rgba(255, 255, 255, 0.03)",

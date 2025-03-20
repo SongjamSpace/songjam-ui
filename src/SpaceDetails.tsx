@@ -334,7 +334,7 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                     whiteSpace: "pre-line",
                     fontSize: "1.1rem",
                     lineHeight: 1.6,
-                    maxHeight: '100px',
+                    maxHeight: '200px',
                     overflow: 'hidden',
                     maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)',
                     WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)',
@@ -353,34 +353,63 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    background: 'linear-gradient(to bottom, rgba(15,23,42,0) 0%, rgba(15,23,42,0.9) 30%, rgba(15,23,42,1) 100%)',
+                    background: 'linear-gradient(to bottom, rgba(15,23,42,0) 0%, rgba(15,23,42,0.95) 50%)',
                     padding: 3,
                     textAlign: 'center',
                   }}
                 >
-                  <Typography variant="h6" sx={{ mb: 2, color: '#60a5fa' }}>
-                    Unlock Full Access
-                  </Typography>
-                  <Typography sx={{ mb: 3 }}>
-                    Get complete access to this space for just $1 USDT
-                  </Typography>
-                  <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-                    <Chip label="Ethereum" sx={{ background: '#627EEA' }} />
-                    <Chip label="Solana" sx={{ background: '#14F195' }} />
-                    <Chip label="Base" sx={{ background: '#0052FF' }} />
-                  </Box>
-                  <Button
-                    variant="contained"
-                    onClick={() => setHasAccess(true)}
+                  <Paper
+                    elevation={24}
                     sx={{
-                      background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-                      '&:hover': {
-                        background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
-                      },
+                      background: 'rgba(30, 41, 59, 0.95)',
+                      borderRadius: 4,
+                      p: 4,
+                      backdropFilter: 'blur(20px)',
+                      border: '1px solid rgba(96, 165, 250, 0.2)',
+                      maxWidth: '400px',
+                      width: '100%',
                     }}
                   >
-                    Pay $1 USDT
-                  </Button>
+                    <Typography variant="h5" sx={{ mb: 1, background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)', WebkitBackgroundClip: 'text', color: 'transparent', fontWeight: 'bold' }}>
+                      Unlock Full Access
+                    </Typography>
+                    <Typography sx={{ mb: 3, color: '#94a3b8' }}>
+                      Get complete access to this space for just $1 USDT
+                    </Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, mb: 4 }}>
+                      <Box sx={{ textAlign: 'center' }}>
+                        <img src="/logos/ethereum.svg" alt="Ethereum" style={{ width: 40, height: 40, marginBottom: 8 }} />
+                        <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block' }}>Ethereum</Typography>
+                      </Box>
+                      <Box sx={{ textAlign: 'center' }}>
+                        <img src="/logos/solana.svg" alt="Solana" style={{ width: 40, height: 40, marginBottom: 8 }} />
+                        <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block' }}>Solana</Typography>
+                      </Box>
+                      <Box sx={{ textAlign: 'center' }}>
+                        <img src="/logos/base.svg" alt="Base" style={{ width: 40, height: 40, marginBottom: 8 }} />
+                        <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block' }}>Base</Typography>
+                      </Box>
+                    </Box>
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      size="large"
+                      onClick={() => setHasAccess(true)}
+                      sx={{
+                        background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                        py: 1.5,
+                        borderRadius: 2,
+                        '&:hover': {
+                          background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
+                          transform: 'translateY(-2px)',
+                          boxShadow: '0 10px 20px rgba(59, 130, 246, 0.3)',
+                        },
+                        transition: 'all 0.3s ease',
+                      }}
+                    >
+                      Pay $1 USDT
+                    </Button>
+                  </Paper>
                 </Box>
               </Box>
             </Paper>

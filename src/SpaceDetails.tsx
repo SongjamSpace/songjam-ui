@@ -608,9 +608,19 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                     <Typography sx={{ color: "#60a5fa" }}>
                       @{moment.speaker}
                     </Typography>
-                    <Typography variant="caption" sx={{ color: "#60a5fa" }}>
-                      {moment.timestamp}
-                    </Typography>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <Typography variant="caption" sx={{ color: "#60a5fa" }}>
+                        {moment.timestamp}
+                      </Typography>
+                      <Button
+                        startIcon={<ContentCopyIcon />}
+                        size="small"
+                        sx={{ color: "white", minWidth: "auto" }}
+                        onClick={() => navigator.clipboard.writeText(moment.quote)}
+                      >
+                        Copy
+                      </Button>
+                    </Box>
                   </Box>
                 </Paper>
               ))}

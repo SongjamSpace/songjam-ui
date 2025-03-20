@@ -223,11 +223,14 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
           {/* Timeline */}
           {activeSection === 'timeline' && (
             <Paper sx={{
-              background: "rgba(30, 41, 59, 0.7)",
+              background: "rgba(255, 255, 255, 0.03)",
               backdropFilter: "blur(10px)",
               border: "1px solid rgba(255, 255, 255, 0.1)",
               borderRadius: 2,
-              p: 3
+              p: 3,
+              "&:hover": {
+                background: "rgba(255, 255, 255, 0.05)",
+              },
             }}>
               <Typography variant="h6" sx={{ mb: 3 }}>Transcript Timeline</Typography>
               <Timeline>
@@ -261,11 +264,14 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
           {/* Transcript Section */}
           {activeSection === 'transcript' && (
             <Paper sx={{
-              background: "rgba(30, 41, 59, 0.7)",
+              background: "rgba(255, 255, 255, 0.03)",
               backdropFilter: "blur(10px)",
               border: "1px solid rgba(255, 255, 255, 0.1)",
               borderRadius: 2,
-              p: 3
+              p: 3,
+              "&:hover": {
+                background: "rgba(255, 255, 255, 0.05)",
+              },
             }}>
               <Typography variant="h6" sx={{ mb: 3 }}>Full Transcript</Typography>
               <Box sx={{ maxHeight: '60vh', overflowY: 'auto' }}>

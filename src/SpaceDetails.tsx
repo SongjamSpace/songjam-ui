@@ -13,7 +13,7 @@ import {
 } from "@mui/lab";
 import {
   Autorenew as AutorenewIcon,
-  Share as ShareIcon,
+  ContentCopy as ContentCopyIcon,
   Bookmark as BookmarkIcon,
 } from "@mui/icons-material";
 
@@ -144,11 +144,11 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
                 </Typography>
                 <Box>
                   <Button 
-                    startIcon={<ShareIcon />}
+                    startIcon={<ContentCopyIcon />}
                     size="small"
                     sx={{ mr: 1, color: "white" }}
                   >
-                    Share
+                    Copy
                   </Button>
                   <Button
                     startIcon={<BookmarkIcon />}

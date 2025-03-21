@@ -25,8 +25,10 @@ export const Summary: React.FC<SummaryProps> = ({
     const fetchSummary = async () => {
       setLoading(true);
       const summaryDoc = await getSummary(spaceId);
-      setSummary(summaryDoc?.text);
-      setLoading(false);
+      if (summaryDoc) {
+        setSummary(summaryDoc?.text);
+        setLoading(false);
+      }
     };
     fetchSummary();
   }, [spaceId]);

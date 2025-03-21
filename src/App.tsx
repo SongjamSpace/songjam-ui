@@ -20,6 +20,10 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { LoadingButton } from "@mui/lab";
 import { getSpace } from "./services/db/spaces.service";
+import { useCollectionData } from "react-firebase-hooks/firestore";
+import { collection, query, where } from "firebase/firestore";
+import { db } from "./services/firebase.service";
+import { TrendingSpaces } from "./components/TrendingSpaces";
 
 export default function App() {
   const [connectWallet, setConnectWallet] = useState(false);
@@ -27,15 +31,21 @@ export default function App() {
   const navigate = useNavigate();
   const [spaceUrl, setSpaceUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [spaces, loading, error] = useCollectionData(
+    query(
+      collection(db, "spaces"),
+      where("transcription_status", "==", "ENDED")
+    )
+  );
 
-  const joinSpace = async (spaceUrl: string) => {
+  const transcribeSpace = async (spaceUrl: string) => {
     if (isLoading) return;
     setIsLoading(true);
     // x.com/i/spaces/1nAKEgjnRRkJL
     const spaceId = spaceUrl.split("/").pop();
     // Check if space already exists
     if (spaceId) {
-      const space = getSpace(spaceId);
+      const space = await getSpace(spaceId);
       if (!space) {
         try {
           const res = await axios.post(
@@ -117,13 +127,22 @@ export default function App() {
                 loading={isLoading}
                 variant="contained"
                 className="primary"
-                onClick={() => joinSpace(spaceUrl)}
+                onClick={() => transcribeSpace(spaceUrl)}
               >
                 Transcribe
               </LoadingButton>
             </Box>
           </div>
         </div>
+        {spaces?.length && (
+          <TrendingSpaces
+            spaces={spaces.map((space) => ({
+              spaceId: space.spaceId,
+              title: space.title,
+            }))}
+            loading={loading}
+          />
+        )}
         <div className="cta-buttons">
           <Button
             variant="contained"

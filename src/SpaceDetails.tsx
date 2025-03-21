@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   getSpace,
   getSpaceAudioDownloadUrl,
@@ -15,6 +15,7 @@ import {
   Button,
   TextField,
   MenuItem,
+  IconButton,
 } from "@mui/material";
 import {
   Timeline,
@@ -27,6 +28,7 @@ import {
 import AutorenewIcon from "@mui/icons-material/Autorenew";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DownloadIcon from "@mui/icons-material/Download";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Summary } from "./components/Summary";
 import { LoadingButton } from "@mui/lab";
 const formatSeconds = (seconds: number): string => {
@@ -36,6 +38,7 @@ const formatSeconds = (seconds: number): string => {
 };
 
 const SpaceDetails: React.FC = () => {
+  const navigate = useNavigate();
   const { spaceId } = useParams<{ spaceId: string }>();
   const [space, setSpace] = useState<Space | null>(null);
   const [activeSection, setActiveSection] = useState<
@@ -64,18 +67,6 @@ const SpaceDetails: React.FC = () => {
       setFilteredTranscript(filtered || []);
     }
   }, [searchTerm, space]); // Update filteredTranscript on searchTerm or space change
-
-  const mockAISummary = `This Space explored the future of web3 social platforms with industry experts. Key points:
-
-• Discussion of decentralized identity solutions
-• Analysis of token-gated communities
-• Debate on privacy vs transparency
-• Predictions for 2024 trends
-
-A diverse group of experts and enthusiasts contributed to this lively discussion.
-
-Most engaging moment: The heated debate about data ownership rights at 23:45.
-Standout speaker: @crypto_sarah with insights on scalable governance models.`;
 
   return (
     <Box
@@ -114,23 +105,30 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
         >
           {/* Header */}
           <Box sx={{ mb: 4, position: "relative" }}>
-            <Typography
-              variant="overline"
-              sx={{
-                color: "#60a5fa",
-                background:
-                  "linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))",
-                padding: "6px 16px",
-                borderRadius: "20px",
-                display: "inline-block",
-                mb: 2,
-                letterSpacing: "0.1em",
-                fontWeight: 600,
-                fontSize: "0.75rem",
-              }}
-            >
-              LIVE TRANSCRIPT
-            </Typography>
+            <Box display={"flex"} justifyContent={"space-between"}>
+              <Typography
+                variant="overline"
+                sx={{
+                  color: "#60a5fa",
+                  background:
+                    "linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))",
+                  padding: "6px 16px",
+                  borderRadius: "20px",
+                  display: "inline-block",
+                  mb: 2,
+                  letterSpacing: "0.1em",
+                  fontWeight: 600,
+                  fontSize: "0.75rem",
+                }}
+              >
+                LIVE TRANSCRIPT
+              </Typography>
+              <Box>
+                <IconButton onClick={() => navigate("/")}>
+                  <ArrowBackIcon />
+                </IconButton>
+              </Box>
+            </Box>
             <Box
               sx={{
                 display: "flex",

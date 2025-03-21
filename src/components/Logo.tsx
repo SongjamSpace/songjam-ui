@@ -1,3 +1,4 @@
+
 const Logo = () => (
   <div style={{ 
     position: 'relative', 
@@ -13,7 +14,8 @@ const Logo = () => (
         width: '100%', 
         height: '100%',
         mixBlendMode: 'overlay',
-        filter: 'brightness(1.2) contrast(1.1)'
+        filter: 'brightness(1.1) contrast(1.05)',
+        borderRadius: '50%'
       }} 
     />
     <div style={{
@@ -23,9 +25,9 @@ const Logo = () => (
       right: 0,
       bottom: 0,
       background: 'linear-gradient(135deg, #60A5FA, #8B5CF6, #EC4899)',
-      opacity: 0.85,
+      opacity: 0.6,
       mixBlendMode: 'color',
-      borderRadius: '4px'
+      borderRadius: '50%'
     }} />
   </div>
 );

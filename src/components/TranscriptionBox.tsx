@@ -225,25 +225,6 @@ export const TranscriptionBox = ({ spaceId }: { spaceId: string }) => {
           </TranscriptionRow>
         ))}
       </TranscriptionContainer>
-      <Box>
-        <LoadingButton
-          variant="contained"
-          className="primary"
-          loading={isLoading}
-          onClick={async () => {
-            setIsLoading(true);
-            await axios.post(
-              `${import.meta.env.VITE_JAM_SERVER_URL}/leave-space`,
-              {
-                spaceId,
-              }
-            );
-            setIsLoading(false);
-          }}
-        >
-          Leave Space
-        </LoadingButton>
-      </Box>
     </Box>
   );
 };

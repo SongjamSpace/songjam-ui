@@ -1,5 +1,7 @@
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "../firebase.service";
+import { db, storage } from "../firebase.service";
+import { getDownloadURL } from "firebase/storage";
+import { ref } from "firebase/storage";
 
 export type User = {
   user_id: string;
@@ -50,4 +52,23 @@ export const getSpace = async (spaceId: string) => {
     return docSnap.data();
   }
   return null;
+};
+
+const SUMMARY_SUBCOLLECTION = "summaries";
+export const getSummary = async (spaceId: string) => {
+  const docRef = doc(
+    db,
+    "spaces",
+    spaceId,
+    SUMMARY_SUBCOLLECTION,
+    "final_summary"
+  );
+  const docSnap = await getDoc(docRef);
+  return docSnap.data();
+};
+
+export const getSpaceAudioDownloadUrl = async (spaceId: string) => {
+  const storageRef = ref(storage, `spaces/${spaceId}.mp3`);
+  const url = await getDownloadURL(storageRef);
+  return url;
 };

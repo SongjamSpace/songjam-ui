@@ -2,6 +2,7 @@
 // import { getStripePayments } from "@stripe/firestore-stripe-payments";
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 // import { getStripePayments } from "@invertase/firestore-stripe-payments";
 // import { getAnalytics } from "firebase/analytics";
 // TODO: Add SDKs for Firebase products that you want to use
@@ -22,7 +23,7 @@ const app = initializeApp(firebaseConfig);
 // const auth = getAuth(app);
 // const analytics = getAnalytics(app);
 const db = getFirestore(app);
-// const storage = getStorage(app);
+const storage = getStorage(app);
 
 // const payments = getStripePayments(app, {
 //   productsCollection: "products",
@@ -39,4 +40,4 @@ const db = getFirestore(app);
 //   logEvent(analytics, type as any, additionalParams);
 // };
 
-export { app, db };
+export { app, db, storage };

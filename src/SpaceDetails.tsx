@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { getSpace, Segment, Space } from "./services/db/spaces.service";
+import {
+  getSpace,
+  getSpaceAudioDownloadUrl,
+  Segment,
+  Space,
+} from "./services/db/spaces.service";
 import {
   Box,
   Typography,
@@ -19,12 +24,11 @@ import {
   TimelineItem,
   TimelineSeparator,
 } from "@mui/lab";
-import {
-  Autorenew as AutorenewIcon,
-  ContentCopy as ContentCopyIcon,
-  Bookmark as BookmarkIcon,
-} from "@mui/icons-material";
-
+import AutorenewIcon from "@mui/icons-material/Autorenew";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import DownloadIcon from "@mui/icons-material/Download";
+import { Summary } from "./components/Summary";
+import { LoadingButton } from "@mui/lab";
 const formatSeconds = (seconds: number): string => {
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = Math.floor(seconds % 60);
@@ -34,14 +38,13 @@ const formatSeconds = (seconds: number): string => {
 const SpaceDetails: React.FC = () => {
   const { spaceId } = useParams<{ spaceId: string }>();
   const [space, setSpace] = useState<Space | null>(null);
-  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const [activeSection, setActiveSection] = useState<
     "summary" | "timeline" | "transcript" | "threadoor" | "moments"
   >("summary");
   const [searchTerm, setSearchTerm] = useState(""); // Added search term state
   const [filteredTranscript, setFilteredTranscript] = useState<Segment[]>([]); // Added filtered transcript state
   const [hasAccess, setHasAccess] = useState(false);
-  const [isPaymentPending, setIsPaymentPending] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     if (!spaceId) return;
@@ -56,7 +59,7 @@ const SpaceDetails: React.FC = () => {
   useEffect(() => {
     if (space) {
       const filtered = space.segments?.filter((segment) =>
-        segment.text.toLowerCase().includes(searchTerm.toLowerCase()),
+        segment.text.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredTranscript(filtered || []);
     }
@@ -128,9 +131,58 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
             >
               LIVE TRANSCRIPT
             </Typography>
-            <Typography variant="h4" sx={{ fontWeight: "bold", mb: 2 }}>
-              {space.title}
-            </Typography>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                mb: 2,
+              }}
+            >
+              <Typography
+                variant="h4"
+                sx={{ fontWeight: "bold", flexBasis: "70%" }}
+              >
+                {space.title}
+              </Typography>
+              <LoadingButton
+                loading={isDownloading}
+                disabled={space.transcription_status !== "ENDED"}
+                startIcon={<DownloadIcon />}
+                onClick={async () => {
+                  if (!spaceId) return;
+                  setIsDownloading(true);
+                  const audioUrl = await getSpaceAudioDownloadUrl(spaceId);
+                  const response = await fetch(audioUrl);
+                  const blob = await response.blob();
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `${space.title}.mp3`;
+                  document.body.appendChild(a);
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                  document.body.removeChild(a);
+                  setIsDownloading(false);
+                }}
+                sx={{
+                  color: "#60a5fa",
+                  background: "rgba(96, 165, 250, 0.1)",
+                  "&:hover": {
+                    background: "rgba(96, 165, 250, 0.2)",
+                  },
+                  textTransform: "none",
+                  px: 2,
+                  py: 1,
+                }}
+              >
+                {isDownloading
+                  ? "Downloading..."
+                  : space.transcription_status !== "ENDED"
+                  ? "Preparing"
+                  : "Download Recording"}
+              </LoadingButton>
+            </Box>
             <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
               <Chip
                 icon={<AutorenewIcon />}
@@ -286,141 +338,12 @@ Standout speaker: @crypto_sarah with insights on scalable governance models.`;
           </Paper>
 
           {/* Summary Card */}
-          {activeSection === "summary" && (
-            <Paper
-              sx={{
-                background:
-                  "linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.1))",
-                backdropFilter: "blur(10px)",
-                border: "1px solid rgba(59, 130, 246, 0.2)",
-                borderRadius: 3,
-                p: 4,
-                mb: 4,
-                boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-                transition: "all 0.3s ease",
-                "&:hover": {
-                  transform: "translateY(-2px)",
-                  boxShadow: "0 12px 40px rgba(59, 130, 246, 0.2)",
-                },
-              }}
-            >
-              <Box
-                sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}
-              >
-                <Typography variant="h6" sx={{ color: "#60a5fa" }}>
-                  Space Summary
-                </Typography>
-                <Box>
-                  <Button
-                    startIcon={<ContentCopyIcon />}
-                    size="small"
-                    sx={{ mr: 1, color: "white" }}
-                    disabled={!hasAccess}
-                  >
-                    Copy
-                  </Button>
-                  <Button
-                    startIcon={<BookmarkIcon />}
-                    size="small"
-                    sx={{ color: "white" }}
-                    disabled={!hasAccess}
-                  >
-                    Save
-                  </Button>
-                </Box>
-              </Box>
-              <Box sx={{ position: "relative" }}>
-                <Typography
-                  sx={{
-                    whiteSpace: "pre-line",
-                    fontSize: "1.1rem",
-                    lineHeight: 1.6,
-                    maxHeight: "400px",
-                    overflow: "hidden",
-                    ...(hasAccess ? {} : {
-                      maskImage:
-                        "linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%)",
-                      WebkitMaskImage:
-                        "linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%)",
-                    }),
-                  }}
-                >
-                  {mockAISummary}
-                </Typography>
-                {!hasAccess && (
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      top: "25%",
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "flex-end",
-                      background:
-                        "linear-gradient(to bottom, rgba(15,23,42,0) 0%, rgba(15,23,42,1) 25%)",
-                      padding: 3,
-                      textAlign: "center",
-                    }}
-                  >
-                    {!hasAccess && (
-                      <Paper
-                        elevation={24}
-                        sx={{
-                          mt: 2,
-                          background: "rgba(30, 41, 59, 0.95)",
-                          borderRadius: 3,
-                          p: 2.5,
-                          backdropFilter: "blur(20px)",
-                          border: "1px solid rgba(96, 165, 250, 0.2)",
-                          maxWidth: "300px",
-                          width: "100%",
-                        }}
-                      >
-                        <Typography
-                          variant="h5"
-                          sx={{
-                            mb: 1,
-                            background: "linear-gradient(135deg, #60a5fa, #8b5cf6)",
-                            WebkitBackgroundClip: "text",
-                            color: "transparent",
-                            fontWeight: "bold",
-                          }}
-                        >
-                          Unlock Full Access
-                        </Typography>
-                        <Typography sx={{ mb: 3, color: "#94a3b8" }}>
-                          Get complete access to this space for just $1 USDT
-                        </Typography>
-
-                        <Button
-                          variant="contained"
-                          fullWidth
-                          size="large"
-                          onClick={() => setHasAccess(true)}
-                          sx={{
-                            background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-                            py: 1.5,
-                            borderRadius: 2,
-                            "&:hover": {
-                              background:
-                                "linear-gradient(135deg, #2563eb, #7c3aed)",
-                              transform: "translateY(-2px)",
-                              boxShadow: "0 10px 20px rgba(59, 130, 246, 0.3)",
-                            },
-                            transition: "all 0.3s ease",
-                          }}
-                        >
-                          Pay $1 USDT
-                        </Button>
-                      </Paper>
-                    )}
-                  </Box>
-                )}
-              </Box>
-            </Paper>
+          {activeSection === "summary" && space.spaceId && (
+            <Summary
+              hasAccess={hasAccess}
+              setHasAccess={setHasAccess}
+              spaceId={space.spaceId}
+            />
           )}
 
           {/* Timeline */}

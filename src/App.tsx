@@ -19,6 +19,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { LoadingButton } from "@mui/lab";
+import { getSpace } from "./services/db/spaces.service";
 
 export default function App() {
   const [connectWallet, setConnectWallet] = useState(false);
@@ -32,14 +33,27 @@ export default function App() {
     setIsLoading(true);
     // x.com/i/spaces/1nAKEgjnRRkJL
     const spaceId = spaceUrl.split("/").pop();
-    const res = await axios.post(
-      `${import.meta.env.VITE_JAM_SERVER_URL}/join-space`,
-      {
-        spaceId,
-      },
-    );
-    if (res.data.status === "success") {
-      navigate(`/${spaceId}`);
+    // Check if space already exists
+    if (spaceId) {
+      const space = getSpace(spaceId);
+      if (!space) {
+        try {
+          const res = await axios.post(
+            `${import.meta.env.VITE_JAM_SERVER_URL}/transcribe-recorded-space`,
+            {
+              spaceId,
+            }
+          );
+          if (res.data.status === "success") {
+            navigate(`/${spaceId}`);
+          }
+        } catch (error) {
+          console.error(error);
+          alert("Error transcribing the space, please try again later");
+        }
+      } else {
+        navigate(`/${spaceId}`);
+      }
     }
     setIsLoading(false);
   };

@@ -350,7 +350,7 @@ export default function App() {
         <h2>Connect With Us</h2>
         <div className="social-links">
           <a
-            href="https://www.producthunt.com"
+            href="https://www.producthunt.com/posts/songjam-otter-ai-for-x-spaces"
             target="_blank"
             rel="noopener noreferrer"
             className="social-link"

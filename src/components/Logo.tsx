@@ -22,7 +22,7 @@ const Logo = () => (
       left: 0,
       right: 0,
       bottom: 0,
-      background: 'linear-gradient(135deg, #60A5FA, #8B5CF6, #EC4899)',
+      background: 'linear-gradient(135deg, #3B82F6, #8B5CF6, #EC4899)',
       opacity: 0.4,
       mixBlendMode: 'soft-light',
       borderRadius: '50%'

@@ -24,9 +24,9 @@ const Logo = () => (
       left: 0,
       right: 0,
       bottom: 0,
-      background: 'linear-gradient(135deg, #60A5FA, #8B5CF6, #EC4899)',
-      opacity: 0.6,
-      mixBlendMode: 'color',
+      background: 'linear-gradient(135deg, rgba(96,165,250,0.4), rgba(139,92,246,0.4), rgba(236,72,153,0.4))',
+      opacity: 0.4,
+      mixBlendMode: 'soft-light',
       borderRadius: '50%'
     }} />
   </div>

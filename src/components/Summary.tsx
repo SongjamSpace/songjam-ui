@@ -9,13 +9,13 @@ import { getSummary } from "../services/db/spaces.service";
 
 interface SummaryProps {
   hasAccess: boolean;
-  setHasAccess: (hasAccess: boolean) => void;
+  handlePayment: () => void;
   spaceId: string;
 }
 
 export const Summary: React.FC<SummaryProps> = ({
   hasAccess,
-  setHasAccess,
+  handlePayment,
   spaceId,
 }) => {
   const [loading, setLoading] = useState(true);
@@ -174,7 +174,7 @@ export const Summary: React.FC<SummaryProps> = ({
                 variant="contained"
                 fullWidth
                 size="large"
-                onClick={() => setHasAccess(true)}
+                onClick={handlePayment}
                 sx={{
                   background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
                   py: 1.5,

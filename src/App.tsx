@@ -24,9 +24,12 @@ import { useCollectionData } from "react-firebase-hooks/firestore";
 import { collection, query, where } from "firebase/firestore";
 import { db } from "./services/firebase.service";
 import { TrendingSpaces } from "./components/TrendingSpaces";
+import { useWallet } from "./hooks/useWallet";
+import { WalletModal } from "./components/WalletModal";
 
 export default function App() {
-  const [connectWallet, setConnectWallet] = useState(false);
+  const { isConnected, address, isConnecting, connectWallet, disconnect } =
+    useWallet();
   const [showConfirmation, setShowConfirmation] = useState(false);
   const navigate = useNavigate();
   const [spaceUrl, setSpaceUrl] = useState("");
@@ -37,6 +40,7 @@ export default function App() {
       where("transcription_status", "==", "ENDED")
     )
   );
+  const [showWalletModal, setShowWalletModal] = useState(false);
 
   const transcribeSpace = async (spaceUrl: string) => {
     if (isLoading) return;
@@ -68,6 +72,11 @@ export default function App() {
     setIsLoading(false);
   };
 
+  const handleChainSelect = async (chain: "eth" | "base") => {
+    setShowWalletModal(false);
+    await connectWallet(chain);
+  };
+
   useEffect(() => {
     document.body.className = "dark";
   }, []);
@@ -83,13 +92,26 @@ export default function App() {
         <div className="nav-controls">
           <Button
             variant="contained"
-            onClick={() => setConnectWallet(true)}
+            onClick={() => setShowWalletModal(true)}
             className="connect-wallet"
+            disabled={isConnecting}
           >
-            {connectWallet ? "Connected" : "Connect Wallet"}
+            {isConnecting
+              ? "Connecting..."
+              : isConnected
+              ? `Connected: ${address?.slice(0, 6)}...${address?.slice(-4)}`
+              : "Connect Wallet"}
           </Button>
         </div>
       </nav>
+
+      <WalletModal
+        open={showWalletModal}
+        onClose={() => setShowWalletModal(false)}
+        onSelectChain={handleChainSelect}
+        isConnected={isConnected}
+        onDisconnect={disconnect}
+      />
 
       <section className="hero">
         <div className="stats-banner">

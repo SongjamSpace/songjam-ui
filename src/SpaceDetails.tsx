@@ -27,7 +27,10 @@ import { LoadingButton } from "@mui/lab";
 import SegmentsTimeline from "./components/SegmentsTimeline";
 import DisplayThread from "./components/DisplayThread";
 import axios from "axios";
-
+import { useWallet } from "./hooks/useWallet";
+import { WalletModal } from "./components/WalletModal";
+import { ethers } from "ethers";
+import { hasAccessToSpace, updateAccess } from "./services/db/user.service";
 const formatSeconds = (seconds: number): string => {
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = Math.floor(seconds % 60);
@@ -51,6 +54,20 @@ const SpaceDetails: React.FC = () => {
     text: string;
   } | null>(null);
   const [twitterThread, setTwitterThread] = useState<string[]>([]);
+  const [showWalletModal, setShowWalletModal] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const { isConnected, connectWallet, disconnect, address, chainId } =
+    useWallet();
+
+  useEffect(() => {
+    if (address && spaceId) {
+      const checkAccess = async () => {
+        const hasAccess = await hasAccessToSpace(address, spaceId);
+        setHasAccess(hasAccess);
+      };
+      checkAccess();
+    }
+  }, [address, spaceId]);
 
   useEffect(() => {
     if (!spaceId) return;
@@ -83,6 +100,11 @@ const SpaceDetails: React.FC = () => {
     }
   }, [searchTerm, space]); // Update filteredTranscript on searchTerm or space change
 
+  const handleChainSelect = async (chain: "eth" | "base") => {
+    setShowWalletModal(false);
+    await connectWallet(chain);
+  };
+
   const onGenerateTwitterThread = async () => {
     if (!spaceId) return;
     let _metaSummary = metaSummaryList;
@@ -114,6 +136,47 @@ const SpaceDetails: React.FC = () => {
       alert("Transcription is in progress, try again later");
     }
   };
+
+  const handlePayment = async () => {
+    if (!spaceId) {
+      alert("Error: No space is selected");
+      return;
+    }
+    if (!isConnected || !address) {
+      setShowWalletModal(true);
+      return;
+    }
+
+    try {
+      setIsProcessingPayment(true);
+
+      const amount = ethers.parseEther(chainId === 1 ? "0.00050" : "0.77");
+      const receiverAddress = import.meta.env.VITE_PAYMENT_RECEIVER_ADDRESS;
+      const signer = await new ethers.BrowserProvider(
+        (window as any).ethereum
+      ).getSigner();
+
+      const tx = await signer?.sendTransaction({
+        to: receiverAddress,
+        value: amount,
+      });
+
+      await tx?.wait();
+      await updateAccess(address, spaceId);
+      setHasAccess(true);
+    } catch (error) {
+      console.error("Payment failed:", error);
+      alert("Payment failed. Please try again.");
+    } finally {
+      setIsProcessingPayment(false);
+    }
+  };
+
+  // const handleWalletConnect = async () => {
+  //   await connectWallet();
+  //   setShowWalletModal(false);
+  //   handlePayment();
+  // };
 
   return (
     <Box
@@ -456,7 +519,7 @@ const SpaceDetails: React.FC = () => {
         {activeSection === "summary" && space?.spaceId && (
           <Summary
             hasAccess={hasAccess}
-            setHasAccess={setHasAccess}
+            handlePayment={handlePayment}
             spaceId={space.spaceId}
           />
         )}
@@ -633,6 +696,13 @@ const SpaceDetails: React.FC = () => {
           </Paper>
         )}
       </Box>
+      <WalletModal
+        open={showWalletModal}
+        onClose={() => setShowWalletModal(false)}
+        onSelectChain={handleChainSelect}
+        isConnected={isConnected}
+        onDisconnect={disconnect}
+      />
     </Box>
   );
 };

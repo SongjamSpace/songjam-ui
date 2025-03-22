@@ -150,7 +150,7 @@ const SpaceDetails: React.FC = () => {
     try {
       setIsProcessingPayment(true);
 
-      const amount = ethers.parseEther("1");
+      const parsedAmount = ethers.parseUnits("1", 6);
       const usdtAddress =
         chainId === 1
           ? "0xdAC17F958D2ee523a2206206994597C13D831ec7"
@@ -158,66 +158,23 @@ const SpaceDetails: React.FC = () => {
       const receiverAddress = import.meta.env.VITE_PAYMENT_RECEIVER_ADDRESS;
       // Create provider and signer
       const provider = new ethers.BrowserProvider((window as any).ethereum);
-      debugger;
       const signer = await provider.getSigner();
-      const contract = new ethers.Contract(
+
+      const usdtContract = new ethers.Contract(
         usdtAddress,
         [
-          {
-            constant: false,
-            inputs: [
-              {
-                name: "_from",
-                type: "address",
-              },
-              {
-                name: "_to",
-                type: "address",
-              },
-              {
-                name: "_value",
-                type: "uint256",
-              },
-            ],
-            name: "transferFrom",
-            outputs: [
-              {
-                name: "",
-                type: "bool",
-              },
-            ],
-            payable: false,
-            stateMutability: "nonpayable",
-            type: "function",
-          },
-          {
-            constant: false,
-            inputs: [
-              {
-                name: "_to",
-                type: "address",
-              },
-              {
-                name: "_value",
-                type: "uint256",
-              },
-            ],
-            name: "transfer",
-            outputs: [
-              {
-                name: "",
-                type: "bool",
-              },
-            ],
-            payable: false,
-            stateMutability: "nonpayable",
-            type: "function",
-          },
+          "function balanceOf(address owner) view returns (uint256)",
+          "function transfer(address to, uint256 value) public returns (bool)",
         ],
         signer
       );
+      const balance = await usdtContract.balanceOf(address);
+      if (balance < parsedAmount) {
+        alert("Insufficient USDT balance!");
+        return;
+      }
 
-      const tx = await contract.transfer(receiverAddress, amount);
+      const tx = await usdtContract.transfer(receiverAddress, parsedAmount);
 
       await tx?.wait();
       await updateAccess(address, spaceId);

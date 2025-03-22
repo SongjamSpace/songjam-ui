@@ -56,7 +56,7 @@ const SpaceDetails: React.FC = () => {
   const [twitterThread, setTwitterThread] = useState<string[]>([]);
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-  const { isConnected, connectWallet, disconnect, address, chainId } =
+  const { isConnected, connectWallet, disconnect, address, chainId, provider } =
     useWallet();
 
   useEffect(() => {
@@ -150,16 +150,74 @@ const SpaceDetails: React.FC = () => {
     try {
       setIsProcessingPayment(true);
 
-      const amount = ethers.parseEther(chainId === 1 ? "0.00050" : "0.77");
+      const amount = ethers.parseEther("1");
+      const usdtAddress =
+        chainId === 1
+          ? "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+          : "0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2";
       const receiverAddress = import.meta.env.VITE_PAYMENT_RECEIVER_ADDRESS;
-      const signer = await new ethers.BrowserProvider(
-        (window as any).ethereum
-      ).getSigner();
+      // Create provider and signer
+      const provider = new ethers.BrowserProvider((window as any).ethereum);
+      debugger;
+      const signer = await provider.getSigner();
+      const contract = new ethers.Contract(
+        usdtAddress,
+        [
+          {
+            constant: false,
+            inputs: [
+              {
+                name: "_from",
+                type: "address",
+              },
+              {
+                name: "_to",
+                type: "address",
+              },
+              {
+                name: "_value",
+                type: "uint256",
+              },
+            ],
+            name: "transferFrom",
+            outputs: [
+              {
+                name: "",
+                type: "bool",
+              },
+            ],
+            payable: false,
+            stateMutability: "nonpayable",
+            type: "function",
+          },
+          {
+            constant: false,
+            inputs: [
+              {
+                name: "_to",
+                type: "address",
+              },
+              {
+                name: "_value",
+                type: "uint256",
+              },
+            ],
+            name: "transfer",
+            outputs: [
+              {
+                name: "",
+                type: "bool",
+              },
+            ],
+            payable: false,
+            stateMutability: "nonpayable",
+            type: "function",
+          },
+        ],
+        signer
+      );
 
-      const tx = await signer?.sendTransaction({
-        to: receiverAddress,
-        value: amount,
-      });
+      const tx = await contract.transfer(receiverAddress, amount);
 
       await tx?.wait();
       await updateAccess(address, spaceId);

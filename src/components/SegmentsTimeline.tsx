@@ -19,7 +19,7 @@ type Props = {
 };
 
 function SegmentsTimeline({ spaceId }: Props) {
-  const [segments, loading, error] = useDocumentDataOnce(
+  const [segmentsAndTextDoc, loading, error] = useDocumentDataOnce(
     doc(db, "spaces", spaceId, "segments", "raw")
   );
 
@@ -35,7 +35,7 @@ function SegmentsTimeline({ spaceId }: Props) {
           },
         }}
       >
-        {segments?.segments?.map((segment: Segment) => (
+        {segmentsAndTextDoc?.segments?.map((segment: Segment) => (
           <TimelineItem key={segment.id}>
             <TimelineOppositeContent color="textSecondary">
               {formatSeconds(segment.start)}

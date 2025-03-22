@@ -67,6 +67,24 @@ export const getSummary = async (spaceId: string) => {
   return docSnap.data();
 };
 
+export const getFirstLevelSummaries = async (spaceId: string) => {
+  const docRef = doc(db, "spaces", spaceId, SUMMARY_SUBCOLLECTION, "meta");
+  const docSnap = await getDoc(docRef);
+  return docSnap.data()?.first_level_summaries;
+};
+
+export const getSegmentsAndText = async (spaceId: string) => {
+  const docRef = doc(db, "spaces", spaceId, "segments", "raw");
+  const docSnap = await getDoc(docRef);
+  return docSnap.data();
+};
+
+export const getTwitterThread = async (spaceId: string) => {
+  const docRef = doc(db, "spaces", spaceId, "twitter_threads", "v1");
+  const docSnap = await getDoc(docRef);
+  return docSnap.data()?.thread;
+};
+
 export const getSpaceAudioDownloadUrl = async (spaceId: string) => {
   const storageRef = ref(storage, `spaces/${spaceId}.mp3`);
   const url = await getDownloadURL(storageRef);

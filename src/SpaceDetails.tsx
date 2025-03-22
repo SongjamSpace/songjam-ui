@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
+  getFirstLevelSummaries,
   getSpace,
   getSpaceAudioDownloadUrl,
   Segment,
@@ -14,18 +15,9 @@ import {
   Chip,
   Button,
   TextField,
-  MenuItem,
   IconButton,
   Skeleton,
 } from "@mui/material";
-import {
-  Timeline,
-  TimelineConnector,
-  TimelineContent,
-  TimelineDot,
-  TimelineItem,
-  TimelineSeparator,
-} from "@mui/lab";
 import AutorenewIcon from "@mui/icons-material/Autorenew";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DownloadIcon from "@mui/icons-material/Download";
@@ -33,6 +25,9 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Summary } from "./components/Summary";
 import { LoadingButton } from "@mui/lab";
 import SegmentsTimeline from "./components/SegmentsTimeline";
+import DisplayThread from "./components/DisplayThread";
+import axios from "axios";
+
 const formatSeconds = (seconds: number): string => {
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = Math.floor(seconds % 60);
@@ -50,15 +45,33 @@ const SpaceDetails: React.FC = () => {
   const [filteredTranscript, setFilteredTranscript] = useState<Segment[]>([]); // Added filtered transcript state
   const [hasAccess, setHasAccess] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [metaSummaryList, setMetaSummaryList] = useState<string[]>([]);
+  const [segmentsAndText, setSegmentsAndText] = useState<{
+    segments: Segment[];
+    text: string;
+  } | null>(null);
+  const [twitterThread, setTwitterThread] = useState<string[]>([]);
 
   useEffect(() => {
     if (!spaceId) return;
     const fetchSpace = async () => {
       const space = await getSpace(spaceId);
       setSpace(space as Space);
-      setFilteredTranscript(space?.segments || []); // Initialize filteredTranscript
     };
+    // const fetchSegments = async () => {
+    //   const _segmentsAndText = await getSegmentsAndText(spaceId);
+    //   setSegmentsAndText(
+    //     _segmentsAndText as { segments: Segment[]; text: string }
+    //   );
+    //   setFilteredTranscript(_segmentsAndText?.segments || []);
+    // };
+    // const fetchTwitterThread = async () => {
+    //   const twitterThread = await getTwitterThread(spaceId);
+    //   setTwitterThread(twitterThread);
+    // };
     fetchSpace();
+    // fetchSegments();
+    // fetchTwitterThread();
   }, [spaceId]);
 
   useEffect(() => {
@@ -69,6 +82,38 @@ const SpaceDetails: React.FC = () => {
       setFilteredTranscript(filtered || []);
     }
   }, [searchTerm, space]); // Update filteredTranscript on searchTerm or space change
+
+  const onGenerateTwitterThread = async () => {
+    if (!spaceId) return;
+    let _metaSummary = metaSummaryList;
+    if (_metaSummary.length === 0) {
+      _metaSummary = await getFirstLevelSummaries(spaceId);
+      if (_metaSummary?.length) {
+        setMetaSummaryList(_metaSummary);
+      }
+    }
+    if (_metaSummary?.length) {
+      const twitterThread = await axios.post(
+        `${import.meta.env.VITE_JAM_PY_SERVER_URL}/twitter-thread`,
+        {
+          space_id: spaceId,
+          text: _metaSummary.join(" "),
+          speakers: [...(space?.admins || []), ...(space?.speakers || [])].map(
+            (speaker) => ({
+              name: speaker.display_name,
+              handle: speaker.twitter_screen_name,
+            })
+          ),
+        }
+      );
+      const twitterThreadData = twitterThread.data;
+      if (twitterThreadData.status === "success") {
+        setTwitterThread(twitterThreadData.twitter_thread);
+      }
+    } else {
+      alert("Transcription is in progress, try again later");
+    }
+  };
 
   return (
     <Box
@@ -440,180 +485,12 @@ const SpaceDetails: React.FC = () => {
         )}
 
         {/* AI Threadoor Section */}
-        {activeSection === "threadoor" && (
-          <Paper
-            sx={{
-              background:
-                "linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.1))",
-              backdropFilter: "blur(10px)",
-              border: "1px solid rgba(59, 130, 246, 0.2)",
-              borderRadius: 3,
-              p: 4,
-              mb: 4,
-              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-              transition: "all 0.3s ease",
-              "&:hover": {
-                transform: "translateY(-2px)",
-                boxShadow: "0 12px 40px rgba(59, 130, 246, 0.2)",
-              },
-            }}
-          >
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                mb: 3,
-              }}
-            >
-              <Box>
-                <Typography variant="h6" sx={{ color: "#60a5fa", mb: 1 }}>
-                  Twitter Thread Generator
-                </Typography>
-                <Typography variant="caption" sx={{ color: "#60a5fa" }}>
-                  Each tweet is within the 280 character limit
-                </Typography>
-              </Box>
-              <Button
-                variant="contained"
-                sx={{
-                  background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-                  color: "white",
-                  "&:hover": {
-                    background: "linear-gradient(135deg, #2563eb, #7c3aed)",
-                  },
-                }}
-                disabled={!hasAccess}
-              >
-                Remix Thread
-              </Button>
-            </Box>
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="subtitle1" sx={{ mb: 2 }}>
-                Thread Settings
-              </Typography>
-              <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-                <TextField
-                  select
-                  label="Numbering Style"
-                  defaultValue="1/"
-                  size="small"
-                  sx={{ minWidth: 120 }}
-                >
-                  <MenuItem value="1/">1/</MenuItem>
-                  <MenuItem value="(1)">(1)</MenuItem>
-                  <MenuItem value="">None</MenuItem>
-                </TextField>
-                <TextField
-                  select
-                  label="Thread Indicator"
-                  defaultValue="🧵"
-                  size="small"
-                  sx={{ minWidth: 120 }}
-                >
-                  <MenuItem value="🧵">🧵</MenuItem>
-                  <MenuItem value="📝">📝</MenuItem>
-                  <MenuItem value="Thread:">Thread:</MenuItem>
-                  <MenuItem value="">None</MenuItem>
-                </TextField>
-              </Box>
-            </Box>
-            {[
-              "🧵 Unpacking the future of Web3 Social Platforms: Key insights from our groundbreaking Space featuring industry leaders, tech visionaries, and web3 builders. A thread on decentralization, governance, and the evolution of digital communities... 👇",
-
-              "1/ The future of decentralized identity is revolutionizing social media! Our panel of experts discussed how self-sovereign identity systems are enabling users to maintain complete control over their digital presence while ensuring platform security and accountability. #Web3 #Identity",
-
-              "2/ Token-gated communities are evolving beyond simple ownership requirements! We're witnessing a transformation towards dynamic access models that factor in participation metrics, contribution history, and reputation scores. This creates more engaged and valuable communities. ��",
-
-              "3/ The privacy vs transparency debate sparked intense discussion. The consensus? A sophisticated hybrid approach is emerging where users can selectively reveal data while maintaining core privacy. This enables both platform integrity and user sovereignty. Key examples shared: ��",
-
-              "4/ 2024 Predictions from our expert panel:\n\n- Rise of modular social platforms with plug-and-play components\n- Deep integration with DeFi protocols for tokenized engagement\n- Enhanced data portability standards\n- User-driven governance frameworks\n- AI-powered content curation",
-
-              "5/ Spotlight on @crypto_sarah's revolutionary insights on scalable governance! Her framework for progressive decentralization introduces innovative concepts like reputation-weighted voting, delegate pools, and automated policy enforcement. This could reshape how DAOs operate. 🚀",
-
-              "6/ The Space's most engaging segment? Our heated debate on data ownership rights! The community was split between full user control of social graphs vs platform-managed systems. Important nuances emerged around data portability, platform sustainability, and user privacy. 🤔",
-
-              "7/ What's next for Web3 social?\n\n- Seamless UX that hides complexity from non-crypto users\n- Cross-chain identity and reputation systems\n- Real-world governance implementation at scale\n- Zero-knowledge privacy tools\n- Decentralized content moderation\n\n#Web3Social #Future",
-
-              "🎤 Huge thanks to our brilliant speakers and engaged audience! This conversation showcased the rapid evolution of Web3 social platforms. Follow us for more deep dives into the future of decentralized technology.\n\nSave this thread for future reference! 🔖\n\n/end",
-            ].map((tweet, index) => (
-              <Paper
-                key={index}
-                sx={{
-                  background: "rgba(255,255,255,0.05)",
-                  p: 2,
-                  borderRadius: 2,
-                  mb: 2,
-                  position: "relative",
-                  "&:hover": {
-                    background: "rgba(255,255,255,0.08)",
-                  },
-                }}
-              >
-                <TextField
-                  multiline
-                  fullWidth
-                  defaultValue={tweet}
-                  variant="standard"
-                  InputProps={{
-                    sx: {
-                      whiteSpace: "pre-line",
-                      fontSize: "1.1rem",
-                      lineHeight: 1.6,
-                      fontFamily: "monospace",
-                      color: "white",
-                      "&:before": { borderColor: "rgba(255,255,255,0.1)" },
-                      "&:hover:before": {
-                        borderColor: "rgba(255,255,255,0.2) !important",
-                      },
-                      "&:after": { borderColor: "#60a5fa" },
-                    },
-                  }}
-                />
-                <Typography
-                  variant="caption"
-                  sx={{
-                    position: "absolute",
-                    right: 8,
-                    bottom: 8,
-                    color: tweet.length > 280 ? "#ef4444" : "#60a5fa",
-                  }}
-                >
-                  {tweet.length}/280
-                </Typography>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    mt: 2,
-                    pt: 1,
-                    borderTop: "1px solid rgba(255,255,255,0.1)",
-                  }}
-                >
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: tweet.length > 280 ? "#ef4444" : "#60a5fa",
-                    }}
-                  >
-                    {tweet.length}/280
-                  </Typography>
-                  <Button
-                    startIcon={<ContentCopyIcon />}
-                    size="small"
-                    sx={{
-                      color: "white",
-                      minWidth: "auto",
-                    }}
-                    onClick={() => navigator.clipboard.writeText(tweet)}
-                  >
-                    Copy
-                  </Button>
-                </Box>
-              </Paper>
-            ))}
-          </Paper>
+        {activeSection === "threadoor" && space?.spaceId && (
+          <DisplayThread
+            spaceId={space.spaceId}
+            onGenerateTwitterThread={onGenerateTwitterThread}
+            twitterThread={twitterThread || []}
+          />
         )}
 
         {/* Memorable Moments Section */}

@@ -15,13 +15,13 @@ const SUPPORTED_CHAINS: Chain[] = [
       import.meta.env.VITE_ALCHEMY_RPC_KEY
     }`,
   },
-  {
-    id: 8453,
-    name: "Base",
-    rpcUrl: `https://base-mainnet.g.alchemy.com/v2/${
-      import.meta.env.VITE_ALCHEMY_RPC_KEY
-    }`,
-  },
+  // {
+  //   id: 8453,
+  //   name: "Base",
+  //   rpcUrl: `https://base-mainnet.g.alchemy.com/v2/${
+  //     import.meta.env.VITE_ALCHEMY_RPC_KEY
+  //   }`,
+  // },
 ];
 
 export interface WalletState {
@@ -40,6 +40,38 @@ export const useWallet = () => {
     isConnecting: false,
     error: null,
   });
+
+  // Add this new useEffect for auto-connect
+  useEffect(() => {
+    const checkConnection = async () => {
+      if (!window.ethereum) return;
+
+      try {
+        // Check if we already have access to accounts
+        const accounts = await window.ethereum.request({
+          method: "eth_accounts",
+        });
+        if (accounts.length > 0) {
+          // Get the current chainId
+          const chainId = await window.ethereum.request({
+            method: "eth_chainId",
+          });
+
+          setWalletState((prev) => ({
+            ...prev,
+            address: accounts[0],
+            chainId: parseInt(chainId, 16),
+            isConnecting: false,
+            error: null,
+          }));
+        }
+      } catch (error) {
+        console.error("Error checking wallet connection:", error);
+      }
+    };
+
+    checkConnection();
+  }, []);
 
   const connectWallet = async (chain: "eth" | "base") => {
     if (!window.ethereum) {

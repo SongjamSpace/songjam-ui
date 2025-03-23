@@ -99,6 +99,7 @@ export const TrendingSpaces: React.FC<TrendingSpacesProps> = ({
           onScroll={handleScroll}
           sx={{
             display: "flex",
+            alignItems: "center",
             gap: 2,
             overflowX: "hidden",
             pb: 2,

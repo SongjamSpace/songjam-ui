@@ -28,9 +28,12 @@ import SegmentsTimeline from "./components/SegmentsTimeline";
 import DisplayThread from "./components/DisplayThread";
 import axios from "axios";
 import { useWallet } from "./hooks/useWallet";
-import { WalletModal } from "./components/WalletModal";
+// import { WalletModal } from "./components/WalletModal";
 import { ethers } from "ethers";
 import { hasAccessToSpace, updateAccess } from "./services/db/user.service";
+import Logo from "./components/Logo";
+import ConnectButton from "./components/ConnectButton";
+
 const formatSeconds = (seconds: number): string => {
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = Math.floor(seconds % 60);
@@ -56,8 +59,15 @@ const SpaceDetails: React.FC = () => {
   const [twitterThread, setTwitterThread] = useState<string[]>([]);
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-  const { isConnected, connectWallet, disconnect, address, chainId, provider } =
-    useWallet();
+  const {
+    isConnected,
+    connectWallet,
+    disconnect,
+    address,
+    chainId,
+    provider,
+    isConnecting,
+  } = useWallet();
 
   useEffect(() => {
     if (address && spaceId) {
@@ -218,6 +228,21 @@ const SpaceDetails: React.FC = () => {
         },
       }}
     >
+      <nav>
+        <div className="logo">
+          <Logo />
+          <span>SongJam</span>
+        </div>
+        <div className="nav-controls">
+          <ConnectButton
+            address={address}
+            isConnected={isConnected}
+            isConnecting={isConnecting}
+            onConnect={() => connectWallet("eth")}
+            onDisconnect={disconnect}
+          />
+        </div>
+      </nav>
       <Box
         sx={{
           maxWidth: "800px",
@@ -711,13 +736,13 @@ const SpaceDetails: React.FC = () => {
           </Paper>
         )}
       </Box>
-      <WalletModal
+      {/* <WalletModal
         open={showWalletModal}
         onClose={() => setShowWalletModal(false)}
         onSelectChain={handleChainSelect}
         isConnected={isConnected}
         onDisconnect={disconnect}
-      />
+      /> */}
     </Box>
   );
 };

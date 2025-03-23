@@ -25,7 +25,8 @@ import { collection, query, where } from "firebase/firestore";
 import { db } from "./services/firebase.service";
 import { TrendingSpaces } from "./components/TrendingSpaces";
 import { useWallet } from "./hooks/useWallet";
-import { WalletModal } from "./components/WalletModal";
+import ConnectButton from "./components/ConnectButton";
+// import { WalletModal } from "./components/WalletModal";
 
 export default function App() {
   const { isConnected, address, isConnecting, connectWallet, disconnect } =
@@ -90,28 +91,23 @@ export default function App() {
           <span>SongJam</span>
         </div>
         <div className="nav-controls">
-          <Button
-            variant="contained"
-            onClick={() => setShowWalletModal(true)}
-            className="connect-wallet"
-            disabled={isConnecting}
-          >
-            {isConnecting
-              ? "Connecting..."
-              : isConnected
-              ? `Connected: ${address?.slice(0, 6)}...${address?.slice(-4)}`
-              : "Connect Wallet"}
-          </Button>
+          <ConnectButton
+            address={address}
+            isConnected={isConnected}
+            isConnecting={isConnecting}
+            onConnect={() => connectWallet("eth")}
+            onDisconnect={disconnect}
+          />
         </div>
       </nav>
 
-      <WalletModal
+      {/* <WalletModal
         open={showWalletModal}
         onClose={() => setShowWalletModal(false)}
         onSelectChain={handleChainSelect}
         isConnected={isConnected}
         onDisconnect={disconnect}
-      />
+      /> */}
 
       <section className="hero">
         <div className="stats-banner">

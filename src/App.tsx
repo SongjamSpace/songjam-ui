@@ -188,7 +188,7 @@ export default function App() {
               >
                 <CloseIcon />
               </IconButton>
-              <Box sx={{ textAlign: 'center', p: 3, bgcolor: 'rgba(15, 23, 42, 0.95)' }}>
+              <Box sx={{ textAlign: 'center', p: 3, bgcolor: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(96, 165, 250, 0.2)', borderRadius: '12px' }}>
                 <Typography variant="h5" sx={{ mb: 3, background: 'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                   Transform Your X Space into Content Gold ✨
                 </Typography>

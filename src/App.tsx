@@ -14,6 +14,7 @@ import {
   DialogActions,
   IconButton,
   Box,
+  Typography,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";

@@ -33,6 +33,7 @@ export default function App() {
   const { isConnected, address, isConnecting, connectWallet, disconnect } =
     useWallet();
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [spaceUrl, setSpaceUrl] = useState("");
   const navigate = useNavigate();
   const [spaceUrl, setSpaceUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -187,43 +188,46 @@ export default function App() {
               >
                 <CloseIcon />
               </IconButton>
-              <p className="instruction">
-                Please accept SongJam as a speaker to begin recording
-              </p>
-              <div className="space-preview">
-                <div className="space-header">
-                  <div className="space-info">
-                    <span className="live-indicator">LIVE</span>
-                    <h3>Your Space</h3>
-                  </div>
-                  <div className="space-stats">
-                    <span>🎯 2.1K listening</span>
-                  </div>
-                </div>
-                <div className="speaker-request">
-                  <div className="agent-profile">
-                    <div className="agent-avatar">🤖</div>
-                    <div className="agent-info">
-                      <h4>SongJam_agent</h4>
-                      <p>Requesting to join as speaker</p>
-                    </div>
-                  </div>
-                  <div className="action-buttons">
-                    <button
-                      className="accept"
-                      onClick={() => setShowConfirmation(false)}
-                    >
-                      Accept
-                    </button>
-                    <button
-                      className="deny"
-                      onClick={() => setShowConfirmation(false)}
-                    >
-                      Deny
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <Box sx={{ textAlign: 'center', p: 2 }}>
+                <Typography variant="h5" sx={{ mb: 3, background: 'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                  Transform Your X Space into Content Gold ✨
+                </Typography>
+                <Typography sx={{ mb: 4, color: 'var(--text-secondary)' }}>
+                  Paste your X Space URL below and watch the magic happen in seconds!
+                </Typography>
+                <TextField
+                  fullWidth
+                  placeholder="Paste your X space URL here (e.g., x.com/i/spaces/123...)"
+                  variant="outlined"
+                  sx={{ mb: 3 }}
+                  value={spaceUrl}
+                  onChange={(e) => setSpaceUrl(e.target.value)}
+                />
+                <LoadingButton
+                  loading={isLoading}
+                  variant="contained"
+                  fullWidth
+                  className="primary"
+                  onClick={() => {
+                    setShowConfirmation(false);
+                    transcribeSpace(spaceUrl);
+                  }}
+                  sx={{
+                    py: 1.5,
+                    fontSize: '1.1rem',
+                    background: 'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 5px 15px rgba(96, 165, 250, 0.4)',
+                    }
+                  }}
+                >
+                  Try It Now 🚀
+                </LoadingButton>
+                <Typography variant="caption" sx={{ display: 'block', mt: 2, color: 'var(--text-secondary)' }}>
+                  Join thousands of creators who trust SongJam for their content needs
+                </Typography>
+              </Box>
             </DialogContent>
             <DialogActions>
               <Button onClick={() => setShowConfirmation(false)}>Close</Button>

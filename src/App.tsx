@@ -362,26 +362,13 @@ export default function App() {
           <div className="form-group">
             <TextField fullWidth placeholder="Name" variant="outlined" />
           </div>
-          <Box
-            className="form-group phone-input"
-            display="flex"
-            gap={2}
-            alignItems={"center"}
-          >
-            <FormControl className="country-select">
-              <Select defaultValue="+1">
-                <MenuItem value="+1">🇺🇸 +1</MenuItem>
-                <MenuItem value="+44">🇬🇧 +44</MenuItem>
-                <MenuItem value="+91">🇮🇳 +91</MenuItem>
-              </Select>
-            </FormControl>
+          <div className="form-group">
             <TextField
               fullWidth
-              type="tel"
-              placeholder="Phone Number"
+              placeholder="Telegram Handle (e.g. @username)"
               variant="outlined"
             />
-          </Box>
+          </div>
           <div className="form-group">
             <TextField
               fullWidth

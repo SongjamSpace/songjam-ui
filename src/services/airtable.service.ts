@@ -30,8 +30,11 @@ export const submitToAirtable = async (formData: FormData) => {
     const result = await base(import.meta.env.VITE_AIRTABLE_TABLE_NAME).create([
       {
         fields: {
-          ...formData,
-          timestamp: new Date().toISOString()
+          Name: formData.name,
+          Email: formData.email,
+          Telegram: formData.telegram,
+          Message: formData.message,
+          Timestamp: new Date().toISOString()
         }
       }
     ]);

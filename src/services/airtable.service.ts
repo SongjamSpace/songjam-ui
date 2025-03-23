@@ -21,12 +21,13 @@ export const submitToAirtable = async (formData: FormData) => {
     throw new Error('Airtable table name is missing');
   }
 
-  const airtable = new Airtable({ 
-    apiKey: import.meta.env.VITE_AIRTABLE_API_KEY 
+  const base = new Airtable({ 
+    apiKey: import.meta.env.VITE_AIRTABLE_API_KEY,
+    endpointUrl: 'https://api.airtable.com'
   }).base(import.meta.env.VITE_AIRTABLE_BASE_ID);
 
   try {
-    const result = await airtable(import.meta.env.VITE_AIRTABLE_TABLE_NAME).create([
+    const result = await base(import.meta.env.VITE_AIRTABLE_TABLE_NAME).create([
       {
         fields: {
           ...formData,

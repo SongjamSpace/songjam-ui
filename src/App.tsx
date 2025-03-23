@@ -415,9 +415,12 @@ export default function App() {
 
               const formData = new FormData(form);
               try {
+                if (!import.meta.env.VITE_AIRTABLE_API_KEY || !import.meta.env.VITE_AIRTABLE_BASE_ID || !import.meta.env.VITE_AIRTABLE_TABLE_NAME) {
+                  throw new Error('Airtable configuration is missing');
+                }
                 await submitToAirtable({
                   name: formData.get('name') as string,
-                  email: formData.get('email') as string,
+                  email: formData.get('email') as string, 
                   telegram: formData.get('telegram') as string,
                   message: formData.get('message') as string
                 });
@@ -425,7 +428,7 @@ export default function App() {
                 form.reset();
               } catch (error) {
                 console.error('Submission error:', error);
-                alert('Error submitting form. Please try again.');
+                alert('Error submitting form. Please check environment variables and try again.');
               }
             }}
           >

@@ -181,14 +181,14 @@ export default function App() {
             maxWidth="sm"
             fullWidth
           >
-            <DialogContent>
+            <DialogContent sx={{ bgcolor: 'rgba(15, 23, 42, 0.95)', p: 0 }}>
               <IconButton
                 onClick={() => setShowConfirmation(false)}
-                sx={{ position: "absolute", right: 8, top: 8 }}
+                sx={{ position: "absolute", right: 8, top: 8, color: 'var(--text-secondary)' }}
               >
                 <CloseIcon />
               </IconButton>
-              <Box sx={{ textAlign: 'center', p: 3, bgcolor: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(96, 165, 250, 0.2)', borderRadius: '12px' }}>
+              <Box sx={{ textAlign: 'center', p: 3 }}>
                 <Typography variant="h5" sx={{ mb: 3, background: 'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                   Transform Your X Space into Content Gold ✨
                 </Typography>

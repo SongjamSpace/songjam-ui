@@ -360,13 +360,24 @@ export default function App() {
         <p>Got a beefy project or custom request? Drop us a line</p>
         <form className="contact-form">
           <div className="form-group">
-            <TextField fullWidth placeholder="Name" variant="outlined" />
+            <TextField 
+              fullWidth 
+              placeholder="Name" 
+              variant="outlined"
+              name="name"
+              required
+              inputProps={{ minLength: 2 }}
+            />
           </div>
           <div className="form-group">
             <TextField
               fullWidth
               placeholder="Telegram Handle (e.g. @username)"
               variant="outlined"
+              name="telegram"
+              required
+              inputProps={{ pattern: "@.*" }}
+              helperText="Must start with @"
             />
           </div>
           <div className="form-group">
@@ -375,12 +386,49 @@ export default function App() {
               type="email"
               placeholder="Email"
               variant="outlined"
+              name="email"
+              required
             />
           </div>
           <div className="form-group">
-            <TextareaAutosize placeholder="How can we help?" />
+            <TextareaAutosize 
+              placeholder="How can we help?" 
+              name="message"
+              required
+              minLength={10}
+              style={{ width: '100%', minHeight: '100px' }}
+            />
           </div>
-          <Button type="submit" variant="contained" className="primary">
+          <Button 
+            type="submit" 
+            variant="contained" 
+            className="primary"
+            onClick={async (e) => {
+              e.preventDefault();
+              const form = e.currentTarget.closest('form');
+              if (!form) return;
+              
+              if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+              }
+
+              const formData = new FormData(form);
+              try {
+                await submitToAirtable({
+                  name: formData.get('name') as string,
+                  email: formData.get('email') as string,
+                  telegram: formData.get('telegram') as string,
+                  message: formData.get('message') as string
+                });
+                alert('Form submitted successfully!');
+                form.reset();
+              } catch (error) {
+                console.error('Submission error:', error);
+                alert('Error submitting form. Please try again.');
+              }
+            }}
+          >
             Submit
           </Button>
         </form>

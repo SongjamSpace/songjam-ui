@@ -1,7 +1,7 @@
 
 import Airtable from 'airtable';
 
-const base = new Airtable({apiKey: process.env.AIRTABLE_API_KEY}).base(process.env.AIRTABLE_BASE_ID!);
+const base = new Airtable({apiKey: import.meta.env.VITE_AIRTABLE_API_KEY}).base(import.meta.env.VITE_AIRTABLE_BASE_ID!);
 
 export const submitToAirtable = async (formData: {
   name: string;
@@ -10,7 +10,7 @@ export const submitToAirtable = async (formData: {
   message: string;
 }) => {
   try {
-    const result = await base(process.env.AIRTABLE_TABLE_NAME!).create([
+    const result = await base(import.meta.env.VITE_AIRTABLE_TABLE_NAME!).create([
       {
         fields: {
           Name: formData.name,

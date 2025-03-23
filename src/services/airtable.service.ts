@@ -34,7 +34,7 @@ export const submitToAirtable = async (formData: FormData) => {
           Email: formData.email,
           Telegram: formData.telegram,
           Message: formData.message,
-          "Submission Date": new Date().toISOString()
+          "Submission Date": new Date().toLocaleString()
         }
       }
     ]);

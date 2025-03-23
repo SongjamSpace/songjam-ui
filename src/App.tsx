@@ -38,8 +38,8 @@ export default function App() {
   const [spaces, loading, error] = useCollectionData(
     query(
       collection(db, "spaces"),
-      where("transcription_status", "==", "ENDED")
-    )
+      where("transcription_status", "==", "ENDED"),
+    ),
   );
   const [showWalletModal, setShowWalletModal] = useState(false);
 
@@ -57,7 +57,7 @@ export default function App() {
             `${import.meta.env.VITE_JAM_SERVER_URL}/transcribe-recorded-space`,
             {
               spaceId,
-            }
+            },
           );
           if (res.data.status === "success") {
             navigate(`/${spaceId}`);
@@ -88,7 +88,7 @@ export default function App() {
       <nav>
         <div className="logo">
           <Logo />
-          <span>SongJam</span>
+          <span>Songjam</span>
         </div>
         <div className="nav-controls">
           <ConnectButton
@@ -125,10 +125,10 @@ export default function App() {
           </div>
         </div>
         <div className="animated-title">
-          <h1>X Spaces Transcription</h1>
+          <h1>Capture Every Conversation</h1>
           <div className="subtitle-wrapper">
             <p>
-              Instantly convert Twitter Spaces content into text with AI
+              Instantly convert X Spaces into shareable content with AI
               precision
             </p>
             <Box className="space-input" display="flex" gap={2}>
@@ -231,30 +231,32 @@ export default function App() {
         </div>
         <div className="trust-badges">
           <span>Powered by</span>
-          <div className="badge">Base</div>
           <div className="badge">ElizaOS</div>
-          <div className="badge">OpenAI</div>
+          <div className="badge">Ethereum</div>
+          <div className="badge">Groq</div>
         </div>
       </section>
 
       <section className="features">
         <div className="feature">
-          <div className="feature-icon">💰</div>
-          <h3>Pay Per Use</h3>
-          <p>Only pay for what you need with our flexible USDT-based pricing</p>
-          <div className="feature-detail">Starting at $0.01/minute</div>
+          <div className="feature-icon">✍️</div>
+          <h3>Transcribe</h3>
+          <p>
+            The days of manually taking notes for your Twitter space are over
+          </p>
+          <div className="feature-detail">Starting at $1/space</div>
         </div>
         <div className="feature">
-          <div className="feature-icon">🎁</div>
-          <h3>Free Trial</h3>
-          <p>Test our service with 30 minutes of free transcription</p>
-          <div className="feature-detail">No credit card required</div>
+          <div className="feature-icon">📋</div>
+          <h3>Summarize</h3>
+          <p>Generate awesome automated X space summaries in seconds</p>
+          <div className="feature-detail">Get your time back</div>
         </div>
         <div className="feature">
-          <div className="feature-icon">🔒</div>
-          <h3>Secure</h3>
-          <p>Enterprise-grade security with smart contract payments</p>
-          <div className="feature-detail">Audited by Certik</div>
+          <div className="feature-icon">📣</div>
+          <h3>Share</h3>
+          <p>Create memorable threads and share with your audience</p>
+          <div className="feature-detail">Customizable content</div>
         </div>
       </section>
 
@@ -282,7 +284,7 @@ export default function App() {
       <section className="honors">
         <h2>Honors</h2>
         <p>
-          SongJam builders have won top awards from the following crypto
+          Songjam builders have won top awards from the following crypto
           leaders:
         </p>
         <div className="honors-grid">

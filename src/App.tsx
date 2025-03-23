@@ -243,62 +243,6 @@ export default function App() {
               </Box>
             </DialogContent>
           </Dialog>
-
-          <Dialog
-            open={showConfirmation}
-            onClose={() => setShowConfirmation(false)}
-            maxWidth="sm"
-            fullWidth
-          >
-            <DialogContent sx={{ bgcolor: 'rgba(15, 23, 42, 0.95)', p: 0 }}>
-              <IconButton
-                onClick={() => setShowConfirmation(false)}
-                sx={{ position: "absolute", right: 8, top: 8, color: 'var(--text-secondary)' }}
-              >
-                <CloseIcon />
-              </IconButton>
-              <Box sx={{ textAlign: 'center', p: 3 }}>
-                <Typography variant="h5" sx={{ mb: 3, background: 'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                  Transform Your X Space into Content Gold ✨
-                </Typography>
-                <Typography sx={{ mb: 4, color: 'var(--text-secondary)' }}>
-                  Paste your X Space URL below and watch the magic happen in seconds!
-                </Typography>
-                <TextField
-                  fullWidth
-                  placeholder="Paste your X space URL here (e.g., x.com/i/spaces/123...)"
-                  variant="outlined"
-                  sx={{ mb: 3 }}
-                  value={spaceUrl}
-                  onChange={(e) => setSpaceUrl(e.target.value)}
-                />
-                <LoadingButton
-                  loading={isLoading}
-                  variant="contained"
-                  fullWidth
-                  className="primary"
-                  onClick={() => {
-                    setShowConfirmation(false);
-                    transcribeSpace(spaceUrl);
-                  }}
-                  sx={{
-                    py: 1.5,
-                    fontSize: '1.1rem',
-                    background: 'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
-                    '&:hover': {
-                      transform: 'translateY(-2px)',
-                      boxShadow: '0 5px 15px rgba(96, 165, 250, 0.4)',
-                    }
-                  }}
-                >
-                  Try It Now 🚀
-                </LoadingButton>
-                <Typography variant="caption" sx={{ display: 'block', mt: 2, color: 'var(--text-secondary)' }}>
-                  Join thousands of creators who trust SongJam for their content needs
-                </Typography>
-              </Box>
-            </DialogContent>
-          </Dialog>
         </div>
         <div className="trust-badges">
           <span>Powered by</span>

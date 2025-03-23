@@ -35,7 +35,6 @@ export default function App() {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [spaceUrl, setSpaceUrl] = useState("");
   const navigate = useNavigate();
-  const [spaceUrl, setSpaceUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [spaces, loading, error] = useCollectionData(
     query(

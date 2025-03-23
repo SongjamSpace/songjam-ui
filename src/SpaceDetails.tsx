@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   getFirstLevelSummaries,
+  getSegmentsAndText,
   getSpace,
   getSpaceAudioDownloadUrl,
   Segment,
@@ -38,6 +39,27 @@ const formatSeconds = (seconds: number): string => {
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = Math.floor(seconds % 60);
   return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+};
+
+const highlightSearchTerm = (text: string, searchTerm: string) => {
+  if (!searchTerm) return text;
+  const regex = new RegExp(`(${searchTerm})`, "gi");
+  return text.split(regex).map((part, i) =>
+    regex.test(part) ? (
+      <Box
+        component="span"
+        key={i}
+        sx={{
+          backgroundColor: "rgba(96, 165, 250, 0.3)",
+          // color: "rgba(255, 255, 0, 1)",
+        }}
+      >
+        {part}
+      </Box>
+    ) : (
+      part
+    )
+  );
 };
 
 const SpaceDetails: React.FC = () => {
@@ -85,30 +107,30 @@ const SpaceDetails: React.FC = () => {
       const space = await getSpace(spaceId);
       setSpace(space as Space);
     };
-    // const fetchSegments = async () => {
-    //   const _segmentsAndText = await getSegmentsAndText(spaceId);
-    //   setSegmentsAndText(
-    //     _segmentsAndText as { segments: Segment[]; text: string }
-    //   );
-    //   setFilteredTranscript(_segmentsAndText?.segments || []);
-    // };
+    const fetchSegments = async () => {
+      const _segmentsAndText = await getSegmentsAndText(spaceId);
+      setSegmentsAndText(
+        _segmentsAndText as { segments: Segment[]; text: string }
+      );
+      setFilteredTranscript(_segmentsAndText?.segments || []);
+    };
     // const fetchTwitterThread = async () => {
     //   const twitterThread = await getTwitterThread(spaceId);
     //   setTwitterThread(twitterThread);
     // };
     fetchSpace();
-    // fetchSegments();
+    fetchSegments();
     // fetchTwitterThread();
   }, [spaceId]);
 
   useEffect(() => {
-    if (space) {
-      const filtered = space.segments?.filter((segment) =>
+    if (segmentsAndText) {
+      const filtered = segmentsAndText?.segments?.filter((segment) =>
         segment.text.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredTranscript(filtered || []);
     }
-  }, [searchTerm, space]); // Update filteredTranscript on searchTerm or space change
+  }, [searchTerm, segmentsAndText]); // Update filteredTranscript on searchTerm or space change
 
   const handleChainSelect = async (chain: "eth" | "base") => {
     setShowWalletModal(false);
@@ -726,7 +748,9 @@ const SpaceDetails: React.FC = () => {
                     mb: 2,
                   }}
                 >
-                  <Typography>{segment.text}</Typography>
+                  <Typography>
+                    {highlightSearchTerm(segment.text, searchTerm)}
+                  </Typography>
                   <Typography variant="caption" sx={{ color: "#60a5fa" }}>
                     {formatSeconds(segment.start)}
                   </Typography>

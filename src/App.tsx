@@ -168,7 +168,7 @@ export default function App() {
             className="primary"
             onClick={() => setShowConfirmation(true)}
           >
-            Start Free Trial
+            Try For Free
           </Button>
           <Button variant="outlined" className="secondary">
             View Pricing
@@ -361,9 +361,9 @@ export default function App() {
         <p>Got a beefy project or custom request? Drop us a line</p>
         <form className="contact-form">
           <div className="form-group">
-            <TextField 
-              fullWidth 
-              placeholder="Name" 
+            <TextField
+              fullWidth
+              placeholder="Name"
               variant="outlined"
               name="name"
               required
@@ -373,7 +373,7 @@ export default function App() {
           <div className="form-group">
             <TextField
               fullWidth
-              placeholder="Telegram Handle (e.g. @username)"
+              placeholder="Telegram Username"
               variant="outlined"
               name="telegram"
               required
@@ -392,23 +392,23 @@ export default function App() {
             />
           </div>
           <div className="form-group">
-            <TextareaAutosize 
-              placeholder="How can we help?" 
+            <TextareaAutosize
+              placeholder="How can we help?"
               name="message"
               required
               minLength={10}
-              style={{ width: '100%', minHeight: '100px' }}
+              style={{ width: "100%", minHeight: "100px" }}
             />
           </div>
-          <Button 
-            type="submit" 
-            variant="contained" 
+          <Button
+            type="submit"
+            variant="contained"
             className="primary"
             onClick={async (e) => {
               e.preventDefault();
-              const form = e.currentTarget.closest('form');
+              const form = e.currentTarget.closest("form");
               if (!form) return;
-              
+
               if (!form.checkValidity()) {
                 form.reportValidity();
                 return;
@@ -416,25 +416,33 @@ export default function App() {
 
               const formData = new FormData(form);
               try {
-                if (!import.meta.env.VITE_AIRTABLE_API_KEY || !import.meta.env.VITE_AIRTABLE_BASE_ID || !import.meta.env.VITE_AIRTABLE_TABLE_NAME) {
-                  alert('Missing Airtable configuration. Please check your environment variables.');
+                if (
+                  !import.meta.env.VITE_AIRTABLE_API_KEY ||
+                  !import.meta.env.VITE_AIRTABLE_BASE_ID ||
+                  !import.meta.env.VITE_AIRTABLE_TABLE_NAME
+                ) {
+                  alert(
+                    "Missing Airtable configuration. Please check your environment variables.",
+                  );
                   return;
                 }
-                
+
                 const result = await submitToAirtable({
-                  name: formData.get('name') as string,
-                  email: formData.get('email') as string, 
-                  telegram: formData.get('telegram') as string,
-                  message: formData.get('message') as string
+                  name: formData.get("name") as string,
+                  email: formData.get("email") as string,
+                  telegram: formData.get("telegram") as string,
+                  message: formData.get("message") as string,
                 });
-                
+
                 if (result) {
-                  alert('Form submitted successfully!');
+                  alert("Form submitted successfully!");
                   form.reset();
                 }
               } catch (error: any) {
-                console.error('Submission error:', error);
-                alert(error?.message || 'Error submitting form. Please try again.');
+                console.error("Submission error:", error);
+                alert(
+                  error?.message || "Error submitting form. Please try again.",
+                );
               }
             }}
           >
@@ -486,7 +494,7 @@ export default function App() {
       </section>
 
       <footer className="footer">
-        <p>&copy; SongJam 2025. All rights reserved.</p>
+        <p>&copy; Songjam 2025. All rights reserved.</p>
       </footer>
     </main>
   );

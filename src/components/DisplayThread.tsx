@@ -14,16 +14,18 @@ type Props = {
   spaceId: string;
   onGenerateTwitterThread: () => void;
   twitterThread: string[];
+  isThreadLoading: boolean;
 };
 
 function DisplayThread({
   spaceId,
   onGenerateTwitterThread,
   twitterThread,
+  isThreadLoading,
 }: Props) {
   const [isGenerating, setIsGenerating] = useState(false);
 
-  if (isGenerating) {
+  if (isGenerating || isThreadLoading) {
     return (
       <Paper
         sx={{

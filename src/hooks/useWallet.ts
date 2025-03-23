@@ -73,10 +73,12 @@ export const useWallet = () => {
     checkConnection();
   }, []);
 
-  const connectWallet = async (chain: "eth" | "base") => {
+  const connectWallet = async (
+    chain: "eth" | "base"
+  ): Promise<string | null> => {
     if (!window.ethereum) {
       alert("Please install MetaMask to connect a wallet");
-      return;
+      return null;
     }
 
     setWalletState((prev) => ({ ...prev, isConnecting: true, error: null }));
@@ -100,6 +102,7 @@ export const useWallet = () => {
         isConnecting: false,
         error: null,
       }));
+      return accounts[0];
     } catch (error) {
       console.error("Error connecting wallet:", error);
       if (chain === "base") {
@@ -128,6 +131,7 @@ export const useWallet = () => {
     } finally {
       setWalletState((prev) => ({ ...prev, isConnecting: false }));
     }
+    return null;
   };
 
   const switchChain = async (chainId: number) => {

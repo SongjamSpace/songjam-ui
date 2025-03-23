@@ -137,7 +137,6 @@ const TranscriptionText = styled(Typography)`
 `;
 
 export const TranscriptionBox = ({ spaceId }: { spaceId: string }) => {
-  const [displayText, setDisplayText] = useState("");
   const [transcriptions, loading, error] = useCollectionData(
     query(
       collection(db, `spaces/${spaceId}/transcriptions`),

@@ -6,17 +6,20 @@ import {
 } from "@mui/icons-material";
 import { useState } from "react";
 import { getSummary } from "../services/db/spaces.service";
+import { LoadingButton } from "@mui/lab";
 
 interface SummaryProps {
   hasAccess: boolean;
   handlePayment: () => void;
   spaceId: string;
+  isProcessingPayment: boolean;
 }
 
 export const Summary: React.FC<SummaryProps> = ({
   hasAccess,
   handlePayment,
   spaceId,
+  isProcessingPayment,
 }) => {
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState("");
@@ -170,7 +173,8 @@ export const Summary: React.FC<SummaryProps> = ({
                 Get complete access to this space for just $1 USDT
               </Typography>
 
-              <Button
+              <LoadingButton
+                loading={isProcessingPayment}
                 variant="contained"
                 fullWidth
                 size="large"
@@ -188,7 +192,7 @@ export const Summary: React.FC<SummaryProps> = ({
                 }}
               >
                 Pay $1 USDT
-              </Button>
+              </LoadingButton>
             </Paper>
           </Box>
         )}

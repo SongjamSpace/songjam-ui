@@ -5,6 +5,7 @@ import {
   getSegmentsAndText,
   getSpace,
   getSpaceAudioDownloadUrl,
+  getTwitterThread,
   Segment,
   Space,
 } from "./services/db/spaces.service";
@@ -18,6 +19,7 @@ import {
   TextField,
   IconButton,
   Skeleton,
+  Stack,
 } from "@mui/material";
 import AutorenewIcon from "@mui/icons-material/Autorenew";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
@@ -79,7 +81,7 @@ const SpaceDetails: React.FC = () => {
     text: string;
   } | null>(null);
   const [twitterThread, setTwitterThread] = useState<string[]>([]);
-  const [showWalletModal, setShowWalletModal] = useState(false);
+  // const [showWalletModal, setShowWalletModal] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const {
     isConnected,
@@ -90,6 +92,9 @@ const SpaceDetails: React.FC = () => {
     provider,
     isConnecting,
   } = useWallet();
+
+  const [isTranscriptLoading, setIsTranscriptLoading] = useState(false);
+  const [isThreadLoading, setIsThreadLoading] = useState(false);
 
   useEffect(() => {
     if (address && spaceId) {
@@ -107,20 +112,7 @@ const SpaceDetails: React.FC = () => {
       const space = await getSpace(spaceId);
       setSpace(space as Space);
     };
-    const fetchSegments = async () => {
-      const _segmentsAndText = await getSegmentsAndText(spaceId);
-      setSegmentsAndText(
-        _segmentsAndText as { segments: Segment[]; text: string }
-      );
-      setFilteredTranscript(_segmentsAndText?.segments || []);
-    };
-    // const fetchTwitterThread = async () => {
-    //   const twitterThread = await getTwitterThread(spaceId);
-    //   setTwitterThread(twitterThread);
-    // };
     fetchSpace();
-    fetchSegments();
-    // fetchTwitterThread();
   }, [spaceId]);
 
   useEffect(() => {
@@ -131,11 +123,6 @@ const SpaceDetails: React.FC = () => {
       setFilteredTranscript(filtered || []);
     }
   }, [searchTerm, segmentsAndText]); // Update filteredTranscript on searchTerm or space change
-
-  const handleChainSelect = async (chain: "eth" | "base") => {
-    setShowWalletModal(false);
-    await connectWallet(chain);
-  };
 
   const onGenerateTwitterThread = async () => {
     if (!spaceId) return;
@@ -174,8 +161,12 @@ const SpaceDetails: React.FC = () => {
       alert("Error: No space is selected");
       return;
     }
+    let connectedAddress = address;
     if (!isConnected || !address) {
-      setShowWalletModal(true);
+      connectedAddress = await connectWallet("eth");
+    }
+    if (!connectedAddress) {
+      alert("Error: Failed to connect wallet");
       return;
     }
 
@@ -200,7 +191,7 @@ const SpaceDetails: React.FC = () => {
         ],
         signer
       );
-      const balance = await usdtContract.balanceOf(address);
+      const balance = await usdtContract.balanceOf(connectedAddress);
       if (balance < parsedAmount) {
         alert("Insufficient USDT balance!");
         return;
@@ -209,7 +200,7 @@ const SpaceDetails: React.FC = () => {
       const tx = await usdtContract.transfer(receiverAddress, parsedAmount);
 
       await tx?.wait();
-      await updateAccess(address, spaceId);
+      await updateAccess(connectedAddress, spaceId);
       setHasAccess(true);
     } catch (error) {
       console.error("Payment failed:", error);
@@ -224,6 +215,28 @@ const SpaceDetails: React.FC = () => {
   //   setShowWalletModal(false);
   //   handlePayment();
   // };
+
+  useEffect(() => {
+    if (activeSection === "transcript" && spaceId) {
+      const fetchSegments = async () => {
+        setIsTranscriptLoading(true);
+        const _segmentsAndText = await getSegmentsAndText(spaceId);
+        setSegmentsAndText(
+          _segmentsAndText as { segments: Segment[]; text: string }
+        );
+        setIsTranscriptLoading(false);
+      };
+      fetchSegments();
+    } else if (activeSection === "threadoor" && spaceId) {
+      const fetchTwitterThread = async () => {
+        setIsThreadLoading(true);
+        const twitterThread = await getTwitterThread(spaceId);
+        setTwitterThread(twitterThread);
+        setIsThreadLoading(false);
+      };
+      fetchTwitterThread();
+    }
+  }, [activeSection, spaceId]);
 
   return (
     <Box
@@ -583,6 +596,7 @@ const SpaceDetails: React.FC = () => {
             hasAccess={hasAccess}
             handlePayment={handlePayment}
             spaceId={space.spaceId}
+            isProcessingPayment={isProcessingPayment}
           />
         )}
 
@@ -615,6 +629,7 @@ const SpaceDetails: React.FC = () => {
             spaceId={space.spaceId}
             onGenerateTwitterThread={onGenerateTwitterThread}
             twitterThread={twitterThread || []}
+            isThreadLoading={isThreadLoading}
           />
         )}
 
@@ -738,24 +753,32 @@ const SpaceDetails: React.FC = () => {
             />{" "}
             {/* Added search bar */}
             <Box sx={{ maxHeight: "60vh", overflowY: "auto" }}>
-              {filteredTranscript.map((segment: Segment, index: number) => (
-                <Box
-                  key={index}
-                  sx={{
-                    background: "rgba(255,255,255,0.05)",
-                    p: 2,
-                    borderRadius: 2,
-                    mb: 2,
-                  }}
-                >
-                  <Typography>
-                    {highlightSearchTerm(segment.text, searchTerm)}
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: "#60a5fa" }}>
-                    {formatSeconds(segment.start)}
-                  </Typography>
-                </Box>
-              ))}
+              {isTranscriptLoading ? (
+                <Stack direction="column" spacing={2}>
+                  {[1, 2, 3].map((i) => (
+                    <Skeleton variant="rectangular" height="100%" />
+                  ))}
+                </Stack>
+              ) : (
+                filteredTranscript.map((segment: Segment, index: number) => (
+                  <Box
+                    key={index}
+                    sx={{
+                      background: "rgba(255,255,255,0.05)",
+                      p: 2,
+                      borderRadius: 2,
+                      mb: 2,
+                    }}
+                  >
+                    <Typography>
+                      {highlightSearchTerm(segment.text, searchTerm)}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: "#60a5fa" }}>
+                      {formatSeconds(segment.start)}
+                    </Typography>
+                  </Box>
+                ))
+              )}
             </Box>
           </Paper>
         )}

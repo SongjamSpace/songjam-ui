@@ -20,7 +20,12 @@ export type Segment = {
   end: number;
 };
 export type Space = {
-  transcription_status: "STARTED" | "PROCESSING" | "FAILED" | "ENDED";
+  transcription_status:
+    | "STARTED"
+    | "PROCESSING"
+    | "FAILED"
+    | "ENDED"
+    | "SHORT_ENDED";
   type: "recorded" | "live";
   spaceId: string;
   hls_url: string;

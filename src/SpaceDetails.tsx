@@ -395,28 +395,29 @@ const SpaceDetails: React.FC = () => {
               }}
             >
               {space?.user_message}
-              {space?.transcription_status !== "ENDED" && (
-                <Box
-                  component="span"
-                  sx={{
-                    width: 16,
-                    height: 16,
-                    borderRadius: "50%",
-                    border: "2px solid transparent",
-                    borderTopColor: "#60a5fa",
-                    borderRightColor: "#60a5fa",
-                    animation: "spin 1s linear infinite",
-                    "@keyframes spin": {
-                      "0%": {
-                        transform: "rotate(0deg)",
+              {space?.transcription_status !== "ENDED" &&
+                space?.transcription_status !== "SHORT_ENDED" && (
+                  <Box
+                    component="span"
+                    sx={{
+                      width: 16,
+                      height: 16,
+                      borderRadius: "50%",
+                      border: "2px solid transparent",
+                      borderTopColor: "#60a5fa",
+                      borderRightColor: "#60a5fa",
+                      animation: "spin 1s linear infinite",
+                      "@keyframes spin": {
+                        "0%": {
+                          transform: "rotate(0deg)",
+                        },
+                        "100%": {
+                          transform: "rotate(360deg)",
+                        },
                       },
-                      "100%": {
-                        transform: "rotate(360deg)",
-                      },
-                    },
-                  }}
-                />
-              )}
+                    }}
+                  />
+                )}
             </Typography>
             <Box>
               <IconButton onClick={() => navigate("/")}>

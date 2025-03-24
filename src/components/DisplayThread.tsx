@@ -160,34 +160,6 @@ function DisplayThread({
             Each tweet is within the 280 character limit
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          onClick={() => {
-            const tweetText = encodeURIComponent(
-              twitterThread?.join("\n\n") || ""
-            );
-            window.open(
-              `https://x.com/intent/tweet?text=${tweetText}`,
-              "_blank"
-            );
-          }}
-          sx={{
-            backgroundColor: "#000",
-            color: "#fff",
-            textTransform: "none",
-            fontWeight: "bold",
-            padding: "8px 16px",
-            borderRadius: "20px",
-            border: "1px solid #536471",
-            "&:hover": {
-              backgroundColor: "#272c30",
-              borderColor: "#272c30",
-            },
-          }}
-          disabled={!twitterThread?.length}
-        >
-          Share on X
-        </Button>
         {/* <Button
                 variant="contained"
                 sx={{

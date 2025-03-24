@@ -235,6 +235,11 @@ const SpaceDetails: React.FC = () => {
 
       const tx = await usdtContract.transfer(receiverAddress, parsedAmount);
 
+      setToast({
+        open: true,
+        message: "Payment in progress... Stay in the page",
+        severity: "success",
+      });
       await tx?.wait();
       setToast({
         open: true,
@@ -247,7 +252,6 @@ const SpaceDetails: React.FC = () => {
         const formData = new FormData();
         formData.append("hls_url", space.hls_url);
         formData.append("space_id", spaceId);
-        formData.append("duration_in_minutes", "10");
         await axios.post(
           `${import.meta.env.VITE_JAM_PY_SERVER_URL}/transcribe`,
           formData
@@ -277,7 +281,11 @@ const SpaceDetails: React.FC = () => {
   // };
 
   useEffect(() => {
-    if (activeSection === "transcript" && spaceId) {
+    if (
+      activeSection === "transcript" &&
+      spaceId &&
+      space?.transcription_status === "ENDED"
+    ) {
       const fetchSegments = async () => {
         setIsTranscriptLoading(true);
         const _segmentsAndText = await getSegmentsAndText(spaceId);
@@ -287,7 +295,11 @@ const SpaceDetails: React.FC = () => {
         setIsTranscriptLoading(false);
       };
       fetchSegments();
-    } else if (activeSection === "threadoor" && spaceId) {
+    } else if (
+      activeSection === "threadoor" &&
+      spaceId &&
+      space?.transcription_status === "ENDED"
+    ) {
       const fetchTwitterThread = async () => {
         setIsThreadLoading(true);
         const twitterThread = await getTwitterThread(spaceId);
@@ -296,7 +308,7 @@ const SpaceDetails: React.FC = () => {
       };
       fetchTwitterThread();
     }
-  }, [activeSection, spaceId]);
+  }, [activeSection, spaceId, space]);
 
   const handleCloseToast = () => {
     setToast((prev) => ({ ...prev, open: false }));
@@ -570,20 +582,6 @@ const SpaceDetails: React.FC = () => {
             Summary
           </Button>
           <Button
-            variant={activeSection === "transcript" ? "contained" : "text"}
-            onClick={() => setActiveSection("transcript")}
-            sx={{
-              color: "white",
-              "&.MuiButton-contained": {
-                background:
-                  "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
-              },
-            }}
-            disabled={!hasAccess}
-          >
-            Transcript
-          </Button>
-          <Button
             variant={activeSection === "threadoor" ? "contained" : "text"}
             onClick={() => setActiveSection("threadoor")}
             sx={{
@@ -596,6 +594,20 @@ const SpaceDetails: React.FC = () => {
             disabled={!hasAccess}
           >
             AI Threadoor
+          </Button>
+          <Button
+            variant={activeSection === "transcript" ? "contained" : "text"}
+            onClick={() => setActiveSection("transcript")}
+            sx={{
+              color: "white",
+              "&.MuiButton-contained": {
+                background:
+                  "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
+              },
+            }}
+            disabled
+          >
+            Search
           </Button>
           <Button
             variant={activeSection === "moments" ? "contained" : "text"}

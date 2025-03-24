@@ -14,10 +14,11 @@ export type User = {
 };
 
 export type Segment = {
-  id: number;
   start: number;
   text: string;
   end: number;
+  seek: number;
+  no_speech_prob: number;
 };
 export type Space = {
   transcription_status:

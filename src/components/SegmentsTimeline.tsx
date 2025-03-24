@@ -1,6 +1,13 @@
 import { useCollectionData } from "react-firebase-hooks/firestore";
 import { db } from "../services/firebase.service";
-import { collection, doc, query, limit, orderBy } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  query,
+  limit,
+  orderBy,
+  startAfter,
+} from "firebase/firestore";
 import {
   Timeline,
   TimelineItem,
@@ -22,7 +29,8 @@ import {
 } from "@mui/material";
 import { formatSeconds } from "../utils";
 import { PaywallOverlay } from "./PaywallOverlay";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getDocs } from "firebase/firestore";
 
 type Props = {
   spaceId: string;
@@ -39,22 +47,60 @@ function SegmentsTimeline({
   isProcessingPayment,
   handlePayment,
 }: Props) {
-  const [segmentLimit, setSegmentLimit] = useState(
-    hasAccess ? (processEnded ? 50 : 15) : 5
-  );
+  const BATCH_SIZE = 50;
+  const [lastVisible, setLastVisible] = useState<any>(null);
+  const [segments, setSegments] = useState<Segment[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
-  const [segments, loading, error] = useCollectionData(
-    query(
-      collection(
+  const fetchSegments = async (isInitial = false) => {
+    try {
+      setLoading(true);
+      const collectionRef = collection(
         db,
         "spaces",
         spaceId,
         hasAccess && processEnded ? "segments" : "short_segments"
-      ),
-      orderBy("start", "asc"),
-      limit(segmentLimit)
-    )
-  );
+      );
+
+      let q = query(
+        collectionRef,
+        orderBy("start", "asc"),
+        limit(
+          isInitial
+            ? hasAccess
+              ? processEnded
+                ? BATCH_SIZE
+                : 15
+              : 5
+            : BATCH_SIZE
+        )
+      );
+
+      if (!isInitial && lastVisible) {
+        q = query(q, startAfter(lastVisible));
+      }
+
+      const snapshot = await getDocs(q);
+      const newSegments = snapshot.docs.map((doc) => ({
+        docId: doc.id,
+        ...(doc.data() as Segment),
+      }));
+
+      setLastVisible(snapshot.docs[snapshot.docs.length - 1]);
+      setSegments((prev) =>
+        isInitial ? newSegments : [...prev, ...newSegments]
+      );
+      setLoading(false);
+    } catch (err) {
+      setError(err as Error);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSegments(true);
+  }, [spaceId, hasAccess, processEnded]);
 
   if (error) return <div>Error: {error.message}</div>;
 
@@ -114,8 +160,8 @@ function SegmentsTimeline({
               }),
         }}
       >
-        {(segments as Segment[])?.map((segment: Segment) => (
-          <TimelineItem key={segment.id}>
+        {segments?.map((segment: Segment) => (
+          <TimelineItem key={segment.seek}>
             <TimelineOppositeContent color="textSecondary">
               {formatSeconds(segment.start)}
             </TimelineOppositeContent>
@@ -129,11 +175,11 @@ function SegmentsTimeline({
           </TimelineItem>
         ))}
       </Timeline>
-      {hasAccess && processEnded && segments?.length >= segmentLimit && (
+      {hasAccess && processEnded && lastVisible && (
         <Box display="flex" justifyContent="center" mt={2} mb={2}>
           <Button
             variant="outlined"
-            onClick={() => setSegmentLimit((prev) => prev + 50)}
+            onClick={() => fetchSegments(false)}
             startIcon={loading ? <CircularProgress size={20} /> : null}
             disabled={loading}
           >

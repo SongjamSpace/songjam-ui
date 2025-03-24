@@ -467,43 +467,41 @@ const SpaceDetails: React.FC = () => {
                 }}
               />
             )}
-            <LoadingButton
-              loading={isDownloading}
-              disabled={!space || space.transcription_status !== "ENDED"}
-              startIcon={<DownloadIcon />}
-              onClick={async () => {
-                if (!spaceId) return;
-                setIsDownloading(true);
-                const audioUrl = await getSpaceAudioDownloadUrl(spaceId);
-                const response = await fetch(audioUrl);
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = `${space?.title}.mp3`;
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
-                setIsDownloading(false);
-              }}
-              sx={{
-                color: "#60a5fa",
-                background: "rgba(96, 165, 250, 0.1)",
-                "&:hover": {
-                  background: "rgba(96, 165, 250, 0.2)",
-                },
-                textTransform: "none",
-                px: 2,
-                py: 1,
-              }}
-            >
-              {isDownloading
-                ? "Downloading..."
-                : !space || space.transcription_status !== "ENDED"
-                ? "Preparing"
-                : "Download Recording"}
-            </LoadingButton>
+            {
+              <LoadingButton
+                loading={isDownloading}
+                disabled={!space || space.transcription_status !== "ENDED"}
+                startIcon={<DownloadIcon />}
+                onClick={async () => {
+                  if (!spaceId) return;
+                  setIsDownloading(true);
+                  const audioUrl = await getSpaceAudioDownloadUrl(spaceId);
+                  const response = await fetch(audioUrl);
+                  const blob = await response.blob();
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `${space?.title}.mp3`;
+                  document.body.appendChild(a);
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                  document.body.removeChild(a);
+                  setIsDownloading(false);
+                }}
+                sx={{
+                  color: "#60a5fa",
+                  background: "rgba(96, 165, 250, 0.1)",
+                  "&:hover": {
+                    background: "rgba(96, 165, 250, 0.2)",
+                  },
+                  textTransform: "none",
+                  px: 2,
+                  py: 1,
+                }}
+              >
+                {isDownloading ? "Downloading..." : "Download Recording"}
+              </LoadingButton>
+            }
           </Box>
           <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
             {space ? (
@@ -754,6 +752,7 @@ const SpaceDetails: React.FC = () => {
                 isProcessingPayment={isProcessingPayment}
                 handlePayment={handlePayment}
                 processEnded={space.transcription_status === "ENDED"}
+                refresh={space.transcription_status === "SHORT_ENDED"}
               />
             )}
           </Paper>

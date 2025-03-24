@@ -38,6 +38,7 @@ type Props = {
   isProcessingPayment: boolean;
   handlePayment: () => void;
   processEnded: boolean;
+  refresh: boolean;
 };
 
 function SegmentsTimeline({
@@ -46,6 +47,7 @@ function SegmentsTimeline({
   hasAccess,
   isProcessingPayment,
   handlePayment,
+  refresh,
 }: Props) {
   const BATCH_SIZE = 50;
   const [lastVisible, setLastVisible] = useState<any>(null);
@@ -66,15 +68,7 @@ function SegmentsTimeline({
       let q = query(
         collectionRef,
         orderBy("start", "asc"),
-        limit(
-          isInitial
-            ? hasAccess
-              ? processEnded
-                ? BATCH_SIZE
-                : 15
-              : 5
-            : BATCH_SIZE
-        )
+        limit(isInitial ? (hasAccess ? BATCH_SIZE : 15) : BATCH_SIZE)
       );
 
       if (!isInitial && lastVisible) {
@@ -100,7 +94,7 @@ function SegmentsTimeline({
 
   useEffect(() => {
     fetchSegments(true);
-  }, [spaceId, hasAccess, processEnded]);
+  }, [spaceId, hasAccess, processEnded, refresh]);
 
   // Add scroll handler
   const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {

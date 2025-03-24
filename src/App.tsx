@@ -311,13 +311,13 @@ export default function App() {
           <p>
             The days of manually taking notes for your Twitter space are over
           </p>
-          <div className="feature-detail">Starting at $1/space</div>
+          <div className="feature-detail">Get your time back</div>
         </div>
         <div className="feature">
           <div className="feature-icon">📋</div>
           <h3>Summarize</h3>
           <p>Generate awesome automated X space summaries in seconds</p>
-          <div className="feature-detail">Get your time back</div>
+          <div className="feature-detail">Starting at $1/space</div>
         </div>
         <div className="feature">
           <div className="feature-icon">📣</div>
@@ -539,7 +539,7 @@ export default function App() {
             <span>GitHub</span>
           </a>
           <a
-            href="https://x.com/SongJamHQ"
+            href="https://x.com/SongjamSpace"
             target="_blank"
             rel="noopener noreferrer"
             className="social-link"

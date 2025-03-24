@@ -346,7 +346,7 @@ const SpaceDetails: React.FC = () => {
           onClick={() => navigate("/")}
         >
           <Logo />
-          <span>SongJam</span>
+          <span>Songjam</span>
         </Box>
         <div className="nav-controls">
           <ConnectButton
@@ -595,7 +595,7 @@ const SpaceDetails: React.FC = () => {
           >
             AI Threadoor
           </Button>
-          <Button
+          {/* <Button
             variant={activeSection === "transcript" ? "contained" : "text"}
             onClick={() => setActiveSection("transcript")}
             sx={{
@@ -605,10 +605,10 @@ const SpaceDetails: React.FC = () => {
                   "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
               },
             }}
-            disabled
+            disabled={!hasAccess}
           >
             Search
-          </Button>
+          </Button> */}
           <Button
             variant={activeSection === "moments" ? "contained" : "text"}
             onClick={() => setActiveSection("moments")}

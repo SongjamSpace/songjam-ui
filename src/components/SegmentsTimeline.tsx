@@ -102,6 +102,17 @@ function SegmentsTimeline({
     fetchSegments(true);
   }, [spaceId, hasAccess, processEnded]);
 
+  // Add scroll handler
+  const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = event.currentTarget;
+    // Load more when user scrolls to bottom (with a small threshold)
+    if (scrollHeight - scrollTop <= clientHeight + 100) {
+      if (!loading && hasAccess && processEnded && lastVisible) {
+        fetchSegments(false);
+      }
+    }
+  };
+
   if (error) return <div>Error: {error.message}</div>;
 
   if (!segments || segments?.length === 0) {
@@ -142,8 +153,9 @@ function SegmentsTimeline({
   return (
     <Box
       width={"100%"}
-      // height={"85vh"}
+      height={"85vh"}
       sx={{ overflow: "auto", position: "relative" }}
+      onScroll={handleScroll}
     >
       <Timeline
         sx={{
@@ -175,16 +187,9 @@ function SegmentsTimeline({
           </TimelineItem>
         ))}
       </Timeline>
-      {hasAccess && processEnded && lastVisible && (
+      {loading && hasAccess && processEnded && (
         <Box display="flex" justifyContent="center" mt={2} mb={2}>
-          <Button
-            variant="outlined"
-            onClick={() => fetchSegments(false)}
-            startIcon={loading ? <CircularProgress size={20} /> : null}
-            disabled={loading}
-          >
-            Load More
-          </Button>
+          <CircularProgress size={20} />
         </Box>
       )}
       {!hasAccess && (

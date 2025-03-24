@@ -20,6 +20,8 @@ import {
   IconButton,
   Skeleton,
   Stack,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import AutorenewIcon from "@mui/icons-material/Autorenew";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
@@ -64,6 +66,12 @@ const highlightSearchTerm = (text: string, searchTerm: string) => {
   );
 };
 
+type ToastState = {
+  open: boolean;
+  message: string;
+  severity: "success" | "error" | "info" | "warning";
+};
+
 const SpaceDetails: React.FC = () => {
   const navigate = useNavigate();
   const { spaceId } = useParams<{ spaceId: string }>();
@@ -95,6 +103,12 @@ const SpaceDetails: React.FC = () => {
 
   const [isTranscriptLoading, setIsTranscriptLoading] = useState(false);
   const [isThreadLoading, setIsThreadLoading] = useState(false);
+
+  const [toast, setToast] = useState<ToastState>({
+    open: false,
+    message: "",
+    severity: "info",
+  });
 
   useEffect(() => {
     if (address && spaceId) {
@@ -158,7 +172,11 @@ const SpaceDetails: React.FC = () => {
 
   const handlePayment = async () => {
     if (!spaceId) {
-      alert("Error: No space is selected");
+      setToast({
+        open: true,
+        message: "Error: No space is selected",
+        severity: "error",
+      });
       return;
     }
     let connectedAddress = address;
@@ -166,7 +184,11 @@ const SpaceDetails: React.FC = () => {
       connectedAddress = await connectWallet("eth");
     }
     if (!connectedAddress) {
-      alert("Error: Failed to connect wallet");
+      setToast({
+        open: true,
+        message: "Error: Failed to connect wallet",
+        severity: "error",
+      });
       return;
     }
 
@@ -200,11 +222,35 @@ const SpaceDetails: React.FC = () => {
       const tx = await usdtContract.transfer(receiverAddress, parsedAmount);
 
       await tx?.wait();
+      setToast({
+        open: true,
+        message: "Payment successful! Transcription process started",
+        severity: "success",
+      });
       await updateAccess(connectedAddress, spaceId);
       setHasAccess(true);
+      if (space) {
+        const formData = new FormData();
+        formData.append("hls_url", space.hls_url);
+        formData.append("space_id", spaceId);
+        formData.append("duration_in_minutes", "10");
+        await axios.post(
+          `${import.meta.env.VITE_JAM_PY_SERVER_URL}/transcribe`,
+          formData
+        );
+        setToast({
+          open: true,
+          message: "Transcription process started",
+          severity: "success",
+        });
+      }
     } catch (error) {
       console.error("Payment failed:", error);
-      alert("Payment failed. Please try again.");
+      setToast({
+        open: true,
+        message: "Payment failed. Please try again.",
+        severity: "error",
+      });
     } finally {
       setIsProcessingPayment(false);
     }
@@ -237,6 +283,10 @@ const SpaceDetails: React.FC = () => {
       fetchTwitterThread();
     }
   }, [activeSection, spaceId]);
+
+  const handleCloseToast = () => {
+    setToast((prev) => ({ ...prev, open: false }));
+  };
 
   return (
     <Box
@@ -788,6 +838,20 @@ const SpaceDetails: React.FC = () => {
         isConnected={isConnected}
         onDisconnect={disconnect}
       /> */}
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={6000}
+        onClose={handleCloseToast}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleCloseToast}
+          severity={toast.severity}
+          sx={{ width: "100%" }}
+        >
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

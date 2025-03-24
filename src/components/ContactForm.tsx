@@ -1,19 +1,30 @@
-import React, { useState } from 'react';
-import { AirtableRecord } from './types'; // Assuming this type definition exists elsewhere
+import React, { useState } from "react";
+// import { AirtableRecord } from './types'; // Assuming this type definition exists elsewhere
 
-const Airtable = require('airtable');
+const Airtable = require("airtable");
 
-const airtable = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(process.env.AIRTABLE_BASE_ID);
+const airtable = new Airtable({
+  apiKey: import.meta.env.VITE_AIRTABLE_API_KEY,
+}).base(import.meta.env.VITE_AIRTABLE_BASE_ID);
 
 const submitToAirtable = async (formData: AirtableRecord) => {
-  await airtable(process.env.AIRTABLE_TABLE_NAME).create([{ fields: { ...formData, timestamp: new Date().toISOString() } }]);
+  await airtable(import.meta.env.VITE_AIRTABLE_TABLE_NAME).create([
+    { fields: { ...formData, timestamp: new Date().toISOString() } },
+  ]);
 };
 
 const ContactForm: React.FC = () => {
-  const [formData, setFormData] = useState({ name: '', email: '', telegram: '', message: '' });
-  const [submitStatus, setSubmitStatus] = useState('');
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    telegram: "",
+    message: "",
+  });
+  const [submitStatus, setSubmitStatus] = useState("");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
+  ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -21,11 +32,11 @@ const ContactForm: React.FC = () => {
     e.preventDefault();
     try {
       await submitToAirtable(formData);
-      setSubmitStatus('success');
-      setFormData({ name: '', email: '', telegram: '', message: '' });
+      setSubmitStatus("success");
+      setFormData({ name: "", email: "", telegram: "", message: "" });
     } catch (error) {
-      console.error('Submission error:', error);
-      setSubmitStatus('error');
+      console.error("Submission error:", error);
+      setSubmitStatus("error");
     }
   };
 
@@ -33,23 +44,48 @@ const ContactForm: React.FC = () => {
     <form onSubmit={handleSubmit}>
       <div>
         <label htmlFor="name">Name:</label>
-        <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} />
+        <input
+          type="text"
+          id="name"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+        />
       </div>
       <div>
         <label htmlFor="email">Email:</label>
-        <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} />
+        <input
+          type="email"
+          id="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+        />
       </div>
       <div>
         <label htmlFor="telegram">Telegram:</label>
-        <input type="text" id="telegram" name="telegram" value={formData.telegram} onChange={handleChange} />
+        <input
+          type="text"
+          id="telegram"
+          name="telegram"
+          value={formData.telegram}
+          onChange={handleChange}
+        />
       </div>
       <div>
         <label htmlFor="message">Message:</label>
-        <textarea id="message" name="message" value={formData.message} onChange={handleChange} />
+        <textarea
+          id="message"
+          name="message"
+          value={formData.message}
+          onChange={handleChange}
+        />
       </div>
       <button type="submit">Submit</button>
-      {submitStatus === 'success' && <p>Form submitted successfully!</p>}
-      {submitStatus === 'error' && <p>Error submitting form. Please try again.</p>}
+      {submitStatus === "success" && <p>Form submitted successfully!</p>}
+      {submitStatus === "error" && (
+        <p>Error submitting form. Please try again.</p>
+      )}
     </form>
   );
 };

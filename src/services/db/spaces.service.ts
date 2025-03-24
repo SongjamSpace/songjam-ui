@@ -1,4 +1,4 @@
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import { db, storage } from "../firebase.service";
 import { getDownloadURL } from "firebase/storage";
 import { ref } from "firebase/storage";
@@ -42,14 +42,24 @@ export type Space = {
 
   text?: string;
   segments?: Segment[];
+  user_message?: string;
 };
 
-export const getSpace = async (spaceId: string) => {
+export const getSpace = async (
+  spaceId: string,
+  listener?: (space: Space) => void
+) => {
   const docRef = doc(db, "spaces", spaceId);
   const docSnap = await getDoc(docRef);
 
   if (docSnap.exists()) {
-    return docSnap.data();
+    const space = docSnap.data() as Space;
+    if (listener) {
+      onSnapshot(docRef, (doc) => {
+        listener(doc.data() as Space);
+      });
+    }
+    return space;
   }
   return null;
 };

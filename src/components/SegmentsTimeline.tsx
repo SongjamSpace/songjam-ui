@@ -18,9 +18,11 @@ import {
   Skeleton,
   CircularProgress,
   Stack,
+  Button,
 } from "@mui/material";
 import { formatSeconds } from "../utils";
 import { PaywallOverlay } from "./PaywallOverlay";
+import { useState } from "react";
 
 type Props = {
   spaceId: string;
@@ -37,6 +39,10 @@ function SegmentsTimeline({
   isProcessingPayment,
   handlePayment,
 }: Props) {
+  const [segmentLimit, setSegmentLimit] = useState(
+    hasAccess ? (processEnded ? 50 : 15) : 5
+  );
+
   const [segments, loading, error] = useCollectionData(
     query(
       collection(
@@ -46,7 +52,7 @@ function SegmentsTimeline({
         hasAccess && processEnded ? "segments" : "short_segments"
       ),
       orderBy("start", "asc"),
-      limit(hasAccess ? (processEnded ? 50 : 15) : 5)
+      limit(segmentLimit)
     )
   );
 
@@ -122,17 +128,19 @@ function SegmentsTimeline({
             </TimelineContent>
           </TimelineItem>
         ))}
-        {!processEnded && (
-          <TimelineContent sx={{ display: "flex", justifyContent: "center" }}>
-            <Stack alignItems="center" spacing={1}>
-              <CircularProgress size={28} />
-              <Typography variant="body2">
-                Transcription is still in progress
-              </Typography>
-            </Stack>
-          </TimelineContent>
-        )}
       </Timeline>
+      {hasAccess && processEnded && segments?.length >= segmentLimit && (
+        <Box display="flex" justifyContent="center" mt={2} mb={2}>
+          <Button
+            variant="outlined"
+            onClick={() => setSegmentLimit((prev) => prev + 50)}
+            startIcon={loading ? <CircularProgress size={20} /> : null}
+            disabled={loading}
+          >
+            Load More
+          </Button>
+        </Box>
+      )}
       {!hasAccess && (
         <PaywallOverlay
           isProcessingPayment={isProcessingPayment}

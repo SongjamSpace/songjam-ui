@@ -123,8 +123,17 @@ const SpaceDetails: React.FC = () => {
   useEffect(() => {
     if (!spaceId) return;
     const fetchSpace = async () => {
-      const space = await getSpace(spaceId);
-      setSpace(space as Space);
+      const space = await getSpace(spaceId, (space) => {
+        setSpace(space);
+      });
+      setSpace(space);
+      if (!space) {
+        setToast({
+          open: true,
+          message: "Error: Space not found",
+          severity: "error",
+        });
+      }
     };
     fetchSpace();
   }, [spaceId]);
@@ -352,18 +361,62 @@ const SpaceDetails: React.FC = () => {
                   "linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))",
                 padding: "6px 16px",
                 borderRadius: "20px",
-                display: "inline-block",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 1,
                 mb: 2,
                 letterSpacing: "0.1em",
                 fontWeight: 600,
                 fontSize: "0.75rem",
+                position: "relative",
+                overflow: "hidden",
+                "&::after":
+                  space?.transcription_status !== "ENDED"
+                    ? {
+                        content: '""',
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background:
+                          "linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.2), transparent)",
+                        animation: "shimmer 1.5s infinite",
+                      }
+                    : {},
+                "@keyframes shimmer": {
+                  "0%": {
+                    transform: "translateX(-100%)",
+                  },
+                  "100%": {
+                    transform: "translateX(100%)",
+                  },
+                },
               }}
             >
-              {space
-                ? space.transcription_status === "ENDED"
-                  ? "Transcription Ready"
-                  : space.transcription_status
-                : "Processing"}
+              {space?.user_message}
+              {space?.transcription_status !== "ENDED" && (
+                <Box
+                  component="span"
+                  sx={{
+                    width: 16,
+                    height: 16,
+                    borderRadius: "50%",
+                    border: "2px solid transparent",
+                    borderTopColor: "#60a5fa",
+                    borderRightColor: "#60a5fa",
+                    animation: "spin 1s linear infinite",
+                    "@keyframes spin": {
+                      "0%": {
+                        transform: "rotate(0deg)",
+                      },
+                      "100%": {
+                        transform: "rotate(360deg)",
+                      },
+                    },
+                  }}
+                />
+              )}
             </Typography>
             <Box>
               <IconButton onClick={() => navigate("/")}>

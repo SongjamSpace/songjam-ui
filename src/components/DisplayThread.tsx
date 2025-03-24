@@ -15,6 +15,7 @@ type Props = {
   onGenerateTwitterThread: () => void;
   twitterThread: string[];
   isThreadLoading: boolean;
+  processEnded: boolean;
 };
 
 function DisplayThread({
@@ -22,6 +23,7 @@ function DisplayThread({
   onGenerateTwitterThread,
   twitterThread,
   isThreadLoading,
+  processEnded,
 }: Props) {
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -176,6 +178,7 @@ function DisplayThread({
               borderColor: "#272c30",
             },
           }}
+          disabled={!processEnded}
         >
           Share on X
         </Button>
@@ -214,6 +217,7 @@ function DisplayThread({
               await onGenerateTwitterThread();
               setIsGenerating(false);
             }}
+            disabled={!processEnded}
           >
             Generate Twitter Thread
           </LoadingButton>

@@ -70,7 +70,7 @@ const SpaceDetails: React.FC = () => {
   const [space, setSpace] = useState<Space | null>(null);
   const [activeSection, setActiveSection] = useState<
     "summary" | "timeline" | "transcript" | "threadoor" | "moments"
-  >("summary");
+  >("timeline");
   const [searchTerm, setSearchTerm] = useState(""); // Added search term state
   const [filteredTranscript, setFilteredTranscript] = useState<Segment[]>([]); // Added filtered transcript state
   const [hasAccess, setHasAccess] = useState(false);
@@ -264,10 +264,14 @@ const SpaceDetails: React.FC = () => {
       }}
     >
       <nav>
-        <div className="logo">
+        <Box
+          className="logo"
+          sx={{ cursor: "pointer" }}
+          onClick={() => navigate("/")}
+        >
           <Logo />
           <span>SongJam</span>
-        </div>
+        </Box>
         <div className="nav-controls">
           <ConnectButton
             address={address}
@@ -305,7 +309,11 @@ const SpaceDetails: React.FC = () => {
                 fontSize: "0.75rem",
               }}
             >
-              LIVE TRANSCRIPT
+              {space
+                ? space.transcription_status === "ENDED"
+                  ? "Transcription Ready"
+                  : space.transcription_status
+                : "Processing"}
             </Typography>
             <Box>
               <IconButton onClick={() => navigate("/")}>
@@ -426,19 +434,6 @@ const SpaceDetails: React.FC = () => {
           }}
         >
           <Button
-            variant={activeSection === "summary" ? "contained" : "text"}
-            onClick={() => setActiveSection("summary")}
-            sx={{
-              color: "white",
-              "&.MuiButton-contained": {
-                background:
-                  "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
-              },
-            }}
-          >
-            Summary
-          </Button>
-          <Button
             variant={activeSection === "timeline" ? "contained" : "text"}
             onClick={() => setActiveSection("timeline")}
             sx={{
@@ -448,9 +443,22 @@ const SpaceDetails: React.FC = () => {
                   "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
               },
             }}
-            disabled={!hasAccess}
           >
             Timeline
+          </Button>
+          <Button
+            variant={activeSection === "summary" ? "contained" : "text"}
+            onClick={() => setActiveSection("summary")}
+            sx={{
+              color: "white",
+              "&.MuiButton-contained": {
+                background:
+                  "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
+              },
+            }}
+            disabled={!hasAccess}
+          >
+            Summary
           </Button>
           <Button
             variant={activeSection === "transcript" ? "contained" : "text"}
@@ -490,7 +498,7 @@ const SpaceDetails: React.FC = () => {
                   "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
               },
             }}
-            disabled={!hasAccess}
+            disabled
           >
             Memorable Moments
           </Button>
@@ -597,6 +605,7 @@ const SpaceDetails: React.FC = () => {
             handlePayment={handlePayment}
             spaceId={space.spaceId}
             isProcessingPayment={isProcessingPayment}
+            processEnded={space.transcription_status === "ENDED"}
           />
         )}
 
@@ -617,8 +626,14 @@ const SpaceDetails: React.FC = () => {
             <Typography variant="h6" sx={{ mb: 3 }}>
               Transcript Timeline
             </Typography>
-            {space?.transcription_status === "ENDED" && (
-              <SegmentsTimeline spaceId={space.spaceId} />
+            {space?.spaceId && (
+              <SegmentsTimeline
+                spaceId={space.spaceId}
+                hasAccess={hasAccess}
+                isProcessingPayment={isProcessingPayment}
+                handlePayment={handlePayment}
+                processEnded={space.transcription_status === "ENDED"}
+              />
             )}
           </Paper>
         )}
@@ -630,6 +645,7 @@ const SpaceDetails: React.FC = () => {
             onGenerateTwitterThread={onGenerateTwitterThread}
             twitterThread={twitterThread || []}
             isThreadLoading={isThreadLoading}
+            processEnded={space.transcription_status === "ENDED"}
           />
         )}
 
@@ -649,26 +665,7 @@ const SpaceDetails: React.FC = () => {
             <Typography variant="h6" sx={{ color: "#60a5fa", mb: 3 }}>
               Memorable Moments
             </Typography>
-            {[
-              {
-                quote:
-                  "The future of web3 social isn't about replacing traditional platforms - it's about empowering users with true digital ownership.",
-                speaker: "crypto_sarah",
-                timestamp: "12:35",
-              },
-              {
-                quote:
-                  "When we talk about decentralized identity, we're really talking about the foundation of digital trust.",
-                speaker: "web3_builder",
-                timestamp: "23:15",
-              },
-              {
-                quote:
-                  "Token-gated communities are just the beginning. The real innovation comes from dynamic access models that evolve with participation.",
-                speaker: "defi_max",
-                timestamp: "45:20",
-              },
-            ].map((moment, index) => (
+            {[].map((moment, index) => (
               <Paper
                 key={index}
                 sx={{
@@ -693,7 +690,7 @@ const SpaceDetails: React.FC = () => {
                     lineHeight: 1.6,
                   }}
                 >
-                  "{moment.quote}"
+                  {/* "{moment.quote}" */}
                 </Typography>
                 <Box
                   sx={{
@@ -703,18 +700,19 @@ const SpaceDetails: React.FC = () => {
                   }}
                 >
                   <Typography sx={{ color: "#60a5fa" }}>
-                    @{moment.speaker}
+                    {/* @{moment.speaker} */}
                   </Typography>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                     <Typography variant="caption" sx={{ color: "#60a5fa" }}>
-                      {moment.timestamp}
+                      {/* {moment.timestamp} */}
                     </Typography>
                     <Button
                       startIcon={<ContentCopyIcon />}
                       size="small"
                       sx={{ color: "white", minWidth: "auto" }}
-                      onClick={() =>
-                        navigator.clipboard.writeText(moment.quote)
+                      onClick={
+                        () => {}
+                        // navigator.clipboard.writeText(moment.quote)
                       }
                     >
                       Copy

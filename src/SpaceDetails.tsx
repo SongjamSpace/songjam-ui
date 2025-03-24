@@ -147,7 +147,10 @@ const SpaceDetails: React.FC = () => {
     }
   }, [searchTerm, segmentsAndText]); // Update filteredTranscript on searchTerm or space change
 
-  const onGenerateTwitterThread = async () => {
+  const onGenerateTwitterThread = async (
+    numberingStyle: number,
+    threadIndicator: number
+  ) => {
     if (!spaceId) return;
     let _metaSummary = metaSummaryList;
     if (_metaSummary.length === 0) {
@@ -168,6 +171,8 @@ const SpaceDetails: React.FC = () => {
               handle: speaker.twitter_screen_name,
             })
           ),
+          numbering_style: numberingStyle,
+          thread_indicator: threadIndicator,
         }
       );
       const twitterThreadData = twitterThread.data;

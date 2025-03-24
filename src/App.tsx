@@ -40,8 +40,8 @@ export default function App() {
   const [spaces, loading, error] = useCollectionData(
     query(
       collection(db, "spaces"),
-      where("transcription_status", "==", "ENDED"),
-    ),
+      where("transcription_status", "==", "ENDED")
+    )
   );
   const [showWalletModal, setShowWalletModal] = useState(false);
 
@@ -59,7 +59,7 @@ export default function App() {
             `${import.meta.env.VITE_JAM_SERVER_URL}/transcribe-recorded-space`,
             {
               spaceId,
-            },
+            }
           );
           if (res.data.status === "success") {
             navigate(`/${spaceId}`);
@@ -154,7 +154,7 @@ export default function App() {
             </Box>
           </div>
         </div>
-        {spaces?.length && (
+        {/* {spaces?.length && (
           <TrendingSpaces
             spaces={spaces.map((space) => ({
               spaceId: space.spaceId,
@@ -162,7 +162,7 @@ export default function App() {
             }))}
             loading={loading}
           />
-        )}
+        )} */}
         <div className="cta-buttons">
           <Button
             variant="contained"
@@ -488,7 +488,7 @@ export default function App() {
                   !import.meta.env.VITE_AIRTABLE_TABLE_NAME
                 ) {
                   alert(
-                    "Missing Airtable configuration. Please check your environment variables.",
+                    "Missing Airtable configuration. Please check your environment variables."
                   );
                   return;
                 }
@@ -507,7 +507,7 @@ export default function App() {
               } catch (error: any) {
                 console.error("Submission error:", error);
                 alert(
-                  error?.message || "Error submitting form. Please try again.",
+                  error?.message || "Error submitting form. Please try again."
                 );
               }
             }}

@@ -5,6 +5,7 @@ import {
   Box,
   Button,
   Skeleton,
+  MenuItem,
 } from "@mui/material";
 import { useState } from "react";
 import { LoadingButton } from "@mui/lab";
@@ -12,7 +13,10 @@ import { LoadingButton } from "@mui/lab";
 
 type Props = {
   spaceId: string;
-  onGenerateTwitterThread: () => void;
+  onGenerateTwitterThread: (
+    numberingStyle: number,
+    threadIndicator: number
+  ) => void;
   twitterThread: string[];
   isThreadLoading: boolean;
   processEnded: boolean;
@@ -26,6 +30,8 @@ function DisplayThread({
   processEnded,
 }: Props) {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [numberingStyle, setNumberingStyle] = useState(0);
+  const [threadIndicator, setThreadIndicator] = useState(0);
 
   if (isGenerating || isThreadLoading) {
     return (
@@ -178,7 +184,7 @@ function DisplayThread({
               borderColor: "#272c30",
             },
           }}
-          disabled={!processEnded}
+          disabled={!twitterThread?.length}
         >
           Share on X
         </Button>
@@ -195,6 +201,38 @@ function DisplayThread({
               >
                 Remix Thread
               </Button> */}
+      </Box>
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="subtitle1" sx={{ mb: 2 }}>
+          Thread Settings
+        </Typography>
+        <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+          <TextField
+            select
+            label="Numbering Style"
+            value={numberingStyle}
+            onChange={(e) => setNumberingStyle(Number(e.target.value))}
+            size="small"
+            sx={{ minWidth: 120 }}
+          >
+            <MenuItem value={0}>1/</MenuItem>
+            <MenuItem value={1}>(1)</MenuItem>
+            <MenuItem value={2}>None</MenuItem>
+          </TextField>
+          <TextField
+            select
+            label="Thread Indicator"
+            value={threadIndicator}
+            onChange={(e) => setThreadIndicator(Number(e.target.value))}
+            size="small"
+            sx={{ minWidth: 120 }}
+          >
+            <MenuItem value={0}>🧵</MenuItem>
+            <MenuItem value={1}>📝</MenuItem>
+            <MenuItem value={2}>Thread:</MenuItem>
+            <MenuItem value={3}>None</MenuItem>
+          </TextField>
+        </Box>
       </Box>
       {twitterThread.length === 0 ? (
         <Box
@@ -214,7 +252,7 @@ function DisplayThread({
             }}
             onClick={async () => {
               setIsGenerating(true);
-              await onGenerateTwitterThread();
+              await onGenerateTwitterThread(numberingStyle, threadIndicator);
               setIsGenerating(false);
             }}
             disabled={!processEnded}
@@ -241,7 +279,17 @@ function DisplayThread({
                 },
               }}
             >
-              <TextField
+              <Typography
+                variant="body1"
+                sx={{
+                  mb: 2,
+                  whiteSpace: "pre-line",
+                  lineHeight: 1.5,
+                }}
+              >
+                {tweet}
+              </Typography>
+              {/* <TextField
                 multiline
                 fullWidth
                 defaultValue={tweet}
@@ -258,7 +306,7 @@ function DisplayThread({
                     "&:after": { display: "none" },
                   },
                 }}
-              />
+              /> */}
               <Box
                 sx={{
                   display: "flex",

@@ -508,7 +508,7 @@ const SpaceDetails: React.FC = () => {
               <>
                 <Chip
                   icon={<AutorenewIcon />}
-                  label={`${space.total_live_listeners} listening`}
+                  label={`${space.total_live_listeners} listened`}
                   sx={{ background: "var(--bg-secondary)" }}
                 />
                 <Chip

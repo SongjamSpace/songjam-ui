@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   getFirstLevelSummaries,
-  getSegmentsAndText,
   getSpace,
   getSpaceAudioDownloadUrl,
   getTwitterThread,
@@ -42,33 +41,7 @@ import { ethers } from "ethers";
 import { hasAccessToSpace, updateAccess } from "./services/db/user.service";
 import Logo from "./components/Logo";
 import ConnectButton from "./components/ConnectButton";
-
-const formatSeconds = (seconds: number): string => {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = Math.floor(seconds % 60);
-  return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
-};
-
-const highlightSearchTerm = (text: string, searchTerm: string) => {
-  if (!searchTerm) return text;
-  const regex = new RegExp(`(${searchTerm})`, "gi");
-  return text.split(regex).map((part, i) =>
-    regex.test(part) ? (
-      <Box
-        component="span"
-        key={i}
-        sx={{
-          backgroundColor: "rgba(96, 165, 250, 0.3)",
-          // color: "rgba(255, 255, 0, 1)",
-        }}
-      >
-        {part}
-      </Box>
-    ) : (
-      part
-    )
-  );
-};
+import AlgoliaSearchTranscription from "./components/AlgoliaSearchTranscription";
 
 type ToastState = {
   open: boolean;
@@ -83,8 +56,8 @@ const SpaceDetails: React.FC = () => {
   const [activeSection, setActiveSection] = useState<
     "summary" | "timeline" | "transcript" | "threadoor" | "moments"
   >("timeline");
-  const [searchTerm, setSearchTerm] = useState(""); // Added search term state
-  const [filteredTranscript, setFilteredTranscript] = useState<Segment[]>([]); // Added filtered transcript state
+  // const [searchTerm, setSearchTerm] = useState(""); // Added search term state
+  // const [filteredTranscript, setFilteredTranscript] = useState<Segment[]>([]); // Added filtered transcript state
   const [hasAccess, setHasAccess] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [metaSummaryList, setMetaSummaryList] = useState<string[]>([]);
@@ -144,14 +117,14 @@ const SpaceDetails: React.FC = () => {
     fetchSpace();
   }, [spaceId]);
 
-  useEffect(() => {
-    if (segmentsAndText) {
-      const filtered = segmentsAndText?.segments?.filter((segment) =>
-        segment.text.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredTranscript(filtered || []);
-    }
-  }, [searchTerm, segmentsAndText]); // Update filteredTranscript on searchTerm or space change
+  // useEffect(() => {
+  //   if (segmentsAndText) {
+  //     const filtered = segmentsAndText?.segments?.filter((segment) =>
+  //       segment.text.toLowerCase().includes(searchTerm.toLowerCase())
+  //     );
+  //     setFilteredTranscript(filtered || []);
+  //   }
+  // }, [searchTerm, segmentsAndText]); // Update filteredTranscript on searchTerm or space change
 
   const onGenerateTwitterThread = async (
     numberingStyle: number,
@@ -287,24 +260,26 @@ const SpaceDetails: React.FC = () => {
   // };
 
   useEffect(() => {
+    // if (
+    //   activeSection === "transcript" &&
+    //   spaceId &&
+    //   space?.transcription_status === "ENDED"
+    // ) {
+    //   const fetchSegments = async () => {
+    //     setIsTranscriptLoading(true);
+    //     const _segmentsAndText = await getSegmentsAndText(spaceId);
+    //     setSegmentsAndText(
+    //       _segmentsAndText as { segments: Segment[]; text: string }
+    //     );
+    //     setIsTranscriptLoading(false);
+    //   };
+    //   fetchSegments();
+    // } else
     if (
-      activeSection === "transcript" &&
-      spaceId &&
-      space?.transcription_status === "ENDED"
-    ) {
-      const fetchSegments = async () => {
-        setIsTranscriptLoading(true);
-        const _segmentsAndText = await getSegmentsAndText(spaceId);
-        setSegmentsAndText(
-          _segmentsAndText as { segments: Segment[]; text: string }
-        );
-        setIsTranscriptLoading(false);
-      };
-      fetchSegments();
-    } else if (
       activeSection === "threadoor" &&
       spaceId &&
-      space?.transcription_status === "ENDED"
+      space?.transcription_status === "ENDED" &&
+      twitterThread.length === 0
     ) {
       const fetchTwitterThread = async () => {
         setIsThreadLoading(true);
@@ -678,8 +653,8 @@ const SpaceDetails: React.FC = () => {
                 AI Threadoor
               </Button>
               <Button
-                variant={activeSection === "moments" ? "contained" : "text"}
-                onClick={() => setActiveSection("moments")}
+                variant={activeSection === "transcript" ? "contained" : "text"}
+                onClick={() => setActiveSection("transcript")}
                 sx={{
                   color: "white",
                   minWidth: { xs: "120px", sm: "140px" },
@@ -690,9 +665,9 @@ const SpaceDetails: React.FC = () => {
                       "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
                   },
                 }}
-                disabled
+                disabled={!hasAccess}
               >
-                Memorable Moments
+                Transcription
               </Button>
             </Box>
 
@@ -966,60 +941,8 @@ const SpaceDetails: React.FC = () => {
         )}
 
         {/* Transcript Section */}
-        {activeSection === "transcript" && (
-          <Paper
-            sx={{
-              background: "rgba(255, 255, 255, 0.03)",
-              backdropFilter: "blur(10px)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              borderRadius: 2,
-              p: 3,
-              "&:hover": {
-                background: "rgba(255, 255, 255, 0.05)",
-              },
-            }}
-          >
-            <Typography variant="h6" sx={{ mb: 3 }}>
-              Full Transcript
-            </Typography>
-            <TextField
-              label="Search Transcript"
-              variant="outlined"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              fullWidth
-              sx={{ mb: 2 }}
-            />{" "}
-            {/* Added search bar */}
-            <Box sx={{ maxHeight: "60vh", overflowY: "auto" }}>
-              {isTranscriptLoading ? (
-                <Stack direction="column" spacing={2}>
-                  {[1, 2, 3].map((i) => (
-                    <Skeleton variant="rectangular" height="100%" />
-                  ))}
-                </Stack>
-              ) : (
-                filteredTranscript.map((segment: Segment, index: number) => (
-                  <Box
-                    key={index}
-                    sx={{
-                      background: "rgba(255,255,255,0.05)",
-                      p: 2,
-                      borderRadius: 2,
-                      mb: 2,
-                    }}
-                  >
-                    <Typography>
-                      {highlightSearchTerm(segment.text, searchTerm)}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: "#60a5fa" }}>
-                      {formatSeconds(segment.start)}
-                    </Typography>
-                  </Box>
-                ))
-              )}
-            </Box>
-          </Paper>
+        {activeSection === "transcript" && space?.spaceId && (
+          <AlgoliaSearchTranscription spaceId={space.spaceId} />
         )}
       </Box>
       {/* <WalletModal

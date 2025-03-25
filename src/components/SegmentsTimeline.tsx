@@ -67,7 +67,7 @@ function SegmentsTimeline({
 
       let q = query(
         collectionRef,
-        orderBy("start", "asc"),
+        orderBy("idx", "asc"),
         limit(isInitial ? (hasAccess ? BATCH_SIZE : 15) : BATCH_SIZE)
       );
 

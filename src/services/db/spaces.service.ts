@@ -1,4 +1,13 @@
-import { doc, getDoc, onSnapshot } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  limit,
+  onSnapshot,
+  orderBy,
+  query,
+} from "firebase/firestore";
 import { db, storage } from "../firebase.service";
 import { getDownloadURL } from "firebase/storage";
 import { ref } from "firebase/storage";
@@ -89,10 +98,14 @@ export const getFirstLevelSummaries = async (spaceId: string) => {
   return docSnap.data()?.first_level_summaries;
 };
 
-export const getSegmentsAndText = async (spaceId: string) => {
-  const docRef = doc(db, "spaces", spaceId, "segments", "raw");
-  const docSnap = await getDoc(docRef);
-  return docSnap.data();
+export const getSegments = async (spaceId: string) => {
+  const colRef = query(
+    collection(db, "spaces", spaceId, "segments"),
+    orderBy("idx", "asc"),
+    limit(20)
+  );
+  const snapshot = await getDocs(colRef);
+  return snapshot.docs.map((doc) => doc.data());
 };
 
 export const getTwitterThread = async (spaceId: string) => {

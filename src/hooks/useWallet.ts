@@ -77,7 +77,7 @@ export const useWallet = () => {
     chain: "eth" | "base"
   ): Promise<string | null> => {
     if (!window.ethereum) {
-      alert("Please install MetaMask to connect a wallet");
+      alert("Please install a browser wallet such as MetaMask to connect");
       return null;
     }
 

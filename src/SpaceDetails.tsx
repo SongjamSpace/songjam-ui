@@ -22,11 +22,15 @@ import {
   Stack,
   Snackbar,
   Alert,
+  useMediaQuery,
+  useTheme,
+  CircularProgress,
 } from "@mui/material";
 import AutorenewIcon from "@mui/icons-material/Autorenew";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DownloadIcon from "@mui/icons-material/Download";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { Summary } from "./components/Summary";
 import { LoadingButton } from "@mui/lab";
 import SegmentsTimeline from "./components/SegmentsTimeline";
@@ -103,6 +107,8 @@ const SpaceDetails: React.FC = () => {
 
   const [isTranscriptLoading, setIsTranscriptLoading] = useState(false);
   const [isThreadLoading, setIsThreadLoading] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [toast, setToast] = useState<ToastState>({
     open: false,
@@ -314,6 +320,23 @@ const SpaceDetails: React.FC = () => {
     setToast((prev) => ({ ...prev, open: false }));
   };
 
+  const onDownloadRecording = async () => {
+    if (!spaceId) return;
+    setIsDownloading(true);
+    const audioUrl = await getSpaceAudioDownloadUrl(spaceId);
+    const response = await fetch(audioUrl);
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${space?.title}.mp3`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    setIsDownloading(false);
+  };
+
   return (
     <Box
       sx={{
@@ -452,8 +475,8 @@ const SpaceDetails: React.FC = () => {
           >
             {space ? (
               <Typography
-                variant="h4"
-                sx={{ fontWeight: "bold", flexBasis: "70%" }}
+                variant={"h4"}
+                sx={{ fontWeight: "bold", flexBasis: { xs: "90%", sm: "70%" } }}
               >
                 {space.title}
               </Typography>
@@ -467,27 +490,23 @@ const SpaceDetails: React.FC = () => {
                 }}
               />
             )}
-            {
+            {isMobile ? (
+              <IconButton
+                disabled={!space || space.transcription_status !== "ENDED"}
+                onClick={onDownloadRecording}
+              >
+                {isDownloading ? (
+                  <CircularProgress size={20} />
+                ) : (
+                  <DownloadIcon />
+                )}
+              </IconButton>
+            ) : (
               <LoadingButton
                 loading={isDownloading}
                 disabled={!space || space.transcription_status !== "ENDED"}
                 startIcon={<DownloadIcon />}
-                onClick={async () => {
-                  if (!spaceId) return;
-                  setIsDownloading(true);
-                  const audioUrl = await getSpaceAudioDownloadUrl(spaceId);
-                  const response = await fetch(audioUrl);
-                  const blob = await response.blob();
-                  const url = window.URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = `${space?.title}.mp3`;
-                  document.body.appendChild(a);
-                  a.click();
-                  window.URL.revokeObjectURL(url);
-                  document.body.removeChild(a);
-                  setIsDownloading(false);
-                }}
+                onClick={onDownloadRecording}
                 sx={{
                   color: "#60a5fa",
                   background: "rgba(96, 165, 250, 0.1)",
@@ -501,7 +520,7 @@ const SpaceDetails: React.FC = () => {
               >
                 {isDownloading ? "Downloading..." : "Download Recording"}
               </LoadingButton>
-            }
+            )}
           </Box>
           <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
             {space ? (
@@ -543,84 +562,173 @@ const SpaceDetails: React.FC = () => {
         <Box
           sx={{
             display: "flex",
-            justifyContent: "space-between",
+            alignItems: "stretch",
             mb: 4,
-            borderRadius: "16px",
-            background: "rgba(255, 255, 255, 0.03)",
-            backdropFilter: "blur(10px)",
-            p: 1,
-            border: "1px solid rgba(255, 255, 255, 0.05)",
           }}
         >
-          <Button
-            variant={activeSection === "timeline" ? "contained" : "text"}
-            onClick={() => setActiveSection("timeline")}
+          {/* Button Group Container with integrated arrows */}
+          <Box
             sx={{
-              color: "white",
-              "&.MuiButton-contained": {
-                background:
-                  "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
-              },
+              display: "flex",
+              flex: 1,
+              borderRadius: "16px",
+              background: "rgba(255, 255, 255, 0.03)",
+              backdropFilter: "blur(10px)",
+              border: "1px solid rgba(255, 255, 255, 0.05)",
+              overflow: "hidden",
             }}
           >
-            Timeline
-          </Button>
-          <Button
-            variant={activeSection === "summary" ? "contained" : "text"}
-            onClick={() => setActiveSection("summary")}
-            sx={{
-              color: "white",
-              "&.MuiButton-contained": {
-                background:
-                  "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
-              },
-            }}
-            disabled={!hasAccess}
-          >
-            Summary
-          </Button>
-          <Button
-            variant={activeSection === "threadoor" ? "contained" : "text"}
-            onClick={() => setActiveSection("threadoor")}
-            sx={{
-              color: "white",
-              "&.MuiButton-contained": {
-                background:
-                  "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
-              },
-            }}
-            disabled={!hasAccess}
-          >
-            AI Threadoor
-          </Button>
-          {/* <Button
-            variant={activeSection === "transcript" ? "contained" : "text"}
-            onClick={() => setActiveSection("transcript")}
-            sx={{
-              color: "white",
-              "&.MuiButton-contained": {
-                background:
-                  "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
-              },
-            }}
-            disabled={!hasAccess}
-          >
-            Search
-          </Button> */}
-          <Button
-            variant={activeSection === "moments" ? "contained" : "text"}
-            onClick={() => setActiveSection("moments")}
-            sx={{
-              color: "white",
-              "&.MuiButton-contained": {
-                background:
-                  "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
-              },
-            }}
-            disabled
-          >
-            Memorable Moments
-          </Button>
+            {/* Left Arrow - Only show on mobile when scrollable */}
+            <IconButton
+              sx={{
+                display: { xs: "flex", sm: "none" },
+                color: "white",
+                borderRadius: "16px 0 0 16px",
+                padding: "0 8px",
+                "&.Mui-disabled": {
+                  display: "none",
+                },
+                minWidth: "auto",
+                flex: "0 0 auto",
+              }}
+              onClick={() => {
+                const container = document.querySelector(
+                  ".nav-scroll-container"
+                );
+                if (container) {
+                  const scrollLeft = container.scrollLeft;
+                  const buttonWidth = 120;
+                  const targetScroll =
+                    Math.floor(scrollLeft / buttonWidth) * buttonWidth -
+                    buttonWidth;
+                  container.scrollTo({
+                    left: targetScroll,
+                    behavior: "smooth",
+                  });
+                }
+              }}
+            >
+              <ArrowBackIcon fontSize="small" />
+            </IconButton>
+
+            <Box
+              className="nav-scroll-container"
+              sx={{
+                display: "flex",
+                gap: 1,
+                overflowX: { xs: "auto", sm: "visible" },
+                "&::-webkit-scrollbar": { display: "none" },
+                msOverflowStyle: "none",
+                scrollbarWidth: "none",
+                scrollBehavior: "smooth",
+                scrollSnapType: "x mandatory",
+                p: 1,
+                flex: 1,
+              }}
+            >
+              {/* Existing Buttons */}
+              <Button
+                variant={activeSection === "timeline" ? "contained" : "text"}
+                onClick={() => setActiveSection("timeline")}
+                sx={{
+                  color: "white",
+                  minWidth: { xs: "120px", sm: "140px" },
+                  // flex: { xs: "0 0 auto", sm: "1 1 0" },
+                  scrollSnapAlign: "start",
+                  "&.MuiButton-contained": {
+                    background:
+                      "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
+                  },
+                }}
+              >
+                Timeline
+              </Button>
+              <Button
+                variant={activeSection === "summary" ? "contained" : "text"}
+                onClick={() => setActiveSection("summary")}
+                sx={{
+                  color: "white",
+                  minWidth: { xs: "120px", sm: "140px" },
+                  flex: { xs: "0 0 auto", sm: "1 1 0" },
+                  scrollSnapAlign: "start",
+                  "&.MuiButton-contained": {
+                    background:
+                      "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
+                  },
+                }}
+                disabled={!hasAccess}
+              >
+                Summary
+              </Button>
+              <Button
+                variant={activeSection === "threadoor" ? "contained" : "text"}
+                onClick={() => setActiveSection("threadoor")}
+                sx={{
+                  color: "white",
+                  minWidth: { xs: "120px", sm: "140px" },
+                  flex: { xs: "0 0 auto", sm: "1 1 0" },
+                  scrollSnapAlign: "start",
+                  "&.MuiButton-contained": {
+                    background:
+                      "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
+                  },
+                }}
+                disabled={!hasAccess}
+              >
+                AI Threadoor
+              </Button>
+              <Button
+                variant={activeSection === "moments" ? "contained" : "text"}
+                onClick={() => setActiveSection("moments")}
+                sx={{
+                  color: "white",
+                  minWidth: { xs: "120px", sm: "140px" },
+                  flex: { xs: "0 0 auto", sm: "1 1 0" },
+                  scrollSnapAlign: "start",
+                  "&.MuiButton-contained": {
+                    background:
+                      "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
+                  },
+                }}
+                disabled
+              >
+                Memorable Moments
+              </Button>
+            </Box>
+
+            {/* Right Arrow - Only show on mobile when scrollable */}
+            <IconButton
+              sx={{
+                display: { xs: "flex", sm: "none" },
+                color: "white",
+                borderRadius: "0 16px 16px 0",
+                padding: "0 8px",
+                "&.Mui-disabled": {
+                  display: "none",
+                },
+                minWidth: "auto",
+                flex: "0 0 auto",
+              }}
+              onClick={() => {
+                const container = document.querySelector(
+                  ".nav-scroll-container"
+                );
+                if (container) {
+                  const scrollLeft = container.scrollLeft;
+                  const buttonWidth = 120;
+                  const targetScroll =
+                    Math.ceil(scrollLeft / buttonWidth) * buttonWidth +
+                    buttonWidth;
+                  container.scrollTo({
+                    left: targetScroll,
+                    behavior: "smooth",
+                  });
+                }
+              }}
+            >
+              <ArrowForwardIcon fontSize="small" />
+            </IconButton>
+          </Box>
         </Box>
 
         {/* Speakers */}
@@ -630,16 +738,27 @@ const SpaceDetails: React.FC = () => {
             backdropFilter: "blur(10px)",
             border: "1px solid rgba(255, 255, 255, 0.05)",
             borderRadius: 3,
-            p: 4,
+            p: { xs: 2, sm: 4 },
             mb: 4,
           }}
         >
           <Typography variant="h6" sx={{ mb: 2 }}>
             Speakers
           </Typography>
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: { xs: "nowrap", sm: "wrap" },
+              gap: 2,
+              overflowX: { xs: "auto", sm: "visible" },
+              "&::-webkit-scrollbar": { display: "none" },
+              msOverflowStyle: "none",
+              scrollbarWidth: "none",
+              pb: { xs: 1, sm: 0 }, // Add padding bottom on mobile for better scrolling
+            }}
+          >
             {space ? (
-              space.admins?.map((admin) => (
+              [...space.admins, ...space.speakers]?.map((admin) => (
                 <Box
                   key={admin.user_id}
                   component="a"
@@ -660,6 +779,8 @@ const SpaceDetails: React.FC = () => {
                       background: "rgba(255,255,255,0.1)",
                       transform: "translateY(-2px)",
                     },
+                    flex: { xs: "0 0 auto", sm: "0 1 auto" }, // Prevent shrinking on mobile
+                    minWidth: { xs: "250px", sm: "auto" }, // Set minimum width on mobile
                   }}
                 >
                   <Avatar src={admin.avatar_url} alt={admin.display_name} />

@@ -519,7 +519,7 @@ export default function App() {
 
       <section className="social-media">
         <h2>Connect With Us</h2>
-        <div className="social-links">
+        <Box display="flex" flexWrap="wrap" gap={8} justifyContent="center">
           <a
             href="https://www.producthunt.com/posts/songjam-otter-ai-for-x-spaces"
             target="_blank"
@@ -556,7 +556,7 @@ export default function App() {
             <img src="/logos/linkedin.png" alt="LinkedIn" />
             <span>LinkedIn</span>
           </a>
-        </div>
+        </Box>
       </section>
 
       <footer className="footer">

@@ -556,13 +556,13 @@ button.secondary {
   -webkit-text-fill-color: transparent;
 }
 
-.social-links {
+/* .social-links {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   max-width: 800px;
   margin: 0 auto;
   gap: 2rem;
-}
+} */
 
 .social-link {
   display: flex;
@@ -886,4 +886,22 @@ button.secondary {
 
 .phone-input input {
   flex: 1;
+}
+
+/* Add these rules to your existing CSS */
+.landing section {
+  width: 100%;
+  padding: 40px 20px;
+  box-sizing: border-box;
+}
+
+.landing .hero {
+  padding-top: 0;
+}
+
+/* If you have max-width set on sections, you might want to adjust it for mobile */
+@media (max-width: 768px) {
+  .landing section {
+    max-width: 100%;
+  }
 }

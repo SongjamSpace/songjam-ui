@@ -36,6 +36,7 @@ const ConnectButton = ({
       onClick={onConnect}
       className="connect-wallet"
       disabled={isConnecting}
+      size="small"
     >
       {isConnecting ? "Connecting..." : "Connect Wallet"}
     </Button>

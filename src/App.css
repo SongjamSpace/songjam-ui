@@ -891,13 +891,13 @@ button.secondary {
 /* Add these rules to your existing CSS */
 .landing section {
   width: 100%;
-  padding: 40px 20px;
+  /* padding: 40px 20px; */
   box-sizing: border-box;
 }
 
-.landing .hero {
+/* .landing .hero {
   padding-top: 0;
-}
+} */
 
 /* If you have max-width set on sections, you might want to adjust it for mobile */
 @media (max-width: 768px) {

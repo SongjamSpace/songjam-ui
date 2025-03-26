@@ -24,8 +24,10 @@ import {
   useMediaQuery,
   useTheme,
   CircularProgress,
+  Badge,
 } from "@mui/material";
-import AutorenewIcon from "@mui/icons-material/Autorenew";
+// import AutorenewIcon from "@mui/icons-material/Autorenew";
+import HeadphonesIcon from "@mui/icons-material/Headphones";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DownloadIcon from "@mui/icons-material/Download";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -499,36 +501,20 @@ const SpaceDetails: React.FC = () => {
           </Box>
           <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
             {space ? (
-              <>
-                <Chip
-                  icon={<AutorenewIcon />}
-                  label={`${space.total_live_listeners} listened`}
-                  sx={{ background: "var(--bg-secondary)" }}
-                />
-                <Chip
-                  label={`${space.total_replay_watched} replays`}
-                  sx={{ background: "var(--bg-secondary)" }}
-                />
-              </>
+              <Chip
+                icon={<HeadphonesIcon />}
+                label={`${space.total_live_listeners} listened live`}
+                sx={{ background: "var(--bg-secondary)" }}
+              />
             ) : (
-              <>
-                <Skeleton
-                  variant="rounded"
-                  sx={{
-                    bgcolor: "rgba(96, 165, 250, 0.1)",
-                    width: 120,
-                    height: 32,
-                  }}
-                />
-                <Skeleton
-                  variant="rounded"
-                  sx={{
-                    bgcolor: "rgba(96, 165, 250, 0.1)",
-                    width: 100,
-                    height: 32,
-                  }}
-                />
-              </>
+              <Skeleton
+                variant="rounded"
+                sx={{
+                  bgcolor: "rgba(96, 165, 250, 0.1)",
+                  width: 120,
+                  height: 32,
+                }}
+              />
             )}
           </Box>
         </Box>
@@ -723,51 +709,64 @@ const SpaceDetails: React.FC = () => {
           <Box
             sx={{
               display: "flex",
-              flexWrap: { xs: "nowrap", sm: "wrap" },
+              justifyContent: "start",
+              // flexWrap: { xs: "nowrap", sm: "wrap" },
               gap: 2,
-              overflowX: { xs: "auto", sm: "visible" },
+              // overflowX: { xs: "auto", sm: "visible" },
+              overflowX: "auto",
               "&::-webkit-scrollbar": { display: "none" },
               msOverflowStyle: "none",
               scrollbarWidth: "none",
               pb: { xs: 1, sm: 0 }, // Add padding bottom on mobile for better scrolling
+              py: 2,
             }}
           >
             {space ? (
-              [...space.admins, ...space.speakers]?.map((admin) => (
-                <Box
+              [...space.admins, ...space.speakers]?.map((admin, i) => (
+                <Badge
                   key={admin.user_id}
-                  component="a"
-                  href={`https://twitter.com/${admin.twitter_screen_name}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1,
-                    textDecoration: "none",
-                    color: "inherit",
-                    background: "rgba(255,255,255,0.05)",
-                    p: 1,
-                    borderRadius: 2,
-                    transition: "all 0.2s",
-                    "&:hover": {
-                      background: "rgba(255,255,255,0.1)",
-                      transform: "translateY(-2px)",
-                    },
-                    flex: { xs: "0 0 auto", sm: "0 1 auto" }, // Prevent shrinking on mobile
-                    minWidth: { xs: "250px", sm: "auto" }, // Set minimum width on mobile
-                  }}
+                  badgeContent={i < space.admins.length ? "Host" : ""}
+                  color="primary"
+                  variant="standard"
+                  // dont show empty badge
+                  invisible={i >= space.admins.length}
                 >
-                  <Avatar src={admin.avatar_url} alt={admin.display_name} />
-                  <Box>
-                    <Typography sx={{ fontWeight: "bold" }}>
-                      {admin.display_name}
-                    </Typography>
-                    <Typography sx={{ color: "#60a5fa" }}>
-                      @{admin.twitter_screen_name}
-                    </Typography>
+                  <Box
+                    key={admin.user_id}
+                    component="a"
+                    href={`https://twitter.com/${admin.twitter_screen_name}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      textDecoration: "none",
+                      color: "inherit",
+                      background: "rgba(255,255,255,0.05)",
+                      px: 2,
+                      py: 1,
+                      borderRadius: 2,
+                      transition: "all 0.2s",
+                      "&:hover": {
+                        background: "rgba(255,255,255,0.1)",
+                        transform: "translateY(-2px)",
+                      },
+                      flex: { xs: "0 0 auto", sm: "0 1 auto" }, // Prevent shrinking on mobile
+                      minWidth: { xs: "250px", sm: "auto" }, // Set minimum width on mobile
+                    }}
+                  >
+                    <Avatar src={admin.avatar_url} alt={admin.display_name} />
+                    <Box>
+                      <Typography sx={{ fontWeight: "bold" }}>
+                        {admin.display_name}
+                      </Typography>
+                      <Typography sx={{ color: "#60a5fa" }}>
+                        @{admin.twitter_screen_name}
+                      </Typography>
+                    </Box>
                   </Box>
-                </Box>
+                </Badge>
               ))
             ) : (
               <>
@@ -942,7 +941,10 @@ const SpaceDetails: React.FC = () => {
 
         {/* Transcript Section */}
         {activeSection === "transcript" && space?.spaceId && (
-          <AlgoliaSearchTranscription spaceId={space.spaceId} />
+          <AlgoliaSearchTranscription
+            spaceId={space.spaceId}
+            title={space.title}
+          />
         )}
       </Box>
       {/* <WalletModal

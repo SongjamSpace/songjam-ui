@@ -92,10 +92,28 @@ export const getSummary = async (spaceId: string) => {
   return docSnap.data();
 };
 
+export const getDetailedSummary = async (spaceId: string) => {
+  const docRef = doc(db, "spaces", spaceId, SUMMARY_SUBCOLLECTION, "meta");
+  const docSnap = await getDoc(docRef);
+  return docSnap.data()?.first_level_summaries;
+};
+
 export const getFirstLevelSummaries = async (spaceId: string) => {
   const docRef = doc(db, "spaces", spaceId, SUMMARY_SUBCOLLECTION, "meta");
   const docSnap = await getDoc(docRef);
   return docSnap.data()?.first_level_summaries;
+};
+
+export const getFullTranscription = async (spaceId: string) => {
+  const docRef = doc(
+    db,
+    "spaces",
+    spaceId,
+    SUMMARY_SUBCOLLECTION,
+    "full_transcript"
+  );
+  const docSnap = await getDoc(docRef);
+  return docSnap.data()?.text;
 };
 
 export const getSegments = async (spaceId: string) => {

@@ -1,11 +1,20 @@
 import React from "react";
-import { Box, Typography, Paper, Button, Skeleton } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Paper,
+  Button,
+  Skeleton,
+  Tabs,
+  Tab,
+  Stack,
+} from "@mui/material";
 import {
   ContentCopy as ContentCopyIcon,
   Bookmark as BookmarkIcon,
 } from "@mui/icons-material";
 import { useState } from "react";
-import { getSummary } from "../services/db/spaces.service";
+import { getDetailedSummary, getSummary } from "../services/db/spaces.service";
 import { PaywallOverlay } from "./PaywallOverlay";
 
 interface SummaryProps {
@@ -25,6 +34,7 @@ export const Summary: React.FC<SummaryProps> = ({
 }) => {
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState("");
+  const [activeTab, setActiveTab] = useState(0);
 
   React.useEffect(() => {
     const fetchSummary = async () => {
@@ -36,6 +46,19 @@ export const Summary: React.FC<SummaryProps> = ({
       }
     };
     fetchSummary();
+  }, [spaceId]);
+
+  const [detailedSummary, setDetailedSummary] = useState<string[]>([]);
+
+  React.useEffect(() => {
+    const fetchDetailedSummary = async () => {
+      const detailedSummaryDoc = await getDetailedSummary(spaceId);
+      if (detailedSummaryDoc) {
+        setDetailedSummary(detailedSummaryDoc);
+        setLoading(false);
+      }
+    };
+    fetchDetailedSummary();
   }, [spaceId]);
 
   return (
@@ -57,85 +80,134 @@ export const Summary: React.FC<SummaryProps> = ({
       }}
     >
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-        <Typography variant="h6" sx={{ color: "#60a5fa" }}>
-          Space Summary
-        </Typography>
+        <Tabs
+          value={activeTab}
+          onChange={(_, newValue) => setActiveTab(newValue)}
+          sx={{
+            "& .MuiTab-root": { color: "rgba(255, 255, 255, 0.7)" },
+            "& .Mui-selected": { color: "#60a5fa !important" },
+            "& .MuiTabs-indicator": { backgroundColor: "#60a5fa" },
+          }}
+        >
+          <Tab label="Space Summary" />
+          <Tab label="Detailed Summary" />
+        </Tabs>
         <Box>
           <Button
             startIcon={<ContentCopyIcon />}
             size="small"
             sx={{ mr: 1, color: "white" }}
             disabled={!hasAccess}
+            onClick={() => {
+              if (hasAccess) {
+                navigator.clipboard.writeText(
+                  activeTab === 0 ? summary : detailedSummary.join("\n")
+                );
+              }
+            }}
           >
             Copy
           </Button>
-          <Button
-            startIcon={<BookmarkIcon />}
-            size="small"
-            sx={{ color: "white" }}
-            disabled={!hasAccess}
-          >
-            Save
-          </Button>
         </Box>
       </Box>
-      <Box sx={{ position: "relative" }}>
-        {loading ? (
-          <Box sx={{ mb: 2 }}>
-            <Skeleton
-              variant="text"
-              sx={{ bgcolor: "rgba(96, 165, 250, 0.1)", mb: 1, height: 24 }}
-            />
-            <Skeleton
-              variant="text"
-              sx={{ bgcolor: "rgba(96, 165, 250, 0.1)", mb: 1, height: 24 }}
-            />
-            <Skeleton
-              variant="text"
-              sx={{ bgcolor: "rgba(96, 165, 250, 0.1)", mb: 1, height: 24 }}
-            />
-            <Skeleton
-              variant="text"
-              sx={{ bgcolor: "rgba(96, 165, 250, 0.1)", mb: 1, height: 24 }}
-            />
-            <Skeleton
-              variant="text"
+      {activeTab === 0 && (
+        <Box sx={{ position: "relative" }}>
+          {loading ? (
+            <Box sx={{ mb: 2 }}>
+              <Skeleton
+                variant="text"
+                sx={{ bgcolor: "rgba(96, 165, 250, 0.1)", mb: 1, height: 24 }}
+              />
+              <Skeleton
+                variant="text"
+                sx={{ bgcolor: "rgba(96, 165, 250, 0.1)", mb: 1, height: 24 }}
+              />
+              <Skeleton
+                variant="text"
+                sx={{ bgcolor: "rgba(96, 165, 250, 0.1)", mb: 1, height: 24 }}
+              />
+              <Skeleton
+                variant="text"
+                sx={{ bgcolor: "rgba(96, 165, 250, 0.1)", mb: 1, height: 24 }}
+              />
+              <Skeleton
+                variant="text"
+                sx={{
+                  bgcolor: "rgba(96, 165, 250, 0.1)",
+                  width: "60%",
+                  height: 24,
+                }}
+              />
+              {!processEnded && <></>}
+            </Box>
+          ) : (
+            <Typography
               sx={{
-                bgcolor: "rgba(96, 165, 250, 0.1)",
-                width: "60%",
-                height: 24,
+                whiteSpace: "pre-line",
+                fontSize: "1.1rem",
+                lineHeight: 1.6,
+                maxHeight: "400px",
+                overflow: "hidden",
+                ...(hasAccess
+                  ? {}
+                  : {
+                      maskImage:
+                        "linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%)",
+                      WebkitMaskImage:
+                        "linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%)",
+                    }),
               }}
+            >
+              {summary}
+            </Typography>
+          )}
+          {!hasAccess && (
+            <PaywallOverlay
+              isProcessingPayment={isProcessingPayment}
+              handlePayment={handlePayment}
             />
-            {!processEnded && <></>}
-          </Box>
-        ) : (
-          <Typography
-            sx={{
-              whiteSpace: "pre-line",
-              fontSize: "1.1rem",
-              lineHeight: 1.6,
-              maxHeight: "400px",
-              overflow: "hidden",
-              ...(hasAccess
-                ? {}
-                : {
-                    maskImage:
-                      "linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%)",
-                    WebkitMaskImage:
-                      "linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%)",
-                  }),
-            }}
-          >
-            {summary}
-          </Typography>
-        )}
-        {!hasAccess && (
-          <PaywallOverlay
-            isProcessingPayment={isProcessingPayment}
-            handlePayment={handlePayment}
-          />
-        )}
-      </Box>
+          )}
+        </Box>
+      )}
+      {activeTab === 1 && (
+        <Box sx={{ position: "relative" }}>
+          {loading ? (
+            <Box sx={{ mb: 2 }}>
+              <Skeleton
+                variant="text"
+                sx={{ bgcolor: "rgba(96, 165, 250, 0.1)", mb: 1, height: 24 }}
+              />
+              <Skeleton
+                variant="text"
+                sx={{ bgcolor: "rgba(96, 165, 250, 0.1)", mb: 1, height: 24 }}
+              />
+              <Skeleton
+                variant="text"
+                sx={{ bgcolor: "rgba(96, 165, 250, 0.1)", mb: 1, height: 24 }}
+              />
+              <Skeleton
+                variant="text"
+                sx={{ bgcolor: "rgba(96, 165, 250, 0.1)", mb: 1, height: 24 }}
+              />
+              <Skeleton
+                variant="text"
+                sx={{
+                  bgcolor: "rgba(96, 165, 250, 0.1)",
+                  width: "60%",
+                  height: 24,
+                }}
+              />
+              {!processEnded && <></>}
+            </Box>
+          ) : (
+            <Stack gap={2}>
+              {detailedSummary.map((summary, index) => (
+                <Typography key={index}>{summary}</Typography>
+              ))}
+            </Stack>
+          )}
+        </Box>
+      )}
     </Paper>
   );
 };

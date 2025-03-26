@@ -77,7 +77,13 @@ const AlgoliaSearchTranscription: React.FC<{ spaceId: string }> = ({
     try {
       setIsTranscriptLoading(true);
       const { results } = await client.search({
-        requests: [{ indexName: "segments", query, hitsPerPage: 40 }],
+        requests: [
+          {
+            indexName: "segments",
+            query: `spaces/${spaceId} ${query}`,
+            hitsPerPage: 40,
+          },
+        ],
       });
       if (results.length > 0) {
         const segments = (results[0] as any).hits as unknown as SearchResult[];

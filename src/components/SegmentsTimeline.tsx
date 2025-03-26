@@ -167,7 +167,7 @@ function SegmentsTimeline({
         }}
       >
         {segments?.map((segment: Segment) => (
-          <TimelineItem key={segment.seek}>
+          <TimelineItem key={segment.start}>
             <TimelineOppositeContent color="textSecondary">
               {formatSeconds(segment.start)}
             </TimelineOppositeContent>

@@ -76,9 +76,10 @@ const SpaceDetails: React.FC = () => {
     chainId,
     provider,
     isConnecting,
+    handleSolanaConnect,
   } = useWallet();
 
-  const [isTranscriptLoading, setIsTranscriptLoading] = useState(false);
+  // const [isTranscriptLoading, setIsTranscriptLoading] = useState(false);
   const [isThreadLoading, setIsThreadLoading] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -96,6 +97,8 @@ const SpaceDetails: React.FC = () => {
         setHasAccess(hasAccess);
       };
       checkAccess();
+    } else {
+      setHasAccess(false);
     }
   }, [address, spaceId]);
 
@@ -294,6 +297,13 @@ const SpaceDetails: React.FC = () => {
   const handleCloseToast = () => {
     setToast((prev) => ({ ...prev, open: false }));
   };
+  const handleConnect = async (chainType: "eth" | "solana") => {
+    if (chainType === "eth") {
+      await connectWallet("eth");
+    } else {
+      await handleSolanaConnect();
+    }
+  };
 
   const onDownloadRecording = async () => {
     if (!spaceId) return;
@@ -351,7 +361,7 @@ const SpaceDetails: React.FC = () => {
             address={address}
             isConnected={isConnected}
             isConnecting={isConnecting}
-            onConnect={() => connectWallet("eth")}
+            onConnect={handleConnect}
             onDisconnect={disconnect}
           />
         </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { createUser } from "../services/db/user.service";
+import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
 
 export type Chain = {
   id: number;
@@ -30,6 +31,7 @@ export interface WalletState {
   provider: any | null;
   isConnecting: boolean;
   error: string | null;
+  chainType: "eth" | "solana" | null;
 }
 
 export const useWallet = () => {
@@ -39,39 +41,40 @@ export const useWallet = () => {
     provider: null,
     isConnecting: false,
     error: null,
+    chainType: null,
   });
 
-  // Add this new useEffect for auto-connect
-  useEffect(() => {
-    const checkConnection = async () => {
-      if (!window.ethereum) return;
+  // // Add this new useEffect for auto-connect
+  // useEffect(() => {
+  //   const checkConnection = async () => {
+  //     if (!window.ethereum) return;
 
-      try {
-        // Check if we already have access to accounts
-        const accounts = await window.ethereum.request({
-          method: "eth_accounts",
-        });
-        if (accounts.length > 0) {
-          // Get the current chainId
-          const chainId = await window.ethereum.request({
-            method: "eth_chainId",
-          });
+  //     try {
+  //       // Check if we already have access to accounts
+  //       const accounts = await window.ethereum.request({
+  //         method: "eth_accounts",
+  //       });
+  //       if (accounts.length > 0) {
+  //         // Get the current chainId
+  //         const chainId = await window.ethereum.request({
+  //           method: "eth_chainId",
+  //         });
 
-          setWalletState((prev) => ({
-            ...prev,
-            address: accounts[0],
-            chainId: parseInt(chainId, 16),
-            isConnecting: false,
-            error: null,
-          }));
-        }
-      } catch (error) {
-        console.error("Error checking wallet connection:", error);
-      }
-    };
+  //         setWalletState((prev) => ({
+  //           ...prev,
+  //           address: accounts[0],
+  //           chainId: parseInt(chainId, 16),
+  //           isConnecting: false,
+  //           error: null,
+  //         }));
+  //       }
+  //     } catch (error) {
+  //       console.error("Error checking wallet connection:", error);
+  //     }
+  //   };
 
-    checkConnection();
-  }, []);
+  //   checkConnection();
+  // }, []);
 
   const connectWallet = async (
     chain: "eth" | "base"
@@ -101,6 +104,7 @@ export const useWallet = () => {
         chainId: Number(chainId),
         isConnecting: false,
         error: null,
+        chainType: "eth",
       }));
       return accounts[0];
     } catch (error) {
@@ -175,34 +179,47 @@ export const useWallet = () => {
     }
   };
 
+  const handleAccountsChanged = (accounts: string[]) => {
+    if (accounts.length === 0) {
+      disconnect();
+    } else if (walletState.address !== accounts[0]) {
+      setWalletState((prev) => ({
+        ...prev,
+        address: accounts[0],
+        chainType: "eth",
+      }));
+    }
+  };
+
+  const handleChainChanged = (chainId: string) => {
+    setWalletState((prev) => ({
+      ...prev,
+      chainId: parseInt(chainId, 16),
+    }));
+  };
+
   const disconnect = () => {
+    if (walletState.chainType === "solana") {
+      const phantom = new PhantomWalletAdapter();
+      phantom.disconnect();
+    } else if (walletState.chainType === "eth") {
+      // window.ethereum?.disconnect();
+      window.ethereum?.removeListener("accountsChanged", handleAccountsChanged);
+      window.ethereum?.removeListener("chainChanged", handleChainChanged);
+    }
     setWalletState({
       address: null,
       chainId: null,
       provider: null,
       isConnecting: false,
       error: null,
+      chainType: null,
     });
   };
 
   // Listen for account changes
   useEffect(() => {
     if (!window.ethereum) return;
-
-    const handleAccountsChanged = (accounts: string[]) => {
-      if (accounts.length === 0) {
-        disconnect();
-      } else if (walletState.address !== accounts[0]) {
-        setWalletState((prev) => ({ ...prev, address: accounts[0] }));
-      }
-    };
-
-    const handleChainChanged = (chainId: string) => {
-      setWalletState((prev) => ({
-        ...prev,
-        chainId: parseInt(chainId, 16),
-      }));
-    };
 
     window.ethereum.on("accountsChanged", handleAccountsChanged);
     window.ethereum.on("chainChanged", handleChainChanged);
@@ -213,11 +230,48 @@ export const useWallet = () => {
     };
   }, [walletState.address]);
 
+  const handleSolanaConnect = async () => {
+    setWalletState((prev) => ({ ...prev, isConnecting: true, error: null }));
+    try {
+      const phantom = new PhantomWalletAdapter();
+      await phantom.connect();
+
+      if (phantom.publicKey) {
+        const address = phantom.publicKey.toString();
+        setWalletState((prev) => ({
+          ...prev,
+          address,
+          isConnecting: false,
+          error: null,
+          chainType: "solana",
+        }));
+      } else {
+        alert("Connection failed");
+        setWalletState((prev) => ({
+          ...prev,
+          isConnecting: false,
+          error: "Failed to connect to Phantom wallet",
+        }));
+      }
+    } catch (error: any) {
+      if (error.name === "WalletNotReadyError") {
+        alert(
+          "Please install a browser wallet such as Phantom to connect to Solana"
+        );
+      } else if (error.name === "WalletConnectionError") {
+        alert("Wallet connection failed");
+      }
+    } finally {
+      setWalletState((prev) => ({ ...prev, isConnecting: false }));
+    }
+  };
+
   return {
     ...walletState,
     connectWallet,
     switchChain,
     disconnect,
+    handleSolanaConnect,
     isConnected: !!walletState.address,
   };
 };

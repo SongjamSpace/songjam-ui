@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 // import { AirtableRecord } from './types'; // Assuming this type definition exists elsewhere
 
-const Airtable = require("airtable");
+// const Airtable = require("airtable");
+import Airtable from "airtable";
 
 const airtable = new Airtable({
   apiKey: import.meta.env.VITE_AIRTABLE_API_KEY,

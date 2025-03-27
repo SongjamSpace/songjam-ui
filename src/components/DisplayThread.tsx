@@ -161,18 +161,23 @@ function DisplayThread({
           </Typography>
         </Box>
         {/* <Button
-                variant="contained"
-                sx={{
-                  background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-                  color: "white",
-                  "&:hover": {
-                    background: "linear-gradient(135deg, #2563eb, #7c3aed)",
-                  },
-                }}
-                disabled={!hasAccess}
-              >
-                Remix Thread
-              </Button> */}
+          variant="contained"
+          sx={{
+            background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+            color: "white",
+            "&:hover": {
+              background: "linear-gradient(135deg, #2563eb, #7c3aed)",
+            },
+          }}
+          onClick={async () => {
+            setIsGenerating(true);
+            await onGenerateTwitterThread(numberingStyle, threadIndicator);
+            setIsGenerating(false);
+          }}
+          // disabled={}
+        >
+          Remix Thread
+        </Button> */}
       </Box>
       <Box sx={{ mb: 3 }}>
         <Typography variant="subtitle1" sx={{ mb: 2 }}>

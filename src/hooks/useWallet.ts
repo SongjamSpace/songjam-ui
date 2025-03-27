@@ -42,36 +42,36 @@ export const useWallet = () => {
   });
 
   // Add this new useEffect for auto-connect
-  useEffect(() => {
-    const checkConnection = async () => {
-      if (!window.ethereum) return;
+  // useEffect(() => {
+  //   const checkConnection = async () => {
+  //     if (!window.ethereum) return;
 
-      try {
-        // Check if we already have access to accounts
-        const accounts = await window.ethereum.request({
-          method: "eth_accounts",
-        });
-        if (accounts.length > 0) {
-          // Get the current chainId
-          const chainId = await window.ethereum.request({
-            method: "eth_chainId",
-          });
+  //     try {
+  //       // Check if we already have access to accounts
+  //       const accounts = await window.ethereum.request({
+  //         method: "eth_accounts",
+  //       });
+  //       if (accounts.length > 0) {
+  //         // Get the current chainId
+  //         const chainId = await window.ethereum.request({
+  //           method: "eth_chainId",
+  //         });
 
-          setWalletState((prev) => ({
-            ...prev,
-            address: accounts[0],
-            chainId: parseInt(chainId, 16),
-            isConnecting: false,
-            error: null,
-          }));
-        }
-      } catch (error) {
-        console.error("Error checking wallet connection:", error);
-      }
-    };
+  //         setWalletState((prev) => ({
+  //           ...prev,
+  //           address: accounts[0],
+  //           chainId: parseInt(chainId, 16),
+  //           isConnecting: false,
+  //           error: null,
+  //         }));
+  //       }
+  //     } catch (error) {
+  //       console.error("Error checking wallet connection:", error);
+  //     }
+  //   };
 
-    checkConnection();
-  }, []);
+  //   checkConnection();
+  // }, []);
 
   const connectWallet = async (
     chain: "eth" | "base"
@@ -93,7 +93,7 @@ export const useWallet = () => {
       const accounts = await window.ethereum.request({
         method: "eth_requestAccounts",
       });
-      await createUser({ address: accounts[0], chainId });
+      // await createUser({ address: accounts[0], chainId });
 
       setWalletState((prev) => ({
         ...prev,

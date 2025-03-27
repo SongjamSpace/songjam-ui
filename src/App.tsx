@@ -5,13 +5,9 @@ import Logo from "./components/Logo";
 import {
   Button,
   TextField,
-  Select,
-  MenuItem,
-  FormControl,
   TextareaAutosize,
   Dialog,
   DialogContent,
-  DialogActions,
   IconButton,
   Box,
   Typography,
@@ -25,14 +21,8 @@ import { submitToAirtable } from "./services/airtable.service";
 import { useCollectionData } from "react-firebase-hooks/firestore";
 import { collection, query, where } from "firebase/firestore";
 import { db } from "./services/firebase.service";
-import { TrendingSpaces } from "./components/TrendingSpaces";
-import { useWallet } from "./hooks/useWallet";
-import ConnectButton from "./components/ConnectButton";
-// import { WalletModal } from "./components/WalletModal";
 
 export default function App() {
-  const { isConnected, address, isConnecting, connectWallet, disconnect } =
-    useWallet();
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [spaceUrl, setSpaceUrl] = useState("");
   const navigate = useNavigate();
@@ -43,7 +33,6 @@ export default function App() {
       where("transcription_status", "==", "ENDED")
     )
   );
-  const [showWalletModal, setShowWalletModal] = useState(false);
 
   const transcribeSpace = async (spaceUrl: string) => {
     if (isLoading) return;
@@ -75,11 +64,6 @@ export default function App() {
     setIsLoading(false);
   };
 
-  const handleChainSelect = async (chain: "eth" | "base") => {
-    setShowWalletModal(false);
-    await connectWallet(chain);
-  };
-
   useEffect(() => {
     document.body.className = "dark";
   }, []);
@@ -92,24 +76,7 @@ export default function App() {
           <Logo />
           <span>Songjam</span>
         </div>
-        <div className="nav-controls">
-          <ConnectButton
-            address={address}
-            isConnected={isConnected}
-            isConnecting={isConnecting}
-            onConnect={() => connectWallet("eth")}
-            onDisconnect={disconnect}
-          />
-        </div>
       </nav>
-
-      {/* <WalletModal
-        open={showWalletModal}
-        onClose={() => setShowWalletModal(false)}
-        onSelectChain={handleChainSelect}
-        isConnected={isConnected}
-        onDisconnect={disconnect}
-      /> */}
 
       <section className="hero">
         <div className="stats-banner">

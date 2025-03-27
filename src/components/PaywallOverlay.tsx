@@ -5,11 +5,13 @@ import { LoadingButton } from "@mui/lab";
 interface PaywallOverlayProps {
   isProcessingPayment: boolean;
   handlePayment: () => void;
+  spaceCredits: number;
 }
 
 export const PaywallOverlay: React.FC<PaywallOverlayProps> = ({
   isProcessingPayment,
   handlePayment,
+  spaceCredits,
 }) => {
   return (
     <Box
@@ -55,7 +57,9 @@ export const PaywallOverlay: React.FC<PaywallOverlayProps> = ({
           Unlock Full Access
         </Typography>
         <Typography sx={{ mb: 3, color: "#94a3b8" }}>
-          Get complete access to this space for just $1 USDT
+          {spaceCredits
+            ? `${spaceCredits} Free space credits left`
+            : `Get complete access to this space for just $1 USDT`}
         </Typography>
 
         <LoadingButton
@@ -76,7 +80,7 @@ export const PaywallOverlay: React.FC<PaywallOverlayProps> = ({
             transition: "all 0.3s ease",
           }}
         >
-          Pay $1 USDT
+          {spaceCredits ? `Unlock for Free` : `Pay $1 USDT`}
         </LoadingButton>
       </Paper>
     </Box>

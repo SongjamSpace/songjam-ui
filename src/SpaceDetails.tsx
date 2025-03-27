@@ -37,13 +37,12 @@ import { LoadingButton } from "@mui/lab";
 import SegmentsTimeline from "./components/SegmentsTimeline";
 import DisplayThread from "./components/DisplayThread";
 import axios from "axios";
-import { useWallet } from "./hooks/useWallet";
 // import { WalletModal } from "./components/WalletModal";
-import { ethers } from "ethers";
 import { hasAccessToSpace, updateAccess } from "./services/db/user.service";
 import Logo from "./components/Logo";
-import ConnectButton from "./components/ConnectButton";
 import AlgoliaSearchTranscription from "./components/AlgoliaSearchTranscription";
+import TwitterLogin from "./components/TwitterLogin";
+import { useAuthContext } from "./contexts/AuthContext";
 
 type ToastState = {
   open: boolean;
@@ -70,20 +69,21 @@ const SpaceDetails: React.FC = () => {
   const [twitterThread, setTwitterThread] = useState<string[]>([]);
   // const [showWalletModal, setShowWalletModal] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-  const {
-    isConnected,
-    connectWallet,
-    disconnect,
-    address,
-    chainId,
-    provider,
-    isConnecting,
-  } = useWallet();
+  // const {
+  //   isConnected,
+  //   connectWallet,
+  //   disconnect,
+  //   address,
+  //   chainId,
+  //   provider,
+  //   isConnecting,
+  // } = useWallet();
 
   const [isTranscriptLoading, setIsTranscriptLoading] = useState(false);
   const [isThreadLoading, setIsThreadLoading] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const { user } = useAuthContext();
 
   const [toast, setToast] = useState<ToastState>({
     open: false,
@@ -92,14 +92,15 @@ const SpaceDetails: React.FC = () => {
   });
 
   useEffect(() => {
-    if (address && spaceId) {
+    if (user?.uid && spaceId) {
       const checkAccess = async () => {
-        const hasAccess = await hasAccessToSpace(address, spaceId);
-        setHasAccess(hasAccess);
+        if (!user?.uid) return;
+        const hasAccess = await hasAccessToSpace(user.uid, spaceId);
+        setHasAccess(hasAccess || false);
       };
       checkAccess();
     }
-  }, [address, spaceId]);
+  }, [user, spaceId]);
 
   useEffect(() => {
     if (!spaceId) return;
@@ -174,85 +175,89 @@ const SpaceDetails: React.FC = () => {
       });
       return;
     }
-    let connectedAddress = address;
-    if (!isConnected || !address) {
-      connectedAddress = await connectWallet("eth");
-    }
-    if (!connectedAddress) {
-      setToast({
-        open: true,
-        message: "Error: Failed to connect wallet",
-        severity: "error",
-      });
+    if (!!user?.spaceCredits) {
+      await unlockFreeSpace();
       return;
     }
+    // let connectedAddress = address;
+    // if (!isConnected || !address) {
+    //   connectedAddress = await connectWallet("eth");
+    // }
+    // if (!connectedAddress) {
+    //   setToast({
+    //     open: true,
+    //     message: "Error: Failed to connect wallet",
+    //     severity: "error",
+    //   });
+    //   return;
+    // }
 
-    try {
-      setIsProcessingPayment(true);
+    // try {
+    //   setIsProcessingPayment(true);
 
-      const parsedAmount = ethers.parseUnits("1", 6);
-      const usdtAddress =
-        chainId === 1
-          ? "0xdAC17F958D2ee523a2206206994597C13D831ec7"
-          : "0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2";
-      const receiverAddress = import.meta.env.VITE_PAYMENT_RECEIVER_ADDRESS;
-      // Create provider and signer
-      const provider = new ethers.BrowserProvider((window as any).ethereum);
-      const signer = await provider.getSigner();
+    //   const parsedAmount = ethers.parseUnits("1", 6);
+    //   const usdtAddress =
+    //     chainId === 1
+    //       ? "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+    //       : "0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2";
+    //   const receiverAddress = import.meta.env.VITE_PAYMENT_RECEIVER_ADDRESS;
+    //   // Create provider and signer
+    //   const provider = new ethers.BrowserProvider((window as any).ethereum);
+    //   const signer = await provider.getSigner();
 
-      const usdtContract = new ethers.Contract(
-        usdtAddress,
-        [
-          "function balanceOf(address owner) view returns (uint256)",
-          "function transfer(address to, uint256 value) public returns (bool)",
-        ],
-        signer
-      );
-      const balance = await usdtContract.balanceOf(connectedAddress);
-      if (balance < parsedAmount) {
-        alert("Insufficient USDT balance!");
-        return;
-      }
+    //   const usdtContract = new ethers.Contract(
+    //     usdtAddress,
+    //     [
+    //       "function balanceOf(address owner) view returns (uint256)",
+    //       "function transfer(address to, uint256 value) public returns (bool)",
+    //     ],
+    //     signer
+    //   );
+    //   const balance = await usdtContract.balanceOf(connectedAddress);
+    //   if (balance < parsedAmount) {
+    //     alert("Insufficient USDT balance!");
+    //     return;
+    //   }
 
-      const tx = await usdtContract.transfer(receiverAddress, parsedAmount);
+    //   const tx = await usdtContract.transfer(receiverAddress, parsedAmount);
 
-      setToast({
-        open: true,
-        message: "Payment in progress... Stay in the page",
-        severity: "success",
-      });
-      await tx?.wait();
-      setToast({
-        open: true,
-        message: "Payment successful! Transcription process started",
-        severity: "success",
-      });
-      await updateAccess(connectedAddress, spaceId);
-      setHasAccess(true);
-      if (space) {
-        const formData = new FormData();
-        formData.append("hls_url", space.hls_url);
-        formData.append("space_id", spaceId);
-        await axios.post(
-          `${import.meta.env.VITE_JAM_PY_SERVER_URL}/transcribe`,
-          formData
-        );
-        setToast({
-          open: true,
-          message: "Transcription process started",
-          severity: "success",
-        });
-      }
-    } catch (error) {
-      console.error("Payment failed:", error);
-      setToast({
-        open: true,
-        message: "Payment failed. Please try again.",
-        severity: "error",
-      });
-    } finally {
-      setIsProcessingPayment(false);
-    }
+    //   setToast({
+    //     open: true,
+    //     message: "Payment in progress... Stay in the page",
+    //     severity: "success",
+    //   });
+    //   await tx?.wait();
+    //   setToast({
+    //     open: true,
+    //     message: "Payment successful! Transcription process started",
+    //     severity: "success",
+    //   });
+    //   await updateAccess(connectedAddress, spaceId);
+    //   setHasAccess(true);
+    //   if (space) {
+    //     const formData = new FormData();
+    //     formData.append("hls_url", space.hls_url);
+    //     formData.append("space_id", spaceId);
+    //     await axios.post(
+    //       `${import.meta.env.VITE_JAM_PY_SERVER_URL}/transcribe`,
+    //       formData
+    //     );
+    //     setToast({
+    //       open: true,
+    //       message: "Transcription process started",
+    //       severity: "success",
+    //     });
+    //   }
+    // } catch (error) {
+    //   console.error("Payment failed:", error);
+    //   setToast({
+    //     open: true,
+    //     message: "Payment failed. Please try again.",
+    //     severity: "error",
+    //   });
+    // } finally {
+    //   setIsProcessingPayment(false);
+    // }
   };
 
   // const handleWalletConnect = async () => {
@@ -260,6 +265,15 @@ const SpaceDetails: React.FC = () => {
   //   setShowWalletModal(false);
   //   handlePayment();
   // };
+  const unlockFreeSpace = async () => {
+    if (!spaceId) return;
+    if (!user?.uid) {
+      alert("Please login to unlock this space");
+      return;
+    }
+    await updateAccess(user.uid, spaceId);
+    setHasAccess(true);
+  };
 
   useEffect(() => {
     // if (
@@ -349,13 +363,21 @@ const SpaceDetails: React.FC = () => {
           <span>Songjam</span>
         </Box>
         <div className="nav-controls">
-          <ConnectButton
+          {/* <ConnectButton
             address={address}
             isConnected={isConnected}
             isConnecting={isConnecting}
             onConnect={() => connectWallet("eth")}
             onDisconnect={disconnect}
-          />
+          /> */}
+          {!user ? (
+            <TwitterLogin />
+          ) : (
+            <Chip
+              label={user.displayName}
+              avatar={<Avatar src={user.photoURL || ""} />}
+            />
+          )}
         </div>
       </nav>
       <Box
@@ -840,9 +862,10 @@ const SpaceDetails: React.FC = () => {
             <Typography variant="h6" sx={{ mb: 3 }}>
               Transcript Timeline
             </Typography>
-            {space?.spaceId && (
+            {space?.spaceId && user && (
               <SegmentsTimeline
                 spaceId={space.spaceId}
+                spaceCredits={user.spaceCredits}
                 hasAccess={hasAccess}
                 isProcessingPayment={isProcessingPayment}
                 handlePayment={handlePayment}

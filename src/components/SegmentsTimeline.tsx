@@ -39,7 +39,6 @@ type Props = {
   handlePayment: () => void;
   processEnded: boolean;
   refresh: boolean;
-  spaceCredits: number;
 };
 
 function SegmentsTimeline({
@@ -49,7 +48,6 @@ function SegmentsTimeline({
   isProcessingPayment,
   handlePayment,
   refresh,
-  spaceCredits,
 }: Props) {
   const BATCH_SIZE = 50;
   const [lastVisible, setLastVisible] = useState<any>(null);
@@ -140,7 +138,6 @@ function SegmentsTimeline({
           <PaywallOverlay
             isProcessingPayment={isProcessingPayment}
             handlePayment={handlePayment}
-            spaceCredits={spaceCredits}
           />
         )}
       </Box>
@@ -193,7 +190,6 @@ function SegmentsTimeline({
         <PaywallOverlay
           isProcessingPayment={isProcessingPayment}
           handlePayment={handlePayment}
-          spaceCredits={spaceCredits}
         />
       )}
     </Box>

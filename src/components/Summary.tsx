@@ -15,7 +15,7 @@ import {
 } from "@mui/icons-material";
 import { useState } from "react";
 import { getDetailedSummary, getSummary } from "../services/db/spaces.service";
-import { PaywallOverlay } from "./PaywallOverlay";
+// import { PaywallOverlay } from "./PaywallOverlay";
 
 interface SummaryProps {
   hasAccess: boolean;
@@ -161,12 +161,12 @@ export const Summary: React.FC<SummaryProps> = ({
               {summary}
             </Typography>
           )}
-          {!hasAccess && (
+          {/* {!hasAccess && (
             <PaywallOverlay
               isProcessingPayment={isProcessingPayment}
               handlePayment={handlePayment}
             />
-          )}
+          )} */}
         </Box>
       )}
       {activeTab === 1 && (

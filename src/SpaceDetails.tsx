@@ -177,6 +177,20 @@ const SpaceDetails: React.FC = () => {
     }
     if (!!user?.spaceCredits) {
       await unlockFreeSpace();
+      if (space && space.transcription_status !== "ENDED") {
+        const formData = new FormData();
+        formData.append("hls_url", space.hls_url);
+        formData.append("space_id", spaceId);
+        await axios.post(
+          `${import.meta.env.VITE_JAM_PY_SERVER_URL}/transcribe`,
+          formData
+        );
+        setToast({
+          open: true,
+          message: "Transcription process started",
+          severity: "success",
+        });
+      }
       return;
     }
     // let connectedAddress = address;
@@ -862,10 +876,9 @@ const SpaceDetails: React.FC = () => {
             <Typography variant="h6" sx={{ mb: 3 }}>
               Transcript Timeline
             </Typography>
-            {space?.spaceId && user && (
+            {space?.spaceId && (
               <SegmentsTimeline
                 spaceId={space.spaceId}
-                spaceCredits={user.spaceCredits}
                 hasAccess={hasAccess}
                 isProcessingPayment={isProcessingPayment}
                 handlePayment={handlePayment}

@@ -22,28 +22,34 @@ import { useNavigate } from "react-router-dom";
 import { LoadingButton } from "@mui/lab";
 import { getSpace } from "./services/db/spaces.service";
 import { submitToAirtable } from "./services/airtable.service";
-import { useCollectionData } from "react-firebase-hooks/firestore";
-import { collection, query, where } from "firebase/firestore";
-import { db } from "./services/firebase.service";
-import { TrendingSpaces } from "./components/TrendingSpaces";
-import { useWallet } from "./hooks/useWallet";
-import ConnectButton from "./components/ConnectButton";
+// import { useCollectionData } from "react-firebase-hooks/firestore";
+// import { collection, query, where } from "firebase/firestore";
+// import { db } from "./services/firebase.service";
+// import { TrendingSpaces } from "./components/TrendingSpaces";
+// import { useWallet } from "./hooks/useWallet";
+// import ConnectButton from "./components/ConnectButton";
 // import { WalletModal } from "./components/WalletModal";
 
 export default function App() {
-  const { isConnected, address, isConnecting, connectWallet, disconnect } =
-    useWallet();
+  // const {
+  //   isConnected,
+  //   address,
+  //   isConnecting,
+  //   connectWallet,
+  //   disconnect,
+  //   handleSolanaConnect,
+  // } = useWallet();
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [spaceUrl, setSpaceUrl] = useState("");
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [spaces, loading, error] = useCollectionData(
-    query(
-      collection(db, "spaces"),
-      where("transcription_status", "==", "ENDED")
-    )
-  );
-  const [showWalletModal, setShowWalletModal] = useState(false);
+  // const [spaces, loading, error] = useCollectionData(
+  //   query(
+  //     collection(db, "spaces"),
+  //     where("transcription_status", "==", "ENDED")
+  //   )
+  // );
+  // const [showWalletModal, setShowWalletModal] = useState(false);
 
   const transcribeSpace = async (spaceUrl: string) => {
     if (isLoading) return;
@@ -75,10 +81,13 @@ export default function App() {
     setIsLoading(false);
   };
 
-  const handleChainSelect = async (chain: "eth" | "base") => {
-    setShowWalletModal(false);
-    await connectWallet(chain);
-  };
+  // const handleConnect = async (chainType: "eth" | "solana") => {
+  //   if (chainType === "eth") {
+  //     await connectWallet("eth");
+  //   } else {
+  //     await handleSolanaConnect();
+  //   }
+  // };
 
   useEffect(() => {
     document.body.className = "dark";
@@ -93,13 +102,13 @@ export default function App() {
           <span>Songjam</span>
         </div>
         <div className="nav-controls">
-          <ConnectButton
+          {/* <ConnectButton
             address={address}
             isConnected={isConnected}
             isConnecting={isConnecting}
-            onConnect={() => connectWallet("eth")}
+            onConnect={handleConnect}
             onDisconnect={disconnect}
-          />
+          /> */}
         </div>
       </nav>
 

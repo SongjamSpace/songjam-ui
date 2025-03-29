@@ -503,37 +503,59 @@ const SpaceDetails: React.FC = () => {
                 }}
               />
             )}
-            {isMobile ? (
-              <IconButton
-                disabled={!space || space.transcription_status !== "ENDED"}
-                onClick={onDownloadRecording}
-              >
-                {isDownloading ? (
-                  <CircularProgress size={20} />
-                ) : (
-                  <DownloadIcon />
-                )}
-              </IconButton>
-            ) : (
-              <LoadingButton
-                loading={isDownloading}
-                disabled={!space || space.transcription_status !== "ENDED"}
-                startIcon={<DownloadIcon />}
-                onClick={onDownloadRecording}
-                sx={{
-                  color: "#60a5fa",
-                  background: "rgba(96, 165, 250, 0.1)",
-                  "&:hover": {
-                    background: "rgba(96, 165, 250, 0.2)",
-                  },
-                  textTransform: "none",
-                  px: 2,
-                  py: 1,
-                }}
-              >
-                {isDownloading ? "Downloading..." : "Download Recording"}
-              </LoadingButton>
-            )}
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              {/* CRM Button */}
+              {space && space.transcription_status === "ENDED" && (
+                <Button
+                  variant="outlined"
+                  onClick={() => navigate(`/crm/${spaceId}`)}
+                  sx={{
+                    color: "#60a5fa",
+                    borderColor: "#60a5fa",
+                    background: "rgba(96, 165, 250, 0.1)",
+                    "&:hover": {
+                      background: "rgba(96, 165, 250, 0.2)",
+                      borderColor: "#60a5fa",
+                    },
+                    textTransform: "none",
+                    display: { xs: 'none', sm: 'flex' }
+                  }}
+                >
+                  CRM
+                </Button>
+              )}
+              {isMobile ? (
+                <IconButton
+                  disabled={!space || space.transcription_status !== "ENDED"}
+                  onClick={onDownloadRecording}
+                >
+                  {isDownloading ? (
+                    <CircularProgress size={20} />
+                  ) : (
+                    <DownloadIcon />
+                  )}
+                </IconButton>
+              ) : (
+                <LoadingButton
+                  loading={isDownloading}
+                  disabled={!space || space.transcription_status !== "ENDED"}
+                  startIcon={<DownloadIcon />}
+                  onClick={onDownloadRecording}
+                  sx={{
+                    color: "#60a5fa",
+                    background: "rgba(96, 165, 250, 0.1)",
+                    "&:hover": {
+                      background: "rgba(96, 165, 250, 0.2)",
+                    },
+                    textTransform: "none",
+                    px: 2,
+                    py: 1,
+                  }}
+                >
+                  {isDownloading ? "Downloading..." : "Download Recording"}
+                </LoadingButton>
+              )}
+            </Box>
           </Box>
           <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
             {space ? (

@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import type { Components } from 'react-markdown';
 import {
   Box,
   Grid,
@@ -31,6 +34,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import MenuIcon from '@mui/icons-material/Menu';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import HeadphonesIcon from '@mui/icons-material/Headphones';
+import { format } from 'date-fns';
 
 import AudiencePanel from './components/SpaceCRM/AudiencePanel';
 import ContentStudio from './components/SpaceCRM/ContentStudio';
@@ -42,6 +46,12 @@ import { AI_MODELS, generateContent } from './services/ai.service';
 import { getFullTranscription } from './services/db/spaces.service';
 
 type CRMTab = 'audience' | 'content' | 'engagement' | 'analytics';
+
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+}
 
 /**
  * SpaceCRM Component
@@ -61,6 +71,7 @@ const SpaceCRM: React.FC = () => {
   const [selectedAttendees, setSelectedAttendees] = useState<string[]>([]);
   const [aiError, setAiError] = useState<string | null>(null);
   const { user } = useAuthContext();
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
 
   // Fetch space data on mount
   useEffect(() => {
@@ -90,6 +101,16 @@ const SpaceCRM: React.FC = () => {
     setIsAiThinking(true);
     setAiError(null);
     
+    // Add user message to chat
+    const userMessage: ChatMessage = {
+      role: 'user',
+      content: aiPrompt,
+      timestamp: new Date()
+    };
+    
+    setChatMessages(prev => [...prev, userMessage]);
+    setAiPrompt('');
+    
     try {
       // Get space transcription for context
       let context = '';
@@ -100,18 +121,37 @@ const SpaceCRM: React.FC = () => {
         }
       }
       
-      const response = await generateContent(selectedModel, aiPrompt, context);
+      let currentResponse = '';
+      const response = await generateContent(
+        selectedModel, 
+        aiPrompt, 
+        context,
+        (chunk) => {
+          currentResponse += chunk;
+          setChatMessages(prev => {
+            const newMessages = [...prev];
+            const lastMessage = newMessages[newMessages.length - 1];
+            if (lastMessage?.role === 'assistant') {
+              lastMessage.content = currentResponse;
+            } else {
+              newMessages.push({
+                role: 'assistant',
+                content: currentResponse,
+                timestamp: new Date()
+              });
+            }
+            return newMessages;
+          });
+        }
+      );
       
       if (response.error) {
         setAiError(response.error);
-      } else {
-        setAiResponse(response.text);
       }
     } catch (error: any) {
       setAiError(error.message || 'Failed to generate response');
     } finally {
       setIsAiThinking(false);
-      setAiPrompt('');
     }
   };
 
@@ -547,10 +587,128 @@ const SpaceCRM: React.FC = () => {
                   <Alert severity="error" sx={{ mb: 2 }}>
                     {aiError}
                   </Alert>
-                ) : aiResponse ? (
-                  <Typography variant="body2">
-                    {aiResponse}
-                  </Typography>
+                ) : chatMessages.length > 0 ? (
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    {chatMessages.map((message, index) => (
+                      <Box
+                        key={index}
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 0.5,
+                          alignItems: message.role === 'user' ? 'flex-end' : 'flex-start',
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            maxWidth: '85%',
+                            p: 1.5,
+                            borderRadius: 2,
+                            background: message.role === 'user' 
+                              ? 'rgba(96, 165, 250, 0.1)' 
+                              : 'rgba(255, 255, 255, 0.05)',
+                            border: `1px solid ${message.role === 'user' 
+                              ? 'rgba(96, 165, 250, 0.2)' 
+                              : 'rgba(255, 255, 255, 0.1)'}`,
+                          }}
+                        >
+                          {message.role === 'user' ? (
+                            <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+                              {message.content}
+                            </Typography>
+                          ) : (
+                            <Box sx={{ 
+                              '& .markdown-body': {
+                                color: 'white',
+                                fontSize: '0.875rem',
+                                lineHeight: 1.6,
+                                '& h1, & h2, & h3, & h4, & h5, & h6': {
+                                  color: '#60a5fa',
+                                  marginTop: '1.5em',
+                                  marginBottom: '0.5em',
+                                  fontWeight: 600,
+                                },
+                                '& h1': { fontSize: '1.5em' },
+                                '& h2': { fontSize: '1.3em' },
+                                '& h3': { fontSize: '1.2em' },
+                                '& p': {
+                                  marginBottom: '1em',
+                                },
+                                '& ul, & ol': {
+                                  paddingLeft: '1.5em',
+                                  marginBottom: '1em',
+                                },
+                                '& li': {
+                                  marginBottom: '0.5em',
+                                },
+                                '& code': {
+                                  background: 'rgba(255, 255, 255, 0.1)',
+                                  padding: '0.2em 0.4em',
+                                  borderRadius: '0.25em',
+                                  fontFamily: 'monospace',
+                                },
+                                '& pre': {
+                                  background: 'rgba(0, 0, 0, 0.2)',
+                                  padding: '1em',
+                                  borderRadius: '0.5em',
+                                  overflowX: 'auto',
+                                  marginBottom: '1em',
+                                  '& code': {
+                                    background: 'none',
+                                    padding: 0,
+                                  },
+                                },
+                                '& blockquote': {
+                                  borderLeft: '3px solid #60a5fa',
+                                  margin: '1em 0',
+                                  paddingLeft: '1em',
+                                  color: 'rgba(255, 255, 255, 0.7)',
+                                },
+                                '& a': {
+                                  color: '#60a5fa',
+                                  textDecoration: 'none',
+                                  '&:hover': {
+                                    textDecoration: 'underline',
+                                  },
+                                },
+                                '& table': {
+                                  borderCollapse: 'collapse',
+                                  width: '100%',
+                                  marginBottom: '1em',
+                                },
+                                '& th, & td': {
+                                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                                  padding: '0.5em',
+                                  textAlign: 'left',
+                                },
+                                '& th': {
+                                  background: 'rgba(255, 255, 255, 0.05)',
+                                },
+                              }
+                            }}>
+                              <div className="markdown-body">
+                                <ReactMarkdown 
+                                  remarkPlugins={[remarkGfm]}
+                                >
+                                  {message.content}
+                                </ReactMarkdown>
+                              </div>
+                            </Box>
+                          )}
+                        </Box>
+                        <Typography 
+                          variant="caption" 
+                          sx={{ 
+                            color: 'text.secondary',
+                            fontSize: '0.75rem',
+                            px: 1
+                          }}
+                        >
+                          {format(message.timestamp, 'h:mm a')}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
                 ) : isAiThinking ? (
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <CircularProgress size={16} sx={{ mr: 1 }} />
@@ -585,6 +743,7 @@ const SpaceCRM: React.FC = () => {
                   placeholder="Ask the AI assistant..."
                   value={aiPrompt}
                   onChange={(e) => setAiPrompt(e.target.value)}
+                  disabled={isAiThinking}
                   sx={{ 
                     mr: 1,
                     '& .MuiOutlinedInput-root': {

@@ -92,6 +92,7 @@ const ContentStudio: React.FC = () => {
     
     setIsGenerating(true);
     setError(null);
+    setGeneratedContent(''); // Clear previous content
     
     try {
       // Get space transcription for context
@@ -103,12 +104,17 @@ const ContentStudio: React.FC = () => {
         }
       }
       
-      const response = await generateContent(selectedModel, customPrompt, context);
+      const response = await generateContent(
+        selectedModel, 
+        customPrompt, 
+        context,
+        (chunk) => {
+          setGeneratedContent(prev => prev + chunk);
+        }
+      );
       
       if (response.error) {
         setError(response.error);
-      } else {
-        setGeneratedContent(response.text);
       }
     } catch (error: any) {
       setError(error.message || 'Failed to generate content');

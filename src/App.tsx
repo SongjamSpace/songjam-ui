@@ -267,7 +267,7 @@ export default function App() {
           <span>Powered by</span>
           <div className="badge">ElizaOS</div>
           <div className="badge">Ethereum</div>
-          <div className="badge">Groq</div>
+          <div className="badge">Grok</div>
         </div>
       </section>
 
@@ -497,7 +497,7 @@ export default function App() {
             <span>Product Hunt</span>
           </a>
           <a
-            href="https://github.com/nusic-fm"
+            href="https://github.com/songjamspace"
             target="_blank"
             rel="noopener noreferrer"
             className="social-link"

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -72,6 +72,7 @@ const SpaceCRM: React.FC = () => {
   const [aiError, setAiError] = useState<string | null>(null);
   const { user } = useAuthContext();
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   // Fetch space data on mount
   useEffect(() => {
@@ -86,6 +87,36 @@ const SpaceCRM: React.FC = () => {
     
     fetchSpace();
   }, [spaceId]);
+
+  // Update the useEffect for auto-scrolling
+  useEffect(() => {
+    if (chatContainerRef.current && chatMessages.length > 0) {
+      const container = chatContainerRef.current;
+      
+      // Get the last user message
+      const userMessages = container.querySelectorAll('.chat-message [data-role="user"]');
+      const lastUserMessage = userMessages.length > 0 
+        ? userMessages[userMessages.length - 1].closest('.chat-message') as HTMLElement
+        : null;
+      
+      if (lastUserMessage) {
+        const containerRect = container.getBoundingClientRect();
+        const userMessageRect = lastUserMessage.getBoundingClientRect();
+        const userMessageTop = userMessageRect.top - containerRect.top;
+
+        // If the user message hasn't reached the top yet (with 20px padding)
+        if (userMessageTop > 20) {
+          // Calculate exact scroll position needed to show new content
+          const scrollAmount = userMessageTop - 20;
+          container.scrollBy({
+            top: scrollAmount,
+            behavior: 'smooth'
+          });
+        }
+        // Once userMessageTop <= 20, we do nothing, letting the message stay at the top
+      }
+    }
+  }, [chatMessages]); // This will trigger on every new chunk of the AI response
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: CRMTab) => {
     setActiveTab(newValue);
@@ -582,7 +613,8 @@ const SpaceCRM: React.FC = () => {
                     background: 'rgba(255, 255, 255, 0.3)',
                   }
                 }
-              }}>
+              }}
+              ref={chatContainerRef}>
                 {aiError ? (
                   <Alert severity="error" sx={{ mb: 2 }}>
                     {aiError}
@@ -592,6 +624,7 @@ const SpaceCRM: React.FC = () => {
                     {chatMessages.map((message, index) => (
                       <Box
                         key={index}
+                        className="chat-message"
                         sx={{
                           display: 'flex',
                           flexDirection: 'column',
@@ -611,6 +644,7 @@ const SpaceCRM: React.FC = () => {
                               ? 'rgba(96, 165, 250, 0.2)' 
                               : 'rgba(255, 255, 255, 0.1)'}`,
                           }}
+                          data-role={message.role}
                         >
                           {message.role === 'user' ? (
                             <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -55,6 +55,32 @@ interface ChatMessage {
   timestamp: Date;
 }
 
+interface VisualizationContext {
+  type: 'space_analysis_context';
+  space: {
+    id: string;
+    title: string;
+    speakers: { id: string; name: string; handle: string; }[];
+  };
+  analysis: {
+    interactions: any[];
+    topics: any[];
+    currentConfig: any;
+    visualMetrics: {
+      totalNodes: number;
+      totalEdges: number;
+      mostActiveNode?: [string, number];
+      averageInteractions: number;
+      topicCount: number;
+    };
+  };
+  suggestions: string[];
+  visualState: {
+    nodes: any[];
+    edges: any[];
+  };
+}
+
 /**
  * SpaceCRM Component
  * 
@@ -75,6 +101,7 @@ const SpaceCRM: React.FC = () => {
   const { user } = useAuthContext();
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const [analysisContext, setAnalysisContext] = useState<VisualizationContext | null>(null);
 
   // Fetch space data on mount
   useEffect(() => {
@@ -128,13 +155,17 @@ const SpaceCRM: React.FC = () => {
     setSelectedModel(event.target.value as string);
   };
   
+  const handleContextUpdate = useCallback((context: VisualizationContext) => {
+    setAnalysisContext(context);
+    console.log('SpaceCRM received analysis context:', context);
+  }, []);
+
   const handlePromptSubmit = async () => {
     if (!aiPrompt.trim()) return;
     
     setIsAiThinking(true);
     setAiError(null);
     
-    // Add user message to chat
     const userMessage: ChatMessage = {
       role: 'user',
       content: aiPrompt,
@@ -142,23 +173,35 @@ const SpaceCRM: React.FC = () => {
     };
     
     setChatMessages(prev => [...prev, userMessage]);
+    const currentPrompt = aiPrompt;
     setAiPrompt('');
     
     try {
-      // Get space transcription for context
-      let context = '';
+      let contextString = `You are an AI assistant helping with a Twitter Space.
+      User query: ${currentPrompt}
+      `;
+      
       if (spaceId) {
         const transcription = await getFullTranscription(spaceId);
         if (transcription) {
-          context = `You are an AI assistant helping with a Twitter Space. Here's the transcription of the space:\n\n${transcription}\n\nPlease help with the following request:`;
+          contextString += `\n\n--- Full Space Transcription ---\n${transcription}\n`;
         }
       }
-      
+
+      if (activeTab === 'analysis' && analysisContext) {
+        contextString += `\n\n--- Current Space Analysis Visualization Context ---
+This section provides structured data about the speaker interaction analysis currently displayed:
+${JSON.stringify(analysisContext, null, 2)}
+
+**Task:** When answering the user's query about the analysis, please **cross-reference** the information above with the provided **Full Space Transcription**. For example, if discussing an interaction metric (like count or sentiment) from the context, try to find and mention specific exchanges or moments in the transcription that support that data point. Correlate visual patterns (like active speakers or strong connections) with actual dialogue.
+`;
+      }
+
       let currentResponse = '';
       const response = await generateContent(
-        selectedModel, 
-        aiPrompt, 
-        context,
+        selectedModel,
+        currentPrompt,
+        contextString,
         (chunk) => {
           currentResponse += chunk;
           setChatMessages(prev => {
@@ -553,7 +596,7 @@ const SpaceCRM: React.FC = () => {
                 )}
                 
                 {activeTab === 'analysis' && (
-                  <SpaceAnalysis space={space} />
+                  <SpaceAnalysis space={space} onContextUpdate={handleContextUpdate} />
                 )}
               </Box>
             </Paper>

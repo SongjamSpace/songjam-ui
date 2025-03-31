@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Box,
   Paper,
@@ -28,7 +28,9 @@ import {
   FormControlLabel,
   Slider,
   Stack,
-  Grid
+  Grid,
+  IconButton,
+  Tooltip
 } from '@mui/material';
 import ReactFlow, { 
   Node, 
@@ -42,17 +44,19 @@ import ReactFlow, {
   useNodesState,
   useEdgesState,
   MarkerType,
-  EdgeLabelRenderer
+  EdgeLabelRenderer,
+  MiniMap,
+  ConnectionLineType,
+  ReactFlowProvider,
+  useReactFlow
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { 
-  forceLink, 
-  forceManyBody, 
-  forceSimulation, 
-  forceCenter 
-} from 'd3-force';
+import * as d3 from 'd3-force';
+import { forceLink, forceManyBody, forceSimulation, forceCenter } from 'd3-force';
+import CloseIcon from '@mui/icons-material/Close';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
-import { SpeakerInteraction } from '../../types/analysis.types';
+import { SpeakerInteraction, SpaceAnalysis as SpaceAnalysisType, Topic } from '../../types/analysis.types';
 import type { SpaceAnalysis } from '../../types/analysis.types';
 import { analyzeTranscript, getSentimentColor, formatTime } from '../../services/analysis.service';
 import { Space, User, getFullTranscription } from '../../services/db/spaces.service';
@@ -117,6 +121,12 @@ const nodeTypes = {
   speakerNode: CustomSpeakerNode as any,
 };
 
+interface ForceEdge extends Edge {
+  source: string;
+  target: string;
+  data?: SpeakerInteraction;
+}
+
 interface ForceNode extends Node {
   id: string;
   x?: number;
@@ -131,13 +141,9 @@ interface ForceNode extends Node {
   };
 }
 
-interface ForceEdge extends Edge<SpeakerInteraction> {
-  source: string; 
-  target: string;
-}
-
 interface SpaceAnalysisProps {
   space: Space | null;
+  onContextUpdate: (context: any) => void;
 }
 
 interface AnalysisConfig {
@@ -158,7 +164,33 @@ interface AnalysisConfig {
   topicOverlapThreshold: number; // 0-1
 }
 
-const SpaceAnalysis: React.FC<SpaceAnalysisProps> = ({ space }) => {
+interface VisualizationContext {
+  type: 'space_analysis_context';
+  space: {
+    id: string;
+    title: string;
+    speakers: { id: string; name: string; handle: string; }[];
+  };
+  analysis: {
+    interactions: any[];
+    topics: any[];
+    currentConfig: AnalysisConfig;
+    visualMetrics: {
+      totalNodes: number;
+      totalEdges: number;
+      mostActiveNode?: [string, number];
+      averageInteractions: number;
+      topicCount: number;
+    };
+  };
+  suggestions: string[];
+  visualState: {
+    nodes: Node[];
+    edges: Edge[];
+  };
+}
+
+const SpaceAnalysis: React.FC<SpaceAnalysisProps> = ({ space, onContextUpdate }) => {
   const [analysis, setAnalysis] = useState<SpaceAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -432,10 +464,125 @@ const SpaceAnalysis: React.FC<SpaceAnalysisProps> = ({ space }) => {
     updateAnalysis();
   }, [analysisConfig, space, transcript]);
 
-  // Handler for clicking on an edge
+  // Share analysis context via callback when visualization is ready
+  useEffect(() => {
+    if (!analysis || !nodes.length || !edges.length || !space || !onContextUpdate) return;
+
+    // Calculate node degrees within this effect
+    const nodeDegrees = new Map<string, number>();
+    edges.forEach(edge => {
+      nodeDegrees.set(edge.source, (nodeDegrees.get(edge.source) || 0) + (edge.data?.count || 1));
+      nodeDegrees.set(edge.target, (nodeDegrees.get(edge.target) || 0) + (edge.data?.count || 1));
+    });
+
+    // Filter out false values from suggestions before creating context
+    const suggestions = [
+      edges.length < nodes.length * 0.5 ? 
+        "Consider enabling sequential responses to see more potential interactions" : null,
+      !analysisConfig.strengthMetrics.topicOverlap && 
+        analysis.topics.length > 3 ?
+        "Enable topic overlap analysis to see how speakers connect through shared topics" : null,
+      edges.some(e => e.data?.responseTime && e.data.responseTime < 10) ?
+        "Some speakers have very quick response times - try focusing on these active exchanges" : null
+    ].filter((suggestion): suggestion is string => suggestion !== null);
+
+    // Prepare detailed context about the current visualization
+    const visualizationContext: VisualizationContext = {
+      type: 'space_analysis_context',
+      space: {
+        id: space.spaceId,
+        title: space.title,
+        speakers: space.speakers.map(s => ({
+          id: s.user_id,
+          name: s.display_name,
+          handle: s.twitter_screen_name
+        }))
+      },
+      analysis: {
+        interactions: analysis.interactions.map(interaction => ({
+          from: space.speakers.find(s => s.user_id === interaction.fromSpeakerId)?.display_name,
+          to: space.speakers.find(s => s.user_id === interaction.toSpeakerId)?.display_name,
+          count: interaction.count,
+          sentiment: interaction.sentiment,
+          topics: interaction.topics,
+          duration: interaction.duration,
+          responseTime: interaction.responseTime,
+          topicOverlapScore: interaction.topicOverlapScore
+        })),
+        topics: analysis.topics.map(topic => ({
+          name: topic.topic,
+          speakers: topic.speakers.map(id => 
+            space.speakers.find(s => s.user_id === id)?.display_name
+          ).filter(Boolean),
+          duration: topic.endTime - topic.startTime,
+          summary: topic.summary
+        })),
+        currentConfig: analysisConfig,
+        visualMetrics: {
+          totalNodes: nodes.length,
+          totalEdges: edges.length,
+          mostActiveNode: nodeDegrees.size > 0 ? [...nodeDegrees.entries()].sort((a, b) => b[1] - a[1])[0] : undefined,
+          averageInteractions: edges.length > 0 ? edges.reduce((sum, e) => 
+            sum + (e.data?.count || 1), 0) / edges.length : 0,
+          topicCount: analysis.topics.length
+        }
+      },
+      suggestions,
+      visualState: {
+        nodes,
+        edges
+      }
+    };
+
+    // Call the callback function passed from the parent
+    onContextUpdate(visualizationContext);
+
+  }, [analysis, nodes, edges, space, analysisConfig, onContextUpdate]);
+
+  // Add helper function to get insights about specific interactions
+  const getInteractionInsights = (fromId: string, toId: string) => {
+    if (!analysis || !space) return null;
+
+    const interaction = analysis.interactions.find(
+      i => i.fromSpeakerId === fromId && i.toSpeakerId === toId
+    );
+    if (!interaction) return null;
+
+    const fromSpeaker = space.speakers.find(s => s.user_id === fromId);
+    const toSpeaker = space.speakers.find(s => s.user_id === toId);
+    
+    const sharedTopics = analysis.topics.filter(
+      topic => topic.speakers.includes(fromId) && topic.speakers.includes(toId)
+    );
+
+    return {
+      speakers: {
+        from: fromSpeaker?.display_name,
+        to: toSpeaker?.display_name
+      },
+      metrics: {
+        interactionCount: interaction.count,
+        sentiment: interaction.sentiment,
+        avgResponseTime: interaction.responseTime,
+        topicOverlap: interaction.topicOverlapScore
+      },
+      context: {
+        sharedTopics: sharedTopics.map(t => t.topic),
+        totalDuration: interaction.duration,
+        percentageOfDiscussion: 
+          (interaction.duration || 0) / 
+          (analysis.timeline[0]?.segments.slice(-1)[0]?.endTime || 1) * 100
+      }
+    };
+  };
+
+  // Add this to the edge click handler
   const handleEdgeClick = (event: React.MouseEvent, edge: Edge<SpeakerInteraction>) => {
     console.log('Edge clicked:', edge);
     if (edge.data) {
+      const insights = getInteractionInsights(edge.source, edge.target);
+      console.log('Interaction insights:', insights);
+      
       setSelectedInteraction(edge.data);
       setIsInteractionModalOpen(true);
     }

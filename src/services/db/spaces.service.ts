@@ -60,23 +60,75 @@ export type Space = {
   user_message?: string;
 };
 
-export const getSpace = async (
-  spaceId: string,
-  listener?: (space: Space) => void
-) => {
-  const docRef = doc(db, "spaces", spaceId);
-  const docSnap = await getDoc(docRef);
+// Add API status tracking
+export const XApiStatus = {
+  READY: 'ready',
+  RATE_LIMITED: 'rate_limited',
+  ERROR: 'error',
+  UNAUTHORIZED: 'unauthorized'
+};
 
-  if (docSnap.exists()) {
-    const space = docSnap.data() as Space;
-    if (listener) {
-      onSnapshot(docRef, (doc) => {
-        listener(doc.data() as Space);
-      });
+let currentApiStatus = XApiStatus.READY;
+let lastApiError: Error | null = null;
+
+// Add error handling wrapper
+const handleXApiRequest = async <T>(
+  requestFn: () => Promise<T>,
+  retryCount = 3
+): Promise<T> => {
+  try {
+    const response = await requestFn();
+    currentApiStatus = XApiStatus.READY;
+    lastApiError = null;
+    return response;
+  } catch (error: any) {
+    if (error.status === 429) {
+      currentApiStatus = XApiStatus.RATE_LIMITED;
+      const retryAfter = parseInt(error.headers?.['retry-after'] || '60');
+      if (retryCount > 0) {
+        await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+        return handleXApiRequest(requestFn, retryCount - 1);
+      }
+    } else if (error.status === 401) {
+      currentApiStatus = XApiStatus.UNAUTHORIZED;
+      // Trigger re-authentication
+      window.dispatchEvent(new CustomEvent('x-api-unauthorized'));
+    } else {
+      currentApiStatus = XApiStatus.ERROR;
     }
-    return space;
+    lastApiError = error;
+    throw error;
   }
-  return null;
+};
+
+// Modify getSpace to handle null case properly
+export const getSpace = async (spaceId: string, onUpdate?: (space: Space) => void): Promise<Space> => {
+  return handleXApiRequest(async () => {
+    const docRef = doc(db, "spaces", spaceId);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      const space = docSnap.data() as Space;
+      if (onUpdate) {
+        onSnapshot(docRef, (doc) => {
+          onUpdate(doc.data() as Space);
+        });
+      }
+      return space;
+    }
+    throw new Error(`Space with ID ${spaceId} not found`);
+  });
+};
+
+// Add API status monitoring
+export const getXApiStatus = () => ({
+  status: currentApiStatus,
+  lastError: lastApiError
+});
+
+// Add token refresh handling
+export const refreshXApiToken = async () => {
+  // Implement token refresh logic
 };
 
 const SUMMARY_SUBCOLLECTION = "summaries";

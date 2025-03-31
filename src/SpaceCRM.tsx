@@ -34,10 +34,12 @@ import CloseIcon from '@mui/icons-material/Close';
 import MenuIcon from '@mui/icons-material/Menu';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import HeadphonesIcon from '@mui/icons-material/Headphones';
+import AssessmentIcon from '@mui/icons-material/Assessment';
 import { format } from 'date-fns';
 
 import AudiencePanel from './components/SpaceCRM/AudiencePanel';
 import ContentStudio from './components/SpaceCRM/ContentStudio';
+import SpaceAnalysis from './components/SpaceCRM/SpaceAnalysis';
 import { getSpace, Space } from './services/db/spaces.service';
 import { useAuthContext } from './contexts/AuthContext';
 import Logo from './components/Logo';
@@ -45,7 +47,7 @@ import TwitterLogin from './components/TwitterLogin';
 import { AI_MODELS, generateContent } from './services/ai.service';
 import { getFullTranscription } from './services/db/spaces.service';
 
-type CRMTab = 'audience' | 'content' | 'engagement' | 'analytics';
+type CRMTab = 'audience' | 'content' | 'engagement' | 'analytics' | 'analysis';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -199,7 +201,7 @@ const SpaceCRM: React.FC = () => {
           top: 0,
           left: 0,
           right: 0,
-          height: "100vh",
+          height: "100%",
           background: "radial-gradient(circle at 50% 0%, rgba(96, 165, 250, 0.15), rgba(139, 92, 246, 0.12), rgba(236, 72, 153, 0.1))",
           opacity: 0.7,
           pointerEvents: "none",
@@ -357,15 +359,13 @@ const SpaceCRM: React.FC = () => {
         px: 2, 
         maxWidth: '1600px', 
         mx: 'auto',
-        height: 'calc(100vh - 180px)',
         display: 'flex',
         flexDirection: 'column',
-        overflow: 'hidden'
+        flexGrow: 1
       }}>
         <Grid container spacing={2} sx={{ 
           flex: 1,
           minHeight: 0,
-          overflow: 'hidden'
         }}>
           {/* LEFT PANEL - Navigation (hidden on mobile) */}
           <Grid item md={2} sx={{ display: { xs: 'none', md: 'block' } }}>
@@ -412,6 +412,25 @@ const SpaceCRM: React.FC = () => {
                 <Tab icon={<ForumIcon />} label="Content" value="content" />
                 <Tab icon={<MessageIcon />} label="Engagement" value="engagement" />
                 <Tab icon={<InsightsIcon />} label="Analytics" value="analytics" />
+                <Tab 
+                  icon={<AssessmentIcon />} 
+                  label={
+                    <Box component="span" sx={{ display: 'flex', alignItems: 'center' }}>
+                      Space Analysis
+                      <Chip 
+                        size="small" 
+                        label="Beta" 
+                        sx={{ 
+                          ml: 1, 
+                          height: 16, 
+                          fontSize: '0.6rem',
+                          background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+                        }} 
+                      />
+                    </Box>
+                  } 
+                  value="analysis" 
+                />
               </Tabs>
               
               <Divider sx={{ my: 2 }} />
@@ -455,7 +474,6 @@ const SpaceCRM: React.FC = () => {
               border: '1px solid rgba(255, 255, 255, 0.05)',
               display: 'flex',
               flexDirection: 'column',
-              overflow: 'hidden',
               transition: 'all 0.3s ease',
               '&:hover': {
                 background: 'rgba(255, 255, 255, 0.04)',
@@ -485,6 +503,7 @@ const SpaceCRM: React.FC = () => {
                 <Tab icon={<ForumIcon />} value="content" />
                 <Tab icon={<MessageIcon />} value="engagement" />
                 <Tab icon={<InsightsIcon />} value="analytics" />
+                <Tab icon={<AssessmentIcon />} value="analysis" />
               </Tabs>
               
               {/* Content based on active tab */}
@@ -531,6 +550,10 @@ const SpaceCRM: React.FC = () => {
                       Track performance metrics for your space and content
                     </Typography>
                   </>
+                )}
+                
+                {activeTab === 'analysis' && (
+                  <SpaceAnalysis space={space} />
                 )}
               </Box>
             </Paper>
@@ -942,6 +965,7 @@ const SpaceCRM: React.FC = () => {
             <Tab icon={<ForumIcon />} label="Content" value="content" />
             <Tab icon={<MessageIcon />} label="Engagement" value="engagement" />
             <Tab icon={<InsightsIcon />} label="Analytics" value="analytics" />
+            <Tab icon={<AssessmentIcon />} value="analysis" />
           </Tabs>
           
           <Divider sx={{ my: 2 }} />

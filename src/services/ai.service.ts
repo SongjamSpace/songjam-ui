@@ -396,6 +396,11 @@ const generateWithClaude = async (
               console.log('Extracted content:', content);
               fullText += content;
               onStream?.(content);
+            } else if (parsed.type === 'message_delta' && parsed.delta?.text) {
+              const content = parsed.delta.text;
+              console.log('Extracted message content:', content);
+              fullText += content;
+              onStream?.(content);
             }
           } catch (e) {
             console.error('Error parsing Claude chunk:', {

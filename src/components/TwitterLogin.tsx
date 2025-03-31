@@ -1,43 +1,111 @@
-import { signInWithPopup, TwitterAuthProvider } from "firebase/auth";
-import { auth } from "../services/firebase.service"; // Assuming you have firebase config setup
-import { FaSquareXTwitter } from "react-icons/fa6"; // You'll need to install react-icons
-import { Button } from "@mui/material"; // Add this import
+import React, { useEffect, useState } from 'react';
+import { Button, CircularProgress, Snackbar, Alert } from '@mui/material';
+import TwitterIcon from '@mui/icons-material/Twitter';
+import { getXApiStatus, XApiStatus, refreshXApiToken } from '../services/db/spaces.service';
 
-const TwitterLogin = () => {
-  const handleTwitterLogin = async () => {
-    const provider = new TwitterAuthProvider();
+const TwitterLogin: React.FC = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [apiStatus, setApiStatus] = useState(XApiStatus.READY);
+
+  useEffect(() => {
+    // Listen for API unauthorized events
+    const handleUnauthorized = () => {
+      handleLogin(); // Attempt to refresh token and re-authenticate
+    };
+    window.addEventListener('x-api-unauthorized', handleUnauthorized);
+
+    // Monitor API status
+    const checkApiStatus = () => {
+      const status = getXApiStatus();
+      setApiStatus(status.status);
+      if (status.lastError) {
+        setError(status.lastError.message);
+      }
+    };
+    const statusInterval = setInterval(checkApiStatus, 5000);
+
+    return () => {
+      window.removeEventListener('x-api-unauthorized', handleUnauthorized);
+      clearInterval(statusInterval);
+    };
+  }, []);
+
+  const handleLogin = async () => {
+    setIsLoading(true);
+    setError(null);
+    
     try {
-      await signInWithPopup(auth, provider);
-      // Successfully logged in
-    } catch (error) {
-      console.error("Error signing in with Twitter:", error);
+      // First try to refresh the token
+      await refreshXApiToken();
+      
+      // If refresh fails, initiate new OAuth flow
+      const authUrl = `https://twitter.com/i/oauth2/authorize?${new URLSearchParams({
+        response_type: 'code',
+        client_id: import.meta.env.VITE_TWITTER_CLIENT_ID || '',
+        redirect_uri: window.location.origin + '/auth/callback',
+        scope: 'tweet.read users.read space.read',
+        state: crypto.randomUUID(),
+        code_challenge_method: 'S256',
+        code_challenge: await generateCodeChallenge()
+      })}`;
+
+      window.location.href = authUrl;
+    } catch (err: any) {
+      setError(err.message || 'Failed to authenticate with Twitter');
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  // Generate PKCE code challenge
+  const generateCodeChallenge = async () => {
+    const codeVerifier = crypto.randomUUID();
+    sessionStorage.setItem('code_verifier', codeVerifier);
+    
+    const encoder = new TextEncoder();
+    const data = encoder.encode(codeVerifier);
+    const digest = await crypto.subtle.digest('SHA-256', data);
+    
+    return btoa(String.fromCharCode(...new Uint8Array(digest)))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+  };
+
   return (
-    <Button
-      onClick={handleTwitterLogin}
-      variant="contained"
-      sx={{
-        backgroundColor: "#000000",
-        // "&:hover": {
-        //   backgroundColor: "#272727",
-        // },
-        borderRadius: "4px",
-        padding: "0 32px",
-        height: "40px",
-        width: "100%",
-        maxWidth: "380px",
-        textTransform: "none",
-        gap: 1,
-        fontWeight: 500,
-        fontSize: "14px",
-        fontFamily: '"Helvetica Neue", Arial, sans-serif',
-      }}
-      startIcon={<FaSquareXTwitter size={20} />}
-    >
-      Sign in with X
-    </Button>
+    <>
+      <Button
+        variant="contained"
+        startIcon={isLoading ? <CircularProgress size={20} /> : <TwitterIcon />}
+        onClick={handleLogin}
+        disabled={isLoading || apiStatus === XApiStatus.RATE_LIMITED}
+        sx={{
+          background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+          '&:hover': {
+            background: 'linear-gradient(90deg, #3b82f6, #7c3aed)',
+          }
+        }}
+      >
+        {isLoading ? 'Connecting...' : 'Connect Twitter'}
+      </Button>
+
+      <Snackbar 
+        open={!!error} 
+        autoHideDuration={6000} 
+        onClose={() => setError(null)}
+      >
+        <Alert severity="error" onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      </Snackbar>
+
+      {apiStatus === XApiStatus.RATE_LIMITED && (
+        <Alert severity="warning" sx={{ mt: 2 }}>
+          Twitter API rate limit reached. Please try again later.
+        </Alert>
+      )}
+    </>
   );
 };
 

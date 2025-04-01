@@ -27,4 +27,4 @@ export interface Tweet {
 export interface TwitterAPIError {
   code: number;
   message: string;
-} 
+}

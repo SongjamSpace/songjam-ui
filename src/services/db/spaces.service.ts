@@ -7,10 +7,10 @@ import {
   onSnapshot,
   orderBy,
   query,
-} from "firebase/firestore";
-import { db, storage } from "../firebase.service";
-import { getDownloadURL } from "firebase/storage";
-import { ref } from "firebase/storage";
+} from 'firebase/firestore';
+import { db, storage } from '../firebase.service';
+import { getDownloadURL } from 'firebase/storage';
+import { ref } from 'firebase/storage';
 
 export type User = {
   user_id: string;
@@ -31,12 +31,12 @@ export type Segment = {
 };
 export type Space = {
   transcription_status:
-    | "STARTED"
-    | "PROCESSING"
-    | "FAILED"
-    | "ENDED"
-    | "SHORT_ENDED";
-  type: "recorded" | "live";
+    | 'STARTED'
+    | 'PROCESSING'
+    | 'FAILED'
+    | 'ENDED'
+    | 'SHORT_ENDED';
+  type: 'recorded' | 'live';
   spaceId: string;
   hls_url: string;
 
@@ -65,7 +65,7 @@ export const XApiStatus = {
   READY: 'ready',
   RATE_LIMITED: 'rate_limited',
   ERROR: 'error',
-  UNAUTHORIZED: 'unauthorized'
+  UNAUTHORIZED: 'unauthorized',
 };
 
 let currentApiStatus = XApiStatus.READY;
@@ -86,7 +86,7 @@ const handleXApiRequest = async <T>(
       currentApiStatus = XApiStatus.RATE_LIMITED;
       const retryAfter = parseInt(error.headers?.['retry-after'] || '60');
       if (retryCount > 0) {
-        await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+        await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000));
         return handleXApiRequest(requestFn, retryCount - 1);
       }
     } else if (error.status === 401) {
@@ -102,9 +102,12 @@ const handleXApiRequest = async <T>(
 };
 
 // Modify getSpace to handle null case properly
-export const getSpace = async (spaceId: string, onUpdate?: (space: Space) => void): Promise<Space> => {
+export const getSpace = async (
+  spaceId: string,
+  onUpdate?: (space: Space) => void
+): Promise<Space> => {
   return handleXApiRequest(async () => {
-    const docRef = doc(db, "spaces", spaceId);
+    const docRef = doc(db, 'spaces', spaceId);
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
@@ -123,7 +126,7 @@ export const getSpace = async (spaceId: string, onUpdate?: (space: Space) => voi
 // Add API status monitoring
 export const getXApiStatus = () => ({
   status: currentApiStatus,
-  lastError: lastApiError
+  lastError: lastApiError,
 });
 
 // Add token refresh handling
@@ -131,27 +134,27 @@ export const refreshXApiToken = async () => {
   // Implement token refresh logic
 };
 
-const SUMMARY_SUBCOLLECTION = "summaries";
+const SUMMARY_SUBCOLLECTION = 'summaries';
 export const getSummary = async (spaceId: string) => {
   const docRef = doc(
     db,
-    "spaces",
+    'spaces',
     spaceId,
     SUMMARY_SUBCOLLECTION,
-    "final_summary"
+    'final_summary'
   );
   const docSnap = await getDoc(docRef);
   return docSnap.data();
 };
 
 export const getDetailedSummary = async (spaceId: string) => {
-  const docRef = doc(db, "spaces", spaceId, SUMMARY_SUBCOLLECTION, "meta");
+  const docRef = doc(db, 'spaces', spaceId, SUMMARY_SUBCOLLECTION, 'meta');
   const docSnap = await getDoc(docRef);
   return docSnap.data()?.first_level_summaries;
 };
 
 export const getFirstLevelSummaries = async (spaceId: string) => {
-  const docRef = doc(db, "spaces", spaceId, SUMMARY_SUBCOLLECTION, "meta");
+  const docRef = doc(db, 'spaces', spaceId, SUMMARY_SUBCOLLECTION, 'meta');
   const docSnap = await getDoc(docRef);
   return docSnap.data()?.first_level_summaries;
 };
@@ -159,10 +162,10 @@ export const getFirstLevelSummaries = async (spaceId: string) => {
 export const getFullTranscription = async (spaceId: string) => {
   const docRef = doc(
     db,
-    "spaces",
+    'spaces',
     spaceId,
     SUMMARY_SUBCOLLECTION,
-    "full_transcript"
+    'full_transcript'
   );
   const docSnap = await getDoc(docRef);
   return docSnap.data()?.text;
@@ -170,8 +173,8 @@ export const getFullTranscription = async (spaceId: string) => {
 
 export const getSegments = async (spaceId: string) => {
   const colRef = query(
-    collection(db, "spaces", spaceId, "segments"),
-    orderBy("idx", "asc"),
+    collection(db, 'spaces', spaceId, 'segments'),
+    orderBy('idx', 'asc'),
     limit(20)
   );
   const snapshot = await getDocs(colRef);
@@ -179,7 +182,7 @@ export const getSegments = async (spaceId: string) => {
 };
 
 export const getTwitterThread = async (spaceId: string) => {
-  const docRef = doc(db, "spaces", spaceId, "twitter_threads", "v1");
+  const docRef = doc(db, 'spaces', spaceId, 'twitter_threads', 'v1');
   const docSnap = await getDoc(docRef);
   return docSnap.data()?.thread;
 };

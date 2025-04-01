@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Avatar, CircularProgress, Skeleton } from '@mui/material';
+import {
+  Box,
+  Typography,
+  Avatar,
+  CircularProgress,
+  Skeleton,
+} from '@mui/material';
 import { getUserInfo, getUserTweets } from '../services/x.service';
 import { User, Tweet } from '../types/twitter.types';
 
@@ -7,7 +13,9 @@ interface SpaceSpeakerInfoProps {
   userId: string;
 }
 
-export const SpaceSpeakerInfo: React.FC<SpaceSpeakerInfoProps> = ({ userId }) => {
+export const SpaceSpeakerInfo: React.FC<SpaceSpeakerInfoProps> = ({
+  userId,
+}) => {
   const [user, setUser] = useState<User | null>(null);
   const [tweets, setTweets] = useState<Tweet[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,7 +30,7 @@ export const SpaceSpeakerInfo: React.FC<SpaceSpeakerInfoProps> = ({ userId }) =>
         // Load user info and tweets in parallel
         const [userInfo, userTweets] = await Promise.all([
           getUserInfo(userId),
-          getUserTweets(userId, 3) // Get 3 most recent tweets
+          getUserTweets(userId, 3), // Get 3 most recent tweets
         ]);
 
         if (userInfo) {
@@ -103,7 +111,7 @@ export const SpaceSpeakerInfo: React.FC<SpaceSpeakerInfoProps> = ({ userId }) =>
           <Typography variant="subtitle1" gutterBottom>
             Recent Tweets
           </Typography>
-          {tweets.map(tweet => (
+          {tweets.map((tweet) => (
             <Box
               key={tweet.id}
               sx={{
@@ -112,8 +120,8 @@ export const SpaceSpeakerInfo: React.FC<SpaceSpeakerInfoProps> = ({ userId }) =>
                 borderRadius: 1,
                 bgcolor: 'background.paper',
                 '&:hover': {
-                  bgcolor: 'action.hover'
-                }
+                  bgcolor: 'action.hover',
+                },
               }}
             >
               <Typography variant="body2">{tweet.text}</Typography>
@@ -135,4 +143,4 @@ export const SpaceSpeakerInfo: React.FC<SpaceSpeakerInfoProps> = ({ userId }) =>
   );
 };
 
-export default SpaceSpeakerInfo; 
+export default SpaceSpeakerInfo;

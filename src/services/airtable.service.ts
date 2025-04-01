@@ -1,4 +1,3 @@
-
 import Airtable from 'airtable';
 
 interface FormData {
@@ -12,7 +11,7 @@ export const submitToAirtable = async (formData: FormData) => {
   if (!import.meta.env.VITE_AIRTABLE_API_KEY) {
     throw new Error('Airtable API key is missing');
   }
-  
+
   if (!import.meta.env.VITE_AIRTABLE_BASE_ID) {
     throw new Error('Airtable base ID is missing');
   }
@@ -21,9 +20,9 @@ export const submitToAirtable = async (formData: FormData) => {
     throw new Error('Airtable table name is missing');
   }
 
-  const base = new Airtable({ 
+  const base = new Airtable({
     apiKey: import.meta.env.VITE_AIRTABLE_API_KEY,
-    endpointUrl: 'https://api.airtable.com'
+    endpointUrl: 'https://api.airtable.com',
   }).base(import.meta.env.VITE_AIRTABLE_BASE_ID);
 
   try {
@@ -34,9 +33,9 @@ export const submitToAirtable = async (formData: FormData) => {
           Email: formData.email,
           Telegram: formData.telegram,
           Message: formData.message,
-          "Submission Date": new Date().toISOString().split('T')[0]
-        }
-      }
+          'Submission Date': new Date().toISOString().split('T')[0],
+        },
+      },
     ]);
     return result;
   } catch (error: any) {

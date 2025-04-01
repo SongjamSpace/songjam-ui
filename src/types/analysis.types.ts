@@ -5,9 +5,9 @@ export interface SpeakerInteraction {
   sentiment: 'positive' | 'neutral' | 'negative';
   topics: string[];
   // Optional metrics based on analysis configuration
-  duration?: number;  // Total duration of interactions in seconds
-  responseTime?: number;  // Average response time in seconds
-  topicOverlapScore?: number;  // 0-1 score of topic similarity
+  duration?: number; // Total duration of interactions in seconds
+  responseTime?: number; // Average response time in seconds
+  topicOverlapScore?: number; // 0-1 score of topic similarity
 }
 
 export interface SpeakerTimeline {
@@ -50,6 +50,6 @@ export interface AnalysisConfig {
     sentiment: boolean;
     responseTime: boolean;
   };
-  timeWindow: number;  // seconds
-  topicOverlapThreshold: number;  // 0-1
-} 
+  timeWindow: number; // seconds
+  topicOverlapThreshold: number; // 0-1
+}

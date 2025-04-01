@@ -20,7 +20,7 @@ app.post('/api/claude', async (req, res) => {
   try {
     console.log('Received request to proxy server:', {
       body: req.body,
-      headers: req.headers
+      headers: req.headers,
     });
 
     const response = await axios.post(
@@ -41,10 +41,10 @@ app.post('/api/claude', async (req, res) => {
     console.error('Claude API error:', {
       status: error.response?.status,
       data: error.response?.data,
-      message: error.message
+      message: error.message,
     });
     res.status(error.response?.status || 500).json({
-      error: error.response?.data || error.message
+      error: error.response?.data || error.message,
     });
   }
 });
@@ -53,7 +53,7 @@ app.post('/api/claude/stream', async (req, res) => {
   try {
     console.log('Received streaming request to proxy server:', {
       body: req.body,
-      headers: req.headers
+      headers: req.headers,
     });
 
     // Set up SSE headers
@@ -66,7 +66,7 @@ app.post('/api/claude/stream', async (req, res) => {
       'https://api.anthropic.com/v1/messages',
       {
         ...req.body,
-        stream: true
+        stream: true,
       },
       {
         headers: {
@@ -74,14 +74,14 @@ app.post('/api/claude/stream', async (req, res) => {
           'anthropic-version': '2023-06-01',
           'content-type': 'application/json',
         },
-        responseType: 'stream'
+        responseType: 'stream',
       }
     );
 
     console.log('Received response from Claude API');
 
     // Pipe the stream to the client
-    response.data.on('data', chunk => {
+    response.data.on('data', (chunk) => {
       console.log('Received chunk from Claude:', chunk.toString());
       const lines = chunk.toString().split('\n');
       for (const line of lines) {
@@ -99,24 +99,25 @@ app.post('/api/claude/stream', async (req, res) => {
       res.end();
     });
 
-    response.data.on('error', error => {
+    response.data.on('error', (error) => {
       console.error('Stream error:', error);
       res.write(`data: ${JSON.stringify({ error: error.message })}\n\n`);
       res.end();
     });
-
   } catch (error) {
     console.error('Claude API error:', {
       status: error.response?.status,
       data: error.response?.data,
       message: error.message,
-      stack: error.stack
+      stack: error.stack,
     });
-    res.write(`data: ${JSON.stringify({ error: error.response?.data || error.message })}\n\n`);
+    res.write(
+      `data: ${JSON.stringify({ error: error.response?.data || error.message })}\n\n`
+    );
     res.end();
   }
 });
 
 app.listen(PORT, () => {
   console.log(`Proxy server running on port ${PORT}`);
-}); 
+});

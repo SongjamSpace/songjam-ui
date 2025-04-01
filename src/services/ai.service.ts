@@ -22,14 +22,22 @@ export const AI_MODELS: AIModel[] = [
   {
     id: 'gemini',
     name: 'Gemini Pro',
-    capabilities: ['Advanced reasoning', 'Multimodal understanding', 'Code generation'],
+    capabilities: [
+      'Advanced reasoning',
+      'Multimodal understanding',
+      'Code generation',
+    ],
     contextWindow: 32768,
     specialFeatures: ['Image analysis', 'Code completion'],
   },
   {
     id: 'grok',
     name: 'Grok',
-    capabilities: ['Real-time data', 'Technical analysis', 'Interactive learning'],
+    capabilities: [
+      'Real-time data',
+      'Technical analysis',
+      'Interactive learning',
+    ],
     contextWindow: 50000,
     specialFeatures: ['Web browsing', 'Data visualization'],
   },
@@ -62,7 +70,7 @@ export const generateContent = async (
   } catch (error: any) {
     return {
       text: '',
-      error: error.message || 'Failed to generate content'
+      error: error.message || 'Failed to generate content',
     };
   }
 };
@@ -70,10 +78,10 @@ export const generateContent = async (
 const RETRY_DELAY = 2000; // 2 seconds
 const MAX_RETRIES = 3;
 
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const generateWithGemini = async (
-  prompt: string, 
+  prompt: string,
   context?: string,
   onStream?: AIStreamCallback,
   retryCount = 0
@@ -83,7 +91,8 @@ const generateWithGemini = async (
   }
 
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY.trim();
-  const baseUrl = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro-002:streamGenerateContent';
+  const baseUrl =
+    'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro-002:streamGenerateContent';
   const url = `${baseUrl}?key=${apiKey}`;
 
   console.log('Making request to Gemini API:', {
@@ -91,7 +100,7 @@ const generateWithGemini = async (
     prompt,
     context,
     apiKeyLength: apiKey.length,
-    retryCount
+    retryCount,
   });
 
   try {
@@ -101,11 +110,15 @@ const generateWithGemini = async (
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: context ? `${context}\n\n${prompt}` : prompt
-          }]
-        }],
+        contents: [
+          {
+            parts: [
+              {
+                text: context ? `${context}\n\n${prompt}` : prompt,
+              },
+            ],
+          },
+        ],
         generationConfig: {
           temperature: 0.7,
           maxOutputTokens: 1000,
@@ -118,7 +131,7 @@ const generateWithGemini = async (
       console.error('Gemini API error response:', {
         status: response.status,
         statusText: response.statusText,
-        data: errorData
+        data: errorData,
       });
 
       // Handle rate limiting
@@ -157,7 +170,7 @@ const generateWithGemini = async (
 
       for (let i = 0; i < buffer.length; i++) {
         const char = buffer[i];
-        
+
         if (escapeNext) {
           escapeNext = false;
           continue;
@@ -193,7 +206,7 @@ const generateWithGemini = async (
               } catch (e) {
                 console.error('Error parsing JSON object:', {
                   error: e,
-                  jsonStr
+                  jsonStr,
                 });
               }
               buffer = buffer.slice(i + 1);
@@ -206,7 +219,7 @@ const generateWithGemini = async (
 
     return {
       text: fullText,
-      isStreaming: false
+      isStreaming: false,
     };
   } catch (error: any) {
     console.error('Gemini API error:', {
@@ -214,7 +227,7 @@ const generateWithGemini = async (
       statusText: error.response?.statusText,
       data: error.response?.data,
       url: error.config?.url,
-      error: error.message
+      error: error.message,
     });
 
     // Handle rate limiting in catch block as well
@@ -229,7 +242,7 @@ const generateWithGemini = async (
 };
 
 const generateWithGrok = async (
-  prompt: string, 
+  prompt: string,
   context?: string,
   onStream?: AIStreamCallback
 ): Promise<AIResponse> => {
@@ -247,12 +260,12 @@ const generateWithGrok = async (
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${import.meta.env.VITE_GROK_API_KEY}`,
+        Authorization: `Bearer ${import.meta.env.VITE_GROK_API_KEY}`,
       },
       body: JSON.stringify({
         messages: [
           ...(context ? [{ role: 'system', content: context }] : []),
-          { role: 'user', content: prompt }
+          { role: 'user', content: prompt },
         ],
         model: 'grok-2-latest',
         stream: true,
@@ -277,7 +290,7 @@ const generateWithGrok = async (
       if (done) break;
 
       const chunk = decoder.decode(value);
-      const lines = chunk.split('\n').filter(line => line.trim() !== '');
+      const lines = chunk.split('\n').filter((line) => line.trim() !== '');
 
       for (const line of lines) {
         if (line.startsWith('data: ')) {
@@ -302,21 +315,21 @@ const generateWithGrok = async (
 
     return {
       text: fullText,
-      isStreaming: false
+      isStreaming: false,
     };
   } catch (error: any) {
     console.error('Grok API error:', {
       status: error.response?.status,
       statusText: error.response?.statusText,
       data: error.response?.data,
-      error: error.message
+      error: error.message,
     });
     throw error;
   }
 };
 
 const generateWithClaude = async (
-  prompt: string, 
+  prompt: string,
   context?: string,
   onStream?: AIStreamCallback
 ): Promise<AIResponse> => {
@@ -327,7 +340,7 @@ const generateWithClaude = async (
   console.log('Making request to Claude API:', {
     prompt,
     context,
-    apiKeyLength: import.meta.env.VITE_ANTHROPIC_API_KEY.length
+    apiKeyLength: import.meta.env.VITE_ANTHROPIC_API_KEY.length,
   });
 
   try {
@@ -341,18 +354,16 @@ const generateWithClaude = async (
         model: 'claude-3-5-sonnet-20241022',
         max_tokens: 1024,
         system: context || 'You are a helpful AI assistant.',
-        messages: [
-          { role: 'user', content: prompt }
-        ],
+        messages: [{ role: 'user', content: prompt }],
         temperature: 0.7,
-        stream: true
+        stream: true,
       }),
     });
 
     if (!response.ok) {
       console.error('Stream response not OK:', {
         status: response.status,
-        statusText: response.statusText
+        statusText: response.statusText,
       });
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -375,7 +386,7 @@ const generateWithClaude = async (
 
       const chunk = decoder.decode(value);
       console.log('Received chunk:', chunk);
-      const lines = chunk.split('\n').filter(line => line.trim() !== '');
+      const lines = chunk.split('\n').filter((line) => line.trim() !== '');
 
       for (const line of lines) {
         if (line.startsWith('data: ')) {
@@ -389,7 +400,7 @@ const generateWithClaude = async (
           try {
             const parsed = JSON.parse(data);
             console.log('Parsed JSON:', parsed);
-            
+
             // Handle different event types
             if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
               const content = parsed.delta.text;
@@ -405,7 +416,7 @@ const generateWithClaude = async (
           } catch (e) {
             console.error('Error parsing Claude chunk:', {
               error: e,
-              data
+              data,
             });
           }
         }
@@ -415,7 +426,7 @@ const generateWithClaude = async (
     console.log('Stream processing complete, full text:', fullText);
     return {
       text: fullText,
-      isStreaming: false
+      isStreaming: false,
     };
   } catch (error: any) {
     console.error('Claude API error:', {
@@ -423,8 +434,8 @@ const generateWithClaude = async (
       statusText: error.response?.statusText,
       data: error.response?.data,
       error: error.message,
-      stack: error.stack
+      stack: error.stack,
     });
     throw error;
   }
-}; 
+};

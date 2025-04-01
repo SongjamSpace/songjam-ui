@@ -20,7 +20,7 @@ app.get('/api/x/user/:username', async (req, res) => {
   try {
     const { username } = req.params;
     console.log('Fetching X profile for username:', username);
-    
+
     if (!process.env.VITE_X_BEARER_TOKEN) {
       console.error('X Bearer Token is not set in environment variables');
       return res.status(500).json({ error: 'X API configuration is missing' });
@@ -30,7 +30,7 @@ app.get('/api/x/user/:username', async (req, res) => {
       `https://api.twitter.com/2/users/by/username/${username}?user.fields=description,profile_image_url,public_metrics,created_at,verified`,
       {
         headers: {
-          'Authorization': `Bearer ${process.env.VITE_X_BEARER_TOKEN}`,
+          Authorization: `Bearer ${process.env.VITE_X_BEARER_TOKEN}`,
         },
       }
     );
@@ -44,7 +44,10 @@ app.get('/api/x/user/:username', async (req, res) => {
       try {
         errorData = JSON.parse(errorText);
       } catch (parseError) {
-        errorData = { error: 'Failed to parse error response from X API', details: errorText };
+        errorData = {
+          error: 'Failed to parse error response from X API',
+          details: errorText,
+        };
       }
       return res.status(response.status).json(errorData);
     }
@@ -54,7 +57,12 @@ app.get('/api/x/user/:username', async (req, res) => {
     res.json(data);
   } catch (error) {
     console.error('Error fetching X user profile:', error);
-    res.status(500).json({ error: 'Failed to fetch X user profile', details: error.message });
+    res
+      .status(500)
+      .json({
+        error: 'Failed to fetch X user profile',
+        details: error.message,
+      });
   }
 });
 
@@ -65,7 +73,7 @@ app.get('/api/x/user/:userId/tweets', async (req, res) => {
   try {
     const { userId } = req.params;
     console.log('Fetching X tweets for user ID:', userId);
-    
+
     if (!process.env.VITE_X_BEARER_TOKEN) {
       console.error('X Bearer Token is not set in environment variables');
       return res.status(500).json({ error: 'X API configuration is missing' });
@@ -75,7 +83,7 @@ app.get('/api/x/user/:userId/tweets', async (req, res) => {
       `https://api.twitter.com/2/users/${userId}/tweets?max_results=10&tweet.fields=public_metrics,created_at`,
       {
         headers: {
-          'Authorization': `Bearer ${process.env.VITE_X_BEARER_TOKEN}`,
+          Authorization: `Bearer ${process.env.VITE_X_BEARER_TOKEN}`,
         },
       }
     );
@@ -88,7 +96,10 @@ app.get('/api/x/user/:userId/tweets', async (req, res) => {
       try {
         errorData = JSON.parse(errorText);
       } catch (parseError) {
-        errorData = { error: 'Failed to parse error response from X API', details: errorText };
+        errorData = {
+          error: 'Failed to parse error response from X API',
+          details: errorText,
+        };
       }
       return res.status(response.status).json(errorData);
     }
@@ -98,7 +109,9 @@ app.get('/api/x/user/:userId/tweets', async (req, res) => {
     res.json(data);
   } catch (error) {
     console.error('Error fetching X user tweets:', error);
-    res.status(500).json({ error: 'Failed to fetch X user tweets', details: error.message });
+    res
+      .status(500)
+      .json({ error: 'Failed to fetch X user tweets', details: error.message });
   }
 });
 
@@ -106,6 +119,6 @@ app.listen(port, () => {
   console.log(`Proxy server running at http://localhost:${port}`);
   console.log('Environment variables loaded:', {
     hasBearerToken: !!process.env.VITE_X_BEARER_TOKEN,
-    bearerTokenLength: process.env.VITE_X_BEARER_TOKEN?.length
+    bearerTokenLength: process.env.VITE_X_BEARER_TOKEN?.length,
   });
-}); 
+});

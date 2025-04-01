@@ -1,5 +1,5 @@
-import { useCollectionData } from "react-firebase-hooks/firestore";
-import { db } from "../services/firebase.service";
+import { useCollectionData } from 'react-firebase-hooks/firestore';
+import { db } from '../services/firebase.service';
 import {
   collection,
   doc,
@@ -7,7 +7,7 @@ import {
   limit,
   orderBy,
   startAfter,
-} from "firebase/firestore";
+} from 'firebase/firestore';
 import {
   Timeline,
   TimelineItem,
@@ -17,8 +17,8 @@ import {
   timelineOppositeContentClasses,
   TimelineDot,
   TimelineOppositeContent,
-} from "@mui/lab";
-import { Segment } from "../services/db/spaces.service";
+} from '@mui/lab';
+import { Segment } from '../services/db/spaces.service';
 import {
   Box,
   Typography,
@@ -26,11 +26,11 @@ import {
   CircularProgress,
   Stack,
   Button,
-} from "@mui/material";
-import { formatSeconds } from "../utils";
-import { PaywallOverlay } from "./PaywallOverlay";
-import { useState, useEffect } from "react";
-import { getDocs } from "firebase/firestore";
+} from '@mui/material';
+import { formatSeconds } from '../utils';
+import { PaywallOverlay } from './PaywallOverlay';
+import { useState, useEffect } from 'react';
+import { getDocs } from 'firebase/firestore';
 
 type Props = {
   spaceId: string;
@@ -60,14 +60,14 @@ function SegmentsTimeline({
       setLoading(true);
       const collectionRef = collection(
         db,
-        "spaces",
+        'spaces',
         spaceId,
-        hasAccess && processEnded ? "segments" : "short_segments"
+        hasAccess && processEnded ? 'segments' : 'short_segments'
       );
 
       let q = query(
         collectionRef,
-        orderBy("idx", "asc"),
+        orderBy('idx', 'asc'),
         limit(isInitial ? (hasAccess ? BATCH_SIZE : 15) : BATCH_SIZE)
       );
 
@@ -111,7 +111,7 @@ function SegmentsTimeline({
 
   if (!segments || segments?.length === 0) {
     return (
-      <Box width={"100%"} height={400}>
+      <Box width={'100%'} height={400}>
         <Timeline
           sx={{
             [`& .${timelineOppositeContentClasses.root}`]: {
@@ -146,9 +146,9 @@ function SegmentsTimeline({
 
   return (
     <Box
-      width={"100%"}
-      height={"85vh"}
-      sx={{ overflow: "auto", position: "relative" }}
+      width={'100%'}
+      height={'85vh'}
+      sx={{ overflow: 'auto', position: 'relative' }}
       onScroll={handleScroll}
     >
       <Timeline
@@ -160,9 +160,9 @@ function SegmentsTimeline({
             ? {}
             : {
                 maskImage:
-                  "linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%)",
+                  'linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%)',
                 WebkitMaskImage:
-                  "linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%)",
+                  'linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%)',
               }),
         }}
       >

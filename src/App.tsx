@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import "./App.css";
-import Background from "./components/Background";
-import Logo from "./components/Logo";
+import { useState, useEffect } from 'react';
+import './App.css';
+import Background from './components/Background';
+import Logo from './components/Logo';
 import {
   Button,
   TextField,
@@ -13,30 +13,30 @@ import {
   Typography,
   ThemeProvider,
   CssBaseline,
-} from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import { LoadingButton } from "@mui/lab";
-import { getSpace } from "./services/db/spaces.service";
-import { submitToAirtable } from "./services/airtable.service";
-import { useCollectionData } from "react-firebase-hooks/firestore";
-import { collection, query, where } from "firebase/firestore";
-import { db } from "./services/firebase.service";
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { LoadingButton } from '@mui/lab';
+import { getSpace } from './services/db/spaces.service';
+import { submitToAirtable } from './services/airtable.service';
+import { useCollectionData } from 'react-firebase-hooks/firestore';
+import { collection, query, where } from 'firebase/firestore';
+import { db } from './services/firebase.service';
 import { AuthProvider } from './contexts/AuthContext';
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter } from 'react-router-dom';
 import { transcribeSpace } from './services/transcription.service';
 import theme from './theme';
 
 export default function App() {
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [spaceUrl, setSpaceUrl] = useState("");
+  const [spaceUrl, setSpaceUrl] = useState('');
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [spaces, loading, error] = useCollectionData(
     query(
-      collection(db, "spaces"),
-      where("transcription_status", "==", "ENDED")
+      collection(db, 'spaces'),
+      where('transcription_status', '==', 'ENDED')
     )
   );
 
@@ -51,7 +51,7 @@ export default function App() {
   };
 
   useEffect(() => {
-    document.body.className = "dark";
+    document.body.className = 'dark';
   }, []);
 
   return (
@@ -139,54 +139,58 @@ export default function App() {
                   maxWidth="sm"
                   fullWidth
                 >
-                  <DialogContent sx={{ bgcolor: "rgba(15, 23, 42, 0.95)", p: 0 }}>
+                  <DialogContent
+                    sx={{ bgcolor: 'rgba(15, 23, 42, 0.95)', p: 0 }}
+                  >
                     <IconButton
                       onClick={() => setShowConfirmation(false)}
                       sx={{
-                        position: "absolute",
+                        position: 'absolute',
                         right: 8,
                         top: 8,
-                        color: "var(--text-secondary)",
+                        color: 'var(--text-secondary)',
                       }}
                     >
                       <CloseIcon />
                     </IconButton>
-                    <Box sx={{ textAlign: "center", p: 3 }}>
+                    <Box sx={{ textAlign: 'center', p: 3 }}>
                       <Typography
                         variant="h5"
                         sx={{
                           mb: 2,
                           background:
-                            "linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)",
-                          WebkitBackgroundClip: "text",
-                          WebkitTextFillColor: "transparent",
+                            'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
                         }}
                       >
                         🎉 Special Launch Offer - Only $1 USDT! 🎉
                       </Typography>
-                      <Typography sx={{ mb: 3, color: "var(--text-secondary)" }}>
-                        Get full access to our AI-powered transcription service for
-                        just $1 USDT. Try it now with zero risk - preview the timeline
-                        before paying!
+                      <Typography
+                        sx={{ mb: 3, color: 'var(--text-secondary)' }}
+                      >
+                        Get full access to our AI-powered transcription service
+                        for just $1 USDT. Try it now with zero risk - preview
+                        the timeline before paying!
                       </Typography>
                       <Box
                         sx={{
                           mb: 3,
                           p: 2,
-                          bgcolor: "rgba(96, 165, 250, 0.1)",
+                          bgcolor: 'rgba(96, 165, 250, 0.1)',
                           borderRadius: 2,
                         }}
                       >
                         <Typography
                           variant="subtitle1"
-                          sx={{ mb: 2, color: "#60a5fa" }}
+                          sx={{ mb: 2, color: '#60a5fa' }}
                         >
                           ✨ What You'll Get:
                         </Typography>
                         <Typography
                           sx={{
-                            color: "var(--text-secondary)",
-                            fontSize: "0.9rem",
+                            color: 'var(--text-secondary)',
+                            fontSize: '0.9rem',
                             mb: 1,
                           }}
                         >
@@ -194,15 +198,18 @@ export default function App() {
                         </Typography>
                         <Typography
                           sx={{
-                            color: "var(--text-secondary)",
-                            fontSize: "0.9rem",
+                            color: 'var(--text-secondary)',
+                            fontSize: '0.9rem',
                             mb: 1,
                           }}
                         >
                           • 1 x AI-Powered Summary
                         </Typography>
                         <Typography
-                          sx={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}
+                          sx={{
+                            color: 'var(--text-secondary)',
+                            fontSize: '0.9rem',
+                          }}
                         >
                           • Full Thread with 3 x Remixes
                         </Typography>
@@ -225,12 +232,12 @@ export default function App() {
                         }}
                         sx={{
                           py: 1.5,
-                          fontSize: "1.1rem",
+                          fontSize: '1.1rem',
                           background:
-                            "linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)",
-                          "&:hover": {
-                            transform: "translateY(-2px)",
-                            boxShadow: "0 5px 15px rgba(96, 165, 250, 0.4)",
+                            'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
+                          '&:hover': {
+                            transform: 'translateY(-2px)',
+                            boxShadow: '0 5px 15px rgba(96, 165, 250, 0.4)',
                           },
                         }}
                       >
@@ -239,9 +246,9 @@ export default function App() {
                       <Typography
                         variant="caption"
                         sx={{
-                          display: "block",
+                          display: 'block',
                           mt: 2,
-                          color: "var(--text-secondary)",
+                          color: 'var(--text-secondary)',
                         }}
                       >
                         No commitment required - Preview before you pay!
@@ -263,7 +270,8 @@ export default function App() {
                 <div className="feature-icon">✍️</div>
                 <h3>Transcribe</h3>
                 <p>
-                  The days of manually taking notes for your Twitter space are over
+                  The days of manually taking notes for your Twitter space are
+                  over
                 </p>
                 <div className="feature-detail">Get your time back</div>
               </div>
@@ -397,7 +405,7 @@ export default function App() {
                     variant="outlined"
                     name="telegram"
                     required
-                    inputProps={{ pattern: "@.*" }}
+                    inputProps={{ pattern: '@.*' }}
                     helperText="Must start with @"
                   />
                 </div>
@@ -417,7 +425,7 @@ export default function App() {
                     name="message"
                     required
                     minLength={10}
-                    style={{ width: "100%", minHeight: "100px" }}
+                    style={{ width: '100%', minHeight: '100px' }}
                   />
                 </div>
                 <Button
@@ -426,7 +434,7 @@ export default function App() {
                   className="primary"
                   onClick={async (e) => {
                     e.preventDefault();
-                    const form = e.currentTarget.closest("form");
+                    const form = e.currentTarget.closest('form');
                     if (!form) return;
 
                     if (!form.checkValidity()) {
@@ -442,26 +450,27 @@ export default function App() {
                         !import.meta.env.VITE_AIRTABLE_TABLE_NAME
                       ) {
                         alert(
-                          "Missing Airtable configuration. Please check your environment variables."
+                          'Missing Airtable configuration. Please check your environment variables.'
                         );
                         return;
                       }
 
                       const result = await submitToAirtable({
-                        name: formData.get("name") as string,
-                        email: formData.get("email") as string,
-                        telegram: formData.get("telegram") as string,
-                        message: formData.get("message") as string,
+                        name: formData.get('name') as string,
+                        email: formData.get('email') as string,
+                        telegram: formData.get('telegram') as string,
+                        message: formData.get('message') as string,
                       });
 
                       if (result) {
-                        alert("Form submitted successfully!");
+                        alert('Form submitted successfully!');
                         form.reset();
                       }
                     } catch (error: any) {
-                      console.error("Submission error:", error);
+                      console.error('Submission error:', error);
                       alert(
-                        error?.message || "Error submitting form. Please try again."
+                        error?.message ||
+                          'Error submitting form. Please try again.'
                       );
                     }
                   }}
@@ -473,7 +482,12 @@ export default function App() {
 
             <section className="social-media">
               <h2>Connect With Us</h2>
-              <Box display="flex" flexWrap="wrap" gap={8} justifyContent="center">
+              <Box
+                display="flex"
+                flexWrap="wrap"
+                gap={8}
+                justifyContent="center"
+              >
                 <a
                   href="https://www.producthunt.com/posts/songjam-otter-ai-for-x-spaces"
                   target="_blank"

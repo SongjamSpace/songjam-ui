@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { createUser } from "../services/db/user.service";
+import { useState, useEffect } from 'react';
+import { createUser } from '../services/db/user.service';
 
 export type Chain = {
   id: number;
@@ -10,7 +10,7 @@ export type Chain = {
 const SUPPORTED_CHAINS: Chain[] = [
   {
     id: 1,
-    name: "Ethereum Mainnet",
+    name: 'Ethereum Mainnet',
     rpcUrl: `https://eth-mainnet.g.alchemy.com/v2/${
       import.meta.env.VITE_ALCHEMY_RPC_KEY
     }`,
@@ -74,24 +74,24 @@ export const useWallet = () => {
   // }, []);
 
   const connectWallet = async (
-    chain: "eth" | "base"
+    chain: 'eth' | 'base'
   ): Promise<string | null> => {
     if (!window.ethereum) {
-      alert("Please install a browser wallet such as MetaMask to connect");
+      alert('Please install a browser wallet such as MetaMask to connect');
       return null;
     }
 
     setWalletState((prev) => ({ ...prev, isConnecting: true, error: null }));
     try {
       // Switch chain based on selection
-      const chainId = chain === "eth" ? "0x1" : "0x2105"; // Base chainId
+      const chainId = chain === 'eth' ? '0x1' : '0x2105'; // Base chainId
       await window.ethereum.request({
-        method: "wallet_switchEthereumChain",
+        method: 'wallet_switchEthereumChain',
         params: [{ chainId }],
       });
 
       const accounts = await window.ethereum.request({
-        method: "eth_requestAccounts",
+        method: 'eth_requestAccounts',
       });
       // await createUser({ address: accounts[0], chainId });
 
@@ -104,28 +104,28 @@ export const useWallet = () => {
       }));
       return accounts[0];
     } catch (error) {
-      console.error("Error connecting wallet:", error);
-      if (chain === "base") {
+      console.error('Error connecting wallet:', error);
+      if (chain === 'base') {
         // If Base chain is not added, add it
         try {
           await window.ethereum.request({
-            method: "wallet_addEthereumChain",
+            method: 'wallet_addEthereumChain',
             params: [
               {
-                chainId: "0x2105",
-                chainName: "Base",
+                chainId: '0x2105',
+                chainName: 'Base',
                 nativeCurrency: {
-                  name: "ETH",
-                  symbol: "ETH",
+                  name: 'ETH',
+                  symbol: 'ETH',
                   decimals: 18,
                 },
-                rpcUrls: ["https://mainnet.base.org"],
-                blockExplorerUrls: ["https://basescan.org"],
+                rpcUrls: ['https://mainnet.base.org'],
+                blockExplorerUrls: ['https://basescan.org'],
               },
             ],
           });
         } catch (addError) {
-          console.error("Error adding Base chain:", addError);
+          console.error('Error adding Base chain:', addError);
         }
       }
     } finally {
@@ -141,14 +141,14 @@ export const useWallet = () => {
     if (!chain) {
       setWalletState((prev) => ({
         ...prev,
-        error: "Unsupported chain",
+        error: 'Unsupported chain',
       }));
       return;
     }
 
     try {
       await window.ethereum.request({
-        method: "wallet_switchEthereumChain",
+        method: 'wallet_switchEthereumChain',
         params: [{ chainId: `0x${chainId.toString(16)}` }],
       });
     } catch (switchError: any) {
@@ -156,7 +156,7 @@ export const useWallet = () => {
       if (switchError.code === 4902) {
         try {
           await window.ethereum.request({
-            method: "wallet_addEthereumChain",
+            method: 'wallet_addEthereumChain',
             params: [
               {
                 chainId: `0x${chainId.toString(16)}`,
@@ -168,7 +168,7 @@ export const useWallet = () => {
         } catch (addError) {
           setWalletState((prev) => ({
             ...prev,
-            error: "Failed to add chain to wallet",
+            error: 'Failed to add chain to wallet',
           }));
         }
       }
@@ -204,12 +204,12 @@ export const useWallet = () => {
       }));
     };
 
-    window.ethereum.on("accountsChanged", handleAccountsChanged);
-    window.ethereum.on("chainChanged", handleChainChanged);
+    window.ethereum.on('accountsChanged', handleAccountsChanged);
+    window.ethereum.on('chainChanged', handleChainChanged);
 
     return () => {
-      window.ethereum?.removeListener("accountsChanged", handleAccountsChanged);
-      window.ethereum?.removeListener("chainChanged", handleChainChanged);
+      window.ethereum?.removeListener('accountsChanged', handleAccountsChanged);
+      window.ethereum?.removeListener('chainChanged', handleChainChanged);
     };
   }, [walletState.address]);
 

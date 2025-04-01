@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 // import { AirtableRecord } from './types'; // Assuming this type definition exists elsewhere
 
 // const Airtable = require("airtable");
-import Airtable from "airtable";
+import Airtable from 'airtable';
 
 const airtable = new Airtable({
   apiKey: import.meta.env.VITE_AIRTABLE_API_KEY,
@@ -16,12 +16,12 @@ const submitToAirtable = async (formData: AirtableRecord) => {
 
 const ContactForm: React.FC = () => {
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    telegram: "",
-    message: "",
+    name: '',
+    email: '',
+    telegram: '',
+    message: '',
   });
-  const [submitStatus, setSubmitStatus] = useState("");
+  const [submitStatus, setSubmitStatus] = useState('');
 
   const handleChange = (
     e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
@@ -33,11 +33,11 @@ const ContactForm: React.FC = () => {
     e.preventDefault();
     try {
       await submitToAirtable(formData);
-      setSubmitStatus("success");
-      setFormData({ name: "", email: "", telegram: "", message: "" });
+      setSubmitStatus('success');
+      setFormData({ name: '', email: '', telegram: '', message: '' });
     } catch (error) {
-      console.error("Submission error:", error);
-      setSubmitStatus("error");
+      console.error('Submission error:', error);
+      setSubmitStatus('error');
     }
   };
 
@@ -83,8 +83,8 @@ const ContactForm: React.FC = () => {
         />
       </div>
       <button type="submit">Submit</button>
-      {submitStatus === "success" && <p>Form submitted successfully!</p>}
-      {submitStatus === "error" && (
+      {submitStatus === 'success' && <p>Form submitted successfully!</p>}
+      {submitStatus === 'error' && (
         <p>Error submitting form. Please try again.</p>
       )}
     </form>

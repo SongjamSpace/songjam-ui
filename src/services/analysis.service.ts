@@ -1,5 +1,10 @@
 import { User } from './db/spaces.service';
-import { SpaceAnalysis, SpeakerInteraction, SpeakerTimeline, TopicSegment } from '../types/analysis.types';
+import {
+  SpaceAnalysis,
+  SpeakerInteraction,
+  SpeakerTimeline,
+  TopicSegment,
+} from '../types/analysis.types';
 import { generateContent } from './ai.service';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from './firebase.service';
@@ -54,19 +59,19 @@ export const analyzeTranscript = async (
   };
 
   // Only use cache if using default config (direct mentions only)
-  const isDefaultConfig = !config || (
-    config.interactionTypes.directMentions &&
-    !config.interactionTypes.sequentialResponses &&
-    !config.interactionTypes.topicBased &&
-    !config.interactionTypes.timeProximity &&
-    config.strengthMetrics.frequency &&
-    !config.strengthMetrics.duration &&
-    !config.strengthMetrics.topicOverlap &&
-    config.strengthMetrics.sentiment &&
-    !config.strengthMetrics.responseTime &&
-    config.timeWindow === 30 &&
-    config.topicOverlapThreshold === 0.5
-  );
+  const isDefaultConfig =
+    !config ||
+    (config.interactionTypes.directMentions &&
+      !config.interactionTypes.sequentialResponses &&
+      !config.interactionTypes.topicBased &&
+      !config.interactionTypes.timeProximity &&
+      config.strengthMetrics.frequency &&
+      !config.strengthMetrics.duration &&
+      !config.strengthMetrics.topicOverlap &&
+      config.strengthMetrics.sentiment &&
+      !config.strengthMetrics.responseTime &&
+      config.timeWindow === 30 &&
+      config.topicOverlapThreshold === 0.5);
 
   if (isDefaultConfig && analysisCache.has(spaceId)) {
     return analysisCache.get(spaceId)!;
@@ -75,7 +80,9 @@ export const analyzeTranscript = async (
   // Check if analysis exists in Firestore (only for default config)
   if (isDefaultConfig) {
     try {
-      const analysisDoc = await getDoc(doc(db, 'spaces', spaceId, 'analysis', 'v1'));
+      const analysisDoc = await getDoc(
+        doc(db, 'spaces', spaceId, 'analysis', 'v1')
+      );
       if (analysisDoc.exists()) {
         const analysis = analysisDoc.data() as SpaceAnalysis;
         analysisCache.set(spaceId, analysis);
@@ -87,11 +94,16 @@ export const analyzeTranscript = async (
   }
 
   // Generate analysis with Claude
-  console.log('Generating space analysis with Claude...', { config: analysisConfig });
-  
-  const speakerInfo = speakers.map(s => 
-    `${s.display_name} (ID: ${s.user_id}, Twitter: @${s.twitter_screen_name})`
-  ).join('\n');
+  console.log('Generating space analysis with Claude...', {
+    config: analysisConfig,
+  });
+
+  const speakerInfo = speakers
+    .map(
+      (s) =>
+        `${s.display_name} (ID: ${s.user_id}, Twitter: @${s.twitter_screen_name})`
+    )
+    .join('\n');
 
   const configInstructions = `
 Analysis Configuration:
@@ -175,36 +187,31 @@ Make sure to:
     let analysisText = '';
     let jsonContent = '';
     let parsingStarted = false;
-    
+
     // Generate with streaming
-    await generateContent(
-      'claude', 
-      prompt, 
-      '',
-      (chunk: string) => {
-        // Only start accumulating once we see the start of JSON
-        if (chunk.includes('{')) {
-          parsingStarted = true;
-        }
-        
-        if (parsingStarted) {
-          jsonContent += chunk;
-        }
-        
-        analysisText += chunk;
+    await generateContent('claude', prompt, '', (chunk: string) => {
+      // Only start accumulating once we see the start of JSON
+      if (chunk.includes('{')) {
+        parsingStarted = true;
       }
-    );
-    
+
+      if (parsingStarted) {
+        jsonContent += chunk;
+      }
+
+      analysisText += chunk;
+    });
+
     // Try to parse the accumulated JSON content first
     try {
       const analysis = JSON.parse(jsonContent) as SpaceAnalysis;
-      
+
       // Only cache and store in Firestore if using default config
       if (isDefaultConfig) {
         await setDoc(doc(db, 'spaces', spaceId, 'analysis', 'v1'), analysis);
         analysisCache.set(spaceId, analysis);
       }
-      
+
       return analysis;
     } catch (parseError) {
       // If that fails, try to find a JSON object in the full response
@@ -212,26 +219,26 @@ Make sure to:
       if (!jsonMatch) {
         throw new Error('Unable to parse analysis response');
       }
-      
+
       const analysis = JSON.parse(jsonMatch[0]) as SpaceAnalysis;
-      
+
       // Only cache and store in Firestore if using default config
       if (isDefaultConfig) {
         await setDoc(doc(db, 'spaces', spaceId, 'analysis', 'v1'), analysis);
         analysisCache.set(spaceId, analysis);
       }
-      
+
       return analysis;
     }
   } catch (error) {
     console.error('Error generating space analysis:', error);
-    
+
     // Return empty analysis as fallback
     return {
       interactions: [],
       timeline: [],
       topics: [],
-      summary: 'Failed to generate analysis.'
+      summary: 'Failed to generate analysis.',
     };
   }
 };
@@ -239,7 +246,9 @@ Make sure to:
 /**
  * Returns the sentiment color for visualization
  */
-export const getSentimentColor = (sentiment: 'positive' | 'neutral' | 'negative'): string => {
+export const getSentimentColor = (
+  sentiment: 'positive' | 'neutral' | 'negative'
+): string => {
   switch (sentiment) {
     case 'positive':
       return '#4ade80'; // green
@@ -259,4 +268,4 @@ export const formatTime = (seconds: number): string => {
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = Math.floor(seconds % 60);
   return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-}; 
+};

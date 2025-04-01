@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   getFirstLevelSummaries,
   getSpace,
@@ -7,7 +7,7 @@ import {
   getTwitterThread,
   Segment,
   Space,
-} from "./services/db/spaces.service";
+} from './services/db/spaces.service';
 import {
   Box,
   Typography,
@@ -25,29 +25,29 @@ import {
   useTheme,
   CircularProgress,
   Badge,
-} from "@mui/material";
+} from '@mui/material';
 // import AutorenewIcon from "@mui/icons-material/Autorenew";
-import HeadphonesIcon from "@mui/icons-material/Headphones";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import DownloadIcon from "@mui/icons-material/Download";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import { Summary } from "./components/Summary";
-import { LoadingButton } from "@mui/lab";
-import SegmentsTimeline from "./components/SegmentsTimeline";
-import DisplayThread from "./components/DisplayThread";
-import axios from "axios";
+import HeadphonesIcon from '@mui/icons-material/Headphones';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import DownloadIcon from '@mui/icons-material/Download';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import { Summary } from './components/Summary';
+import { LoadingButton } from '@mui/lab';
+import SegmentsTimeline from './components/SegmentsTimeline';
+import DisplayThread from './components/DisplayThread';
+import axios from 'axios';
 // import { WalletModal } from "./components/WalletModal";
-import { hasAccessToSpace, updateAccess } from "./services/db/user.service";
-import Logo from "./components/Logo";
-import AlgoliaSearchTranscription from "./components/AlgoliaSearchTranscription";
-import TwitterLogin from "./components/TwitterLogin";
-import { useAuthContext } from "./contexts/AuthContext";
+import { hasAccessToSpace, updateAccess } from './services/db/user.service';
+import Logo from './components/Logo';
+import AlgoliaSearchTranscription from './components/AlgoliaSearchTranscription';
+import TwitterLogin from './components/TwitterLogin';
+import { useAuthContext } from './contexts/AuthContext';
 
 type ToastState = {
   open: boolean;
   message: string;
-  severity: "success" | "error" | "info" | "warning";
+  severity: 'success' | 'error' | 'info' | 'warning';
 };
 
 const SpaceDetails: React.FC = () => {
@@ -55,8 +55,8 @@ const SpaceDetails: React.FC = () => {
   const { spaceId } = useParams<{ spaceId: string }>();
   const [space, setSpace] = useState<Space | null>(null);
   const [activeSection, setActiveSection] = useState<
-    "summary" | "timeline" | "transcript" | "threadoor" | "moments"
-  >("timeline");
+    'summary' | 'timeline' | 'transcript' | 'threadoor' | 'moments'
+  >('timeline');
   // const [searchTerm, setSearchTerm] = useState(""); // Added search term state
   // const [filteredTranscript, setFilteredTranscript] = useState<Segment[]>([]); // Added filtered transcript state
   const [hasAccess, setHasAccess] = useState(false);
@@ -82,13 +82,13 @@ const SpaceDetails: React.FC = () => {
   const [isTranscriptLoading, setIsTranscriptLoading] = useState(false);
   const [isThreadLoading, setIsThreadLoading] = useState(false);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { user } = useAuthContext();
 
   const [toast, setToast] = useState<ToastState>({
     open: false,
-    message: "",
-    severity: "info",
+    message: '',
+    severity: 'info',
   });
 
   useEffect(() => {
@@ -112,8 +112,8 @@ const SpaceDetails: React.FC = () => {
       if (!space) {
         setToast({
           open: true,
-          message: "Error: Space not found",
-          severity: "error",
+          message: 'Error: Space not found',
+          severity: 'error',
         });
       }
     };
@@ -146,7 +146,7 @@ const SpaceDetails: React.FC = () => {
         `${import.meta.env.VITE_JAM_PY_SERVER_URL}/twitter-thread`,
         {
           space_id: spaceId,
-          text: _metaSummary.join(" "),
+          text: _metaSummary.join(' '),
           speakers: [...(space?.admins || []), ...(space?.speakers || [])].map(
             (speaker) => ({
               name: speaker.display_name,
@@ -158,11 +158,11 @@ const SpaceDetails: React.FC = () => {
         }
       );
       const twitterThreadData = twitterThread.data;
-      if (twitterThreadData.status === "success") {
+      if (twitterThreadData.status === 'success') {
         setTwitterThread(twitterThreadData.twitter_thread);
       }
     } else {
-      alert("Transcription is in progress, try again later");
+      alert('Transcription is in progress, try again later');
     }
   };
 
@@ -170,25 +170,25 @@ const SpaceDetails: React.FC = () => {
     if (!spaceId) {
       setToast({
         open: true,
-        message: "Error: No space is selected",
-        severity: "error",
+        message: 'Error: No space is selected',
+        severity: 'error',
       });
       return;
     }
     if (!!user?.spaceCredits) {
       await unlockFreeSpace();
-      if (space && space.transcription_status !== "ENDED") {
+      if (space && space.transcription_status !== 'ENDED') {
         const formData = new FormData();
-        formData.append("hls_url", space.hls_url);
-        formData.append("space_id", spaceId);
+        formData.append('hls_url', space.hls_url);
+        formData.append('space_id', spaceId);
         await axios.post(
           `${import.meta.env.VITE_JAM_PY_SERVER_URL}/transcribe`,
           formData
         );
         setToast({
           open: true,
-          message: "Transcription process started",
-          severity: "success",
+          message: 'Transcription process started',
+          severity: 'success',
         });
       }
       return;
@@ -282,7 +282,7 @@ const SpaceDetails: React.FC = () => {
   const unlockFreeSpace = async () => {
     if (!spaceId) return;
     if (!user?.uid) {
-      alert("Please login to unlock this space");
+      alert('Please login to unlock this space');
       return;
     }
     await updateAccess(user.uid, spaceId);
@@ -306,9 +306,9 @@ const SpaceDetails: React.FC = () => {
     //   fetchSegments();
     // } else
     if (
-      activeSection === "threadoor" &&
+      activeSection === 'threadoor' &&
       spaceId &&
-      space?.transcription_status === "ENDED" &&
+      space?.transcription_status === 'ENDED' &&
       twitterThread.length === 0
     ) {
       const fetchTwitterThread = async () => {
@@ -332,7 +332,7 @@ const SpaceDetails: React.FC = () => {
     const response = await fetch(audioUrl);
     const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
     a.download = `${space?.title}.mp3`;
     document.body.appendChild(a);
@@ -345,33 +345,33 @@ const SpaceDetails: React.FC = () => {
   return (
     <Box
       sx={{
-        background: "linear-gradient(135deg, #0f172a, #1e293b)",
-        minHeight: "100vh",
-        color: "white",
-        position: "relative",
-        "&::before": {
+        background: 'linear-gradient(135deg, #0f172a, #1e293b)',
+        minHeight: '100vh',
+        color: 'white',
+        position: 'relative',
+        '&::before': {
           content: '""',
-          position: "absolute",
+          position: 'absolute',
           top: 0,
           left: 0,
           right: 0,
-          height: "60vh",
+          height: '60vh',
           background:
-            "linear-gradient(135deg, rgba(96, 165, 250, 0.15), rgba(139, 92, 246, 0.12), rgba(236, 72, 153, 0.1))",
+            'linear-gradient(135deg, rgba(96, 165, 250, 0.15), rgba(139, 92, 246, 0.12), rgba(236, 72, 153, 0.1))',
           opacity: 0.7,
-          pointerEvents: "none",
+          pointerEvents: 'none',
           maskImage:
-            "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 70%, rgba(0,0,0,0) 100%)",
+            'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 70%, rgba(0,0,0,0) 100%)',
           WebkitMaskImage:
-            "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 70%, rgba(0,0,0,0) 100%)",
+            'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 70%, rgba(0,0,0,0) 100%)',
         },
       }}
     >
       <nav>
         <Box
           className="logo"
-          sx={{ cursor: "pointer" }}
-          onClick={() => navigate("/")}
+          sx={{ cursor: 'pointer' }}
+          onClick={() => navigate('/')}
         >
           <Logo />
           <span>Songjam</span>
@@ -389,83 +389,83 @@ const SpaceDetails: React.FC = () => {
           ) : (
             <Chip
               label={user.displayName}
-              avatar={<Avatar src={user.photoURL || ""} />}
+              avatar={<Avatar src={user.photoURL || ''} />}
             />
           )}
         </div>
       </nav>
       <Box
         sx={{
-          maxWidth: "800px",
-          margin: "0 auto",
+          maxWidth: '800px',
+          margin: '0 auto',
           padding: { xs: 2, sm: 3, md: 4 },
-          position: "relative",
+          position: 'relative',
           zIndex: 1,
         }}
       >
         {/* Header */}
-        <Box sx={{ mb: 4, position: "relative" }}>
+        <Box sx={{ mb: 4, position: 'relative' }}>
           <Box display="flex" justifyContent="space-between">
             <Typography
               variant="overline"
               sx={{
-                color: "#60a5fa",
+                color: '#60a5fa',
                 background:
-                  "linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))",
-                padding: "6px 16px",
-                borderRadius: "20px",
-                display: "inline-flex",
-                alignItems: "center",
+                  'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))',
+                padding: '6px 16px',
+                borderRadius: '20px',
+                display: 'inline-flex',
+                alignItems: 'center',
                 gap: 1,
                 mb: 2,
-                letterSpacing: "0.1em",
+                letterSpacing: '0.1em',
                 fontWeight: 600,
-                fontSize: "0.75rem",
-                position: "relative",
-                overflow: "hidden",
-                "&::after":
-                  space?.transcription_status !== "ENDED"
+                fontSize: '0.75rem',
+                position: 'relative',
+                overflow: 'hidden',
+                '&::after':
+                  space?.transcription_status !== 'ENDED'
                     ? {
                         content: '""',
-                        position: "absolute",
+                        position: 'absolute',
                         top: 0,
                         left: 0,
                         right: 0,
                         bottom: 0,
                         background:
-                          "linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.2), transparent)",
-                        animation: "shimmer 1.5s infinite",
+                          'linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.2), transparent)',
+                        animation: 'shimmer 1.5s infinite',
                       }
                     : {},
-                "@keyframes shimmer": {
-                  "0%": {
-                    transform: "translateX(-100%)",
+                '@keyframes shimmer': {
+                  '0%': {
+                    transform: 'translateX(-100%)',
                   },
-                  "100%": {
-                    transform: "translateX(100%)",
+                  '100%': {
+                    transform: 'translateX(100%)',
                   },
                 },
               }}
             >
               {space?.user_message}
-              {space?.transcription_status !== "ENDED" &&
-                space?.transcription_status !== "SHORT_ENDED" && (
+              {space?.transcription_status !== 'ENDED' &&
+                space?.transcription_status !== 'SHORT_ENDED' && (
                   <Box
                     component="span"
                     sx={{
                       width: 16,
                       height: 16,
-                      borderRadius: "50%",
-                      border: "2px solid transparent",
-                      borderTopColor: "#60a5fa",
-                      borderRightColor: "#60a5fa",
-                      animation: "spin 1s linear infinite",
-                      "@keyframes spin": {
-                        "0%": {
-                          transform: "rotate(0deg)",
+                      borderRadius: '50%',
+                      border: '2px solid transparent',
+                      borderTopColor: '#60a5fa',
+                      borderRightColor: '#60a5fa',
+                      animation: 'spin 1s linear infinite',
+                      '@keyframes spin': {
+                        '0%': {
+                          transform: 'rotate(0deg)',
                         },
-                        "100%": {
-                          transform: "rotate(360deg)",
+                        '100%': {
+                          transform: 'rotate(360deg)',
                         },
                       },
                     }}
@@ -473,23 +473,23 @@ const SpaceDetails: React.FC = () => {
                 )}
             </Typography>
             <Box>
-              <IconButton onClick={() => navigate("/")}>
+              <IconButton onClick={() => navigate('/')}>
                 <ArrowBackIcon />
               </IconButton>
             </Box>
           </Box>
           <Box
             sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
               mb: 2,
             }}
           >
             {space ? (
               <Typography
-                variant={"h4"}
-                sx={{ fontWeight: "bold", flexBasis: { xs: "90%", sm: "70%" } }}
+                variant={'h4'}
+                sx={{ fontWeight: 'bold', flexBasis: { xs: '90%', sm: '70%' } }}
               >
                 {space.title}
               </Typography>
@@ -497,28 +497,28 @@ const SpaceDetails: React.FC = () => {
               <Skeleton
                 variant="text"
                 sx={{
-                  bgcolor: "rgba(96, 165, 250, 0.1)",
-                  width: "70%",
+                  bgcolor: 'rgba(96, 165, 250, 0.1)',
+                  width: '70%',
                   height: 48,
                 }}
               />
             )}
             <Box sx={{ display: 'flex', gap: 1 }}>
               {/* CRM Button */}
-              {space && space.transcription_status === "ENDED" && (
+              {space && space.transcription_status === 'ENDED' && (
                 <Button
                   variant="outlined"
                   onClick={() => navigate(`/crm/${spaceId}`)}
                   sx={{
-                    color: "#60a5fa",
-                    borderColor: "#60a5fa",
-                    background: "rgba(96, 165, 250, 0.1)",
-                    "&:hover": {
-                      background: "rgba(96, 165, 250, 0.2)",
-                      borderColor: "#60a5fa",
+                    color: '#60a5fa',
+                    borderColor: '#60a5fa',
+                    background: 'rgba(96, 165, 250, 0.1)',
+                    '&:hover': {
+                      background: 'rgba(96, 165, 250, 0.2)',
+                      borderColor: '#60a5fa',
                     },
-                    textTransform: "none",
-                    display: { xs: 'none', sm: 'flex' }
+                    textTransform: 'none',
+                    display: { xs: 'none', sm: 'flex' },
                   }}
                 >
                   CRM
@@ -526,7 +526,7 @@ const SpaceDetails: React.FC = () => {
               )}
               {isMobile ? (
                 <IconButton
-                  disabled={!space || space.transcription_status !== "ENDED"}
+                  disabled={!space || space.transcription_status !== 'ENDED'}
                   onClick={onDownloadRecording}
                 >
                   {isDownloading ? (
@@ -538,37 +538,37 @@ const SpaceDetails: React.FC = () => {
               ) : (
                 <LoadingButton
                   loading={isDownloading}
-                  disabled={!space || space.transcription_status !== "ENDED"}
+                  disabled={!space || space.transcription_status !== 'ENDED'}
                   startIcon={<DownloadIcon />}
                   onClick={onDownloadRecording}
                   sx={{
-                    color: "#60a5fa",
-                    background: "rgba(96, 165, 250, 0.1)",
-                    "&:hover": {
-                      background: "rgba(96, 165, 250, 0.2)",
+                    color: '#60a5fa',
+                    background: 'rgba(96, 165, 250, 0.1)',
+                    '&:hover': {
+                      background: 'rgba(96, 165, 250, 0.2)',
                     },
-                    textTransform: "none",
+                    textTransform: 'none',
                     px: 2,
                     py: 1,
                   }}
                 >
-                  {isDownloading ? "Downloading..." : "Download Recording"}
+                  {isDownloading ? 'Downloading...' : 'Download Recording'}
                 </LoadingButton>
               )}
             </Box>
           </Box>
-          <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
+          <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
             {space ? (
               <Chip
                 icon={<HeadphonesIcon />}
                 label={`${space.total_live_listeners} listened live`}
-                sx={{ background: "var(--bg-secondary)" }}
+                sx={{ background: 'var(--bg-secondary)' }}
               />
             ) : (
               <Skeleton
                 variant="rounded"
                 sx={{
-                  bgcolor: "rgba(96, 165, 250, 0.1)",
+                  bgcolor: 'rgba(96, 165, 250, 0.1)',
                   width: 120,
                   height: 32,
                 }}
@@ -580,39 +580,39 @@ const SpaceDetails: React.FC = () => {
         {/* Navigation Controls */}
         <Box
           sx={{
-            display: "flex",
-            alignItems: "stretch",
+            display: 'flex',
+            alignItems: 'stretch',
             mb: 4,
           }}
         >
           {/* Button Group Container with integrated arrows */}
           <Box
             sx={{
-              display: "flex",
+              display: 'flex',
               flex: 1,
-              borderRadius: "16px",
-              background: "rgba(255, 255, 255, 0.03)",
-              backdropFilter: "blur(10px)",
-              border: "1px solid rgba(255, 255, 255, 0.05)",
-              overflow: "hidden",
+              borderRadius: '16px',
+              background: 'rgba(255, 255, 255, 0.03)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
+              overflow: 'hidden',
             }}
           >
             {/* Left Arrow - Only show on mobile when scrollable */}
             <IconButton
               sx={{
-                display: { xs: "flex", sm: "none" },
-                color: "white",
-                borderRadius: "16px 0 0 16px",
-                padding: "0 8px",
-                "&.Mui-disabled": {
-                  display: "none",
+                display: { xs: 'flex', sm: 'none' },
+                color: 'white',
+                borderRadius: '16px 0 0 16px',
+                padding: '0 8px',
+                '&.Mui-disabled': {
+                  display: 'none',
                 },
-                minWidth: "auto",
-                flex: "0 0 auto",
+                minWidth: 'auto',
+                flex: '0 0 auto',
               }}
               onClick={() => {
                 const container = document.querySelector(
-                  ".nav-scroll-container"
+                  '.nav-scroll-container'
                 );
                 if (container) {
                   const scrollLeft = container.scrollLeft;
@@ -622,7 +622,7 @@ const SpaceDetails: React.FC = () => {
                     buttonWidth;
                   container.scrollTo({
                     left: targetScroll,
-                    behavior: "smooth",
+                    behavior: 'smooth',
                   });
                 }
               }}
@@ -633,46 +633,46 @@ const SpaceDetails: React.FC = () => {
             <Box
               className="nav-scroll-container"
               sx={{
-                display: "flex",
+                display: 'flex',
                 gap: 1,
-                overflowX: { xs: "auto", sm: "visible" },
-                "&::-webkit-scrollbar": { display: "none" },
-                msOverflowStyle: "none",
-                scrollbarWidth: "none",
-                scrollBehavior: "smooth",
-                scrollSnapType: "x mandatory",
+                overflowX: { xs: 'auto', sm: 'visible' },
+                '&::-webkit-scrollbar': { display: 'none' },
+                msOverflowStyle: 'none',
+                scrollbarWidth: 'none',
+                scrollBehavior: 'smooth',
+                scrollSnapType: 'x mandatory',
                 p: 1,
                 flex: 1,
               }}
             >
               {/* Existing Buttons */}
               <Button
-                variant={activeSection === "timeline" ? "contained" : "text"}
-                onClick={() => setActiveSection("timeline")}
+                variant={activeSection === 'timeline' ? 'contained' : 'text'}
+                onClick={() => setActiveSection('timeline')}
                 sx={{
-                  color: "white",
-                  minWidth: { xs: "120px", sm: "140px" },
+                  color: 'white',
+                  minWidth: { xs: '120px', sm: '140px' },
                   // flex: { xs: "0 0 auto", sm: "1 1 0" },
-                  scrollSnapAlign: "start",
-                  "&.MuiButton-contained": {
+                  scrollSnapAlign: 'start',
+                  '&.MuiButton-contained': {
                     background:
-                      "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
+                      'linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))',
                   },
                 }}
               >
                 Timeline
               </Button>
               <Button
-                variant={activeSection === "summary" ? "contained" : "text"}
-                onClick={() => setActiveSection("summary")}
+                variant={activeSection === 'summary' ? 'contained' : 'text'}
+                onClick={() => setActiveSection('summary')}
                 sx={{
-                  color: "white",
-                  minWidth: { xs: "120px", sm: "140px" },
-                  flex: { xs: "0 0 auto", sm: "1 1 0" },
-                  scrollSnapAlign: "start",
-                  "&.MuiButton-contained": {
+                  color: 'white',
+                  minWidth: { xs: '120px', sm: '140px' },
+                  flex: { xs: '0 0 auto', sm: '1 1 0' },
+                  scrollSnapAlign: 'start',
+                  '&.MuiButton-contained': {
                     background:
-                      "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
+                      'linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))',
                   },
                 }}
                 disabled={!hasAccess}
@@ -680,16 +680,16 @@ const SpaceDetails: React.FC = () => {
                 Summary
               </Button>
               <Button
-                variant={activeSection === "threadoor" ? "contained" : "text"}
-                onClick={() => setActiveSection("threadoor")}
+                variant={activeSection === 'threadoor' ? 'contained' : 'text'}
+                onClick={() => setActiveSection('threadoor')}
                 sx={{
-                  color: "white",
-                  minWidth: { xs: "120px", sm: "140px" },
-                  flex: { xs: "0 0 auto", sm: "1 1 0" },
-                  scrollSnapAlign: "start",
-                  "&.MuiButton-contained": {
+                  color: 'white',
+                  minWidth: { xs: '120px', sm: '140px' },
+                  flex: { xs: '0 0 auto', sm: '1 1 0' },
+                  scrollSnapAlign: 'start',
+                  '&.MuiButton-contained': {
                     background:
-                      "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
+                      'linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))',
                   },
                 }}
                 disabled={!hasAccess}
@@ -697,16 +697,16 @@ const SpaceDetails: React.FC = () => {
                 AI Threadoor
               </Button>
               <Button
-                variant={activeSection === "transcript" ? "contained" : "text"}
-                onClick={() => setActiveSection("transcript")}
+                variant={activeSection === 'transcript' ? 'contained' : 'text'}
+                onClick={() => setActiveSection('transcript')}
                 sx={{
-                  color: "white",
-                  minWidth: { xs: "120px", sm: "140px" },
-                  flex: { xs: "0 0 auto", sm: "1 1 0" },
-                  scrollSnapAlign: "start",
-                  "&.MuiButton-contained": {
+                  color: 'white',
+                  minWidth: { xs: '120px', sm: '140px' },
+                  flex: { xs: '0 0 auto', sm: '1 1 0' },
+                  scrollSnapAlign: 'start',
+                  '&.MuiButton-contained': {
                     background:
-                      "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
+                      'linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))',
                   },
                 }}
                 disabled={!hasAccess}
@@ -718,19 +718,19 @@ const SpaceDetails: React.FC = () => {
             {/* Right Arrow - Only show on mobile when scrollable */}
             <IconButton
               sx={{
-                display: { xs: "flex", sm: "none" },
-                color: "white",
-                borderRadius: "0 16px 16px 0",
-                padding: "0 8px",
-                "&.Mui-disabled": {
-                  display: "none",
+                display: { xs: 'flex', sm: 'none' },
+                color: 'white',
+                borderRadius: '0 16px 16px 0',
+                padding: '0 8px',
+                '&.Mui-disabled': {
+                  display: 'none',
                 },
-                minWidth: "auto",
-                flex: "0 0 auto",
+                minWidth: 'auto',
+                flex: '0 0 auto',
               }}
               onClick={() => {
                 const container = document.querySelector(
-                  ".nav-scroll-container"
+                  '.nav-scroll-container'
                 );
                 if (container) {
                   const scrollLeft = container.scrollLeft;
@@ -740,7 +740,7 @@ const SpaceDetails: React.FC = () => {
                     buttonWidth;
                   container.scrollTo({
                     left: targetScroll,
-                    behavior: "smooth",
+                    behavior: 'smooth',
                   });
                 }
               }}
@@ -753,9 +753,9 @@ const SpaceDetails: React.FC = () => {
         {/* Speakers */}
         <Paper
           sx={{
-            background: "rgba(255, 255, 255, 0.02)",
-            backdropFilter: "blur(10px)",
-            border: "1px solid rgba(255, 255, 255, 0.05)",
+            background: 'rgba(255, 255, 255, 0.02)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.05)',
             borderRadius: 3,
             p: { xs: 2, sm: 4 },
             mb: 4,
@@ -766,15 +766,15 @@ const SpaceDetails: React.FC = () => {
           </Typography>
           <Box
             sx={{
-              display: "flex",
-              justifyContent: "start",
+              display: 'flex',
+              justifyContent: 'start',
               // flexWrap: { xs: "nowrap", sm: "wrap" },
               gap: 2,
               // overflowX: { xs: "auto", sm: "visible" },
-              overflowX: "auto",
-              "&::-webkit-scrollbar": { display: "none" },
-              msOverflowStyle: "none",
-              scrollbarWidth: "none",
+              overflowX: 'auto',
+              '&::-webkit-scrollbar': { display: 'none' },
+              msOverflowStyle: 'none',
+              scrollbarWidth: 'none',
               pb: { xs: 1, sm: 0 }, // Add padding bottom on mobile for better scrolling
               py: 2,
             }}
@@ -783,7 +783,7 @@ const SpaceDetails: React.FC = () => {
               [...space.admins, ...space.speakers]?.map((admin, i) => (
                 <Badge
                   key={admin.user_id}
-                  badgeContent={i < space.admins.length ? "Host" : ""}
+                  badgeContent={i < space.admins.length ? 'Host' : ''}
                   color="primary"
                   variant="standard"
                   // dont show empty badge
@@ -796,30 +796,30 @@ const SpaceDetails: React.FC = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     sx={{
-                      display: "flex",
-                      alignItems: "center",
+                      display: 'flex',
+                      alignItems: 'center',
                       gap: 1,
-                      textDecoration: "none",
-                      color: "inherit",
-                      background: "rgba(255,255,255,0.05)",
+                      textDecoration: 'none',
+                      color: 'inherit',
+                      background: 'rgba(255,255,255,0.05)',
                       px: 2,
                       py: 1,
                       borderRadius: 2,
-                      transition: "all 0.2s",
-                      "&:hover": {
-                        background: "rgba(255,255,255,0.1)",
-                        transform: "translateY(-2px)",
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        background: 'rgba(255,255,255,0.1)',
+                        transform: 'translateY(-2px)',
                       },
-                      flex: { xs: "0 0 auto", sm: "0 1 auto" }, // Prevent shrinking on mobile
-                      minWidth: { xs: "250px", sm: "auto" }, // Set minimum width on mobile
+                      flex: { xs: '0 0 auto', sm: '0 1 auto' }, // Prevent shrinking on mobile
+                      minWidth: { xs: '250px', sm: 'auto' }, // Set minimum width on mobile
                     }}
                   >
                     <Avatar src={admin.avatar_url} alt={admin.display_name} />
                     <Box>
-                      <Typography sx={{ fontWeight: "bold" }}>
+                      <Typography sx={{ fontWeight: 'bold' }}>
                         {admin.display_name}
                       </Typography>
-                      <Typography sx={{ color: "#60a5fa" }}>
+                      <Typography sx={{ color: '#60a5fa' }}>
                         @{admin.twitter_screen_name}
                       </Typography>
                     </Box>
@@ -832,10 +832,10 @@ const SpaceDetails: React.FC = () => {
                   <Box
                     key={i}
                     sx={{
-                      display: "flex",
-                      alignItems: "center",
+                      display: 'flex',
+                      alignItems: 'center',
                       gap: 1,
-                      background: "rgba(255,255,255,0.05)",
+                      background: 'rgba(255,255,255,0.05)',
                       p: 1,
                       borderRadius: 2,
                       width: 200,
@@ -845,21 +845,21 @@ const SpaceDetails: React.FC = () => {
                       variant="circular"
                       width={40}
                       height={40}
-                      sx={{ bgcolor: "rgba(96, 165, 250, 0.1)" }}
+                      sx={{ bgcolor: 'rgba(96, 165, 250, 0.1)' }}
                     />
                     <Box sx={{ flex: 1 }}>
                       <Skeleton
                         variant="text"
                         sx={{
-                          bgcolor: "rgba(96, 165, 250, 0.1)",
-                          width: "80%",
+                          bgcolor: 'rgba(96, 165, 250, 0.1)',
+                          width: '80%',
                         }}
                       />
                       <Skeleton
                         variant="text"
                         sx={{
-                          bgcolor: "rgba(96, 165, 250, 0.1)",
-                          width: "60%",
+                          bgcolor: 'rgba(96, 165, 250, 0.1)',
+                          width: '60%',
                         }}
                       />
                     </Box>
@@ -871,27 +871,27 @@ const SpaceDetails: React.FC = () => {
         </Paper>
 
         {/* Summary Card */}
-        {activeSection === "summary" && space?.spaceId && (
+        {activeSection === 'summary' && space?.spaceId && (
           <Summary
             hasAccess={hasAccess}
             handlePayment={handlePayment}
             spaceId={space.spaceId}
             isProcessingPayment={isProcessingPayment}
-            processEnded={space.transcription_status === "ENDED"}
+            processEnded={space.transcription_status === 'ENDED'}
           />
         )}
 
         {/* Timeline */}
-        {activeSection === "timeline" && (
+        {activeSection === 'timeline' && (
           <Paper
             sx={{
-              background: "rgba(255, 255, 255, 0.03)",
-              backdropFilter: "blur(10px)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
+              background: 'rgba(255, 255, 255, 0.03)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
               borderRadius: 2,
               p: 3,
-              "&:hover": {
-                background: "rgba(255, 255, 255, 0.05)",
+              '&:hover': {
+                background: 'rgba(255, 255, 255, 0.05)',
               },
             }}
           >
@@ -904,61 +904,61 @@ const SpaceDetails: React.FC = () => {
                 hasAccess={hasAccess}
                 isProcessingPayment={isProcessingPayment}
                 handlePayment={handlePayment}
-                processEnded={space.transcription_status === "ENDED"}
-                refresh={space.transcription_status === "SHORT_ENDED"}
+                processEnded={space.transcription_status === 'ENDED'}
+                refresh={space.transcription_status === 'SHORT_ENDED'}
               />
             )}
           </Paper>
         )}
 
         {/* AI Threadoor Section */}
-        {activeSection === "threadoor" && space?.spaceId && (
+        {activeSection === 'threadoor' && space?.spaceId && (
           <DisplayThread
             spaceId={space.spaceId}
             onGenerateTwitterThread={onGenerateTwitterThread}
             twitterThread={twitterThread || []}
             isThreadLoading={isThreadLoading}
-            processEnded={space.transcription_status === "ENDED"}
+            processEnded={space.transcription_status === 'ENDED'}
           />
         )}
 
         {/* Memorable Moments Section */}
-        {activeSection === "moments" && (
+        {activeSection === 'moments' && (
           <Paper
             sx={{
               background:
-                "linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.1))",
-              backdropFilter: "blur(10px)",
-              border: "1px solid rgba(59, 130, 246, 0.2)",
+                'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.1))',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(59, 130, 246, 0.2)',
               borderRadius: 3,
               p: 4,
               mb: 4,
             }}
           >
-            <Typography variant="h6" sx={{ color: "#60a5fa", mb: 3 }}>
+            <Typography variant="h6" sx={{ color: '#60a5fa', mb: 3 }}>
               Memorable Moments
             </Typography>
             {[].map((moment, index) => (
               <Paper
                 key={index}
                 sx={{
-                  background: "rgba(255,255,255,0.05)",
+                  background: 'rgba(255,255,255,0.05)',
                   p: 3,
                   borderRadius: 2,
                   mb: 2,
-                  position: "relative",
-                  transition: "all 0.2s ease",
-                  "&:hover": {
-                    transform: "translateY(-2px)",
-                    background: "rgba(255,255,255,0.08)",
+                  position: 'relative',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    background: 'rgba(255,255,255,0.08)',
                   },
                 }}
               >
                 <Typography
                   variant="body1"
                   sx={{
-                    fontSize: "1.1rem",
-                    fontStyle: "italic",
+                    fontSize: '1.1rem',
+                    fontStyle: 'italic',
                     mb: 2,
                     lineHeight: 1.6,
                   }}
@@ -967,22 +967,22 @@ const SpaceDetails: React.FC = () => {
                 </Typography>
                 <Box
                   sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
                   }}
                 >
-                  <Typography sx={{ color: "#60a5fa" }}>
+                  <Typography sx={{ color: '#60a5fa' }}>
                     {/* @{moment.speaker} */}
                   </Typography>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <Typography variant="caption" sx={{ color: "#60a5fa" }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Typography variant="caption" sx={{ color: '#60a5fa' }}>
                       {/* {moment.timestamp} */}
                     </Typography>
                     <Button
                       startIcon={<ContentCopyIcon />}
                       size="small"
-                      sx={{ color: "white", minWidth: "auto" }}
+                      sx={{ color: 'white', minWidth: 'auto' }}
                       onClick={
                         () => {}
                         // navigator.clipboard.writeText(moment.quote)
@@ -998,7 +998,7 @@ const SpaceDetails: React.FC = () => {
         )}
 
         {/* Transcript Section */}
-        {activeSection === "transcript" && space?.spaceId && (
+        {activeSection === 'transcript' && space?.spaceId && (
           <AlgoliaSearchTranscription
             spaceId={space.spaceId}
             title={space.title}
@@ -1016,12 +1016,12 @@ const SpaceDetails: React.FC = () => {
         open={toast.open}
         autoHideDuration={6000}
         onClose={handleCloseToast}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert
           onClose={handleCloseToast}
           severity={toast.severity}
-          sx={{ width: "100%" }}
+          sx={{ width: '100%' }}
         >
           {toast.message}
         </Alert>

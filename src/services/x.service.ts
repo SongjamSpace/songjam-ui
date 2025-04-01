@@ -60,7 +60,7 @@ class APICache<T> {
   set(key: string, data: T) {
     this.cache.set(key, {
       data,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
@@ -86,11 +86,14 @@ export const getUserInfo = async (userId: string): Promise<User | null> => {
 
     // Only make API call if cache is empty or stale
     if (!cachedUser || userCache.isStale(userId)) {
-      const response = await fetch(`https://api.twitter.com/2/users/${userId}?user.fields=description,profile_image_url,public_metrics`, {
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_TWITTER_BEARER_TOKEN}`
+      const response = await fetch(
+        `https://api.twitter.com/2/users/${userId}?user.fields=description,profile_image_url,public_metrics`,
+        {
+          headers: {
+            Authorization: `Bearer ${import.meta.env.VITE_TWITTER_BEARER_TOKEN}`,
+          },
         }
-      });
+      );
 
       if (!response.ok) {
         // If API call fails but we have cached data, return that
@@ -114,7 +117,10 @@ export const getUserInfo = async (userId: string): Promise<User | null> => {
   }
 };
 
-export const getUserTweets = async (userId: string, limit: number = 5): Promise<Tweet[]> => {
+export const getUserTweets = async (
+  userId: string,
+  limit: number = 5
+): Promise<Tweet[]> => {
   try {
     // Check cache first
     const cachedTweets = tweetsCache.get(userId);
@@ -125,10 +131,11 @@ export const getUserTweets = async (userId: string, limit: number = 5): Promise<
     // Only make API call if cache is empty or stale
     if (!cachedTweets || tweetsCache.isStale(userId)) {
       const response = await fetch(
-        `https://api.twitter.com/2/users/${userId}/tweets?max_results=${limit}&tweet.fields=created_at,public_metrics`, {
+        `https://api.twitter.com/2/users/${userId}/tweets?max_results=${limit}&tweet.fields=created_at,public_metrics`,
+        {
           headers: {
-            'Authorization': `Bearer ${import.meta.env.VITE_TWITTER_BEARER_TOKEN}`
-          }
+            Authorization: `Bearer ${import.meta.env.VITE_TWITTER_BEARER_TOKEN}`,
+          },
         }
       );
 
@@ -162,23 +169,29 @@ interface RateLimit {
 
 const rateLimits = new Map<string, RateLimit>();
 
-export const updateRateLimit = (endpoint: string, remaining: number, resetTime: number) => {
+export const updateRateLimit = (
+  endpoint: string,
+  remaining: number,
+  resetTime: number
+) => {
   rateLimits.set(endpoint, { remaining, reset: resetTime });
 };
 
 export const canMakeRequest = (endpoint: string): boolean => {
   const limit = rateLimits.get(endpoint);
   if (!limit) return true;
-  
+
   if (Date.now() > limit.reset) {
     rateLimits.delete(endpoint);
     return true;
   }
-  
+
   return limit.remaining > 0;
 };
 
-export const fetchXUserProfile = async (username: string): Promise<XUserProfile | null> => {
+export const fetchXUserProfile = async (
+  username: string
+): Promise<XUserProfile | null> => {
   try {
     console.log('Fetching X profile for:', username);
     const response = await fetch(`${PROXY_URL}/x/user/${username}`);
@@ -226,10 +239,13 @@ export const fetchXUserTweets = async (userId: string): Promise<XTweet[]> => {
   }
 };
 
-export const enrichSpeakerData = async (speaker: User): Promise<User & { xProfile?: XUserProfile; recentTweets?: XTweet[] }> => {
+export const enrichSpeakerData = async (
+  speaker: User
+): Promise<User & { xProfile?: XUserProfile; recentTweets?: XTweet[] }> => {
   try {
     console.log('Enriching speaker data for:', speaker.twitter_screen_name);
-    const xProfile = await fetchXUserProfile(speaker.twitter_screen_name) || undefined;
+    const xProfile =
+      (await fetchXUserProfile(speaker.twitter_screen_name)) || undefined;
     const recentTweets = xProfile ? await fetchXUserTweets(xProfile.id) : [];
 
     return {
@@ -241,4 +257,4 @@ export const enrichSpeakerData = async (speaker: User): Promise<User & { xProfil
     console.error('Error enriching speaker data:', error);
     return speaker;
   }
-}; 
+};

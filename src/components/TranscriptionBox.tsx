@@ -1,12 +1,12 @@
-import { useCollectionData } from "react-firebase-hooks/firestore";
-import { db } from "../services/firebase.service";
-import { collection, orderBy, query } from "firebase/firestore";
-import { useEffect, useRef, useState } from "react";
-import styled from "@emotion/styled";
-import { Box, Button, Typography } from "@mui/material";
-import { Theme } from "@mui/material/styles";
-import axios from "axios";
-import { LoadingButton } from "@mui/lab";
+import { useCollectionData } from 'react-firebase-hooks/firestore';
+import { db } from '../services/firebase.service';
+import { collection, orderBy, query } from 'firebase/firestore';
+import { useEffect, useRef, useState } from 'react';
+import styled from '@emotion/styled';
+import { Box, Button, Typography } from '@mui/material';
+import { Theme } from '@mui/material/styles';
+import axios from 'axios';
+import { LoadingButton } from '@mui/lab';
 
 const TranscriptionContainer = styled.div`
   width: 60%;
@@ -47,7 +47,7 @@ const AnimatedText = styled.span<{ theme: Theme }>`
   color: ${({ theme }) => theme.palette.text.primary};
   line-height: 1.6;
   font-size: 1.1rem;
-  font-family: "Inter", sans-serif;
+  font-family: 'Inter', sans-serif;
 
   @keyframes fadeIn {
     from {
@@ -71,12 +71,12 @@ const StyledHeader = styled(Typography)`
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   font-weight: 600;
-  font-family: "Inter", sans-serif;
+  font-family: 'Inter', sans-serif;
   position: relative;
   margin-bottom: 24px !important;
 
   &:after {
-    content: "";
+    content: '';
     position: absolute;
     bottom: -8px;
     left: 50%;
@@ -97,9 +97,9 @@ const TranscriptionRow = styled(Box)`
 
   &:hover {
     background-color: ${({ theme }) =>
-      theme.palette.mode === "dark"
-        ? "rgba(255, 255, 255, 0.05)"
-        : "rgba(0, 0, 0, 0.02)"};
+      theme.palette.mode === 'dark'
+        ? 'rgba(255, 255, 255, 0.05)'
+        : 'rgba(0, 0, 0, 0.02)'};
     transform: translateX(4px);
   }
 `;
@@ -114,7 +114,7 @@ const TimeStamp = styled(Typography)`
 const TranscriptionText = styled(Typography)`
   font-size: 1rem;
   line-height: 2;
-  font-family: "Inter", sans-serif;
+  font-family: 'Inter', sans-serif;
   letter-spacing: 0.3px;
   font-weight: 400;
 
@@ -140,7 +140,7 @@ export const TranscriptionBox = ({ spaceId }: { spaceId: string }) => {
   const [transcriptions, loading, error] = useCollectionData(
     query(
       collection(db, `spaces/${spaceId}/transcriptions`),
-      orderBy("createdAt", "asc")
+      orderBy('createdAt', 'asc')
     )
   );
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -151,7 +151,7 @@ export const TranscriptionBox = ({ spaceId }: { spaceId: string }) => {
     if (scrollContainerRef.current && transcriptions) {
       scrollContainerRef.current.scrollTo({
         top: scrollContainerRef.current.scrollHeight,
-        behavior: "smooth",
+        behavior: 'smooth',
       });
     }
   }, [transcriptions]);
@@ -181,11 +181,11 @@ export const TranscriptionBox = ({ spaceId }: { spaceId: string }) => {
   //   }, [transcriptions]);
 
   const formatTimestamp = (timestamp: any) => {
-    if (!timestamp) return "";
+    if (!timestamp) return '';
     const date = timestamp.toDate();
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
       hour12: true,
     });
   };
@@ -214,9 +214,9 @@ export const TranscriptionBox = ({ spaceId }: { spaceId: string }) => {
             <TranscriptionText
               variant="body1"
               sx={{
-                wordBreak: "break-word",
-                textShadow: "0 1px 2px rgba(0,0,0,0.1)",
-                padding: "4px 0",
+                wordBreak: 'break-word',
+                textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                padding: '4px 0',
               }}
             >
               {transcription.transcription.trim()}

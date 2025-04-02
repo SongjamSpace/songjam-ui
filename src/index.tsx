@@ -7,6 +7,7 @@ import SpaceCRM from './SpaceCRM';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from './theme';
 import { AuthProvider } from './contexts/AuthContext';
+import LiveDashboardContainer from './components/LiveDashboard/LiveDashboardContainer';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
@@ -27,6 +28,14 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
             element={
               <AuthProvider>
                 <SpaceCRM />
+              </AuthProvider>
+            }
+          />
+          <Route
+            path="/live/:spaceId"
+            element={
+              <AuthProvider>
+                <LiveDashboardContainer />
               </AuthProvider>
             }
           />

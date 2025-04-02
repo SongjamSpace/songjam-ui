@@ -32,6 +32,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import DownloadIcon from '@mui/icons-material/Download';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import BarChartIcon from '@mui/icons-material/BarChart';
 import { Summary } from './components/Summary';
 import { LoadingButton } from '@mui/lab';
 import SegmentsTimeline from './components/SegmentsTimeline';
@@ -406,72 +407,25 @@ const SpaceDetails: React.FC = () => {
         {/* Header */}
         <Box sx={{ mb: 4, position: 'relative' }}>
           <Box display="flex" justifyContent="space-between">
-            <Typography
-              variant="overline"
-              sx={{
-                color: '#60a5fa',
-                background:
-                  'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))',
-                padding: '6px 16px',
-                borderRadius: '20px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 1,
-                mb: 2,
-                letterSpacing: '0.1em',
-                fontWeight: 600,
-                fontSize: '0.75rem',
-                position: 'relative',
-                overflow: 'hidden',
-                '&::after':
-                  space?.transcription_status !== 'ENDED'
-                    ? {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background:
-                          'linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.2), transparent)',
-                        animation: 'shimmer 1.5s infinite',
-                      }
-                    : {},
-                '@keyframes shimmer': {
-                  '0%': {
-                    transform: 'translateX(-100%)',
-                  },
-                  '100%': {
-                    transform: 'translateX(100%)',
-                  },
-                },
-              }}
-            >
-              {space?.user_message}
-              {space?.transcription_status !== 'ENDED' &&
-                space?.transcription_status !== 'SHORT_ENDED' && (
-                  <Box
-                    component="span"
-                    sx={{
-                      width: 16,
-                      height: 16,
-                      borderRadius: '50%',
-                      border: '2px solid transparent',
-                      borderTopColor: '#60a5fa',
-                      borderRightColor: '#60a5fa',
-                      animation: 'spin 1s linear infinite',
-                      '@keyframes spin': {
-                        '0%': {
-                          transform: 'rotate(0deg)',
-                        },
-                        '100%': {
-                          transform: 'rotate(360deg)',
-                        },
-                      },
-                    }}
-                  />
-                )}
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Logo />
+              {space?.type === 'live' && (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  startIcon={<BarChartIcon />}
+                  onClick={() => navigate(`/live/${spaceId}`)}
+                  sx={{
+                    background: 'rgba(29, 161, 242, 0.2)',
+                    '&:hover': {
+                      background: 'rgba(29, 161, 242, 0.3)',
+                    },
+                  }}
+                >
+                  Live Dashboard
+                </Button>
+              )}
+            </Box>
             <Box>
               <IconButton onClick={() => navigate('/')}>
                 <ArrowBackIcon />

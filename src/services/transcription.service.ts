@@ -22,12 +22,12 @@ export const transcribeSpace = async (spaceUrl: string) => {
   // Space doesn't exist, request transcription
   try {
     const res = await axios.post(
-      `${import.meta.env.VITE_JAM_SERVER_URL}/transcribe-recorded-space`,
+      `${import.meta.env.VITE_JAM_SERVER_URL}/listen-live-space`,
       { spaceId }
     );
 
     if (res.data.status === 'success') {
-      window.location.href = `/${spaceId}`;
+      window.location.href = `/crm/${spaceId}`;
     } else {
       throw new Error('Transcription failed');
     }

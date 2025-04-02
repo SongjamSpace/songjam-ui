@@ -109,22 +109,20 @@ const handleXApiRequest = async <T>(
 export const getSpace = async (
   spaceId: string,
   onUpdate?: (space: Space) => void
-): Promise<Space> => {
-  return handleXApiRequest(async () => {
-    const docRef = doc(db, 'spaces', spaceId);
-    const docSnap = await getDoc(docRef);
+): Promise<Space | null> => {
+  const docRef = doc(db, 'spaces', spaceId);
+  const docSnap = await getDoc(docRef);
 
-    if (docSnap.exists()) {
-      const space = docSnap.data() as Space;
-      if (onUpdate) {
-        onSnapshot(docRef, (doc) => {
-          onUpdate(doc.data() as Space);
-        });
-      }
-      return space;
+  if (docSnap.exists()) {
+    const space = docSnap.data() as Space;
+    if (onUpdate) {
+      onSnapshot(docRef, (doc) => {
+        onUpdate(doc.data() as Space);
+      });
     }
-    throw new Error(`Space with ID ${spaceId} not found`);
-  });
+    return space;
+  }
+  return null;
 };
 
 // Add API status monitoring

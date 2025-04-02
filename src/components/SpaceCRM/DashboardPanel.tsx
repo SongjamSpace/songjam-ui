@@ -15,7 +15,7 @@ import {
 import { format } from 'date-fns';
 import { Space, User } from '../../services/db/spaces.service';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
-import { collection, query } from 'firebase/firestore';
+import { collection, orderBy, query } from 'firebase/firestore';
 import { db } from '../../services/firebase.service';
 import { Message, Person, PersonAdd } from '@mui/icons-material';
 
@@ -26,7 +26,10 @@ interface DashboardPanelProps {
 
 const DashboardPanel: React.FC<DashboardPanelProps> = ({ spaceId, space }) => {
   const [listeners, loading, error] = useCollectionData(
-    query(collection(db, 'spaces', spaceId, 'listeners'))
+    query(
+      collection(db, 'spaces', spaceId, 'listeners'),
+      orderBy('joinedAt', 'desc')
+    )
   );
 
   if (!spaceId) {

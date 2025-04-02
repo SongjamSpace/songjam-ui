@@ -20,6 +20,10 @@ export type User = {
   is_verified: boolean;
   speaker?: boolean;
   admin?: boolean;
+
+  status?: 'joined' | 'left';
+  joinedAt?: number;
+  leftAt?: number;
 };
 
 export type Segment = {
@@ -191,4 +195,13 @@ export const getSpaceAudioDownloadUrl = async (spaceId: string) => {
   const storageRef = ref(storage, `spaces/${spaceId}.mp3`);
   const url = await getDownloadURL(storageRef);
   return url;
+};
+
+export const getSpaceListeners = async (spaceId: string) => {
+  const colRef = query(
+    collection(db, 'spaces', spaceId, 'listeners'),
+    orderBy('joinedAt', 'asc')
+  );
+  const snapshot = await getDocs(colRef);
+  return snapshot.docs.map((doc) => doc.data() as User);
 };

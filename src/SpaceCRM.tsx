@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import type { Components } from 'react-markdown';
 import {
   Box,
   Grid,
@@ -35,6 +34,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import HeadphonesIcon from '@mui/icons-material/Headphones';
 import AssessmentIcon from '@mui/icons-material/Assessment';
+import DashboardIcon from '@mui/icons-material/Dashboard';
 import { format } from 'date-fns';
 
 import AudiencePanel from './components/SpaceCRM/AudiencePanel';
@@ -46,8 +46,15 @@ import Logo from './components/Logo';
 import TwitterLogin from './components/TwitterLogin';
 import { AI_MODELS, generateContent } from './services/ai.service';
 import { getFullTranscription } from './services/db/spaces.service';
+import DashboardPanel from './components/SpaceCRM/DashboardPanel';
 
-type CRMTab = 'audience' | 'content' | 'engagement' | 'analytics' | 'analysis';
+type CRMTab =
+  | 'dashboard'
+  | 'audience'
+  | 'content'
+  | 'engagement'
+  | 'analytics'
+  | 'analysis';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -90,7 +97,7 @@ const SpaceCRM: React.FC = () => {
   const navigate = useNavigate();
   const { spaceId } = useParams<{ spaceId: string }>();
   const [space, setSpace] = useState<Space | null>(null);
-  const [activeTab, setActiveTab] = useState<CRMTab>('audience');
+  const [activeTab, setActiveTab] = useState<CRMTab>('dashboard');
   const [selectedModel, setSelectedModel] = useState('grok');
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiResponse, setAiResponse] = useState('');
@@ -473,6 +480,11 @@ ${JSON.stringify(analysisContext, null, 2)}
                   },
                 }}
               >
+                <Tab
+                  icon={<DashboardIcon />}
+                  label="Dashboard"
+                  value="dashboard"
+                />
                 <Tab icon={<PeopleIcon />} label="Audience" value="audience" />
                 <Tab icon={<ForumIcon />} label="Content" value="content" />
                 <Tab
@@ -594,7 +606,12 @@ ${JSON.stringify(analysisContext, null, 2)}
                   },
                 }}
               >
-                <Tab icon={<PeopleIcon />} value="audience" />
+                <Tab
+                  icon={<DashboardIcon />}
+                  label="Dashboard"
+                  value="dashboard"
+                />
+                <Tab icon={<PeopleIcon />} label="Audience" value="audience" />
                 <Tab icon={<ForumIcon />} value="content" />
                 <Tab icon={<MessageIcon />} value="engagement" />
                 <Tab icon={<InsightsIcon />} value="analytics" />
@@ -623,6 +640,9 @@ ${JSON.stringify(analysisContext, null, 2)}
                   },
                 }}
               >
+                {activeTab === 'dashboard' && spaceId && (
+                  <DashboardPanel space={space} spaceId={spaceId} />
+                )}
                 {activeTab === 'audience' && (
                   <AudiencePanel
                     onSelectAttendees={setSelectedAttendees}
@@ -1116,6 +1136,7 @@ ${JSON.stringify(analysisContext, null, 2)}
               },
             }}
           >
+            <Tab icon={<DashboardIcon />} label="Dashboard" value="dashboard" />
             <Tab icon={<PeopleIcon />} label="Audience" value="audience" />
             <Tab icon={<ForumIcon />} label="Content" value="content" />
             <Tab icon={<MessageIcon />} label="Engagement" value="engagement" />

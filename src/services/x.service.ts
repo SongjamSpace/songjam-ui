@@ -1,21 +1,31 @@
-import { User, Tweet } from '../types/twitter.types';
+import axios from 'axios';
+import { Tweet } from '../types/twitter.types';
+import { User } from './db/spaces.service';
 
 const PROXY_URL = 'http://localhost:3001/api';
 
 export interface XUserProfile {
-  id: string;
+  avatar: string;
+  banner: string;
+  biography: string;
+  followersCount: number;
+  followingCount: number;
+  friendsCount: number;
+  mediaCount: number;
+  isPrivate: boolean;
+  isVerified: boolean;
+  likesCount: number;
+  listedCount: number;
+  location: string;
   name: string;
+  pinnedTweetIds: string[];
+  tweetsCount: number;
+  url: string;
+  userId: string;
   username: string;
-  description: string;
-  profile_image_url: string;
-  public_metrics: {
-    followers_count: number;
-    following_count: number;
-    tweet_count: number;
-    listed_count: number;
-  };
-  created_at: string;
-  verified: boolean;
+  isBlueVerified: boolean;
+  canDm: boolean;
+  joined: string;
 }
 
 export interface XTweet {
@@ -90,7 +100,9 @@ export const getUserInfo = async (userId: string): Promise<User | null> => {
         `https://api.twitter.com/2/users/${userId}?user.fields=description,profile_image_url,public_metrics`,
         {
           headers: {
-            Authorization: `Bearer ${import.meta.env.VITE_TWITTER_BEARER_TOKEN}`,
+            Authorization: `Bearer ${
+              import.meta.env.VITE_TWITTER_BEARER_TOKEN
+            }`,
           },
         }
       );
@@ -134,7 +146,9 @@ export const getUserTweets = async (
         `https://api.twitter.com/2/users/${userId}/tweets?max_results=${limit}&tweet.fields=created_at,public_metrics`,
         {
           headers: {
-            Authorization: `Bearer ${import.meta.env.VITE_TWITTER_BEARER_TOKEN}`,
+            Authorization: `Bearer ${
+              import.meta.env.VITE_TWITTER_BEARER_TOKEN
+            }`,
           },
         }
       );
@@ -192,27 +206,13 @@ export const canMakeRequest = (endpoint: string): boolean => {
 export const fetchXUserProfile = async (
   username: string
 ): Promise<XUserProfile | null> => {
-  try {
-    console.log('Fetching X profile for:', username);
-    const response = await fetch(`${PROXY_URL}/x/user/${username}`);
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error('Failed to fetch X profile:', data);
-      return null;
+  const res = await axios.post(
+    `${import.meta.env.VITE_JAM_SERVER_URL}/get-user-profile`,
+    {
+      userName: username,
     }
-
-    if (!data.data) {
-      console.error('No data returned from X API for user:', username);
-      return null;
-    }
-
-    console.log('Successfully fetched X profile:', data.data);
-    return data.data;
-  } catch (error) {
-    console.error('Error fetching X user profile:', error);
-    return null;
-  }
+  );
+  return res.data.profile as XUserProfile;
 };
 
 export const fetchXUserTweets = async (userId: string): Promise<XTweet[]> => {
@@ -242,19 +242,20 @@ export const fetchXUserTweets = async (userId: string): Promise<XTweet[]> => {
 export const enrichSpeakerData = async (
   speaker: User
 ): Promise<User & { xProfile?: XUserProfile; recentTweets?: XTweet[] }> => {
-  try {
-    console.log('Enriching speaker data for:', speaker.twitter_screen_name);
-    const xProfile =
-      (await fetchXUserProfile(speaker.twitter_screen_name)) || undefined;
-    const recentTweets = xProfile ? await fetchXUserTweets(xProfile.id) : [];
+  return speaker;
+  // try {
+  //   console.log('Enriching speaker data for:', speaker.twitter_screen_name);
+  //   const xProfile =
+  //     (await fetchXUserProfile(speaker.twitter_screen_name)) || undefined;
+  //   const recentTweets = xProfile ? await fetchXUserTweets(xProfile.id) : [];
 
-    return {
-      ...speaker,
-      xProfile,
-      recentTweets,
-    };
-  } catch (error) {
-    console.error('Error enriching speaker data:', error);
-    return speaker;
-  }
+  //   return {
+  //     ...speaker,
+  //     xProfile,
+  //     recentTweets,
+  //   };
+  // } catch (error) {
+  //   console.error('Error enriching speaker data:', error);
+  //   return speaker;
+  // }
 };

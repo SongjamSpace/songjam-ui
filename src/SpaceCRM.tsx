@@ -45,7 +45,7 @@ import Logo from './components/Logo';
 import TwitterLogin from './components/TwitterLogin';
 import { AI_MODELS, generateContent } from './services/ai.service';
 import { getFullTranscription } from './services/db/spaces.service';
-import DashboardPanel from './components/SpaceCRM/DashboardPanel';
+// import DashboardPanel from './components/SpaceCRM/DashboardPanel';
 import SpaceAnalysis from './components/SpaceCRM/SpaceAnalysis';
 
 type CRMTab =
@@ -640,9 +640,9 @@ ${JSON.stringify(analysisContext, null, 2)}
                   },
                 }}
               >
-                {activeTab === 'dashboard' && spaceId && (
+                {/* {activeTab === 'dashboard' && spaceId && (
                   <DashboardPanel space={space} spaceId={spaceId} />
-                )}
+                )} */}
                 {activeTab === 'audience' && (
                   <AudiencePanel
                     onSelectAttendees={setSelectedAttendees}

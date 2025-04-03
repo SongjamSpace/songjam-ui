@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
@@ -13,9 +13,9 @@ import {
   IconButton,
 } from '@mui/material';
 import { format } from 'date-fns';
-import { Space, User } from '../../services/db/spaces.service';
+import { Space, SpaceListener } from '../../services/db/spaces.service';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
-import { collection, orderBy, query } from 'firebase/firestore';
+import { collection, orderBy, query, limit } from 'firebase/firestore';
 import { db } from '../../services/firebase.service';
 import { Message, Person, PersonAdd } from '@mui/icons-material';
 
@@ -25,10 +25,12 @@ interface DashboardPanelProps {
 }
 
 const DashboardPanel: React.FC<DashboardPanelProps> = ({ spaceId, space }) => {
+  const [spaceLimit, setSpaceLimit] = useState(10);
   const [listeners, loading, error] = useCollectionData(
     query(
       collection(db, 'spaces', spaceId, 'listeners'),
-      orderBy('joinedAt', 'desc')
+      orderBy('joinedAt', 'desc'),
+      limit(spaceLimit)
     )
   );
 
@@ -143,8 +145,8 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({ spaceId, space }) => {
             },
           }}
         >
-          {(listeners as User[])?.map((listener, index) => (
-            <React.Fragment key={`${listener.user_id}-${index}`}>
+          {(listeners as SpaceListener[])?.map((listener, index) => (
+            <React.Fragment key={`${listener.userId}-${index}`}>
               <ListItem
                 sx={{ py: 2 }}
                 secondaryAction={
@@ -153,7 +155,7 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({ spaceId, space }) => {
                       size="small"
                       onClick={() =>
                         window.open(
-                          `https://twitter.com/messages/compose?recipient_id=${listener.user_id}&text=Hi`,
+                          `https://twitter.com/messages/compose?recipient_id=${listener.userId}&text=Hi`,
                           '_blank'
                         )
                       }
@@ -168,7 +170,7 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({ spaceId, space }) => {
                       size="small"
                       onClick={() =>
                         window.open(
-                          `https://twitter.com/${listener.twitter_screen_name}`,
+                          `https://twitter.com/${listener.twitterScreenName}`,
                           '_blank'
                         )
                       }
@@ -183,7 +185,7 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({ spaceId, space }) => {
                       size="small"
                       onClick={() =>
                         window.open(
-                          `https://twitter.com/intent/follow?screen_name=${listener.twitter_screen_name}`,
+                          `https://twitter.com/intent/follow?screen_name=${listener.twitterScreenName}`,
                           '_blank',
                           'width=600,height=400'
                         )
@@ -200,11 +202,11 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({ spaceId, space }) => {
               >
                 <ListItemAvatar>
                   <Avatar
-                    src={listener.avatar_url}
+                    src={listener.avatarUrl}
                     sx={{ cursor: 'pointer' }}
                     onClick={() =>
                       window.open(
-                        `https://twitter.com/${listener.twitter_screen_name}`,
+                        `https://twitter.com/${listener.twitterScreenName}`,
                         '_blank'
                       )
                     }
@@ -221,12 +223,12 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({ spaceId, space }) => {
                         }}
                         onClick={() =>
                           window.open(
-                            `https://twitter.com/${listener.twitter_screen_name}`,
+                            `https://twitter.com/${listener.twitterScreenName}`,
                             '_blank'
                           )
                         }
                       >
-                        {listener.display_name}
+                        {listener.displayName}
                       </Box>
                       {/* <Chip
                         size="small"
@@ -252,7 +254,7 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({ spaceId, space }) => {
                   //   }
                 />
               </ListItem>
-              {index < (listeners as User[]).length - 1 && (
+              {index < (listeners as SpaceListener[]).length - 1 && (
                 <Divider sx={{ opacity: 0.1 }} />
               )}
             </React.Fragment>

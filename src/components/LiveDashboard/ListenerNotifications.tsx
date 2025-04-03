@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react';
 import { Box, Paper, Typography, Avatar, IconButton } from '@mui/material';
-import { User } from '../../services/db/spaces.service';
+import { SpaceListener } from '../../services/db/spaces.service';
 import { Person } from '@mui/icons-material';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 
 interface ListenerNotificationsProps {
-  listeners: User[];
-  previousListeners: User[];
+  listeners: SpaceListener[];
+  previousListeners: SpaceListener[];
 }
 
 const ListenerNotifications: React.FC<ListenerNotificationsProps> = ({
@@ -17,11 +17,12 @@ const ListenerNotifications: React.FC<ListenerNotificationsProps> = ({
   useEffect(() => {
     // Check for new listeners
     const newListeners = listeners.filter(
-      listener => !previousListeners.find(pl => pl.user_id === listener.user_id)
+      (listener) =>
+        !previousListeners.find((pl) => pl.userId === listener.userId)
     );
 
     // Show notifications for new listeners
-    newListeners.forEach(listener => {
+    newListeners.forEach((listener) => {
       toast.custom(
         <Paper
           sx={{
@@ -34,10 +35,10 @@ const ListenerNotifications: React.FC<ListenerNotificationsProps> = ({
             maxWidth: '300px',
           }}
         >
-          <Avatar src={listener.avatar_url} />
+          <Avatar src={listener.avatarUrl} />
           <Box sx={{ flex: 1 }}>
             <Typography variant="subtitle2">
-              {listener.display_name} joined
+              {listener.displayName} joined
             </Typography>
             <Typography variant="caption" color="text.secondary">
               {format(new Date(), 'h:mm a')}
@@ -86,7 +87,7 @@ const ListenerNotifications: React.FC<ListenerNotificationsProps> = ({
       >
         {listeners.map((listener, index) => (
           <Box
-            key={`${listener.user_id}-${index}`}
+            key={`${listener.userId}-${index}`}
             sx={{
               display: 'flex',
               alignItems: 'center',
@@ -98,7 +99,7 @@ const ListenerNotifications: React.FC<ListenerNotificationsProps> = ({
             }}
           >
             <Avatar
-              src={listener.avatar_url}
+              src={listener.avatarUrl}
               sx={{
                 width: 32,
                 height: 32,
@@ -106,13 +107,13 @@ const ListenerNotifications: React.FC<ListenerNotificationsProps> = ({
               }}
               onClick={() =>
                 window.open(
-                  `https://twitter.com/${listener.twitter_screen_name}`,
+                  `https://twitter.com/${listener.twitterScreenName}`,
                   '_blank'
                 )
               }
             />
             <Box sx={{ flex: 1 }}>
-              <Typography variant="body2">{listener.display_name}</Typography>
+              <Typography variant="body2">{listener.displayName}</Typography>
               <Typography variant="caption" color="text.secondary">
                 {listener.joinedAt
                   ? format(new Date(listener.joinedAt), 'h:mm a')
@@ -123,7 +124,7 @@ const ListenerNotifications: React.FC<ListenerNotificationsProps> = ({
               size="small"
               onClick={() =>
                 window.open(
-                  `https://twitter.com/${listener.twitter_screen_name}`,
+                  `https://twitter.com/${listener.twitterScreenName}`,
                   '_blank'
                 )
               }
@@ -141,4 +142,4 @@ const ListenerNotifications: React.FC<ListenerNotificationsProps> = ({
   );
 };
 
-export default ListenerNotifications; 
+export default ListenerNotifications;

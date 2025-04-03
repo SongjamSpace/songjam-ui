@@ -12,18 +12,20 @@ import { db, storage } from '../firebase.service';
 import { getDownloadURL } from 'firebase/storage';
 import { ref } from 'firebase/storage';
 
-export type User = {
-  user_id: string;
-  display_name: string;
-  twitter_screen_name: string;
-  avatar_url: string;
-  is_verified: boolean;
-  speaker?: boolean;
+export type TwitterUser = {
+  userId: string;
+  displayName: string;
+  twitterScreenName: string;
+  avatarUrl: string;
+  isVerified: boolean;
   admin?: boolean;
-
-  status?: 'joined' | 'left';
-  joinedAt?: number;
-  leftAt?: number;
+  speaker?: boolean;
+  listener?: boolean;
+};
+export type SpaceListener = TwitterUser & {
+  joinedAt: number;
+  leftAt: number | null;
+  timeSpent: number | null;
 };
 
 export type Segment = {
@@ -34,34 +36,37 @@ export type Segment = {
   no_speech_prob: number;
 };
 export type Space = {
-  transcription_status:
+  transcriptionStatus:
+    | 'NOT_STARTED'
     | 'STARTED'
     | 'PROCESSING'
     | 'FAILED'
-    | 'ENDED'
-    | 'SHORT_ENDED';
-  type: 'recorded' | 'live';
+    | 'ENDED';
+  isLive?: boolean;
+  isRecorded?: boolean;
+  isScheduled?: boolean;
   spaceId: string;
-  hls_url: string;
-
+  userHelperMessage?: string;
+  // Space details
+  hlsUrl: string;
   title: string;
   state: string;
-  media_key: string;
-  created_at: number;
-  started_at: number;
-  ended_at: string;
-  content_type: string;
-  is_space_available_for_replay: boolean;
-  is_space_available_for_clipping: boolean;
-  total_replay_watched: number;
-  total_live_listeners: number;
-  tweet_id: string | any;
-  admins: User[];
-  speakers: User[];
+  mediaKey: string;
+  createdAt: number;
+  startedAt: number;
+  endedAt: number;
+  contentType: string;
+  isSpaceAvailableForReplay: boolean;
+  isSpaceAvailableForClipping: boolean;
+  totalReplayWatched: number;
+  totalLiveListeners: number;
+  tweetId: string | any;
+  admins: TwitterUser[];
+  speakers: TwitterUser[];
+  isLiveListenersSyncing?: boolean;
+  liveListenersCount?: number;
 
-  text?: string;
-  segments?: Segment[];
-  user_message?: string;
+  docCreatedAt?: number;
 };
 
 // Add API status tracking
@@ -201,5 +206,5 @@ export const getSpaceListeners = async (spaceId: string) => {
     orderBy('joinedAt', 'asc')
   );
   const snapshot = await getDocs(colRef);
-  return snapshot.docs.map((doc) => doc.data() as User);
+  return snapshot.docs.map((doc) => doc.data() as SpaceListener);
 };

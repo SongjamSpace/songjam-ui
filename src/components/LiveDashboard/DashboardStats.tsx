@@ -6,7 +6,6 @@ import { PeopleAlt, Timer, TrendingUp, Schedule } from '@mui/icons-material';
 
 interface DashboardStatsProps {
   space: Space | null;
-  currentListeners: number;
 }
 
 interface StatCardProps {
@@ -16,7 +15,12 @@ interface StatCardProps {
   subtitle?: string;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ title, value, icon, subtitle }) => (
+const StatCard: React.FC<StatCardProps> = ({
+  title,
+  value,
+  icon,
+  subtitle,
+}) => (
   <Paper
     sx={{
       p: 2,
@@ -43,13 +47,15 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, subtitle }) => 
   </Paper>
 );
 
-const DashboardStats: React.FC<DashboardStatsProps> = ({ space, currentListeners }) => {
+const DashboardStats: React.FC<DashboardStatsProps> = ({ space }) => {
   const calculateDuration = () => {
-    if (!space?.started_at) return '0m';
-    const start = new Date(space.started_at);
-    const end = space?.ended_at ? new Date(space.ended_at) : new Date();
-    const durationInMinutes = Math.floor((end.getTime() - start.getTime()) / 60000);
-    
+    if (!space?.startedAt) return '0m';
+    const start = new Date(space.startedAt);
+    const end = space?.endedAt ? new Date(space.endedAt) : new Date();
+    const durationInMinutes = Math.floor(
+      (end.getTime() - start.getTime()) / 60000
+    );
+
     if (durationInMinutes < 60) {
       return `${durationInMinutes}m`;
     }
@@ -59,8 +65,9 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ space, currentListeners
   };
 
   const getListenerGrowthRate = () => {
-    if (!space?.total_live_listeners || !currentListeners) return '0%';
-    const growthRate = (currentListeners / space.total_live_listeners) * 100;
+    if (!space?.totalLiveListeners || !space.totalLiveListeners) return '0%';
+    const growthRate =
+      ((space.liveListenersCount || 0) / (space.totalLiveListeners || 0)) * 100;
     return `${growthRate.toFixed(1)}%`;
   };
 
@@ -69,15 +76,15 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ space, currentListeners
       <Grid item xs={12} sm={6} md={3}>
         <StatCard
           title="Current Listeners"
-          value={currentListeners}
+          value={space?.liveListenersCount || 0}
           icon={<PeopleAlt sx={{ color: '#1DA1F2' }} />}
           subtitle="Live now"
         />
       </Grid>
       <Grid item xs={12} sm={6} md={3}>
         <StatCard
-          title="Total Listeners"
-          value={space?.total_live_listeners || 0}
+          title="Cumulative Listeners"
+          value={space?.totalLiveListeners || 0}
           icon={<TrendingUp sx={{ color: '#1DA1F2' }} />}
           subtitle="Since start"
         />
@@ -87,7 +94,9 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ space, currentListeners
           title="Duration"
           value={calculateDuration()}
           icon={<Timer sx={{ color: '#1DA1F2' }} />}
-          subtitle={`Started ${space?.started_at ? format(new Date(space.started_at), 'h:mm a') : '-'}`}
+          subtitle={`Started ${
+            space?.startedAt ? format(new Date(space.startedAt), 'h:mm a') : '-'
+          }`}
         />
       </Grid>
       <Grid item xs={12} sm={6} md={3}>
@@ -102,4 +111,4 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ space, currentListeners
   );
 };
 
-export default DashboardStats; 
+export default DashboardStats;

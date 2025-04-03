@@ -150,8 +150,8 @@ const SpaceDetails: React.FC = () => {
           text: _metaSummary.join(' '),
           speakers: [...(space?.admins || []), ...(space?.speakers || [])].map(
             (speaker) => ({
-              name: speaker.display_name,
-              handle: speaker.twitter_screen_name,
+              name: speaker.displayName,
+              handle: speaker.twitterScreenName,
             })
           ),
           numbering_style: numberingStyle,
@@ -178,9 +178,9 @@ const SpaceDetails: React.FC = () => {
     }
     if (!!user?.spaceCredits) {
       await unlockFreeSpace();
-      if (space && space.transcription_status !== 'ENDED') {
+      if (space && space.transcriptionStatus !== 'ENDED') {
         const formData = new FormData();
-        formData.append('hls_url', space.hls_url);
+        formData.append('hls_url', space.hlsUrl);
         formData.append('space_id', spaceId);
         await axios.post(
           `${import.meta.env.VITE_JAM_PY_SERVER_URL}/transcribe`,
@@ -309,7 +309,7 @@ const SpaceDetails: React.FC = () => {
     if (
       activeSection === 'threadoor' &&
       spaceId &&
-      space?.transcription_status === 'ENDED' &&
+      space?.transcriptionStatus === 'ENDED' &&
       twitterThread.length === 0
     ) {
       const fetchTwitterThread = async () => {
@@ -409,7 +409,7 @@ const SpaceDetails: React.FC = () => {
           <Box display="flex" justifyContent="space-between">
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Logo />
-              {space?.type === 'live' && (
+              {space?.isLive && (
                 <Button
                   variant="contained"
                   color="primary"
@@ -459,7 +459,7 @@ const SpaceDetails: React.FC = () => {
             )}
             <Box sx={{ display: 'flex', gap: 1 }}>
               {/* CRM Button */}
-              {space && space.transcription_status === 'ENDED' && (
+              {space && space.transcriptionStatus === 'ENDED' && (
                 <Button
                   variant="outlined"
                   onClick={() => navigate(`/crm/${spaceId}`)}
@@ -480,7 +480,7 @@ const SpaceDetails: React.FC = () => {
               )}
               {isMobile ? (
                 <IconButton
-                  disabled={!space || space.transcription_status !== 'ENDED'}
+                  disabled={!space || space.transcriptionStatus !== 'ENDED'}
                   onClick={onDownloadRecording}
                 >
                   {isDownloading ? (
@@ -492,7 +492,7 @@ const SpaceDetails: React.FC = () => {
               ) : (
                 <LoadingButton
                   loading={isDownloading}
-                  disabled={!space || space.transcription_status !== 'ENDED'}
+                  disabled={!space || space.transcriptionStatus !== 'ENDED'}
                   startIcon={<DownloadIcon />}
                   onClick={onDownloadRecording}
                   sx={{
@@ -515,7 +515,7 @@ const SpaceDetails: React.FC = () => {
             {space ? (
               <Chip
                 icon={<HeadphonesIcon />}
-                label={`${space.total_live_listeners} listened live`}
+                label={`${space.totalLiveListeners} listened live`}
                 sx={{ background: 'var(--bg-secondary)' }}
               />
             ) : (
@@ -736,7 +736,7 @@ const SpaceDetails: React.FC = () => {
             {space ? (
               [...space.admins, ...space.speakers]?.map((admin, i) => (
                 <Badge
-                  key={admin.user_id}
+                  key={admin.userId}
                   badgeContent={i < space.admins.length ? 'Host' : ''}
                   color="primary"
                   variant="standard"
@@ -744,9 +744,9 @@ const SpaceDetails: React.FC = () => {
                   invisible={i >= space.admins.length}
                 >
                   <Box
-                    key={admin.user_id}
+                    key={admin.userId}
                     component="a"
-                    href={`https://twitter.com/${admin.twitter_screen_name}`}
+                    href={`https://twitter.com/${admin.twitterScreenName}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     sx={{
@@ -768,13 +768,13 @@ const SpaceDetails: React.FC = () => {
                       minWidth: { xs: '250px', sm: 'auto' }, // Set minimum width on mobile
                     }}
                   >
-                    <Avatar src={admin.avatar_url} alt={admin.display_name} />
+                    <Avatar src={admin.avatarUrl} alt={admin.displayName} />
                     <Box>
                       <Typography sx={{ fontWeight: 'bold' }}>
-                        {admin.display_name}
+                        {admin.displayName}
                       </Typography>
                       <Typography sx={{ color: '#60a5fa' }}>
-                        @{admin.twitter_screen_name}
+                        @{admin.twitterScreenName}
                       </Typography>
                     </Box>
                   </Box>
@@ -831,7 +831,7 @@ const SpaceDetails: React.FC = () => {
             handlePayment={handlePayment}
             spaceId={space.spaceId}
             isProcessingPayment={isProcessingPayment}
-            processEnded={space.transcription_status === 'ENDED'}
+            processEnded={space.transcriptionStatus === 'ENDED'}
           />
         )}
 
@@ -858,8 +858,8 @@ const SpaceDetails: React.FC = () => {
                 hasAccess={hasAccess}
                 isProcessingPayment={isProcessingPayment}
                 handlePayment={handlePayment}
-                processEnded={space.transcription_status === 'ENDED'}
-                refresh={space.transcription_status === 'SHORT_ENDED'}
+                processEnded={space.transcriptionStatus === 'ENDED'}
+                refresh={space.transcriptionStatus === 'SHORT_ENDED'}
               />
             )}
           </Paper>
@@ -872,7 +872,7 @@ const SpaceDetails: React.FC = () => {
             onGenerateTwitterThread={onGenerateTwitterThread}
             twitterThread={twitterThread || []}
             isThreadLoading={isThreadLoading}
-            processEnded={space.transcription_status === 'ENDED'}
+            processEnded={space.transcriptionStatus === 'ENDED'}
           />
         )}
 

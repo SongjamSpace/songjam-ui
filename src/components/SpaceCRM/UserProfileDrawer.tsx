@@ -9,7 +9,7 @@ import {
   Button,
   Drawer,
 } from '@mui/material';
-import { User } from '../../services/db/spaces.service';
+import { TwitterUser } from '../../services/db/spaces.service';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import PersonIcon from '@mui/icons-material/Person';
 import MessageIcon from '@mui/icons-material/Message';
@@ -22,8 +22,8 @@ import { fetchXUserProfile, XUserProfile } from '../../services/x.service';
 import axios from 'axios';
 
 type Props = {
-  userDetailDrawer: User | null;
-  setUserDetailDrawer: (userDetailDrawer: User | null) => void;
+  userDetailDrawer: TwitterUser | null;
+  setUserDetailDrawer: (userDetailDrawer: TwitterUser | null) => void;
   activeTab: 'speakers' | 'listeners';
 };
 
@@ -41,13 +41,13 @@ const UserProfileDrawer = ({
   useEffect(() => {
     if (
       userDetailDrawer &&
-      userDetailDrawer.twitter_screen_name !== profileInfo?.username
+      userDetailDrawer.twitterScreenName !== profileInfo?.username
     ) {
       const fetchProfileInfo = async () => {
         setIsLoading(true);
         try {
           const profile = await fetchXUserProfile(
-            userDetailDrawer.twitter_screen_name
+            userDetailDrawer.twitterScreenName
           );
           setProfileInfo(profile);
         } catch (error) {
@@ -94,22 +94,22 @@ const UserProfileDrawer = ({
 
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
             <Avatar
-              src={userDetailDrawer.avatar_url}
+              src={userDetailDrawer.avatarUrl}
               sx={{ width: 64, height: 64, mr: 2 }}
             />
             <Box>
               <Typography variant="h6">
-                {userDetailDrawer.display_name}
+                {userDetailDrawer.displayName}
               </Typography>
               <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                 <a
-                  href={`https://x.com/${userDetailDrawer.twitter_screen_name}`}
+                  href={`https://x.com/${userDetailDrawer.twitterScreenName}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="social-link"
                   style={{ alignItems: 'start', paddingLeft: 0 }}
                 >
-                  @{userDetailDrawer.twitter_screen_name}
+                  @{userDetailDrawer.twitterScreenName}
                 </a>
               </Typography>
               {/* {activeTab === 'listeners' && (

@@ -1,4 +1,4 @@
-import { User } from './db/spaces.service';
+import { TwitterUser } from './db/spaces.service';
 import {
   SpaceAnalysis,
   SpeakerInteraction,
@@ -36,7 +36,7 @@ interface AnalysisConfig {
 export const analyzeTranscript = async (
   spaceId: string,
   transcript: string,
-  speakers: User[],
+  speakers: TwitterUser[],
   config?: AnalysisConfig
 ): Promise<SpaceAnalysis> => {
   // If no config provided, use default settings (direct mentions only)
@@ -101,24 +101,52 @@ export const analyzeTranscript = async (
   const speakerInfo = speakers
     .map(
       (s) =>
-        `${s.display_name} (ID: ${s.user_id}, Twitter: @${s.twitter_screen_name})`
+        `${s.displayName} (ID: ${s.userId}, Twitter: @${s.twitterScreenName})`
     )
     .join('\n');
 
   const configInstructions = `
 Analysis Configuration:
 1. Interaction Types to detect:
-   ${analysisConfig.interactionTypes.directMentions ? '- Direct mentions and explicit responses' : ''}
-   ${analysisConfig.interactionTypes.sequentialResponses ? '- Sequential responses within ${analysisConfig.timeWindow} seconds' : ''}
-   ${analysisConfig.interactionTypes.topicBased ? '- Speakers discussing the same topics' : ''}
-   ${analysisConfig.interactionTypes.timeProximity ? '- Speakers talking in close time proximity' : ''}
+   ${
+     analysisConfig.interactionTypes.directMentions
+       ? '- Direct mentions and explicit responses'
+       : ''
+   }
+   ${
+     analysisConfig.interactionTypes.sequentialResponses
+       ? '- Sequential responses within ${analysisConfig.timeWindow} seconds'
+       : ''
+   }
+   ${
+     analysisConfig.interactionTypes.topicBased
+       ? '- Speakers discussing the same topics'
+       : ''
+   }
+   ${
+     analysisConfig.interactionTypes.timeProximity
+       ? '- Speakers talking in close time proximity'
+       : ''
+   }
 
 2. Interaction Strength Metrics to include:
-   ${analysisConfig.strengthMetrics.frequency ? '- Frequency of interaction' : ''}
+   ${
+     analysisConfig.strengthMetrics.frequency
+       ? '- Frequency of interaction'
+       : ''
+   }
    ${analysisConfig.strengthMetrics.duration ? '- Duration of interaction' : ''}
-   ${analysisConfig.strengthMetrics.topicOverlap ? '- Topic overlap (threshold: ${analysisConfig.topicOverlapThreshold})' : ''}
+   ${
+     analysisConfig.strengthMetrics.topicOverlap
+       ? '- Topic overlap (threshold: ${analysisConfig.topicOverlapThreshold})'
+       : ''
+   }
    ${analysisConfig.strengthMetrics.sentiment ? '- Sentiment analysis' : ''}
-   ${analysisConfig.strengthMetrics.responseTime ? '- Response time between speakers' : ''}
+   ${
+     analysisConfig.strengthMetrics.responseTime
+       ? '- Response time between speakers'
+       : ''
+   }
 `;
 
   const prompt = `
@@ -267,5 +295,7 @@ export const getSentimentColor = (
 export const formatTime = (seconds: number): string => {
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = Math.floor(seconds % 60);
-  return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  return `${minutes.toString().padStart(2, '0')}:${remainingSeconds
+    .toString()
+    .padStart(2, '0')}`;
 };

@@ -35,7 +35,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import {
   getSpaceListeners,
   Space,
-  User,
+  TwitterUser,
 } from '../../services/db/spaces.service';
 import {
   enrichSpeakerData,
@@ -90,7 +90,7 @@ type MockAttendee = {
 };
 
 // Define the EnrichedUser type
-type EnrichedUser = User & {
+type EnrichedUser = TwitterUser & {
   xProfile?: XUserProfile;
   xTweets?: XTweet[];
 };
@@ -113,7 +113,9 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedAttendees, setSelectedAttendees] = useState<string[]>([]);
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
-  const [userDetailDrawer, setUserDetailDrawer] = useState<User | null>(null);
+  const [userDetailDrawer, setUserDetailDrawer] = useState<TwitterUser | null>(
+    null
+  );
   const [activeTab, setActiveTab] = useState<'speakers' | 'listeners'>(
     'speakers'
   );
@@ -123,13 +125,13 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
   const [filterInterests, setFilterInterests] = useState<string[]>([]);
   const [filterFollowers, setFilterFollowers] = useState<string>('all');
   const [filterLocation, setFilterLocation] = useState<string>('all');
-  const [spaceListeners, setSpaceListeners] = useState<User[]>([]);
+  const [spaceListeners, setSpaceListeners] = useState<TwitterUser[]>([]);
 
   // Detail drawer tab state
   const [detailTab, setDetailTab] = useState<string>('profile');
 
   const [enrichedSpeakers, setEnrichedSpeakers] = useState<
-    (User & { xProfile?: XUserProfile; recentTweets?: XTweet[] })[]
+    (TwitterUser & { xProfile?: XUserProfile; recentTweets?: XTweet[] })[]
   >([]);
   const [isLoadingProfiles, setIsLoadingProfiles] = useState(false);
 
@@ -207,7 +209,7 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
     setSearchTerm(event.target.value);
   };
 
-  const handleUserClick = (user: User) => {
+  const handleUserClick = (user: TwitterUser) => {
     setUserDetailDrawer(user);
   };
 
@@ -231,15 +233,15 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
     space?.speakers
       .map((speaker) => ({
         ...speaker,
-        xProfile: enrichedSpeakers.find((es) => es.user_id === speaker.user_id)
+        xProfile: enrichedSpeakers.find((es) => es.userId === speaker.userId)
           ?.xProfile,
       }))
       .filter((speaker) => {
         if (!searchTerm) return true;
         const searchLower = searchTerm.toLowerCase();
         return (
-          speaker.display_name.toLowerCase().includes(searchLower) ||
-          speaker.twitter_screen_name.toLowerCase().includes(searchLower)
+          speaker.displayName.toLowerCase().includes(searchLower) ||
+          speaker.twitterScreenName.toLowerCase().includes(searchLower)
         );
       }) || [];
   const filteredListeners =
@@ -247,8 +249,8 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
       if (!searchTerm) return true;
       const searchLower = searchTerm.toLowerCase();
       return (
-        listener.display_name.toLowerCase().includes(searchLower) ||
-        listener.twitter_screen_name.toLowerCase().includes(searchLower)
+        listener.displayName.toLowerCase().includes(searchLower) ||
+        listener.twitterScreenName.toLowerCase().includes(searchLower)
       );
     }) || [];
 
@@ -448,13 +450,13 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
                   <List>
                     {filteredSpeakers.map((speaker) => (
                       <ListItem
-                        key={speaker.user_id}
+                        key={speaker.userId}
                         secondaryAction={
                           <IconButton
                             edge="end"
                             onClick={() => handleUserClick(speaker)}
                             color={
-                              selectedAttendees.includes(speaker.user_id)
+                              selectedAttendees.includes(speaker.userId)
                                 ? 'primary'
                                 : 'default'
                             }
@@ -466,7 +468,7 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
                         sx={{
                           mb: 1,
                           borderRadius: 1,
-                          bgcolor: selectedAttendees.includes(speaker.user_id)
+                          bgcolor: selectedAttendees.includes(speaker.userId)
                             ? 'rgba(96, 165, 250, 0.1)'
                             : 'transparent',
                           '&:hover': {
@@ -479,28 +481,28 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
                           <Badge
                             overlap="circular"
                             badgeContent={
-                              speaker.xProfile?.verified ? '✓' : undefined
+                              speaker.xProfile?.isVerified ? '✓' : undefined
                             }
                             color="primary"
                           >
                             <Avatar
                               src={
                                 speaker.xProfile?.profile_image_url ||
-                                speaker.avatar_url
+                                speaker.avatarUrl
                               }
-                              alt={speaker.display_name}
+                              alt={speaker.displayName}
                             />
                           </Badge>
                         </ListItemAvatar>
                         <ListItemText
-                          primary={speaker.display_name}
+                          primary={speaker.displayName}
                           secondary={
                             <Box>
                               <Typography
                                 variant="body2"
                                 color="text.secondary"
                               >
-                                @{speaker.twitter_screen_name}
+                                @{speaker.twitterScreenName}
                               </Typography>
                               {speaker.xProfile && (
                                 <>
@@ -508,28 +510,25 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
                                     variant="body2"
                                     color="text.secondary"
                                   >
-                                    {speaker.xProfile.description}
+                                    {speaker.xProfile.biography}
                                   </Typography>
                                   <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
                                     <Chip
                                       size="small"
                                       label={`${
-                                        speaker.xProfile.public_metrics
-                                          ?.followers_count || 0
+                                        speaker.xProfile.followersCount || 0
                                       } followers`}
                                     />
                                     <Chip
                                       size="small"
                                       label={`${
-                                        speaker.xProfile.public_metrics
-                                          ?.following_count || 0
+                                        speaker.xProfile.followingCount || 0
                                       } following`}
                                     />
                                     <Chip
                                       size="small"
                                       label={`${
-                                        speaker.xProfile.public_metrics
-                                          ?.tweet_count || 0
+                                        speaker.xProfile.tweetsCount || 0
                                       } tweets`}
                                     />
                                   </Box>
@@ -573,13 +572,13 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
                 <List>
                   {filteredListeners.map((listener) => (
                     <ListItem
-                      key={listener.user_id}
+                      key={listener.userId}
                       secondaryAction={
                         <IconButton
                           edge="end"
                           onClick={() => handleUserClick(listener)}
                         >
-                          {selectedAttendees.includes(listener.user_id) ? (
+                          {selectedAttendees.includes(listener.userId) ? (
                             <BookmarkIcon color="primary" />
                           ) : (
                             <BookmarkIcon />
@@ -590,7 +589,7 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
                       sx={{
                         mb: 1,
                         borderRadius: 1,
-                        bgcolor: selectedAttendees.includes(listener.user_id)
+                        bgcolor: selectedAttendees.includes(listener.userId)
                           ? 'rgba(96, 165, 250, 0.1)'
                           : 'transparent',
                         '&:hover': {
@@ -611,20 +610,20 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
                           //     : 'default'
                           // }
                         >
-                          <Avatar src={listener.avatar_url} />
+                          <Avatar src={listener.avatarUrl} />
                         </Badge>
                       </ListItemAvatar>
                       <ListItemText
                         primary={
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
                             <Typography variant="body1">
-                              {listener.display_name}
+                              {listener.displayName}
                             </Typography>
                             <Typography
                               variant="caption"
                               sx={{ ml: 1, color: 'gray' }}
                             >
-                              @{listener.twitter_screen_name}
+                              @{listener.twitterScreenName}
                             </Typography>
                           </Box>
                         }

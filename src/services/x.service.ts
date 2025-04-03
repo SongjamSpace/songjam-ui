@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Tweet } from '../types/twitter.types';
-import { User } from './db/spaces.service';
+import { TwitterUser } from './db/spaces.service';
 
 const PROXY_URL = 'http://localhost:3001/api';
 
@@ -26,6 +26,9 @@ export interface XUserProfile {
   isBlueVerified: boolean;
   canDm: boolean;
   joined: string;
+
+  // Add this field
+  profile_image_url: string;
 }
 
 export interface XTweet {
@@ -82,11 +85,13 @@ class APICache<T> {
 }
 
 // Initialize caches with appropriate TTLs based on rate limits
-const userCache = new APICache<User>(24); // 24 hours TTL for user data
+const userCache = new APICache<TwitterUser>(24); // 24 hours TTL for user data
 const tweetsCache = new APICache<Tweet[]>(24); // 24 hours TTL for tweets
 
 // API calls with caching
-export const getUserInfo = async (userId: string): Promise<User | null> => {
+export const getUserInfo = async (
+  userId: string
+): Promise<TwitterUser | null> => {
   try {
     // Check cache first
     const cachedUser = userCache.get(userId);
@@ -240,8 +245,10 @@ export const fetchXUserTweets = async (userId: string): Promise<XTweet[]> => {
 };
 
 export const enrichSpeakerData = async (
-  speaker: User
-): Promise<User & { xProfile?: XUserProfile; recentTweets?: XTweet[] }> => {
+  speaker: TwitterUser
+): Promise<
+  TwitterUser & { xProfile?: XUserProfile; recentTweets?: XTweet[] }
+> => {
   return speaker;
   // try {
   //   console.log('Enriching speaker data for:', speaker.twitter_screen_name);

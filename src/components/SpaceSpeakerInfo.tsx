@@ -7,7 +7,8 @@ import {
   Skeleton,
 } from '@mui/material';
 import { getUserInfo, getUserTweets } from '../services/x.service';
-import { User, Tweet } from '../types/twitter.types';
+import { TwitterUser } from '../services/db/spaces.service';
+import { XTweet } from '../services/x.service';
 
 interface SpaceSpeakerInfoProps {
   userId: string;
@@ -16,8 +17,8 @@ interface SpaceSpeakerInfoProps {
 export const SpaceSpeakerInfo: React.FC<SpaceSpeakerInfoProps> = ({
   userId,
 }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [tweets, setTweets] = useState<Tweet[]>([]);
+  const [user, setUser] = useState<TwitterUser | null>(null);
+  const [tweets, setTweets] = useState<XTweet[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,7 +37,7 @@ export const SpaceSpeakerInfo: React.FC<SpaceSpeakerInfoProps> = ({
         if (userInfo) {
           setUser(userInfo);
         }
-        setTweets(userTweets);
+        setTweets(userTweets as XTweet[]);
       } catch (err) {
         console.error('Error loading speaker info:', err);
         setError('Failed to load speaker information');
@@ -75,36 +76,37 @@ export const SpaceSpeakerInfo: React.FC<SpaceSpeakerInfoProps> = ({
     <Box sx={{ p: 2 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
         <Avatar
-          src={user.profile_image_url}
-          alt={user.name}
+          // src={user.xProfile?.profile_image_url}
+          src={user.avatarUrl}
+          alt={user.displayName}
           sx={{ width: 48, height: 48 }}
         />
         <Box>
           <Typography variant="h6" component="h3">
-            {user.name}
+            {user.displayName}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            @{user.username}
+            @{user.twitterScreenName}
           </Typography>
         </Box>
       </Box>
 
-      {user.description && (
+      {/* {user.xProfile?.biography && (
         <Typography variant="body1" sx={{ mt: 2 }}>
-          {user.description}
+          {user.xProfile.biography}
         </Typography>
       )}
 
-      {user.public_metrics && (
+      {user.xProfile && (
         <Box sx={{ mt: 2, display: 'flex', gap: 3 }}>
           <Typography variant="body2" color="text.secondary">
-            {user.public_metrics.followers_count.toLocaleString()} followers
+            {user.xProfile.followersCount.toLocaleString()} followers
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {user.public_metrics.tweet_count.toLocaleString()} tweets
+            {user.xProfile.tweetsCount.toLocaleString()} tweets
           </Typography>
         </Box>
-      )}
+      )} */}
 
       {tweets.length > 0 && (
         <Box sx={{ mt: 3 }}>

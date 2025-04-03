@@ -39,7 +39,7 @@ import { format } from 'date-fns';
 
 import AudiencePanel from './components/SpaceCRM/AudiencePanel';
 import ContentStudio from './components/SpaceCRM/ContentStudio';
-import SpaceAnalysis from './components/SpaceCRM/SpaceAnalysis';
+// import SpaceAnalysis from './components/SpaceCRM/SpaceAnalysis';
 import { getSpace, Space } from './services/db/spaces.service';
 import { useAuthContext } from './contexts/AuthContext';
 import Logo from './components/Logo';
@@ -384,7 +384,7 @@ ${JSON.stringify(analysisContext, null, 2)}
 
               <Chip
                 icon={<HeadphonesIcon />}
-                label={`${space.total_live_listeners} listeners`}
+                label={`${space.totalLiveListeners} listeners`}
                 size="small"
                 sx={{
                   background: 'rgba(255, 255, 255, 0.05)',
@@ -530,14 +530,14 @@ ${JSON.stringify(analysisContext, null, 2)}
               {space ? (
                 <Box sx={{ mb: 3 }}>
                   <Typography variant="body2">
-                    Attendees: {space.total_live_listeners}
+                    Attendees: {space.totalLiveListeners}
                   </Typography>
                   <Typography variant="body2">
                     Duration:{' '}
                     {Math.round(
-                      (space.ended_at
-                        ? new Date(space.ended_at).getTime() -
-                          new Date(space.started_at).getTime()
+                      (space.endedAt
+                        ? new Date(space.endedAt).getTime() -
+                          new Date(space.startedAt).getTime()
                         : 0) / 60000
                     )}{' '}
                     min
@@ -674,12 +674,12 @@ ${JSON.stringify(analysisContext, null, 2)}
                   </>
                 )}
 
-                {activeTab === 'analysis' && (
+                {/* {activeTab === 'analysis' && (
                   <SpaceAnalysis
                     space={space}
                     onContextUpdate={handleContextUpdate}
                   />
-                )}
+                )} */}
               </Box>
             </Paper>
           </Grid>

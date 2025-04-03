@@ -64,7 +64,6 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import {
   SpeakerInteraction,
   SpaceAnalysis as SpaceAnalysisType,
-  Topic,
 } from '../../types/analysis.types';
 import type { SpaceAnalysis } from '../../types/analysis.types';
 import {
@@ -74,21 +73,21 @@ import {
 } from '../../services/analysis.service';
 import {
   Space,
-  User,
+  TwitterUser,
   getFullTranscription,
 } from '../../services/db/spaces.service';
 
 interface InteractionNode extends Node {
   data: {
     label: string;
-    user: User;
+    user: TwitterUser;
   };
 }
 
 interface CustomNodeProps {
   data: {
     label: string;
-    user: User;
+    user: TwitterUser;
   };
 }
 
@@ -137,11 +136,11 @@ const CustomSpeakerNode: React.FC<CustomNodeProps> = ({ data }) => {
       />
 
       <Avatar
-        src={data.user.avatar_url}
-        alt={data.user.display_name}
+        src={data.user.avatarUrl}
+        alt={data.user.displayName}
         sx={{ width: 30, height: 30 }}
       />
-      <Typography variant="body2" noWrap title={data.user.display_name}>
+      <Typography variant="body2" noWrap title={data.user.displayName}>
         {data.label}
       </Typography>
     </Box>
@@ -152,11 +151,11 @@ const nodeTypes = {
   speakerNode: CustomSpeakerNode as any,
 };
 
-interface ForceEdge extends Edge {
-  source: string;
-  target: string;
-  data?: SpeakerInteraction;
-}
+// interface ForceEdge extends Edge {
+//   source: string;
+//   target: string;
+//   data?: SpeakerInteraction;
+// }
 
 interface ForceNode extends Node {
   id: string;
@@ -168,7 +167,7 @@ interface ForceNode extends Node {
   };
   data: {
     label: string;
-    user: User;
+    user: TwitterUser;
   };
 }
 
@@ -230,7 +229,7 @@ const SpaceAnalysis: React.FC<SpaceAnalysisProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [tabValue, setTabValue] = useState(0);
   const [nodes, setNodes] = useState<ForceNode[]>([]);
-  const [edges, setEdges] = useState<ForceEdge[]>([]);
+  const [edges, setEdges] = useState<any[]>([]);
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [reactFlowInstance, setReactFlowInstance] =
     useState<ReactFlowInstance | null>(null);
@@ -299,7 +298,7 @@ const SpaceAnalysis: React.FC<SpaceAnalysisProps> = ({
     const simulation = forceSimulation(simulationNodes)
       .force(
         'link',
-        forceLink<ForceNode, ForceEdge>(simulationEdges)
+        forceLink<ForceNode, any>(simulationEdges)
           .id((d) => d.id)
           .distance((d) => {
             // Shorter distances for edges with more interactions
@@ -316,7 +315,7 @@ const SpaceAnalysis: React.FC<SpaceAnalysisProps> = ({
         'charge',
         forceManyBody().strength((d) => {
           // Stronger repulsion for more connected nodes
-          const degree = nodeDegrees.get(d.id) || 1;
+          const degree = nodeDegrees.get((d as any).id) || 1;
           return -400 - degree * 50;
         })
       )
@@ -412,27 +411,27 @@ const SpaceAnalysis: React.FC<SpaceAnalysisProps> = ({
 
   const generateNetworkGraph = (
     interactions: SpeakerInteraction[],
-    speakers: User[]
+    speakers: TwitterUser[]
   ) => {
     // Create a map of speaker IDs
-    const speakerMap = new Map<string, User>();
+    const speakerMap = new Map<string, TwitterUser>();
     speakers.forEach((speaker) => {
-      speakerMap.set(speaker.user_id, speaker);
+      speakerMap.set(speaker.userId, speaker);
     });
 
     // Create nodes *without* initial positions for D3 layout
     const graphNodes: ForceNode[] = speakers.map((speaker) => ({
-      id: speaker.user_id,
+      id: speaker.userId,
       type: 'speakerNode',
       data: {
-        label: speaker.display_name,
+        label: speaker.displayName,
         user: speaker,
       },
       position: { x: 0, y: 0 }, // D3 will calculate positions
     }));
 
     // Create edges with enhanced metrics
-    const graphEdges: ForceEdge[] = interactions.map((interaction, index) => {
+    const graphEdges: any[] = interactions.map((interaction, index) => {
       // Calculate edge thickness based on available metrics
       let thickness = 1;
       let metrics = [];
@@ -580,18 +579,18 @@ const SpaceAnalysis: React.FC<SpaceAnalysisProps> = ({
         id: space.spaceId,
         title: space.title,
         speakers: space.speakers.map((s) => ({
-          id: s.user_id,
-          name: s.display_name,
-          handle: s.twitter_screen_name,
+          id: s.userId,
+          name: s.displayName,
+          handle: s.twitterScreenName,
         })),
       },
       analysis: {
         interactions: analysis.interactions.map((interaction) => ({
           from: space.speakers.find(
-            (s) => s.user_id === interaction.fromSpeakerId
-          )?.display_name,
-          to: space.speakers.find((s) => s.user_id === interaction.toSpeakerId)
-            ?.display_name,
+            (s) => s.userId === interaction.fromSpeakerId
+          )?.displayName,
+          to: space.speakers.find((s) => s.userId === interaction.toSpeakerId)
+            ?.displayName,
           count: interaction.count,
           sentiment: interaction.sentiment,
           topics: interaction.topics,
@@ -603,7 +602,7 @@ const SpaceAnalysis: React.FC<SpaceAnalysisProps> = ({
           name: topic.topic,
           speakers: topic.speakers
             .map(
-              (id) => space.speakers.find((s) => s.user_id === id)?.display_name
+              (id) => space.speakers.find((s) => s.userId === id)?.displayName
             )
             .filter(Boolean),
           duration: topic.endTime - topic.startTime,
@@ -627,8 +626,8 @@ const SpaceAnalysis: React.FC<SpaceAnalysisProps> = ({
       },
       suggestions,
       visualState: {
-        nodes,
-        edges,
+        nodes: nodes as Node[],
+        edges: edges as Edge[],
       },
     };
 
@@ -645,8 +644,8 @@ const SpaceAnalysis: React.FC<SpaceAnalysisProps> = ({
     );
     if (!interaction) return null;
 
-    const fromSpeaker = space.speakers.find((s) => s.user_id === fromId);
-    const toSpeaker = space.speakers.find((s) => s.user_id === toId);
+    const fromSpeaker = space.speakers.find((s) => s.userId === fromId);
+    const toSpeaker = space.speakers.find((s) => s.userId === toId);
 
     const sharedTopics = analysis.topics.filter(
       (topic) =>
@@ -655,8 +654,8 @@ const SpaceAnalysis: React.FC<SpaceAnalysisProps> = ({
 
     return {
       speakers: {
-        from: fromSpeaker?.display_name,
-        to: toSpeaker?.display_name,
+        from: fromSpeaker?.displayName,
+        to: toSpeaker?.displayName,
       },
       metrics: {
         interactionCount: interaction.count,
@@ -1030,7 +1029,7 @@ const SpaceAnalysis: React.FC<SpaceAnalysisProps> = ({
               <Box sx={{ height: 'calc(100% - 60px)' }}>
                 <ReactFlow
                   nodes={nodes}
-                  edges={edges}
+                  edges={edges as Edge[]}
                   nodeTypes={nodeTypes}
                   onInit={setReactFlowInstance}
                   onEdgeClick={handleEdgeClick}
@@ -1094,13 +1093,13 @@ const SpaceAnalysis: React.FC<SpaceAnalysisProps> = ({
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, my: 2 }}>
                   {currentTopic.speakers.map((speakerId) => {
                     const speaker = space.speakers.find(
-                      (s) => s.user_id === speakerId
+                      (s) => s.userId === speakerId
                     );
                     return speaker ? (
                       <Chip
                         key={speakerId}
-                        avatar={<Avatar src={speaker.avatar_url} />}
-                        label={speaker.display_name}
+                        avatar={<Avatar src={speaker.avatarUrl} />}
+                        label={speaker.displayName}
                         variant="outlined"
                       />
                     ) : null;
@@ -1124,14 +1123,14 @@ const SpaceAnalysis: React.FC<SpaceAnalysisProps> = ({
 
             {analysis.timeline.map((timeline) => {
               const speaker = space.speakers.find(
-                (s) => s.user_id === timeline.speakerId
+                (s) => s.userId === timeline.speakerId
               );
               return speaker ? (
                 <Box key={timeline.speakerId} sx={{ mb: 3 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <Avatar src={speaker.avatar_url} sx={{ mr: 1 }} />
+                    <Avatar src={speaker.avatarUrl} sx={{ mr: 1 }} />
                     <Typography variant="subtitle1">
-                      {speaker.display_name}
+                      {speaker.displayName}
                     </Typography>
                   </Box>
 
@@ -1140,7 +1139,9 @@ const SpaceAnalysis: React.FC<SpaceAnalysisProps> = ({
                       <ListItem
                         key={index}
                         sx={{
-                          borderLeft: `4px solid ${getSentimentColor(segment.sentiment)}`,
+                          borderLeft: `4px solid ${getSentimentColor(
+                            segment.sentiment
+                          )}`,
                           pl: 2,
                           mb: 1,
                           backgroundColor: 'background.paper',
@@ -1149,7 +1150,11 @@ const SpaceAnalysis: React.FC<SpaceAnalysisProps> = ({
                       >
                         <ListItemText
                           primary={segment.text}
-                          secondary={`${formatTime(segment.startTime)} - ${formatTime(segment.endTime)} • ${segment.topics.join(', ')}`}
+                          secondary={`${formatTime(
+                            segment.startTime
+                          )} - ${formatTime(
+                            segment.endTime
+                          )} • ${segment.topics.join(', ')}`}
                         />
                       </ListItem>
                     ))}
@@ -1178,10 +1183,10 @@ const SpaceAnalysis: React.FC<SpaceAnalysisProps> = ({
               </Typography>
               {(() => {
                 const fromSpeaker = space.speakers.find(
-                  (s) => s.user_id === selectedInteraction.fromSpeakerId
+                  (s) => s.userId === selectedInteraction.fromSpeakerId
                 );
                 const toSpeaker = space.speakers.find(
-                  (s) => s.user_id === selectedInteraction.toSpeakerId
+                  (s) => s.userId === selectedInteraction.toSpeakerId
                 );
                 return (
                   <Paper sx={{ p: 2, mb: 2 }}>
@@ -1195,14 +1200,14 @@ const SpaceAnalysis: React.FC<SpaceAnalysisProps> = ({
                         }}
                       >
                         <Avatar
-                          src={fromSpeaker?.avatar_url}
+                          src={fromSpeaker?.avatarUrl}
                           sx={{ width: 56, height: 56, mb: 1 }}
                         />
                         <Typography variant="subtitle1">
-                          {fromSpeaker?.display_name}
+                          {fromSpeaker?.displayName}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                          @{fromSpeaker?.twitter_screen_name}
+                          @{fromSpeaker?.twitterScreenName}
                         </Typography>
                       </Box>
                       <Box
@@ -1228,14 +1233,14 @@ const SpaceAnalysis: React.FC<SpaceAnalysisProps> = ({
                         }}
                       >
                         <Avatar
-                          src={toSpeaker?.avatar_url}
+                          src={toSpeaker?.avatarUrl}
                           sx={{ width: 56, height: 56, mb: 1 }}
                         />
                         <Typography variant="subtitle1">
-                          {toSpeaker?.display_name}
+                          {toSpeaker?.displayName}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                          @{toSpeaker?.twitter_screen_name}
+                          @{toSpeaker?.twitterScreenName}
                         </Typography>
                       </Box>
                     </Box>
@@ -1364,25 +1369,27 @@ const SpaceAnalysis: React.FC<SpaceAnalysisProps> = ({
                             (s) =>
                               analysis.timeline.find((t) =>
                                 t.segments.includes(segment)
-                              )?.speakerId === s.user_id
+                              )?.speakerId === s.userId
                           );
                           return (
                             <ListItem
                               key={index}
                               sx={{
-                                borderLeft: `4px solid ${getSentimentColor(segment.sentiment)}`,
+                                borderLeft: `4px solid ${getSentimentColor(
+                                  segment.sentiment
+                                )}`,
                                 mb: 1,
                                 backgroundColor: 'background.paper',
                                 borderRadius: '0 4px 4px 0',
                               }}
                             >
                               <ListItemAvatar>
-                                <Avatar src={speaker?.avatar_url} />
+                                <Avatar src={speaker?.avatarUrl} />
                               </ListItemAvatar>
                               <ListItemText
                                 primary={
                                   <Typography variant="subtitle2">
-                                    {speaker?.display_name}
+                                    {speaker?.displayName}
                                   </Typography>
                                 }
                                 secondary={

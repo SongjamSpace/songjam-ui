@@ -28,7 +28,7 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({ spaceId, space }) => {
   const [spaceLimit, setSpaceLimit] = useState(10);
   const [listeners, loading, error] = useCollectionData(
     query(
-      collection(db, 'spaces', spaceId, 'listeners'),
+      collection(db, 'spaces', spaceId, 'listenerLogs'),
       orderBy('joinedAt', 'desc'),
       limit(spaceLimit)
     )
@@ -66,7 +66,7 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({ spaceId, space }) => {
             <Typography variant="subtitle2" color="text.secondary">
               Total Listeners
             </Typography>
-            <Typography variant="h4">{space?.total_live_listeners}</Typography>
+            <Typography variant="h4">{space?.totalLiveListeners}</Typography>
           </Paper>
           <Paper
             sx={{
@@ -91,12 +91,12 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({ spaceId, space }) => {
               Started At
             </Typography>
             <Typography variant="h6">
-              {space?.started_at
-                ? format(new Date(space.started_at), 'PPp')
+              {space?.startedAt
+                ? format(new Date(space.startedAt), 'PPp')
                 : '-'}
             </Typography>
           </Paper>
-          {space?.ended_at && (
+          {space?.endedAt && (
             <Paper
               sx={{
                 p: 2,
@@ -108,8 +108,8 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({ spaceId, space }) => {
                 Ended At
               </Typography>
               <Typography variant="h6">
-                {space?.ended_at
-                  ? format(new Date(space.ended_at), 'PPp')
+                {space?.endedAt
+                  ? format(new Date(space.endedAt), 'PPp')
                   : 'Live'}
               </Typography>
             </Paper>
@@ -145,6 +145,11 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({ spaceId, space }) => {
             },
           }}
         >
+          {listeners?.length === 0 && (
+            <Typography variant="body2" sx={{ px: 2, pb: 2 }}>
+              No listeners available
+            </Typography>
+          )}
           {(listeners as SpaceListener[])?.map((listener, index) => (
             <React.Fragment key={`${listener.userId}-${index}`}>
               <ListItem

@@ -41,6 +41,7 @@ export type Space = {
     | 'STARTED'
     | 'PROCESSING'
     | 'FAILED'
+    | 'SHORT_ENDED'
     | 'ENDED';
   isLive?: boolean;
   isRecorded?: boolean;

@@ -203,7 +203,7 @@ export const getSpaceAudioDownloadUrl = async (spaceId: string) => {
 
 export const getSpaceListeners = async (spaceId: string) => {
   const colRef = query(
-    collection(db, 'spaces', spaceId, 'listeners'),
+    collection(db, 'spaces', spaceId, 'listenerLogs'),
     orderBy('joinedAt', 'asc')
   );
   const snapshot = await getDocs(colRef);

@@ -39,7 +39,6 @@ import { format } from 'date-fns';
 
 import AudiencePanel from './components/SpaceCRM/AudiencePanel';
 import ContentStudio from './components/SpaceCRM/ContentStudio';
-// import SpaceAnalysis from './components/SpaceCRM/SpaceAnalysis';
 import { getSpace, Space } from './services/db/spaces.service';
 import { useAuthContext } from './contexts/AuthContext';
 import Logo from './components/Logo';
@@ -47,6 +46,7 @@ import TwitterLogin from './components/TwitterLogin';
 import { AI_MODELS, generateContent } from './services/ai.service';
 import { getFullTranscription } from './services/db/spaces.service';
 import DashboardPanel from './components/SpaceCRM/DashboardPanel';
+import SpaceAnalysis from './components/SpaceCRM/SpaceAnalysis';
 
 type CRMTab =
   | 'dashboard'
@@ -674,12 +674,12 @@ ${JSON.stringify(analysisContext, null, 2)}
                   </>
                 )}
 
-                {/* {activeTab === 'analysis' && (
+                {activeTab === 'analysis' && (
                   <SpaceAnalysis
                     space={space}
                     onContextUpdate={handleContextUpdate}
                   />
-                )} */}
+                )}
               </Box>
             </Paper>
           </Grid>

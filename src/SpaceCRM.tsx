@@ -37,9 +37,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import MenuIcon from '@mui/icons-material/Menu';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import HeadphonesIcon from '@mui/icons-material/Headphones';
-import AssessmentIcon from '@mui/icons-material/Assessment';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import TimelineIcon from '@mui/icons-material/Timeline';
 import DescriptionIcon from '@mui/icons-material/Description';
 import { format } from 'date-fns';
 import { LoadingButton } from '@mui/lab';
@@ -47,7 +44,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 
 import AudiencePanel from './components/SpaceCRM/AudiencePanel';
 import ContentStudio from './components/SpaceCRM/ContentStudio';
-import { getSpace, Space } from './services/db/spaces.service';
+import { getSpace, Space, TranscriptionProgress } from './services/db/spaces.service';
 import { useAuthContext } from './contexts/AuthContext';
 import Logo from './components/Logo';
 import TwitterLogin from './components/TwitterLogin';
@@ -517,21 +514,70 @@ ${JSON.stringify(analysisContext, null, 2)}
                   /> */}
                   <Tab icon={<PeopleIcon />} label="Audience" value="audience" />
                   <Tab 
+                    disabled={(space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED}
                     icon={<MessageIcon />}
-                    label="Content" 
-                    value="content" 
+                    label={
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        Content
+                        {(space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED && (
+                          <Chip
+                            size="small"
+                            label={(space?.transcriptionProgress || 0) <= TranscriptionProgress.SUMMARIZING ? "Queued" : "Analyzing..."}
+                            sx={{
+                              height: 16,
+                              fontSize: '0.6rem',
+                              background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+                            }}
+                          />
+                        )}
+                      </Box>
+                    }
+                    value="content"
                   />
                   <Tab
+                    disabled={(space?.transcriptionProgress || 0) <= TranscriptionProgress.TRANSCRIBING}
                     icon={<ForumIcon />}
-                    label="Timeline"
+                    label={
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        Timeline
+                        {(space?.transcriptionProgress || 0) <= TranscriptionProgress.TRANSCRIBING && (
+                          <Chip
+                            size="small"
+                            label={(space?.transcriptionProgress || 0) <= TranscriptionProgress.DOWNLOADING_AUDIO ? "Queued" : "Analyzing..."}
+                            sx={{
+                              height: 16,
+                              fontSize: '0.6rem',
+                              background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+                            }}
+                          />
+                        )}
+                      </Box>
+                    }
                     value="timeline"
                   />
                   <Tab
+                    disabled={(space?.transcriptionProgress || 0) <= TranscriptionProgress.TRANSCRIBING}
                     icon={<DescriptionIcon />}
-                    label="Transcription"
+                    label={
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        Transcription
+                        {(space?.transcriptionProgress || 0) <= TranscriptionProgress.TRANSCRIBING && (
+                          <Chip
+                            size="small"
+                            label={(space?.transcriptionProgress || 0) <= TranscriptionProgress.DOWNLOADING_AUDIO ? "Queued" : "Analyzing..."}
+                            sx={{
+                              height: 16,
+                              fontSize: '0.6rem',
+                              background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+                            }}  
+                          />
+                        )}
+                      </Box>
+                    }
                     value="transcription"
                   />
                   <Tab
+                    disabled={(space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED}
                     icon={<InsightsIcon />}
                     label={
                       <Box
@@ -576,9 +622,9 @@ ${JSON.stringify(analysisContext, null, 2)}
                       )}{' '}
                       min
                     </Typography>
-                    <Typography variant="body2">
+                    {/* <Typography variant="body2">
                       Selected: {selectedAttendees.length}
-                    </Typography>
+                    </Typography> */}
                   </Box>
                 ) : (
                   <CircularProgress size={20} sx={{ my: 2, display: 'block' }} />
@@ -747,7 +793,7 @@ ${JSON.stringify(analysisContext, null, 2)}
               item
               xs={12}
               md={3}
-              sx={{ display: { xs: 'none', md: 'block' } }}
+              sx={{ display: { xs: 'none', md: 'block'} }}
             >
               <Paper
                 sx={{
@@ -1014,7 +1060,7 @@ ${JSON.stringify(analysisContext, null, 2)}
                     placeholder="Ask the AI assistant..."
                     value={aiPrompt}
                     onChange={(e) => setAiPrompt(e.target.value)}
-                    disabled={isAiThinking}
+                    disabled={isAiThinking || (space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED}
                     sx={{
                       mr: 1,
                       '& .MuiOutlinedInput-root': {
@@ -1055,6 +1101,7 @@ ${JSON.stringify(analysisContext, null, 2)}
                   </Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                     <Chip
+                      disabled={(space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED}
                       label="Summarize Space"
                       size="small"
                       onClick={() => {
@@ -1076,6 +1123,7 @@ ${JSON.stringify(analysisContext, null, 2)}
                       }}
                     />
                     <Chip
+                      disabled={(space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED}
                       label="Create Thread"
                       size="small"
                       onClick={() => {
@@ -1097,6 +1145,7 @@ ${JSON.stringify(analysisContext, null, 2)}
                       }}
                     />
                     <Chip
+                      disabled={(space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED}
                       label="Engagement Ideas"
                       size="small"
                       onClick={() => {

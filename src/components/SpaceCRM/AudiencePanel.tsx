@@ -281,7 +281,7 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
       >
         <Box sx={{ mb: 2 }}>
           <Typography variant="h6">Audience Management</Typography>
-          <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+          {/* <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
             <IconButton disabled>
               <FilterListIcon />
             </IconButton>
@@ -298,7 +298,7 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
                 <MenuItem value="low">Low</MenuItem>
               </Select>
             </FormControl>
-          </Box>
+          </Box> */}
         </Box>
 
         <Tabs
@@ -345,7 +345,7 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
               onChange={handleSearchChange}
             />
 
-            <Button
+            {/* <Button
               variant="outlined"
               size="small"
               startIcon={<FilterListIcon />}
@@ -354,7 +354,7 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
               disabled
             >
               Filter
-            </Button>
+            </Button> */}
           </Box>
 
           {/* Active filters display */}

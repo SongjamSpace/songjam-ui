@@ -60,7 +60,7 @@ const SpaceDetails: React.FC = () => {
   >('timeline');
   // const [searchTerm, setSearchTerm] = useState(""); // Added search term state
   // const [filteredTranscript, setFilteredTranscript] = useState<Segment[]>([]); // Added filtered transcript state
-  const [hasAccess, setHasAccess] = useState(false);
+  const [hasAccess, setHasAccess] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
   const [metaSummaryList, setMetaSummaryList] = useState<string[]>([]);
   const [segmentsAndText, setSegmentsAndText] = useState<{

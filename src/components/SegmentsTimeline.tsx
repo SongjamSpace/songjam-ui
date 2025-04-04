@@ -58,12 +58,7 @@ function SegmentsTimeline({
   const fetchSegments = async (isInitial = false) => {
     try {
       setLoading(true);
-      const collectionRef = collection(
-        db,
-        'spaces',
-        spaceId,
-        hasAccess && processEnded ? 'segments' : 'short_segments'
-      );
+      const collectionRef = collection(db, 'spaces', spaceId, 'segments');
 
       let q = query(
         collectionRef,

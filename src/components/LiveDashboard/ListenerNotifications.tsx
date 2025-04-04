@@ -70,7 +70,7 @@ const ListenerNotifications: React.FC<ListenerNotificationsProps> = ({
       }}
     >
       <Typography variant="h6" sx={{ mb: 2 }}>
-        Recent Activity
+        Recently Joined
       </Typography>
 
       <Box

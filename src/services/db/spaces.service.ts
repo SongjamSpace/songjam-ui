@@ -68,7 +68,18 @@ export type Space = {
   liveListenersCount?: number;
 
   docCreatedAt?: number;
+  transcriptionProgress?: TranscriptionProgress;
 };
+
+export enum TranscriptionProgress {
+  NOT_STARTED = 0,
+  DOWNLOADING_AUDIO = 1,
+  TRANSCRIBING_STARTED = 2,
+  TRANSCRIBING = 3,
+  SUMMARIZING = 4,
+  AI_SUMMARY = 5,
+  ENDED = 6,
+}
 
 // Add API status tracking
 export const XApiStatus = {

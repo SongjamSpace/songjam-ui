@@ -105,6 +105,12 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
       orderBy('joinedAt', 'desc') // Keep ordering if needed, or remove if natural order is fine
     )
   );
+
+  useEffect(() => {
+    if (liveListeners?.length && previousListeners.length === 0) {
+      setPreviousListeners(liveListeners as SpaceListener[]);
+    }
+  }, [liveListeners]);
   // const allListeners = [...(liveListeners || []), ...(leftListeners || [])];
 
   // // Debug logging
@@ -127,7 +133,7 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
         background: theme.palette.background.default,
       }}
     >
-      <Toaster position="top-right" />
+      <Toaster position="bottom-right" />
 
       <Box
         sx={{
@@ -342,6 +348,9 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
                   ? previousListeners
                   : (liveListeners as SpaceListener[])
               }
+              updatePreviousListeners={() => {
+                setPreviousListeners(liveListeners as SpaceListener[]);
+              }}
             />
           )}
         </Box>

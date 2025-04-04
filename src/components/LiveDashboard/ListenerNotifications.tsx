@@ -8,11 +8,13 @@ import { format } from 'date-fns';
 interface ListenerNotificationsProps {
   listeners: SpaceListener[];
   previousListeners: SpaceListener[];
+  updatePreviousListeners: () => void;
 }
 
 const ListenerNotifications: React.FC<ListenerNotificationsProps> = ({
   listeners,
   previousListeners,
+  updatePreviousListeners,
 }) => {
   useEffect(() => {
     // Check for new listeners
@@ -20,37 +22,39 @@ const ListenerNotifications: React.FC<ListenerNotificationsProps> = ({
       (listener) =>
         !previousListeners.find((pl) => pl.userId === listener.userId)
     );
-
-    // Show notifications for new listeners
-    newListeners.forEach((listener) => {
-      toast.custom(
-        <Paper
-          sx={{
-            p: 2,
-            background: 'rgba(255, 255, 255, 0.1)',
-            backdropFilter: 'blur(10px)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 2,
-            maxWidth: '300px',
-          }}
-        >
-          <Avatar src={listener.avatarUrl} />
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="subtitle2">
-              {listener.displayName} joined
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {format(new Date(), 'h:mm a')}
-            </Typography>
-          </Box>
-        </Paper>,
-        {
-          duration: 4000,
-          position: 'top-right',
-        }
-      );
-    });
+    if (newListeners.length > 0) {
+      // Show notifications for new listeners
+      newListeners.forEach((listener) => {
+        toast.custom(
+          <Paper
+            sx={{
+              p: 2,
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(10px)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              maxWidth: '300px',
+            }}
+          >
+            <Avatar src={listener.avatarUrl} />
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2">
+                {listener.displayName} joined
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {format(new Date(), 'h:mm a')}
+              </Typography>
+            </Box>
+          </Paper>,
+          {
+            duration: 4000,
+            position: 'bottom-right',
+          }
+        );
+      });
+      updatePreviousListeners();
+    }
   }, [listeners, previousListeners]);
 
   return (

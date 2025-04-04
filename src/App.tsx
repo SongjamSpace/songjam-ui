@@ -7,36 +7,38 @@ import {
   TextField,
   TextareaAutosize,
   Dialog,
+  DialogTitle,
   DialogContent,
+  DialogActions,
   IconButton,
   Box,
   Typography,
-  ThemeProvider,
-  CssBaseline,
+  List,
+  ListItemButton,
+  ListItemText,
+  CircularProgress,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { LoadingButton } from '@mui/lab';
-import { getSpace } from './services/db/spaces.service';
 import { submitToAirtable } from './services/airtable.service';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
-import { collection, query, where } from 'firebase/firestore';
+import { collection, query, where, orderBy } from 'firebase/firestore';
 import { db } from './services/firebase.service';
-import { AuthProvider } from './contexts/AuthContext';
-import { BrowserRouter } from 'react-router-dom';
 import { transcribeSpace } from './services/transcription.service';
-import theme from './theme';
 
 export default function App() {
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false);
   const [spaceUrl, setSpaceUrl] = useState('');
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [spaces, loading, error] = useCollectionData(
     query(
       collection(db, 'spaces'),
-      where('transcription_status', '==', 'ENDED')
+      where('transcription_status', '==', 'ENDED'),
+      orderBy('createdAt', 'desc')
     )
   );
 
@@ -103,20 +105,11 @@ export default function App() {
             </Box>
           </div>
         </div>
-        {/* {spaces?.length && (
-                <TrendingSpaces
-                  spaces={spaces.map((space) => ({
-                    spaceId: space.spaceId,
-                    title: space.title,
-                  }))}
-                  loading={loading}
-                />
-              )} */}
         <div className="cta-buttons">
           <Button
             variant="contained"
             className="primary"
-            onClick={() => setShowConfirmation(true)}
+            onClick={() => setIsPreviewDialogOpen(true)}
           >
             Try Preview
           </Button>
@@ -246,6 +239,116 @@ export default function App() {
                 </Typography>
               </Box>
             </DialogContent>
+          </Dialog>
+
+          {/* New Preview Spaces Dialog - Enhanced Styling v2 */}
+          <Dialog
+            open={isPreviewDialogOpen}
+            onClose={() => setIsPreviewDialogOpen(false)}
+            maxWidth="md"
+            fullWidth
+            PaperProps={{ sx: { bgcolor: 'rgba(15, 23, 42, 0.95)' } }} // Apply background to Paper
+          >
+            {/* No DialogTitle needed, handled in content */}
+            <DialogContent sx={{ p: 0, border: 'none' }}>
+              <IconButton
+                aria-label="close"
+                onClick={() => setIsPreviewDialogOpen(false)}
+                sx={{
+                  position: 'absolute',
+                  right: 8,
+                  top: 8,
+                  color: 'var(--text-secondary)',
+                  zIndex: 1, // Ensure it's above content
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+              <Box sx={{ textAlign: 'center', p: 3 }}>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    mb: 2,
+                    background:
+                      'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
+                >
+                  🔭 Preview Analyzed Spaces 🔭
+                </Typography>
+                <Typography sx={{ mb: 3, color: 'var(--text-secondary)' }}>
+                 Click on any space below to see an example of the analysis output.
+                 Paste your own space URL on the homepage to try it!
+               </Typography>
+
+               {/* Styled Box for List Content */}
+               <Box sx={{
+                   mb: 3,
+                   p: 2,
+                   bgcolor: 'rgba(96, 165, 250, 0.1)', // Match highlight box bg
+                   borderRadius: 2,
+                   textAlign: 'left', // Align content left within this box
+                }}>
+                  <Typography
+                      variant="subtitle1"
+                      sx={{ mb: 2, color: '#60a5fa' }} // Match highlight title
+                   >
+                      🚀 Available Previews:
+                   </Typography>
+
+                  {/* Conditional Rendering Inside Styled Box */}
+                  {loading && (
+                     <Box sx={{ display: 'flex', justifyContent: 'center', my: 3 }}>
+                        <CircularProgress color="inherit" /> {/* Inherit color */} 
+                     </Box>
+                  )}
+                  {error && (
+                    <Typography color="error" sx={{ my: 3 }}>
+                      Error loading spaces: {error.message}
+                    </Typography>
+                  )}
+                  {!loading && !error && spaces && spaces.length > 0 && (
+                    <List sx={{ maxHeight: 300, overflow: 'auto', p: 0 }}>
+                      {spaces.map((space: any) => (
+                         <ListItemButton
+                            key={space.spaceId}
+                            onClick={() => {
+                               setIsPreviewDialogOpen(false);
+                               navigate(`/crm/${space.spaceId}`);
+                            }}
+                            sx={{
+                               mb: 1,
+                               borderRadius: 1,
+                               bgcolor: 'rgba(255, 255, 255, 0.05)',
+                               '&:hover': {
+                                  bgcolor: 'rgba(255, 255, 255, 0.1)',
+                               },
+                            }}
+                         >
+                            <ListItemText
+                               primary={space.title || `Space ${space.spaceId}`}
+                               secondary={`Analyzed on: ${space.createdAt?.toDate ? space.createdAt.toDate().toLocaleDateString() : 'N/A'}`}
+                               primaryTypographyProps={{ color: 'var(--text-primary)' }}
+                               secondaryTypographyProps={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}
+                            />
+                         </ListItemButton>
+                      ))}
+                   </List>
+                  )}
+                  {!loading && !error && (!spaces || spaces.length === 0) && (
+                     <Typography sx={{ my: 3, textAlign: 'center', color: 'var(--text-secondary)' }}>
+                       No completed spaces available for preview yet.
+                     </Typography>
+                   )}
+               </Box> {/* End Styled Box for List Content */}
+
+              <Typography sx={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textAlign: 'center' }}>
+                This is just a preview. Analyze your own space for full insights!
+              </Typography>
+             </Box> {/* End Inner Padding Box */} 
+            </DialogContent>
+             {/* No DialogActions needed */}
           </Dialog>
         </div>
         <div className="trust-badges">

@@ -97,7 +97,7 @@ const SpaceCRM: React.FC = () => {
   const navigate = useNavigate();
   const { spaceId } = useParams<{ spaceId: string }>();
   const [space, setSpace] = useState<Space | null>(null);
-  const [activeTab, setActiveTab] = useState<CRMTab>('dashboard');
+  const [activeTab, setActiveTab] = useState<CRMTab>('audience');
   const [selectedModel, setSelectedModel] = useState('grok');
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiResponse, setAiResponse] = useState('');
@@ -480,11 +480,11 @@ ${JSON.stringify(analysisContext, null, 2)}
                   },
                 }}
               >
-                <Tab
+                {/* <Tab
                   icon={<DashboardIcon />}
                   label="Dashboard"
                   value="dashboard"
-                />
+                /> */}
                 <Tab icon={<PeopleIcon />} label="Audience" value="audience" />
                 <Tab icon={<ForumIcon />} label="Content" value="content" />
                 <Tab
@@ -606,11 +606,11 @@ ${JSON.stringify(analysisContext, null, 2)}
                   },
                 }}
               >
-                <Tab
+                {/* <Tab
                   icon={<DashboardIcon />}
                   label="Dashboard"
                   value="dashboard"
-                />
+                /> */}
                 <Tab icon={<PeopleIcon />} label="Audience" value="audience" />
                 <Tab icon={<ForumIcon />} value="content" />
                 <Tab icon={<MessageIcon />} value="engagement" />
@@ -1136,7 +1136,7 @@ ${JSON.stringify(analysisContext, null, 2)}
               },
             }}
           >
-            <Tab icon={<DashboardIcon />} label="Dashboard" value="dashboard" />
+            {/* <Tab icon={<DashboardIcon />} label="Dashboard" value="dashboard" /> */}
             <Tab icon={<PeopleIcon />} label="Audience" value="audience" />
             <Tab icon={<ForumIcon />} label="Content" value="content" />
             <Tab icon={<MessageIcon />} label="Engagement" value="engagement" />

@@ -420,6 +420,16 @@ ${JSON.stringify(analysisContext, null, 2)}
                     },
                   }}
                 />
+                {space.transcriptionProgress !== TranscriptionProgress.ENDED && 
+                <Chip
+                  icon={<CircularProgress size={14} />}
+                  label={space.userHelperMessage}
+                  variant="filled"
+                  size="small"
+                  sx={{
+                    ml: 2,
+                  }}
+                />}
               </>
             ) : (
               <CircularProgress size={24} sx={{ mr: 2 }} />

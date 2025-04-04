@@ -35,7 +35,11 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import HeadphonesIcon from '@mui/icons-material/Headphones';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import TimelineIcon from '@mui/icons-material/Timeline';
+import DescriptionIcon from '@mui/icons-material/Description';
 import { format } from 'date-fns';
+import { LoadingButton } from '@mui/lab';
+import DownloadIcon from '@mui/icons-material/Download';
 
 import AudiencePanel from './components/SpaceCRM/AudiencePanel';
 import ContentStudio from './components/SpaceCRM/ContentStudio';
@@ -45,15 +49,17 @@ import Logo from './components/Logo';
 import TwitterLogin from './components/TwitterLogin';
 import { AI_MODELS, generateContent } from './services/ai.service';
 import { getFullTranscription } from './services/db/spaces.service';
-// import DashboardPanel from './components/SpaceCRM/DashboardPanel';
 import SpaceAnalysis from './components/SpaceCRM/SpaceAnalysis';
+import SegmentsTimeline from './components/SegmentsTimeline';
+import AlgoliaSearchTranscription from './components/AlgoliaSearchTranscription';
+import { getSpaceAudioDownloadUrl } from './services/db/spaces.service';
 
 type CRMTab =
   | 'dashboard'
   | 'audience'
   | 'content'
-  | 'engagement'
-  | 'analytics'
+  | 'timeline'
+  | 'transcription'
   | 'analysis';
 
 interface ChatMessage {
@@ -110,6 +116,7 @@ const SpaceCRM: React.FC = () => {
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [analysisContext, setAnalysisContext] =
     useState<VisualizationContext | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   // Fetch space data on mount
   useEffect(() => {
@@ -241,6 +248,28 @@ ${JSON.stringify(analysisContext, null, 2)}
       setAiError(error.message || 'Failed to generate response');
     } finally {
       setIsAiThinking(false);
+    }
+  };
+
+  const onDownloadRecording = async () => {
+    if (!spaceId) return;
+    setIsDownloading(true);
+    try {
+      const audioUrl = await getSpaceAudioDownloadUrl(spaceId);
+      const response = await fetch(audioUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${space?.title || spaceId}.mp3`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error("Error downloading recording:", error);
+    } finally {
+       setIsDownloading(false);
     }
   };
 
@@ -486,19 +515,23 @@ ${JSON.stringify(analysisContext, null, 2)}
                   value="dashboard"
                 /> */}
                 <Tab icon={<PeopleIcon />} label="Audience" value="audience" />
-                <Tab icon={<ForumIcon />} label="Content" value="content" />
-                <Tab
+                <Tab 
                   icon={<MessageIcon />}
-                  label="Engagement"
-                  value="engagement"
+                  label="Content" 
+                  value="content" 
+                />
+                <Tab
+                  icon={<ForumIcon />}
+                  label="Timeline"
+                  value="timeline"
+                />
+                <Tab
+                  icon={<DescriptionIcon />}
+                  label="Transcription"
+                  value="transcription"
                 />
                 <Tab
                   icon={<InsightsIcon />}
-                  label="Analytics"
-                  value="analytics"
-                />
-                <Tab
-                  icon={<AssessmentIcon />}
                   label={
                     <Box
                       component="span"
@@ -611,11 +644,11 @@ ${JSON.stringify(analysisContext, null, 2)}
                   label="Dashboard"
                   value="dashboard"
                 /> */}
-                <Tab icon={<PeopleIcon />} label="Audience" value="audience" />
-                <Tab icon={<ForumIcon />} value="content" />
-                <Tab icon={<MessageIcon />} value="engagement" />
-                <Tab icon={<InsightsIcon />} value="analytics" />
-                <Tab icon={<AssessmentIcon />} value="analysis" />
+                <Tab icon={<PeopleIcon />} value="audience" />
+                <Tab icon={<MessageIcon />} value="content" />
+                <Tab icon={<ForumIcon />} value="timeline" />
+                <Tab icon={<DescriptionIcon />} value="transcription" />
+                <Tab icon={<InsightsIcon />} value="analysis" />
               </Tabs>
 
               {/* Content based on active tab */}
@@ -652,26 +685,50 @@ ${JSON.stringify(analysisContext, null, 2)}
 
                 {activeTab === 'content' && <ContentStudio />}
 
-                {activeTab === 'engagement' && (
-                  <>
+                {activeTab === 'timeline' && spaceId && (
+                  <Box>
                     <Typography variant="h6" sx={{ mb: 2 }}>
-                      Engagement Hub
+                      Transcript Timeline
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Manage interactions with space attendees
-                    </Typography>
-                  </>
+                    <SegmentsTimeline
+                       spaceId={spaceId}
+                       hasAccess={true}
+                       isProcessingPayment={false}
+                       handlePayment={() => {}}
+                       processEnded={space?.transcriptionStatus === 'ENDED'}
+                       refresh={space?.transcriptionStatus === 'SHORT_ENDED'}
+                    />
+                  </Box>
                 )}
 
-                {activeTab === 'analytics' && (
-                  <>
-                    <Typography variant="h6" sx={{ mb: 2 }}>
-                      Analytics Dashboard
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Track performance metrics for your space and content
-                    </Typography>
-                  </>
+                {activeTab === 'transcription' && spaceId && (
+                  <Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                      <Typography variant="h6">
+                        Full Transcription & Search
+                      </Typography>
+                      <LoadingButton
+                        loading={isDownloading}
+                        disabled={!space || space.transcriptionStatus !== 'ENDED'}
+                        startIcon={<DownloadIcon />}
+                        onClick={onDownloadRecording}
+                        sx={{
+                          color: '#60a5fa',
+                          background: 'rgba(96, 165, 250, 0.1)',
+                          '&:hover': {
+                            background: 'rgba(96, 165, 250, 0.2)',
+                          },
+                          textTransform: 'none',
+                        }}
+                      >
+                        {isDownloading ? 'Downloading...' : 'Download Recording'}
+                      </LoadingButton>
+                    </Box>
+                    <AlgoliaSearchTranscription 
+                      spaceId={spaceId} 
+                      title={space?.title || 'Space Transcription'} 
+                    />
+                  </Box>
                 )}
 
                 {activeTab === 'analysis' && (
@@ -1138,10 +1195,10 @@ ${JSON.stringify(analysisContext, null, 2)}
           >
             {/* <Tab icon={<DashboardIcon />} label="Dashboard" value="dashboard" /> */}
             <Tab icon={<PeopleIcon />} label="Audience" value="audience" />
-            <Tab icon={<ForumIcon />} label="Content" value="content" />
-            <Tab icon={<MessageIcon />} label="Engagement" value="engagement" />
-            <Tab icon={<InsightsIcon />} label="Analytics" value="analytics" />
-            <Tab icon={<AssessmentIcon />} value="analysis" />
+            <Tab icon={<MessageIcon />} label="Content" value="content" />
+            <Tab icon={<ForumIcon />} label="Timeline" value="timeline" />
+            <Tab icon={<DescriptionIcon />} label="Transcription" value="transcription" />
+            <Tab icon={<InsightsIcon />} label="Analysis" value="analysis" />
           </Tabs>
 
           <Divider sx={{ my: 2 }} />

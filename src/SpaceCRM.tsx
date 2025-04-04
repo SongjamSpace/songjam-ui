@@ -22,6 +22,10 @@ import {
   TextField,
   CircularProgress,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
 } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import InsightsIcon from '@mui/icons-material/Insights';
@@ -117,6 +121,7 @@ const SpaceCRM: React.FC = () => {
   const [analysisContext, setAnalysisContext] =
     useState<VisualizationContext | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [showAuthDialog, setShowAuthDialog] = useState(!user);
 
   // Fetch space data on mount
   useEffect(() => {
@@ -166,6 +171,11 @@ const SpaceCRM: React.FC = () => {
       }
     }
   }, [chatMessages]); // This will trigger on every new chunk of the AI response
+
+  // Update useEffect to handle dialog visibility when user auth state changes
+  useEffect(() => {
+    setShowAuthDialog(!user);
+  }, [user]);
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: CRMTab) => {
     setActiveTab(newValue);
@@ -357,649 +367,117 @@ ${JSON.stringify(analysisContext, null, 2)}
           </Box>
         </Box>
 
-        {!user ? (
           <TwitterLogin />
-        ) : (
-          <Chip
-            label={user.displayName}
-            avatar={<Avatar src={user.photoURL || ''} />}
-            sx={{
-              background: 'rgba(255, 255, 255, 0.05)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              '&:hover': {
-                background: 'rgba(255, 255, 255, 0.1)',
-              },
-            }}
-          />
-        )}
       </Box>
 
-      {/* Back Button and Space Info Bar */}
+      {/* Content wrapper with blur effect for non-authenticated users */}
       <Box
-        sx={{
-          p: 2,
-          background: 'rgba(255, 255, 255, 0.02)',
-          backdropFilter: 'blur(5px)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-          mb: 3,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          position: 'sticky',
-          top: 64,
-          zIndex: 99,
-        }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <IconButton
-            onClick={() => navigate('/')}
-            sx={{
-              mr: 2,
-              background: 'rgba(255, 255, 255, 0.05)',
-              '&:hover': {
-                background: 'rgba(255, 255, 255, 0.1)',
-              },
-            }}
-          >
-            <ArrowBackIcon />
-          </IconButton>
-
-          {space ? (
-            <>
-              <Typography variant="h6" sx={{ mr: 2 }}>
-                {space.title}
-              </Typography>
-
-              <Chip
-                icon={<HeadphonesIcon />}
-                label={`${space.totalLiveListeners} listeners`}
-                size="small"
-                sx={{
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  display: { xs: 'none', sm: 'flex' },
-                  '&:hover': {
-                    background: 'rgba(255, 255, 255, 0.1)',
-                  },
-                }}
-              />
-            </>
-          ) : (
-            <CircularProgress size={24} sx={{ mr: 2 }} />
-          )}
-        </Box>
-
-        <Typography
-          variant="caption"
+        {/* Back Button and Space Info Bar */}
+        <Box
           sx={{
-            color: 'text.secondary',
-            display: { xs: 'none', md: 'block' },
-            background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            fontWeight: 'bold',
+            p: 2,
+            background: 'rgba(255, 255, 255, 0.02)',
+            backdropFilter: 'blur(5px)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+            mb: 3,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            position: 'sticky',
+            top: 64,
+            zIndex: 99,
           }}
         >
-          Agentic CRM
-        </Typography>
-      </Box>
-
-      {/* Main Content */}
-      <Box
-        sx={{
-          px: 2,
-          maxWidth: '1600px',
-          mx: 'auto',
-          display: 'flex',
-          flexDirection: 'column',
-          flexGrow: 1,
-        }}
-      >
-        <Grid
-          container
-          spacing={2}
-          sx={{
-            flex: 1,
-            minHeight: 0,
-          }}
-        >
-          {/* LEFT PANEL - Navigation (hidden on mobile) */}
-          <Grid item md={2} sx={{ display: { xs: 'none', md: 'block' } }}>
-            <Paper
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <IconButton
+              onClick={() => navigate('/')}
               sx={{
-                p: 2,
-                height: '100%',
-                background: 'rgba(255, 255, 255, 0.03)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.05)',
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden',
-                transition: 'all 0.3s ease',
+                mr: 2,
+                background: 'rgba(255, 255, 255, 0.05)',
                 '&:hover': {
-                  background: 'rgba(255, 255, 255, 0.04)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  background: 'rgba(255, 255, 255, 0.1)',
                 },
               }}
             >
-              <Tabs
-                orientation="vertical"
-                value={activeTab}
-                onChange={handleTabChange}
-                sx={{
-                  borderRight: 1,
-                  borderColor: 'divider',
-                  mb: 3,
-                  '& .MuiTab-root': {
-                    alignItems: 'flex-start',
-                    textAlign: 'left',
-                    pl: 0,
-                    minHeight: '48px',
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      background: 'rgba(255, 255, 255, 0.05)',
-                    },
-                    '&.Mui-selected': {
-                      background:
-                        'linear-gradient(90deg, rgba(96, 165, 250, 0.1), rgba(139, 92, 246, 0.1))',
-                      color: '#60a5fa',
-                    },
-                  },
-                }}
-              >
-                {/* <Tab
-                  icon={<DashboardIcon />}
-                  label="Dashboard"
-                  value="dashboard"
-                /> */}
-                <Tab icon={<PeopleIcon />} label="Audience" value="audience" />
-                <Tab 
-                  icon={<MessageIcon />}
-                  label="Content" 
-                  value="content" 
-                />
-                <Tab
-                  icon={<ForumIcon />}
-                  label="Timeline"
-                  value="timeline"
-                />
-                <Tab
-                  icon={<DescriptionIcon />}
-                  label="Transcription"
-                  value="transcription"
-                />
-                <Tab
-                  icon={<InsightsIcon />}
-                  label={
-                    <Box
-                      component="span"
-                      sx={{ display: 'flex', alignItems: 'center' }}
-                    >
-                      Space Analysis
-                      <Chip
-                        size="small"
-                        label="Beta"
-                        sx={{
-                          ml: 1,
-                          height: 16,
-                          fontSize: '0.6rem',
-                          background:
-                            'linear-gradient(90deg, #60a5fa, #8b5cf6)',
-                        }}
-                      />
-                    </Box>
-                  }
-                  value="analysis"
-                />
-              </Tabs>
+              <ArrowBackIcon />
+            </IconButton>
 
-              <Divider sx={{ my: 2 }} />
+            {space ? (
+              <>
+                <Typography variant="h6" sx={{ mr: 2 }}>
+                  {space.title}
+                </Typography>
 
-              <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                Quick Stats
-              </Typography>
-              {space ? (
-                <Box sx={{ mb: 3 }}>
-                  <Typography variant="body2">
-                    Attendees: {space.totalLiveListeners}
-                  </Typography>
-                  <Typography variant="body2">
-                    Duration:{' '}
-                    {Math.round(
-                      (space.endedAt
-                        ? new Date(space.endedAt).getTime() -
-                          new Date(space.startedAt).getTime()
-                        : 0) / 60000
-                    )}{' '}
-                    min
-                  </Typography>
-                  <Typography variant="body2">
-                    Selected: {selectedAttendees.length}
-                  </Typography>
-                </Box>
-              ) : (
-                <CircularProgress size={20} sx={{ my: 2, display: 'block' }} />
-              )}
-
-              <Button
-                variant="contained"
-                fullWidth
-                sx={{
-                  mb: 2,
-                  background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 4px 12px rgba(96, 165, 250, 0.3)',
-                  },
-                }}
-              >
-                Create Campaign
-              </Button>
-            </Paper>
-          </Grid>
-
-          {/* CENTER PANEL - Main Content */}
-          <Grid item xs={12} md={7}>
-            <Paper
-              sx={{
-                p: 3,
-                height: '100%',
-                background: 'rgba(255, 255, 255, 0.03)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.05)',
-                display: 'flex',
-                flexDirection: 'column',
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  background: 'rgba(255, 255, 255, 0.04)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                },
-              }}
-            >
-              {/* Tabs for Mobile */}
-              <Tabs
-                value={activeTab}
-                onChange={handleTabChange}
-                sx={{
-                  mb: 3,
-                  display: { xs: 'flex', md: 'none' },
-                  '& .MuiTab-root': {
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      background: 'rgba(255, 255, 255, 0.05)',
-                    },
-                    '&.Mui-selected': {
-                      background:
-                        'linear-gradient(90deg, rgba(96, 165, 250, 0.1), rgba(139, 92, 246, 0.1))',
-                      color: '#60a5fa',
-                    },
-                  },
-                }}
-              >
-                {/* <Tab
-                  icon={<DashboardIcon />}
-                  label="Dashboard"
-                  value="dashboard"
-                /> */}
-                <Tab icon={<PeopleIcon />} value="audience" />
-                <Tab icon={<MessageIcon />} value="content" />
-                <Tab icon={<ForumIcon />} value="timeline" />
-                <Tab icon={<DescriptionIcon />} value="transcription" />
-                <Tab icon={<InsightsIcon />} value="analysis" />
-              </Tabs>
-
-              {/* Content based on active tab */}
-              <Box
-                sx={{
-                  flex: 1,
-                  overflow: 'auto',
-                  minHeight: 0,
-                  '&::-webkit-scrollbar': {
-                    width: '8px',
-                  },
-                  '&::-webkit-scrollbar-track': {
-                    background: 'rgba(0, 0, 0, 0.1)',
-                    borderRadius: '4px',
-                  },
-                  '&::-webkit-scrollbar-thumb': {
-                    background: 'rgba(255, 255, 255, 0.2)',
-                    borderRadius: '4px',
-                    '&:hover': {
-                      background: 'rgba(255, 255, 255, 0.3)',
-                    },
-                  },
-                }}
-              >
-                {/* {activeTab === 'dashboard' && spaceId && (
-                  <DashboardPanel space={space} spaceId={spaceId} />
-                )} */}
-                {activeTab === 'audience' && (
-                  <AudiencePanel
-                    onSelectAttendees={setSelectedAttendees}
-                    space={space}
-                  />
-                )}
-
-                {activeTab === 'content' && <ContentStudio />}
-
-                {activeTab === 'timeline' && spaceId && (
-                  <Box>
-                    <Typography variant="h6" sx={{ mb: 2 }}>
-                      Transcript Timeline
-                    </Typography>
-                    <SegmentsTimeline
-                       spaceId={spaceId}
-                       hasAccess={true}
-                       isProcessingPayment={false}
-                       handlePayment={() => {}}
-                       processEnded={space?.transcriptionStatus === 'ENDED'}
-                       refresh={space?.transcriptionStatus === 'SHORT_ENDED'}
-                    />
-                  </Box>
-                )}
-
-                {activeTab === 'transcription' && spaceId && (
-                  <Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                      <Typography variant="h6">
-                        Full Transcription & Search
-                      </Typography>
-                      <LoadingButton
-                        loading={isDownloading}
-                        disabled={!space || space.transcriptionStatus !== 'ENDED'}
-                        startIcon={<DownloadIcon />}
-                        onClick={onDownloadRecording}
-                        sx={{
-                          color: '#60a5fa',
-                          background: 'rgba(96, 165, 250, 0.1)',
-                          '&:hover': {
-                            background: 'rgba(96, 165, 250, 0.2)',
-                          },
-                          textTransform: 'none',
-                        }}
-                      >
-                        {isDownloading ? 'Downloading...' : 'Download Recording'}
-                      </LoadingButton>
-                    </Box>
-                    <AlgoliaSearchTranscription 
-                      spaceId={spaceId} 
-                      title={space?.title || 'Space Transcription'} 
-                    />
-                  </Box>
-                )}
-
-                {activeTab === 'analysis' && (
-                  <SpaceAnalysis
-                    space={space}
-                    onContextUpdate={handleContextUpdate}
-                  />
-                )}
-              </Box>
-            </Paper>
-          </Grid>
-
-          {/* RIGHT PANEL - AI Assistant */}
-          <Grid
-            item
-            xs={12}
-            md={3}
-            sx={{ display: { xs: 'none', md: 'block' } }}
-          >
-            <Paper
-              sx={{
-                p: 2,
-                height: '100%',
-                maxHeight: 'calc(100vh - 180px)',
-                background: 'rgba(255, 255, 255, 0.03)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.05)',
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden',
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  background: 'rgba(255, 255, 255, 0.04)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                },
-              }}
-            >
-              <Typography
-                variant="h6"
-                sx={{
-                  mb: 2,
-                  background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  fontWeight: 'bold',
-                }}
-              >
-                AI Assistant
-              </Typography>
-
-              <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-                <InputLabel>Select Model</InputLabel>
-                <Select
-                  value={selectedModel}
-                  label="Select Model"
-                  onChange={(e) => setSelectedModel(e.target.value)}
+                <Chip
+                  icon={<HeadphonesIcon />}
+                  label={`${space.totalLiveListeners} listeners`}
+                  size="small"
                   sx={{
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'rgba(255, 255, 255, 0.1)',
-                    },
-                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'rgba(255, 255, 255, 0.2)',
-                    },
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                      borderColor: '#60a5fa',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    display: { xs: 'none', sm: 'flex' },
+                    '&:hover': {
+                      background: 'rgba(255, 255, 255, 0.1)',
                     },
                   }}
-                >
-                  {AI_MODELS.map((model) => (
-                    <MenuItem key={model.id} value={model.id}>
-                      {model.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+                />
+              </>
+            ) : (
+              <CircularProgress size={24} sx={{ mr: 2 }} />
+            )}
+          </Box>
 
-              <Box
+          <Typography
+            variant="caption"
+            sx={{
+              color: 'text.secondary',
+              display: { xs: 'none', md: 'block' },
+              background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              fontWeight: 'bold',
+            }}
+          >
+            Agentic CRM
+          </Typography>
+        </Box>
+
+        {/* Main Content */}
+        <Box
+          sx={{
+            px: 2,
+            maxWidth: '1600px',
+            mx: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            flexGrow: 1,
+          filter: !user ? 'blur(8px)' : 'none',
+          pointerEvents: !user ? 'none' : 'auto',
+          userSelect: !user ? 'none' : 'auto',
+          }}
+        >
+          <Grid
+            container
+            spacing={2}
+            sx={{
+              flex: 1,
+              minHeight: 0,
+            }}
+          >
+            {/* LEFT PANEL - Navigation (hidden on mobile) */}
+            <Grid item md={2} sx={{ display: { xs: 'none', md: 'block' } }}>
+              <Paper
                 sx={{
-                  flex: 1,
-                  mb: 2,
-                  bgcolor: 'rgba(0, 0, 0, 0.2)',
-                  borderRadius: 1,
                   p: 2,
-                  overflowY: 'auto',
-                  minHeight: 0,
-                  maxHeight: 'calc(100vh - 400px)',
-                  '&::-webkit-scrollbar': {
-                    width: '8px',
-                  },
-                  '&::-webkit-scrollbar-track': {
-                    background: 'rgba(0, 0, 0, 0.1)',
-                    borderRadius: '4px',
-                  },
-                  '&::-webkit-scrollbar-thumb': {
-                    background: 'rgba(255, 255, 255, 0.2)',
-                    borderRadius: '4px',
-                    '&:hover': {
-                      background: 'rgba(255, 255, 255, 0.3)',
-                    },
-                  },
-                }}
-                ref={chatContainerRef}
-              >
-                {aiError ? (
-                  <Alert severity="error" sx={{ mb: 2 }}>
-                    {aiError}
-                  </Alert>
-                ) : chatMessages.length > 0 ? (
-                  <Box
-                    sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
-                  >
-                    {chatMessages.map((message, index) => (
-                      <Box
-                        key={index}
-                        className="chat-message"
-                        sx={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: 0.5,
-                          alignItems:
-                            message.role === 'user' ? 'flex-end' : 'flex-start',
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            maxWidth: '85%',
-                            p: 1.5,
-                            borderRadius: 2,
-                            background:
-                              message.role === 'user'
-                                ? 'rgba(96, 165, 250, 0.1)'
-                                : 'rgba(255, 255, 255, 0.05)',
-                            border: `1px solid ${
-                              message.role === 'user'
-                                ? 'rgba(96, 165, 250, 0.2)'
-                                : 'rgba(255, 255, 255, 0.1)'
-                            }`,
-                          }}
-                          data-role={message.role}
-                        >
-                          {message.role === 'user' ? (
-                            <Typography
-                              variant="body2"
-                              sx={{ whiteSpace: 'pre-wrap' }}
-                            >
-                              {message.content}
-                            </Typography>
-                          ) : (
-                            <Box
-                              sx={{
-                                '& .markdown-body': {
-                                  color: 'white',
-                                  fontSize: '0.875rem',
-                                  lineHeight: 1.6,
-                                  '& h1, & h2, & h3, & h4, & h5, & h6': {
-                                    color: '#60a5fa',
-                                    marginTop: '1.5em',
-                                    marginBottom: '0.5em',
-                                    fontWeight: 600,
-                                  },
-                                  '& h1': { fontSize: '1.5em' },
-                                  '& h2': { fontSize: '1.3em' },
-                                  '& h3': { fontSize: '1.2em' },
-                                  '& p': {
-                                    marginBottom: '1em',
-                                  },
-                                  '& ul, & ol': {
-                                    paddingLeft: '1.5em',
-                                    marginBottom: '1em',
-                                  },
-                                  '& li': {
-                                    marginBottom: '0.5em',
-                                  },
-                                  '& code': {
-                                    background: 'rgba(255, 255, 255, 0.1)',
-                                    padding: '0.2em 0.4em',
-                                    borderRadius: '0.25em',
-                                    fontFamily: 'monospace',
-                                  },
-                                  '& pre': {
-                                    background: 'rgba(0, 0, 0, 0.2)',
-                                    padding: '1em',
-                                    borderRadius: '0.5em',
-                                    overflowX: 'auto',
-                                    marginBottom: '1em',
-                                    '& code': {
-                                      background: 'none',
-                                      padding: 0,
-                                    },
-                                  },
-                                  '& blockquote': {
-                                    borderLeft: '3px solid #60a5fa',
-                                    margin: '1em 0',
-                                    paddingLeft: '1em',
-                                    color: 'rgba(255, 255, 255, 0.7)',
-                                  },
-                                  '& a': {
-                                    color: '#60a5fa',
-                                    textDecoration: 'none',
-                                    '&:hover': {
-                                      textDecoration: 'underline',
-                                    },
-                                  },
-                                  '& table': {
-                                    borderCollapse: 'collapse',
-                                    width: '100%',
-                                    marginBottom: '1em',
-                                  },
-                                  '& th, & td': {
-                                    border:
-                                      '1px solid rgba(255, 255, 255, 0.1)',
-                                    padding: '0.5em',
-                                    textAlign: 'left',
-                                  },
-                                  '& th': {
-                                    background: 'rgba(255, 255, 255, 0.05)',
-                                  },
-                                },
-                              }}
-                            >
-                              <div className="markdown-body">
-                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                  {message.content}
-                                </ReactMarkdown>
-                              </div>
-                            </Box>
-                          )}
-                        </Box>
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: 'text.secondary',
-                            fontSize: '0.75rem',
-                            px: 1,
-                          }}
-                        >
-                          {format(message.timestamp, 'h:mm a')}
-                        </Typography>
-                      </Box>
-                    ))}
-                  </Box>
-                ) : isAiThinking ? (
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <CircularProgress size={16} sx={{ mr: 1 }} />
-                    <Typography
-                      variant="body2"
-                      sx={{ color: 'text.secondary' }}
-                    >
-                      Thinking...
-                    </Typography>
-                  </Box>
-                ) : (
-                  <Typography
-                    variant="body2"
-                    sx={{ color: 'text.secondary', fontStyle: 'italic' }}
-                  >
-                    Ask me anything about this space or how to engage with the
-                    audience!
-                  </Typography>
-                )}
-              </Box>
-
-              <Box
-                sx={{
-                  display: 'flex',
-                  mt: 'auto',
+                  height: '100%',
                   background: 'rgba(255, 255, 255, 0.03)',
                   backdropFilter: 'blur(10px)',
                   border: '1px solid rgba(255, 255, 255, 0.05)',
-                  borderRadius: 1,
-                  p: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  overflow: 'hidden',
                   transition: 'all 0.3s ease',
                   '&:hover': {
                     background: 'rgba(255, 255, 255, 0.04)',
@@ -1007,273 +485,843 @@ ${JSON.stringify(analysisContext, null, 2)}
                   },
                 }}
               >
-                <TextField
-                  fullWidth
-                  size="small"
-                  placeholder="Ask the AI assistant..."
-                  value={aiPrompt}
-                  onChange={(e) => setAiPrompt(e.target.value)}
-                  disabled={isAiThinking}
+                <Tabs
+                  orientation="vertical"
+                  value={activeTab}
+                  onChange={handleTabChange}
                   sx={{
-                    mr: 1,
-                    '& .MuiOutlinedInput-root': {
-                      '& fieldset': {
-                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                    borderRight: 1,
+                    borderColor: 'divider',
+                    mb: 3,
+                    '& .MuiTab-root': {
+                      alignItems: 'flex-start',
+                      textAlign: 'left',
+                      pl: 0,
+                      minHeight: '48px',
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        background: 'rgba(255, 255, 255, 0.05)',
                       },
-                      '&:hover fieldset': {
-                        borderColor: 'rgba(255, 255, 255, 0.2)',
+                      '&.Mui-selected': {
+                        background:
+                          'linear-gradient(90deg, rgba(96, 165, 250, 0.1), rgba(139, 92, 246, 0.1))',
+                        color: '#60a5fa',
                       },
-                      '&.Mui-focused fieldset': {
-                        borderColor: '#60a5fa',
-                      },
-                    },
-                  }}
-                />
-                <IconButton
-                  color="primary"
-                  onClick={handlePromptSubmit}
-                  disabled={isAiThinking || !aiPrompt.trim()}
-                  sx={{
-                    bgcolor: 'rgba(96, 165, 250, 0.2)',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      bgcolor: 'rgba(96, 165, 250, 0.3)',
-                      transform: 'scale(1.05)',
                     },
                   }}
                 >
-                  <SendIcon />
-                </IconButton>
-              </Box>
+                  {/* <Tab
+                    icon={<DashboardIcon />}
+                    label="Dashboard"
+                    value="dashboard"
+                  /> */}
+                  <Tab icon={<PeopleIcon />} label="Audience" value="audience" />
+                  <Tab 
+                    icon={<MessageIcon />}
+                    label="Content" 
+                    value="content" 
+                  />
+                  <Tab
+                    icon={<ForumIcon />}
+                    label="Timeline"
+                    value="timeline"
+                  />
+                  <Tab
+                    icon={<DescriptionIcon />}
+                    label="Transcription"
+                    value="transcription"
+                  />
+                  <Tab
+                    icon={<InsightsIcon />}
+                    label={
+                      <Box
+                        component="span"
+                        sx={{ display: 'flex', alignItems: 'center' }}
+                      >
+                        Space Analysis
+                        <Chip
+                          size="small"
+                          label="Beta"
+                          sx={{
+                            ml: 1,
+                            height: 16,
+                            fontSize: '0.6rem',
+                            background:
+                              'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+                          }}
+                        />
+                      </Box>
+                    }
+                    value="analysis"
+                  />
+                </Tabs>
 
-              <Box sx={{ mt: 2 }}>
-                <Divider sx={{ mb: 2 }} />
+                <Divider sx={{ my: 2 }} />
 
                 <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                  Quick Actions
+                  Quick Stats
                 </Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                  <Chip
-                    label="Summarize Space"
-                    size="small"
-                    onClick={() => {
-                      setAiPrompt(
-                        'Please provide a concise summary of the key points discussed in this space.'
-                      );
-                      handlePromptSubmit();
-                    }}
-                    icon={<AutorenewIcon sx={{ fontSize: 16 }} />}
-                    sx={{
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      transition: 'all 0.3s ease',
+                {space ? (
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="body2">
+                      Attendees: {space.totalLiveListeners}
+                    </Typography>
+                    <Typography variant="body2">
+                      Duration:{' '}
+                      {Math.round(
+                        (space.endedAt
+                          ? new Date(space.endedAt).getTime() -
+                            new Date(space.startedAt).getTime()
+                          : 0) / 60000
+                      )}{' '}
+                      min
+                    </Typography>
+                    <Typography variant="body2">
+                      Selected: {selectedAttendees.length}
+                    </Typography>
+                  </Box>
+                ) : (
+                  <CircularProgress size={20} sx={{ my: 2, display: 'block' }} />
+                )}
+
+                <Button
+                  variant="contained"
+                  fullWidth
+                  sx={{
+                    mb: 2,
+                    background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 4px 12px rgba(96, 165, 250, 0.3)',
+                    },
+                  }}
+                >
+                  Create Campaign
+                </Button>
+              </Paper>
+            </Grid>
+
+            {/* CENTER PANEL - Main Content */}
+            <Grid item xs={12} md={7}>
+              <Paper
+                sx={{
+                  p: 3,
+                  height: '100%',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    background: 'rgba(255, 255, 255, 0.04)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                  },
+                }}
+              >
+                {/* Tabs for Mobile */}
+                <Tabs
+                  value={activeTab}
+                  onChange={handleTabChange}
+                  sx={{
+                    mb: 3,
+                    display: { xs: 'flex', md: 'none' },
+                    '& .MuiTab-root': {
+                      transition: 'all 0.2s ease',
                       '&:hover': {
-                        background: 'rgba(255, 255, 255, 0.1)',
-                        transform: 'translateY(-2px)',
+                        background: 'rgba(255, 255, 255, 0.05)',
                       },
-                    }}
-                  />
-                  <Chip
-                    label="Create Thread"
-                    size="small"
-                    onClick={() => {
-                      setAiPrompt(
-                        'Create an engaging Twitter thread summarizing the main insights from this space.'
-                      );
-                      handlePromptSubmit();
-                    }}
-                    icon={<ForumIcon sx={{ fontSize: 16 }} />}
-                    sx={{
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      transition: 'all 0.3s ease',
+                      '&.Mui-selected': {
+                        background:
+                          'linear-gradient(90deg, rgba(96, 165, 250, 0.1), rgba(139, 92, 246, 0.1))',
+                        color: '#60a5fa',
+                      },
+                    },
+                  }}
+                >
+                  {/* <Tab
+                    icon={<DashboardIcon />}
+                    label="Dashboard"
+                    value="dashboard"
+                  /> */}
+                  <Tab icon={<PeopleIcon />} value="audience" />
+                  <Tab icon={<MessageIcon />} value="content" />
+                  <Tab icon={<ForumIcon />} value="timeline" />
+                  <Tab icon={<DescriptionIcon />} value="transcription" />
+                  <Tab icon={<InsightsIcon />} value="analysis" />
+                </Tabs>
+
+                {/* Content based on active tab */}
+                <Box
+                  sx={{
+                    flex: 1,
+                    overflow: 'auto',
+                    minHeight: 0,
+                    '&::-webkit-scrollbar': {
+                      width: '8px',
+                    },
+                    '&::-webkit-scrollbar-track': {
+                      background: 'rgba(0, 0, 0, 0.1)',
+                      borderRadius: '4px',
+                    },
+                    '&::-webkit-scrollbar-thumb': {
+                      background: 'rgba(255, 255, 255, 0.2)',
+                      borderRadius: '4px',
                       '&:hover': {
-                        background: 'rgba(255, 255, 255, 0.1)',
-                        transform: 'translateY(-2px)',
+                        background: 'rgba(255, 255, 255, 0.3)',
                       },
-                    }}
-                  />
-                  <Chip
-                    label="Engagement Ideas"
-                    size="small"
-                    onClick={() => {
-                      setAiPrompt(
-                        'Suggest creative ways to engage with the audience based on the space discussion.'
-                      );
-                      handlePromptSubmit();
-                    }}
-                    icon={<MessageIcon sx={{ fontSize: 16 }} />}
-                    sx={{
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        background: 'rgba(255, 255, 255, 0.1)',
-                        transform: 'translateY(-2px)',
-                      },
-                    }}
-                  />
+                    },
+                  }}
+                >
+                  {/* {activeTab === 'dashboard' && spaceId && (
+                    <DashboardPanel space={space} spaceId={spaceId} />
+                  )} */}
+                  {activeTab === 'audience' && (
+                    <AudiencePanel
+                      onSelectAttendees={setSelectedAttendees}
+                      space={space}
+                    />
+                  )}
+
+                  {activeTab === 'content' && <ContentStudio />}
+
+                  {activeTab === 'timeline' && spaceId && (
+                    <Box>
+                      <Typography variant="h6" sx={{ mb: 2 }}>
+                        Transcript Timeline
+                      </Typography>
+                      <SegmentsTimeline
+                         spaceId={spaceId}
+                         hasAccess={true}
+                         isProcessingPayment={false}
+                         handlePayment={() => {}}
+                         processEnded={space?.transcriptionStatus === 'ENDED'}
+                         refresh={space?.transcriptionStatus === 'SHORT_ENDED'}
+                      />
+                    </Box>
+                  )}
+
+                  {activeTab === 'transcription' && spaceId && (
+                    <Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                        <Typography variant="h6">
+                          Full Transcription & Search
+                        </Typography>
+                        <LoadingButton
+                          loading={isDownloading}
+                          disabled={!space || space.transcriptionStatus !== 'ENDED'}
+                          startIcon={<DownloadIcon />}
+                          onClick={onDownloadRecording}
+                          sx={{
+                            color: '#60a5fa',
+                            background: 'rgba(96, 165, 250, 0.1)',
+                            '&:hover': {
+                              background: 'rgba(96, 165, 250, 0.2)',
+                            },
+                            textTransform: 'none',
+                          }}
+                        >
+                          {isDownloading ? 'Downloading...' : 'Download Recording'}
+                        </LoadingButton>
+                      </Box>
+                      <AlgoliaSearchTranscription 
+                        spaceId={spaceId} 
+                        title={space?.title || 'Space Transcription'} 
+                      />
+                    </Box>
+                  )}
+
+                  {activeTab === 'analysis' && (
+                    <SpaceAnalysis
+                      space={space}
+                      onContextUpdate={handleContextUpdate}
+                    />
+                  )}
                 </Box>
-              </Box>
-            </Paper>
+              </Paper>
+            </Grid>
+
+            {/* RIGHT PANEL - AI Assistant */}
+            <Grid
+              item
+              xs={12}
+              md={3}
+              sx={{ display: { xs: 'none', md: 'block' } }}
+            >
+              <Paper
+                sx={{
+                  p: 2,
+                  height: '100%',
+                  maxHeight: 'calc(100vh - 180px)',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  overflow: 'hidden',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    background: 'rgba(255, 255, 255, 0.04)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                  },
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{
+                    mb: 2,
+                    background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  AI Assistant
+                </Typography>
+
+                <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+                  <InputLabel>Select Model</InputLabel>
+                  <Select
+                    value={selectedModel}
+                    label="Select Model"
+                    onChange={(e) => setSelectedModel(e.target.value)}
+                    sx={{
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                      },
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgba(255, 255, 255, 0.2)',
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#60a5fa',
+                      },
+                    }}
+                  >
+                    {AI_MODELS.map((model) => (
+                      <MenuItem key={model.id} value={model.id}>
+                        {model.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                <Box
+                  sx={{
+                    flex: 1,
+                    mb: 2,
+                    bgcolor: 'rgba(0, 0, 0, 0.2)',
+                    borderRadius: 1,
+                    p: 2,
+                    overflowY: 'auto',
+                    minHeight: 0,
+                    maxHeight: 'calc(100vh - 400px)',
+                    '&::-webkit-scrollbar': {
+                      width: '8px',
+                    },
+                    '&::-webkit-scrollbar-track': {
+                      background: 'rgba(0, 0, 0, 0.1)',
+                      borderRadius: '4px',
+                    },
+                    '&::-webkit-scrollbar-thumb': {
+                      background: 'rgba(255, 255, 255, 0.2)',
+                      borderRadius: '4px',
+                      '&:hover': {
+                        background: 'rgba(255, 255, 255, 0.3)',
+                      },
+                    },
+                  }}
+                  ref={chatContainerRef}
+                >
+                  {aiError ? (
+                    <Alert severity="error" sx={{ mb: 2 }}>
+                      {aiError}
+                    </Alert>
+                  ) : chatMessages.length > 0 ? (
+                    <Box
+                      sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+                    >
+                      {chatMessages.map((message, index) => (
+                        <Box
+                          key={index}
+                          className="chat-message"
+                          sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 0.5,
+                            alignItems:
+                              message.role === 'user' ? 'flex-end' : 'flex-start',
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              maxWidth: '85%',
+                              p: 1.5,
+                              borderRadius: 2,
+                              background:
+                                message.role === 'user'
+                                  ? 'rgba(96, 165, 250, 0.1)'
+                                  : 'rgba(255, 255, 255, 0.05)',
+                              border: `1px solid ${
+                                message.role === 'user'
+                                  ? 'rgba(96, 165, 250, 0.2)'
+                                  : 'rgba(255, 255, 255, 0.1)'
+                              }`,
+                            }}
+                            data-role={message.role}
+                          >
+                            {message.role === 'user' ? (
+                              <Typography
+                                variant="body2"
+                                sx={{ whiteSpace: 'pre-wrap' }}
+                              >
+                                {message.content}
+                              </Typography>
+                            ) : (
+                              <Box
+                                sx={{
+                                  '& .markdown-body': {
+                                    color: 'white',
+                                    fontSize: '0.875rem',
+                                    lineHeight: 1.6,
+                                    '& h1, & h2, & h3, & h4, & h5, & h6': {
+                                      color: '#60a5fa',
+                                      marginTop: '1.5em',
+                                      marginBottom: '0.5em',
+                                      fontWeight: 600,
+                                    },
+                                    '& h1': { fontSize: '1.5em' },
+                                    '& h2': { fontSize: '1.3em' },
+                                    '& h3': { fontSize: '1.2em' },
+                                    '& p': {
+                                      marginBottom: '1em',
+                                    },
+                                    '& ul, & ol': {
+                                      paddingLeft: '1.5em',
+                                      marginBottom: '1em',
+                                    },
+                                    '& li': {
+                                      marginBottom: '0.5em',
+                                    },
+                                    '& code': {
+                                      background: 'rgba(255, 255, 255, 0.1)',
+                                      padding: '0.2em 0.4em',
+                                      borderRadius: '0.25em',
+                                      fontFamily: 'monospace',
+                                    },
+                                    '& pre': {
+                                      background: 'rgba(0, 0, 0, 0.2)',
+                                      padding: '1em',
+                                      borderRadius: '0.5em',
+                                      overflowX: 'auto',
+                                      marginBottom: '1em',
+                                      '& code': {
+                                        background: 'none',
+                                        padding: 0,
+                                      },
+                                    },
+                                    '& blockquote': {
+                                      borderLeft: '3px solid #60a5fa',
+                                      margin: '1em 0',
+                                      paddingLeft: '1em',
+                                      color: 'rgba(255, 255, 255, 0.7)',
+                                    },
+                                    '& a': {
+                                      color: '#60a5fa',
+                                      textDecoration: 'none',
+                                      '&:hover': {
+                                        textDecoration: 'underline',
+                                      },
+                                    },
+                                    '& table': {
+                                      borderCollapse: 'collapse',
+                                      width: '100%',
+                                      marginBottom: '1em',
+                                    },
+                                    '& th, & td': {
+                                      border:
+                                        '1px solid rgba(255, 255, 255, 0.1)',
+                                      padding: '0.5em',
+                                      textAlign: 'left',
+                                    },
+                                    '& th': {
+                                      background: 'rgba(255, 255, 255, 0.05)',
+                                    },
+                                  },
+                                }}
+                              >
+                                <div className="markdown-body">
+                                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                    {message.content}
+                                  </ReactMarkdown>
+                                </div>
+                              </Box>
+                            )}
+                          </Box>
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: 'text.secondary',
+                              fontSize: '0.75rem',
+                              px: 1,
+                            }}
+                          >
+                            {format(message.timestamp, 'h:mm a')}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Box>
+                  ) : isAiThinking ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <CircularProgress size={16} sx={{ mr: 1 }} />
+                      <Typography
+                        variant="body2"
+                        sx={{ color: 'text.secondary' }}
+                      >
+                        Thinking...
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <Typography
+                      variant="body2"
+                      sx={{ color: 'text.secondary', fontStyle: 'italic' }}
+                    >
+                      Ask me anything about this space or how to engage with the
+                      audience!
+                    </Typography>
+                  )}
+                </Box>
+
+                <Box
+                  sx={{
+                    display: 'flex',
+                    mt: 'auto',
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                    borderRadius: 1,
+                    p: 2,
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      background: 'rgba(255, 255, 255, 0.04)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                    },
+                  }}
+                >
+                  <TextField
+                    fullWidth
+                    size="small"
+                    placeholder="Ask the AI assistant..."
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    disabled={isAiThinking}
+                    sx={{
+                      mr: 1,
+                      '& .MuiOutlinedInput-root': {
+                        '& fieldset': {
+                          borderColor: 'rgba(255, 255, 255, 0.1)',
+                        },
+                        '&:hover fieldset': {
+                          borderColor: 'rgba(255, 255, 255, 0.2)',
+                        },
+                        '&.Mui-focused fieldset': {
+                          borderColor: '#60a5fa',
+                        },
+                      },
+                    }}
+                  />
+                  <IconButton
+                    color="primary"
+                    onClick={handlePromptSubmit}
+                    disabled={isAiThinking || !aiPrompt.trim()}
+                    sx={{
+                      bgcolor: 'rgba(96, 165, 250, 0.2)',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        bgcolor: 'rgba(96, 165, 250, 0.3)',
+                        transform: 'scale(1.05)',
+                      },
+                    }}
+                  >
+                    <SendIcon />
+                  </IconButton>
+                </Box>
+
+                <Box sx={{ mt: 2 }}>
+                  <Divider sx={{ mb: 2 }} />
+
+                  <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                    Quick Actions
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    <Chip
+                      label="Summarize Space"
+                      size="small"
+                      onClick={() => {
+                        setAiPrompt(
+                          'Please provide a concise summary of the key points discussed in this space.'
+                        );
+                        handlePromptSubmit();
+                      }}
+                      icon={<AutorenewIcon sx={{ fontSize: 16 }} />}
+                      sx={{
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          background: 'rgba(255, 255, 255, 0.1)',
+                          transform: 'translateY(-2px)',
+                        },
+                      }}
+                    />
+                    <Chip
+                      label="Create Thread"
+                      size="small"
+                      onClick={() => {
+                        setAiPrompt(
+                          'Create an engaging Twitter thread summarizing the main insights from this space.'
+                        );
+                        handlePromptSubmit();
+                      }}
+                      icon={<ForumIcon sx={{ fontSize: 16 }} />}
+                      sx={{
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          background: 'rgba(255, 255, 255, 0.1)',
+                          transform: 'translateY(-2px)',
+                        },
+                      }}
+                    />
+                    <Chip
+                      label="Engagement Ideas"
+                      size="small"
+                      onClick={() => {
+                        setAiPrompt(
+                          'Suggest creative ways to engage with the audience based on the space discussion.'
+                        );
+                        handlePromptSubmit();
+                      }}
+                      icon={<MessageIcon sx={{ fontSize: 16 }} />}
+                      sx={{
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          background: 'rgba(255, 255, 255, 0.1)',
+                          transform: 'translateY(-2px)',
+                        },
+                      }}
+                    />
+                  </Box>
+                </Box>
+              </Paper>
+            </Grid>
           </Grid>
-        </Grid>
-      </Box>
-
-      {/* Mobile Sidebar Drawer */}
-      <Drawer
-        anchor="left"
-        open={isMobileSidebarOpen}
-        onClose={() => setIsMobileSidebarOpen(false)}
-        PaperProps={{
-          sx: {
-            width: '75%',
-            maxWidth: 280,
-            background: '#1e293b',
-            color: 'white',
-            borderRight: '1px solid rgba(255, 255, 255, 0.05)',
-          },
-        }}
-      >
-        <Box sx={{ p: 2 }}>
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              mb: 3,
-            }}
-          >
-            <Typography
-              variant="h6"
-              sx={{
-                background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                fontWeight: 'bold',
-              }}
-            >
-              X Space CRM
-            </Typography>
-            <IconButton onClick={() => setIsMobileSidebarOpen(false)}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
-
-          <Divider sx={{ mb: 3 }} />
-
-          <Tabs
-            orientation="vertical"
-            value={activeTab}
-            onChange={(e, val) => {
-              handleTabChange(e, val);
-              setIsMobileSidebarOpen(false);
-            }}
-            sx={{
-              borderRight: 1,
-              borderColor: 'divider',
-              mb: 3,
-              '& .MuiTab-root': {
-                alignItems: 'flex-start',
-                textAlign: 'left',
-                pl: 0,
-                minHeight: '48px',
-                transition: 'all 0.2s ease',
-                '&:hover': {
-                  background: 'rgba(255, 255, 255, 0.05)',
-                },
-                '&.Mui-selected': {
-                  background:
-                    'linear-gradient(90deg, rgba(96, 165, 250, 0.1), rgba(139, 92, 246, 0.1))',
-                  color: '#60a5fa',
-                },
-              },
-            }}
-          >
-            {/* <Tab icon={<DashboardIcon />} label="Dashboard" value="dashboard" /> */}
-            <Tab icon={<PeopleIcon />} label="Audience" value="audience" />
-            <Tab icon={<MessageIcon />} label="Content" value="content" />
-            <Tab icon={<ForumIcon />} label="Timeline" value="timeline" />
-            <Tab icon={<DescriptionIcon />} label="Transcription" value="transcription" />
-            <Tab icon={<InsightsIcon />} label="Analysis" value="analysis" />
-          </Tabs>
-
-          <Divider sx={{ my: 2 }} />
-
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            AI Assistant
-          </Typography>
-          <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-            <InputLabel>Select Model</InputLabel>
-            <Select
-              value={selectedModel}
-              label="Select Model"
-              onChange={(e) => setSelectedModel(e.target.value)}
-              sx={{
-                '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: 'rgba(255, 255, 255, 0.1)',
-                },
-                '&:hover .MuiOutlinedInput-notchedOutline': {
-                  borderColor: 'rgba(255, 255, 255, 0.2)',
-                },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#60a5fa',
-                },
-              }}
-            >
-              {AI_MODELS.map((model) => (
-                <MenuItem key={model.id} value={model.id}>
-                  {model.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <TextField
-            fullWidth
-            size="small"
-            placeholder="Ask the AI assistant..."
-            value={aiPrompt}
-            onChange={(e) => setAiPrompt(e.target.value)}
-            sx={{
-              mb: 2,
-              '& .MuiOutlinedInput-root': {
-                '& fieldset': {
-                  borderColor: 'rgba(255, 255, 255, 0.1)',
-                },
-                '&:hover fieldset': {
-                  borderColor: 'rgba(255, 255, 255, 0.2)',
-                },
-                '&.Mui-focused fieldset': {
-                  borderColor: '#60a5fa',
-                },
-              },
-            }}
-          />
-
-          <Button
-            fullWidth
-            variant="contained"
-            startIcon={<SendIcon />}
-            onClick={handlePromptSubmit}
-            disabled={isAiThinking || !aiPrompt.trim()}
-            sx={{
-              mb: 2,
-              background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                transform: 'translateY(-2px)',
-                boxShadow: '0 4px 12px rgba(96, 165, 250, 0.3)',
-              },
-            }}
-          >
-            {isAiThinking ? 'Thinking...' : 'Ask AI'}
-          </Button>
         </Box>
-      </Drawer>
+
+        {/* Mobile Sidebar Drawer */}
+        <Drawer
+          anchor="left"
+          open={isMobileSidebarOpen}
+          onClose={() => setIsMobileSidebarOpen(false)}
+          PaperProps={{
+            sx: {
+              width: '75%',
+              maxWidth: 280,
+              background: '#1e293b',
+              color: 'white',
+              borderRight: '1px solid rgba(255, 255, 255, 0.05)',
+            },
+          }}
+        >
+          <Box sx={{ p: 2 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                mb: 3,
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{
+                  background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  fontWeight: 'bold',
+                }}
+              >
+                X Space CRM
+              </Typography>
+              <IconButton onClick={() => setIsMobileSidebarOpen(false)}>
+                <CloseIcon />
+              </IconButton>
+            </Box>
+
+            <Divider sx={{ mb: 3 }} />
+
+            <Tabs
+              orientation="vertical"
+              value={activeTab}
+              onChange={(e, val) => {
+                handleTabChange(e, val);
+                setIsMobileSidebarOpen(false);
+              }}
+              sx={{
+                borderRight: 1,
+                borderColor: 'divider',
+                mb: 3,
+                '& .MuiTab-root': {
+                  alignItems: 'flex-start',
+                  textAlign: 'left',
+                  pl: 0,
+                  minHeight: '48px',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    background: 'rgba(255, 255, 255, 0.05)',
+                  },
+                  '&.Mui-selected': {
+                    background:
+                      'linear-gradient(90deg, rgba(96, 165, 250, 0.1), rgba(139, 92, 246, 0.1))',
+                    color: '#60a5fa',
+                  },
+                },
+              }}
+            >
+              {/* <Tab icon={<DashboardIcon />} label="Dashboard" value="dashboard" /> */}
+              <Tab icon={<PeopleIcon />} label="Audience" value="audience" />
+              <Tab icon={<MessageIcon />} label="Content" value="content" />
+              <Tab icon={<ForumIcon />} label="Timeline" value="timeline" />
+              <Tab icon={<DescriptionIcon />} label="Transcription" value="transcription" />
+              <Tab icon={<InsightsIcon />} label="Analysis" value="analysis" />
+            </Tabs>
+
+            <Divider sx={{ my: 2 }} />
+
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+              AI Assistant
+            </Typography>
+            <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+              <InputLabel>Select Model</InputLabel>
+              <Select
+                value={selectedModel}
+                label="Select Model"
+                onChange={(e) => setSelectedModel(e.target.value)}
+                sx={{
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'rgba(255, 255, 255, 0.2)',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#60a5fa',
+                  },
+                }}
+              >
+                {AI_MODELS.map((model) => (
+                  <MenuItem key={model.id} value={model.id}>
+                    {model.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Ask the AI assistant..."
+              value={aiPrompt}
+              onChange={(e) => setAiPrompt(e.target.value)}
+              sx={{
+                mb: 2,
+                '& .MuiOutlinedInput-root': {
+                  '& fieldset': {
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'rgba(255, 255, 255, 0.2)',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#60a5fa',
+                  },
+                },
+              }}
+            />
+
+            <Button
+              fullWidth
+              variant="contained"
+              startIcon={<SendIcon />}
+              onClick={handlePromptSubmit}
+              disabled={isAiThinking || !aiPrompt.trim()}
+              sx={{
+                mb: 2,
+                background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 4px 12px rgba(96, 165, 250, 0.3)',
+                },
+              }}
+            >
+              {isAiThinking ? 'Thinking...' : 'Ask AI'}
+            </Button>
+          </Box>
+        </Drawer>
+
+        {/* Authentication Dialog */}
+        <Dialog
+          open={showAuthDialog}
+          PaperProps={{
+            sx: {
+              background: 'rgba(30, 41, 59, 0.95)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              color: 'white',
+              minWidth: { xs: '90%', sm: 400 },
+              maxWidth: 400,
+            },
+          }}
+        >
+          <DialogTitle
+            sx={{
+              textAlign: 'center',
+              background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              fontWeight: 'bold',
+            }}
+          >
+            Welcome to Songjam
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText
+              sx={{
+                color: 'rgba(255, 255, 255, 0.8)',
+                textAlign: 'center',
+                mb: 3,
+              }}
+            >
+              Connect your Twitter account to access Space analytics, audience insights, and AI-powered tools.
+            </DialogContentText>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+              }}
+            >
+              <TwitterLogin />
+            </Box>
+          </DialogContent>
+        </Dialog>
+      </Box>
     </Box>
   );
 };

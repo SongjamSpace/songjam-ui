@@ -27,6 +27,7 @@ import { useCollectionData } from 'react-firebase-hooks/firestore';
 import { collection, query, where, orderBy } from 'firebase/firestore';
 import { db } from './services/firebase.service';
 import { transcribeSpace } from './services/transcription.service';
+import { toast } from 'react-hot-toast';
 
 export default function App() {
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -42,14 +43,36 @@ export default function App() {
     )
   );
 
-  const handleTranscribe = async (url: string) => {
-    if (isLoading) return;
+  const handleAnalyze = async (url: string) => {
+    if (isLoading || !url.trim()) return;
     setIsLoading(true);
-    try {
-      await transcribeSpace(url);
-    } finally {
-      setIsLoading(false);
+    const spaceId = url.split('/').pop();
+    const res = await axios.get(
+      `${import.meta.env.VITE_JAM_SERVER_URL}/get-space/${spaceId}`
+    );
+    if (res.data.result) {
+      const state = res.data.result.metadata.state;
+      if (state === 'Ended') {
+        const path = await transcribeSpace(url);
+        navigate(path);
+      } else if (state === 'Running') {
+        const res = await axios.post(
+          `${import.meta.env.VITE_JAM_SERVER_URL}/listen-live-space`,
+          { spaceId }
+        );
+        navigate(`/live/${spaceId}`);
+      }
+    } else {
+      toast.error('Error analyzing space, please try again', {
+        duration: 3000,
+        position: 'bottom-right',
+        style: {
+          background: '#333',
+          color: '#fff',
+        },
+      });
     }
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -82,10 +105,13 @@ export default function App() {
           </div>
         </div>
         <div className="animated-title">
-          <h1>Unlock Insights<br></br>Amplify Voices</h1>
+          <h1>
+            Unlock Insights<br></br>Amplify Voices
+          </h1>
           <div className="subtitle-wrapper">
             <p>
-            X Spaces Text-to-Speech and AI Analysis<br></br>Capture Every Conversation
+              X Spaces Text-to-Speech and AI Analysis<br></br>Capture Every
+              Conversation
             </p>
             <Box className="space-input" display="flex" gap={2}>
               <TextField
@@ -98,7 +124,7 @@ export default function App() {
                 loading={isLoading}
                 variant="contained"
                 className="primary"
-                onClick={() => handleTranscribe(spaceUrl)}
+                onClick={() => handleAnalyze(spaceUrl)}
               >
                 Analyze
               </LoadingButton>
@@ -212,7 +238,7 @@ export default function App() {
                   fullWidth
                   onClick={() => {
                     setShowConfirmation(false);
-                    handleTranscribe(spaceUrl);
+                    handleAnalyze(spaceUrl);
                   }}
                   sx={{
                     py: 1.5,
@@ -278,30 +304,33 @@ export default function App() {
                   🔭 Preview Analyzed Spaces 🔭
                 </Typography>
                 <Typography sx={{ mb: 3, color: 'var(--text-secondary)' }}>
-                 Click on any space below to see an example of the analysis output.
-                 Paste your own space URL on the homepage to try it!
-               </Typography>
-
-               {/* Styled Box for List Content */}
-               <Box sx={{
-                   mb: 3,
-                   p: 2,
-                   bgcolor: 'rgba(96, 165, 250, 0.1)', // Match highlight box bg
-                   borderRadius: 2,
-                   textAlign: 'left', // Align content left within this box
-                }}>
+                  Click on any space below to see an example of the analysis
+                  output. Paste your own space URL on the homepage to try it!
+                </Typography>
+                {/* Styled Box for List Content */}
+                <Box
+                  sx={{
+                    mb: 3,
+                    p: 2,
+                    bgcolor: 'rgba(96, 165, 250, 0.1)', // Match highlight box bg
+                    borderRadius: 2,
+                    textAlign: 'left', // Align content left within this box
+                  }}
+                >
                   <Typography
-                      variant="subtitle1"
-                      sx={{ mb: 2, color: '#60a5fa' }} // Match highlight title
-                   >
-                      🚀 Available Previews:
-                   </Typography>
+                    variant="subtitle1"
+                    sx={{ mb: 2, color: '#60a5fa' }} // Match highlight title
+                  >
+                    🚀 Available Previews:
+                  </Typography>
 
                   {/* Conditional Rendering Inside Styled Box */}
                   {loading && (
-                     <Box sx={{ display: 'flex', justifyContent: 'center', my: 3 }}>
-                        <CircularProgress color="inherit" /> {/* Inherit color */} 
-                     </Box>
+                    <Box
+                      sx={{ display: 'flex', justifyContent: 'center', my: 3 }}
+                    >
+                      <CircularProgress color="inherit" /> {/* Inherit color */}
+                    </Box>
                   )}
                   {error && (
                     <Typography color="error" sx={{ my: 3 }}>
@@ -311,44 +340,67 @@ export default function App() {
                   {!loading && !error && spaces && spaces.length > 0 && (
                     <List sx={{ maxHeight: 300, overflow: 'auto', p: 0 }}>
                       {spaces.map((space: any) => (
-                         <ListItemButton
-                            key={space.spaceId}
-                            onClick={() => {
-                               setIsPreviewDialogOpen(false);
-                               navigate(`/crm/${space.spaceId}`);
+                        <ListItemButton
+                          key={space.spaceId}
+                          onClick={() => {
+                            setIsPreviewDialogOpen(false);
+                            navigate(`/crm/${space.spaceId}`);
+                          }}
+                          sx={{
+                            mb: 1,
+                            borderRadius: 1,
+                            bgcolor: 'rgba(255, 255, 255, 0.05)',
+                            '&:hover': {
+                              bgcolor: 'rgba(255, 255, 255, 0.1)',
+                            },
+                          }}
+                        >
+                          <ListItemText
+                            primary={space.title || `Space ${space.spaceId}`}
+                            secondary={`Analyzed on: ${
+                              space.createdAt?.toDate
+                                ? space.createdAt.toDate().toLocaleDateString()
+                                : 'N/A'
+                            }`}
+                            primaryTypographyProps={{
+                              color: 'var(--text-primary)',
                             }}
-                            sx={{
-                               mb: 1,
-                               borderRadius: 1,
-                               bgcolor: 'rgba(255, 255, 255, 0.05)',
-                               '&:hover': {
-                                  bgcolor: 'rgba(255, 255, 255, 0.1)',
-                               },
+                            secondaryTypographyProps={{
+                              color: 'var(--text-secondary)',
+                              fontSize: '0.8rem',
                             }}
-                         >
-                            <ListItemText
-                               primary={space.title || `Space ${space.spaceId}`}
-                               secondary={`Analyzed on: ${space.createdAt?.toDate ? space.createdAt.toDate().toLocaleDateString() : 'N/A'}`}
-                               primaryTypographyProps={{ color: 'var(--text-primary)' }}
-                               secondaryTypographyProps={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}
-                            />
-                         </ListItemButton>
+                          />
+                        </ListItemButton>
                       ))}
-                   </List>
+                    </List>
                   )}
                   {!loading && !error && (!spaces || spaces.length === 0) && (
-                     <Typography sx={{ my: 3, textAlign: 'center', color: 'var(--text-secondary)' }}>
-                       No completed spaces available for preview yet.
-                     </Typography>
-                   )}
-               </Box> {/* End Styled Box for List Content */}
-
-              <Typography sx={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textAlign: 'center' }}>
-                This is just a preview. Analyze your own space for full insights!
-              </Typography>
-             </Box> {/* End Inner Padding Box */} 
+                    <Typography
+                      sx={{
+                        my: 3,
+                        textAlign: 'center',
+                        color: 'var(--text-secondary)',
+                      }}
+                    >
+                      No completed spaces available for preview yet.
+                    </Typography>
+                  )}
+                </Box>{' '}
+                {/* End Styled Box for List Content */}
+                <Typography
+                  sx={{
+                    color: 'var(--text-secondary)',
+                    fontSize: '0.9rem',
+                    textAlign: 'center',
+                  }}
+                >
+                  This is just a preview. Analyze your own space for full
+                  insights!
+                </Typography>
+              </Box>{' '}
+              {/* End Inner Padding Box */}
             </DialogContent>
-             {/* No DialogActions needed */}
+            {/* No DialogActions needed */}
           </Dialog>
         </div>
         <div className="trust-badges">

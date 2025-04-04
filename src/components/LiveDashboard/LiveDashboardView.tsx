@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Typography, Paper, useTheme } from '@mui/material';
+import {
+  Box,
+  Typography,
+  Paper,
+  useTheme,
+  Dialog,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from '@mui/material';
 import { Space, SpaceListener } from '../../services/db/spaces.service';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 import { collection, orderBy, query, DocumentData } from 'firebase/firestore';
@@ -18,6 +27,8 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { format } from 'date-fns';
+import { useAuthContext } from '../../contexts/AuthContext';
+import TwitterLogin from '../TwitterLogin';
 
 interface LiveDashboardViewProps {
   spaceId: string;
@@ -81,6 +92,7 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
   spaceId,
   space,
 }) => {
+  const { user } = useAuthContext();
   const theme = useTheme();
   const [previousListeners, setPreviousListeners] = useState<SpaceListener[]>(
     []
@@ -193,7 +205,14 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
       </Box>
 
       <Box
-        sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(12, 1fr)' }}
+        sx={{
+          display: 'grid',
+          gap: 3,
+          gridTemplateColumns: 'repeat(12, 1fr)',
+          filter: !user ? 'blur(8px)' : 'none',
+          pointerEvents: !user ? 'none' : 'auto',
+          userSelect: !user ? 'none' : 'auto',
+        }}
       >
         {/* Stats Panel */}
         <Box sx={{ gridColumn: 'span 12' }}>
@@ -355,6 +374,53 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
           )}
         </Box>
       </Box>
+
+      {/* Authentication Dialog */}
+      <Dialog
+        open={!user}
+        PaperProps={{
+          sx: {
+            background: 'rgba(30, 41, 59, 0.95)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            color: 'white',
+            minWidth: { xs: '90%', sm: 400 },
+            maxWidth: 400,
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            textAlign: 'center',
+            background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            fontWeight: 'bold',
+          }}
+        >
+          Welcome to Songjam
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText
+            sx={{
+              color: 'rgba(255, 255, 255, 0.8)',
+              textAlign: 'center',
+              mb: 3,
+            }}
+          >
+            Connect your Twitter account to access Space analytics, audience
+            insights, and AI-powered tools.
+          </DialogContentText>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+            }}
+          >
+            <TwitterLogin />
+          </Box>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };

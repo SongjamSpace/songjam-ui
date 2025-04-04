@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { getSpace } from './db/spaces.service';
-import { useNavigate } from 'react-router-dom';
 
 export const transcribeSpace = async (spaceUrl: string) => {
   // Extract space ID from URL
@@ -14,25 +13,23 @@ export const transcribeSpace = async (spaceUrl: string) => {
   const space = await getSpace(spaceId);
 
   if (space) {
-    // Space exists, navigate to it
-    window.location.href = `/${spaceId}`;
-    return;
+    return `/crm/${spaceId}`;
   }
 
   // Space doesn't exist, request transcription
   try {
     const res = await axios.post(
-      `${import.meta.env.VITE_JAM_SERVER_URL}/listen-live-space`,
+      `${import.meta.env.VITE_JAM_SERVER_URL}/transcribe-recorded-space`,
       { spaceId }
     );
 
     if (res.data.status === 'success') {
-      window.location.href = `/crm/${spaceId}`;
+      return `/crm/${spaceId}`;
     } else {
       throw new Error('Transcription failed');
     }
   } catch (error) {
     console.error('Error transcribing space:', error);
-    throw new Error('Failed to transcribe the space. Please try again later.');
+    throw new Error('Failed to analyze the space. Please try again later.');
   }
 };

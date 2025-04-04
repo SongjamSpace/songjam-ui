@@ -6,7 +6,7 @@ import { useAuthContext } from '../contexts/AuthContext';
 import TwitterIcon from '@mui/icons-material/Twitter';
 
 const TwitterLogin = () => {
-  const { user } = useAuthContext();
+  const { user, loading } = useAuthContext();
   const handleTwitterLogin = async () => {
     const provider = new TwitterAuthProvider();
     try {
@@ -30,6 +30,7 @@ const TwitterLogin = () => {
 
   return (
     <Button
+      disabled={loading}
       onClick={handleTwitterLogin}
       variant="contained"
       sx={{
@@ -50,7 +51,7 @@ const TwitterLogin = () => {
       }}
       startIcon={<TwitterIcon />}
     >
-      Connect Twitter
+      {loading ? 'Connecting...' : 'Connect Twitter'}
     </Button>
   );
 };

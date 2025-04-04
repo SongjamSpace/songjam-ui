@@ -344,13 +344,13 @@ const SpaceAnalysis: React.FC<SpaceAnalysisProps> = ({
     const centerNode = layoutedNodes.find((n) => n.id === centerNodeId);
     if (centerNode) {
       // Calculate zoom level based on node count
-      const zoomLevel = Math.max(1, Math.min(2, 8 / Math.sqrt(nodes.length)));
+      const zoomLevel = Math.max(1, Math.min(1.5, 8 / Math.sqrt(nodes.length)));
 
       // Fit view with focus on the most active area
       setTimeout(() => {
         reactFlowInstance.setCenter(
-          centerNode.position.x,
-          centerNode.position.y,
+          centerNode.position.x +150,
+          centerNode.position.y + 50,
           { zoom: zoomLevel, duration: 800 }
         );
       }, 100);

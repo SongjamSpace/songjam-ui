@@ -15,14 +15,14 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
       <ThemeProvider theme={theme}>
         <Routes>
           <Route path="/" element={<App />} />
-          <Route
+          {/* <Route
             path="/:spaceId"
             element={
               <AuthProvider>
                 <SpaceDetails />
               </AuthProvider>
             }
-          />
+          /> */}
           <Route
             path="/crm/:spaceId"
             element={

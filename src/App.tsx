@@ -80,11 +80,10 @@ export default function App() {
           </div>
         </div>
         <div className="animated-title">
-          <h1>Capture Every Conversation</h1>
+          <h1>Unlock Insights<br></br>Amplify Voices</h1>
           <div className="subtitle-wrapper">
             <p>
-              Instantly convert X Spaces into shareable content with AI
-              precision
+            X Spaces Text-to-Speech and AI Analysis<br></br>Capture Every Conversation
             </p>
             <Box className="space-input" display="flex" gap={2}>
               <TextField
@@ -99,7 +98,7 @@ export default function App() {
                 className="primary"
                 onClick={() => handleTranscribe(spaceUrl)}
               >
-                Transcribe
+                Analyze
               </LoadingButton>
             </Box>
           </div>
@@ -119,7 +118,7 @@ export default function App() {
             className="primary"
             onClick={() => setShowConfirmation(true)}
           >
-            Try For Free
+            Try Preview
           </Button>
           <Button
             variant="outlined"
@@ -253,7 +252,7 @@ export default function App() {
           <span>Powered by</span>
           <div className="badge">ElizaOS</div>
           <div className="badge">Ethereum</div>
-          <div className="badge">Groq</div>
+          <div className="badge">Grok</div>
         </div>
       </section>
 
@@ -262,21 +261,21 @@ export default function App() {
           <div className="feature-icon">✍️</div>
           <h3>Transcribe</h3>
           <p>
-            The days of manually taking notes for your Twitter space are over
+            Converting your X Space audio into text makes it easy to analyze
           </p>
           <div className="feature-detail">Get your time back</div>
         </div>
         <div className="feature">
           <div className="feature-icon">📋</div>
-          <h3>Summarize</h3>
-          <p>Generate awesome automated X space summaries in seconds</p>
-          <div className="feature-detail">Starting at $1/space</div>
+          <h3>Analyze</h3>
+          <p>Unlock awesome insights from your X Spaces in seconds</p>
+          <div className="feature-detail">Harness the power of AI</div>
         </div>
         <div className="feature">
           <div className="feature-icon">📣</div>
           <h3>Share</h3>
-          <p>Create memorable threads and share with your audience</p>
-          <div className="feature-detail">Customizable content</div>
+          <p>Compilie your insights and share with your audience</p>
+          <div className="feature-detail">Infinitely customizable</div>
         </div>
       </section>
 
@@ -285,18 +284,18 @@ export default function App() {
         <div className="steps">
           <div className="step">
             <div className="step-number">1</div>
-            <h4>Connect Wallet</h4>
-            <p>Link your Web3 wallet</p>
+            <h4>Connect Space</h4>
+            <p>Paste the URL of your live X Space</p>
           </div>
           <div className="step">
             <div className="step-number">2</div>
-            <h4>Deposit USDT</h4>
-            <p>Fund your account</p>
+            <h4>Retrieve Listeners</h4>
+            <p>All listener X accounts will be retrieved</p>
           </div>
           <div className="step">
             <div className="step-number">3</div>
-            <h4>Start Transcribing</h4>
-            <p>Deploy in any Space</p>
+            <h4>Dive In</h4>
+            <p>Leverage LLMs to analyze the space</p>
           </div>
         </div>
       </section>

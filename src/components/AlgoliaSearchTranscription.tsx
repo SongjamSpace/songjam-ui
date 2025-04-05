@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { searchClient } from "@algolia/client-search";
+import React, { useState } from 'react';
+import { searchClient } from '@algolia/client-search';
 import {
   // TextField,
   // Paper,
@@ -9,9 +9,9 @@ import {
   // Typography,
   Button,
   CircularProgress,
-} from "@mui/material";
-import { Download as DownloadIcon } from "@mui/icons-material";
-import { getFullTranscription } from "../services/db/spaces.service";
+} from '@mui/material';
+import { Download as DownloadIcon } from '@mui/icons-material';
+import { getFullTranscription } from '../services/db/spaces.service';
 // import { getSegments, Segment } from "../services/db/spaces.service";
 // import { formatSeconds } from "../utils";
 // import { debounce } from "lodash";
@@ -60,9 +60,9 @@ const TranscriptionDownloadButton: React.FC<{
     if (isDownloading) return;
     setIsDownloading(true);
     const transcription = await getFullTranscription(spaceId);
-    const blob = new Blob([transcription], { type: "text/plain" });
+    const blob = new Blob([transcription], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
     a.download = `${title}.txt`;
     a.click();
@@ -70,7 +70,7 @@ const TranscriptionDownloadButton: React.FC<{
   };
   return (
     <Box
-      sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
+      sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
     >
       <Button
         onClick={onDownload}
@@ -80,16 +80,16 @@ const TranscriptionDownloadButton: React.FC<{
           ) : (
             <DownloadIcon
               sx={{
-                animation: "float 2s ease-in-out infinite",
-                "@keyframes float": {
-                  "0%": {
-                    transform: "translateY(0px)",
+                animation: 'float 2s ease-in-out infinite',
+                '@keyframes float': {
+                  '0%': {
+                    transform: 'translateY(0px)',
                   },
-                  "50%": {
-                    transform: "translateY(-4px)",
+                  '50%': {
+                    transform: 'translateY(-4px)',
                   },
-                  "100%": {
-                    transform: "translateY(0px)",
+                  '100%': {
+                    transform: 'translateY(0px)',
                   },
                 },
               }}
@@ -98,17 +98,17 @@ const TranscriptionDownloadButton: React.FC<{
         }
         variant="contained"
         sx={{
-          background: "linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)",
-          "&:hover": {
-            background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
-            "& .MuiSvgIcon-root": {
-              animation: "bounce 0.5s ease-in-out",
-              "@keyframes bounce": {
-                "0%, 100%": {
-                  transform: "translateY(0)",
+          background: 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)',
+          '&:hover': {
+            background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+            '& .MuiSvgIcon-root': {
+              animation: 'bounce 0.5s ease-in-out',
+              '@keyframes bounce': {
+                '0%, 100%': {
+                  transform: 'translateY(0)',
                 },
-                "50%": {
-                  transform: "translateY(-8px)",
+                '50%': {
+                  transform: 'translateY(-8px)',
                 },
               },
             },

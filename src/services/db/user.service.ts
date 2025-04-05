@@ -7,8 +7,8 @@ import {
   serverTimestamp,
   setDoc,
   updateDoc,
-} from "firebase/firestore";
-import { db } from "../firebase.service";
+} from 'firebase/firestore';
+import { db } from '../firebase.service';
 
 export type SongjamUser = {
   displayName: string | null;
@@ -25,7 +25,7 @@ type SongjamUserDoc = SongjamUser & {
   createdAt: string;
 };
 
-const USER_COLLECTION = "users";
+const USER_COLLECTION = 'users';
 export const createUser = async (id: string, user: SongjamUser) => {
   const userRef = doc(db, USER_COLLECTION, id);
   const userDoc = await getDoc(userRef);

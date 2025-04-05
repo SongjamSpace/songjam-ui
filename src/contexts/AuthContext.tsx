@@ -1,6 +1,6 @@
-import { createContext, useContext, ReactNode } from "react";
-import { useAuth } from "../hooks/useAuth";
-import { SongjamUser } from "../services/db/user.service";
+import { createContext, useContext, ReactNode } from 'react';
+import { useAuth } from '../hooks/useAuth';
+import { SongjamUser } from '../services/db/user.service';
 
 interface AuthContextType {
   user: SongjamUser | null;

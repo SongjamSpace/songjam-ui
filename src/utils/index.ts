@@ -3,5 +3,5 @@ export const formatSeconds = (seconds: number) => {
   const remainingSeconds = seconds % 60;
   return `${minutes}:${Math.floor(remainingSeconds)
     .toString()
-    .padStart(2, "0")}`;
+    .padStart(2, '0')}`;
 };

@@ -1,8 +1,8 @@
-import React, { useRef } from "react";
-import { Box, Typography, Skeleton, IconButton } from "@mui/material";
-import { Link } from "react-router-dom";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import React, { useRef } from 'react';
+import { Box, Typography, Skeleton, IconButton } from '@mui/material';
+import { Link } from 'react-router-dom';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
 interface TrendingSpace {
   spaceId: string;
@@ -31,43 +31,43 @@ export const TrendingSpaces: React.FC<TrendingSpacesProps> = ({
     }
   };
 
-  const scroll = (direction: "left" | "right") => {
+  const scroll = (direction: 'left' | 'right') => {
     if (scrollContainerRef.current) {
       const scrollAmount = scrollContainerRef.current.clientWidth; // Scroll by the width of the container
       scrollContainerRef.current.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth",
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth',
       });
     }
   };
 
   return (
-    <Box sx={{ mb: 4, position: "relative" }}>
+    <Box sx={{ mb: 4, position: 'relative' }}>
       <Typography
         variant="h6"
         sx={{
-          color: "#60a5fa",
+          color: '#60a5fa',
           mb: 2,
-          fontWeight: "bold",
+          fontWeight: 'bold',
         }}
       >
         Trending Spaces
       </Typography>
-      <Box sx={{ position: "relative" }}>
+      <Box sx={{ position: 'relative' }}>
         {showLeftArrow && (
           <IconButton
-            onClick={() => scroll("left")}
+            onClick={() => scroll('left')}
             sx={{
-              position: "absolute",
+              position: 'absolute',
               left: -20,
-              top: "50%",
-              transform: "translateY(-50%)",
-              background: "rgba(96, 165, 250, 0.1)",
-              backdropFilter: "blur(10px)",
-              color: "#60a5fa",
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'rgba(96, 165, 250, 0.1)',
+              backdropFilter: 'blur(10px)',
+              color: '#60a5fa',
               zIndex: 2,
-              "&:hover": {
-                background: "rgba(96, 165, 250, 0.2)",
+              '&:hover': {
+                background: 'rgba(96, 165, 250, 0.2)',
               },
             }}
           >
@@ -76,18 +76,18 @@ export const TrendingSpaces: React.FC<TrendingSpacesProps> = ({
         )}
         {showRightArrow && (
           <IconButton
-            onClick={() => scroll("right")}
+            onClick={() => scroll('right')}
             sx={{
-              position: "absolute",
+              position: 'absolute',
               right: -20,
-              top: "50%",
-              transform: "translateY(-50%)",
-              background: "rgba(96, 165, 250, 0.1)",
-              backdropFilter: "blur(10px)",
-              color: "#60a5fa",
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'rgba(96, 165, 250, 0.1)',
+              backdropFilter: 'blur(10px)',
+              color: '#60a5fa',
               zIndex: 2,
-              "&:hover": {
-                background: "rgba(96, 165, 250, 0.2)",
+              '&:hover': {
+                background: 'rgba(96, 165, 250, 0.2)',
               },
             }}
           >
@@ -98,17 +98,17 @@ export const TrendingSpaces: React.FC<TrendingSpacesProps> = ({
           ref={scrollContainerRef}
           onScroll={handleScroll}
           sx={{
-            display: "flex",
-            alignItems: "center",
+            display: 'flex',
+            alignItems: 'center',
             gap: 2,
-            overflowX: "hidden",
+            overflowX: 'hidden',
             pb: 2,
-            scrollbarWidth: "none",
-            msOverflowStyle: "none",
-            width: "calc(420px + 16px)", // Width of two items (200px * 2) plus gap (16px)
-            margin: "0 auto",
-            "&::-webkit-scrollbar": {
-              display: "none",
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            width: 'calc(420px + 16px)', // Width of two items (200px * 2) plus gap (16px)
+            margin: '0 auto',
+            '&::-webkit-scrollbar': {
+              display: 'none',
             },
           }}
         >
@@ -120,10 +120,10 @@ export const TrendingSpaces: React.FC<TrendingSpacesProps> = ({
                     key={index}
                     variant="rectangular"
                     sx={{
-                      bgcolor: "rgba(96, 165, 250, 0.1)",
+                      bgcolor: 'rgba(96, 165, 250, 0.1)',
                       borderRadius: 2,
-                      width: "200px",
-                      height: "60px",
+                      width: '200px',
+                      height: '60px',
                       flexShrink: 0,
                     }}
                   />
@@ -132,37 +132,37 @@ export const TrendingSpaces: React.FC<TrendingSpacesProps> = ({
                 <Link
                   key={space.spaceId}
                   to={`/${space.spaceId}`}
-                  style={{ textDecoration: "none" }}
+                  style={{ textDecoration: 'none' }}
                 >
                   <Box
                     sx={{
                       background:
-                        "linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.15))",
-                      backdropFilter: "blur(10px)",
-                      border: "1px solid rgba(96, 165, 250, 0.2)",
+                        'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.15))',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(96, 165, 250, 0.2)',
                       borderRadius: 2,
                       p: 2,
-                      width: "200px",
+                      width: '200px',
                       flexShrink: 0,
-                      transition: "all 0.2s ease",
-                      cursor: "pointer",
-                      "&:hover": {
-                        transform: "translateY(-2px)",
+                      transition: 'all 0.2s ease',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
                         background:
-                          "linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.2))",
-                        border: "1px solid rgba(96, 165, 250, 0.3)",
+                          'linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.2))',
+                        border: '1px solid rgba(96, 165, 250, 0.3)',
                       },
                     }}
                   >
                     <Typography
                       sx={{
-                        color: "white",
-                        fontWeight: "500",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        display: "-webkit-box",
+                        color: 'white',
+                        fontWeight: '500',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: '-webkit-box',
                         WebkitLineClamp: 2,
-                        WebkitBoxOrient: "vertical",
+                        WebkitBoxOrient: 'vertical',
                       }}
                     >
                       {space.title}

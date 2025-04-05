@@ -1,9 +1,9 @@
 // Import the functions you need from the SDKs you need
 // import { getStripePayments } from "@stripe/firestore-stripe-payments";
-import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
-import { getAuth } from "firebase/auth";
+import { initializeApp } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
+import { getAuth } from 'firebase/auth';
 // import { getStripePayments } from "@invertase/firestore-stripe-payments";
 // import { getAnalytics } from "firebase/analytics";
 // TODO: Add SDKs for Firebase products that you want to use

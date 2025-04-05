@@ -1,71 +1,89 @@
-import { useState, useEffect } from "react";
-import "./App.css";
-import Background from "./components/Background";
-import Logo from "./components/Logo";
+import { useState, useEffect } from 'react';
+import './App.css';
+import Background from './components/Background';
+import Logo from './components/Logo';
 import {
   Button,
   TextField,
   TextareaAutosize,
   Dialog,
+  DialogTitle,
   DialogContent,
+  DialogActions,
   IconButton,
   Box,
   Typography,
-} from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import { LoadingButton } from "@mui/lab";
-import { getSpace } from "./services/db/spaces.service";
-import { submitToAirtable } from "./services/airtable.service";
-import { useCollectionData } from "react-firebase-hooks/firestore";
-import { collection, query, where } from "firebase/firestore";
-import { db } from "./services/firebase.service";
+  List,
+  ListItemButton,
+  ListItemText,
+  CircularProgress,
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { LoadingButton } from '@mui/lab';
+import { submitToAirtable } from './services/airtable.service';
+import { useCollectionData } from 'react-firebase-hooks/firestore';
+import { collection, query, where, orderBy } from 'firebase/firestore';
+import { db } from './services/firebase.service';
+import { transcribeSpace } from './services/transcription.service';
+import { toast } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 export default function App() {
+  const { t, i18n } = useTranslation();
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [spaceUrl, setSpaceUrl] = useState("");
+  const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false);
+  const [spaceUrl, setSpaceUrl] = useState('');
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [spaces, loading, error] = useCollectionData(
     query(
-      collection(db, "spaces"),
-      where("transcription_status", "==", "ENDED")
+      collection(db, 'spaces'),
+      where('transcription_status', '==', 'ENDED'),
+      orderBy('createdAt', 'desc')
     )
   );
 
-  const transcribeSpace = async (spaceUrl: string) => {
-    if (isLoading) return;
+  const handleAnalyze = async (url: string) => {
+    if (isLoading || !url.trim()) return;
     setIsLoading(true);
-    // x.com/i/spaces/1nAKEgjnRRkJL
-    const spaceId = spaceUrl.split("/").pop();
-    // Check if space already exists
-    if (spaceId) {
-      const space = await getSpace(spaceId);
-      if (!space) {
-        try {
-          const res = await axios.post(
-            `${import.meta.env.VITE_JAM_SERVER_URL}/transcribe-recorded-space`,
-            {
-              spaceId,
-            }
-          );
-          if (res.data.status === "success") {
-            navigate(`/${spaceId}`);
-          }
-        } catch (error) {
-          console.error(error);
-          alert("Error transcribing the space, please try again later");
-        }
-      } else {
-        navigate(`/${spaceId}`);
+    const spaceId = url.split('/').pop();
+    const res = await axios.get(
+      `${import.meta.env.VITE_JAM_SERVER_URL}/get-space/${spaceId}`
+    );
+    if (res.data.result) {
+      const state = res.data.result.metadata.state;
+      if (state === 'Ended') {
+        const path = await transcribeSpace(url);
+        navigate(path);
+      } else if (state === 'Running') {
+        const res = await axios.post(
+          `${import.meta.env.VITE_JAM_SERVER_URL}/listen-live-space`,
+          { spaceId }
+        );
+        navigate(`/live/${spaceId}`);
       }
+    } else {
+      toast.error('Error analyzing space, please try again', {
+        duration: 3000,
+        position: 'bottom-right',
+        style: {
+          background: '#333',
+          color: '#fff',
+        },
+      });
     }
     setIsLoading(false);
   };
 
+  const handleLanguageChange = () => {
+    const newLang = i18n.language === 'en' ? 'zh' : 'en';
+    i18n.changeLanguage(newLang);
+  };
+
   useEffect(() => {
-    document.body.className = "dark";
+    document.body.className = 'dark';
   }, []);
 
   return (
@@ -76,74 +94,83 @@ export default function App() {
           <Logo />
           <span>Songjam</span>
         </div>
+        <Button
+          onClick={handleLanguageChange}
+          variant="outlined"
+          size="small"
+          sx={{
+            color: 'var(--text-secondary)',
+            borderColor: 'var(--text-secondary)',
+            '&:hover': {
+              borderColor: 'white',
+              color: 'white',
+            },
+          }}
+        >
+          {t('switchLanguage')}
+        </Button>
       </nav>
 
       <section className="hero">
         <div className="stats-banner">
           <div className="stat">
             <span className="stat-number">99%</span>
-            <span className="stat-label">Accuracy</span>
+            <span className="stat-label">{t('accuracy')}</span>
           </div>
           <div className="stat">
             <span className="stat-number">X</span>
-            <span className="stat-label">Spaces Native</span>
+            <span className="stat-label">{t('spacesNative')}</span>
           </div>
           <div className="stat">
             <span className="stat-number">USDT</span>
-            <span className="stat-label">Settlement</span>
+            <span className="stat-label">{t('settlement')}</span>
           </div>
         </div>
         <div className="animated-title">
-          <h1>Capture Every Conversation</h1>
+          <h1>
+            {t('heroTitle1')}
+            <br></br>
+            {t('heroTitle2')}
+          </h1>
           <div className="subtitle-wrapper">
             <p>
-              Instantly convert X Spaces into shareable content with AI
-              precision
+              {t('heroSubtitle1')}
+              <br></br>
+              {t('heroSubtitle2')}
             </p>
             <Box className="space-input" display="flex" gap={2}>
               <TextField
                 fullWidth
-                placeholder="Paste your X space URL here to try it now"
-                onChange={(e) => {
-                  if (isLoading) return;
-                  setSpaceUrl(e.target.value);
-                }}
+                placeholder={t('spaceInputPlaceholder')}
+                onChange={(e) => setSpaceUrl(e.target.value)}
                 variant="outlined"
               />
               <LoadingButton
                 loading={isLoading}
                 variant="contained"
                 className="primary"
-                onClick={() => transcribeSpace(spaceUrl)}
+                onClick={() => handleAnalyze(spaceUrl)}
+                sx={{ whiteSpace: 'nowrap' }}
               >
-                Transcribe
+                {t('analyzeButton')}
               </LoadingButton>
             </Box>
           </div>
         </div>
-        {/* {spaces?.length && (
-          <TrendingSpaces
-            spaces={spaces.map((space) => ({
-              spaceId: space.spaceId,
-              title: space.title,
-            }))}
-            loading={loading}
-          />
-        )} */}
         <div className="cta-buttons">
           <Button
             variant="contained"
             className="primary"
-            onClick={() => setShowConfirmation(true)}
+            onClick={() => setIsPreviewDialogOpen(true)}
           >
-            Try For Free
+            {t('tryPreviewButton')}
           </Button>
           <Button
             variant="outlined"
             className="secondary"
             onClick={() => setShowConfirmation(true)}
           >
-            View Pricing
+            {t('viewPricingButton')}
           </Button>
 
           <Dialog
@@ -152,32 +179,32 @@ export default function App() {
             maxWidth="sm"
             fullWidth
           >
-            <DialogContent sx={{ bgcolor: "rgba(15, 23, 42, 0.95)", p: 0 }}>
+            <DialogContent sx={{ bgcolor: 'rgba(15, 23, 42, 0.95)', p: 0 }}>
               <IconButton
                 onClick={() => setShowConfirmation(false)}
                 sx={{
-                  position: "absolute",
+                  position: 'absolute',
                   right: 8,
                   top: 8,
-                  color: "var(--text-secondary)",
+                  color: 'var(--text-secondary)',
                 }}
               >
                 <CloseIcon />
               </IconButton>
-              <Box sx={{ textAlign: "center", p: 3 }}>
+              <Box sx={{ textAlign: 'center', p: 3 }}>
                 <Typography
                   variant="h5"
                   sx={{
                     mb: 2,
                     background:
-                      "linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
+                      'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
                   }}
                 >
                   🎉 Special Launch Offer - Only $1 USDT! 🎉
                 </Typography>
-                <Typography sx={{ mb: 3, color: "var(--text-secondary)" }}>
+                <Typography sx={{ mb: 3, color: 'var(--text-secondary)' }}>
                   Get full access to our AI-powered transcription service for
                   just $1 USDT. Try it now with zero risk - preview the timeline
                   before paying!
@@ -186,20 +213,20 @@ export default function App() {
                   sx={{
                     mb: 3,
                     p: 2,
-                    bgcolor: "rgba(96, 165, 250, 0.1)",
+                    bgcolor: 'rgba(96, 165, 250, 0.1)',
                     borderRadius: 2,
                   }}
                 >
                   <Typography
                     variant="subtitle1"
-                    sx={{ mb: 2, color: "#60a5fa" }}
+                    sx={{ mb: 2, color: '#60a5fa' }}
                   >
                     ✨ What You'll Get:
                   </Typography>
                   <Typography
                     sx={{
-                      color: "var(--text-secondary)",
-                      fontSize: "0.9rem",
+                      color: 'var(--text-secondary)',
+                      fontSize: '0.9rem',
                       mb: 1,
                     }}
                   >
@@ -207,22 +234,25 @@ export default function App() {
                   </Typography>
                   <Typography
                     sx={{
-                      color: "var(--text-secondary)",
-                      fontSize: "0.9rem",
+                      color: 'var(--text-secondary)',
+                      fontSize: '0.9rem',
                       mb: 1,
                     }}
                   >
                     • 1 x AI-Powered Summary
                   </Typography>
                   <Typography
-                    sx={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}
+                    sx={{
+                      color: 'var(--text-secondary)',
+                      fontSize: '0.9rem',
+                    }}
                   >
                     • Full Thread with 3 x Remixes
                   </Typography>
                 </Box>
                 <TextField
                   fullWidth
-                  placeholder="Paste your X space URL here (e.g., x.com/i/spaces/123...)"
+                  placeholder={t('spaceInputPlaceholderDialog')}
                   variant="outlined"
                   sx={{ mb: 3 }}
                   value={spaceUrl}
@@ -234,16 +264,16 @@ export default function App() {
                   fullWidth
                   onClick={() => {
                     setShowConfirmation(false);
-                    transcribeSpace(spaceUrl);
+                    handleAnalyze(spaceUrl);
                   }}
                   sx={{
                     py: 1.5,
-                    fontSize: "1.1rem",
+                    fontSize: '1.1rem',
                     background:
-                      "linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)",
-                    "&:hover": {
-                      transform: "translateY(-2px)",
-                      boxShadow: "0 5px 15px rgba(96, 165, 250, 0.4)",
+                      'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 5px 15px rgba(96, 165, 250, 0.4)',
                     },
                   }}
                 >
@@ -252,9 +282,9 @@ export default function App() {
                 <Typography
                   variant="caption"
                   sx={{
-                    display: "block",
+                    display: 'block',
                     mt: 2,
-                    color: "var(--text-secondary)",
+                    color: 'var(--text-secondary)',
                   }}
                 >
                   No commitment required - Preview before you pay!
@@ -262,9 +292,138 @@ export default function App() {
               </Box>
             </DialogContent>
           </Dialog>
+
+          <Dialog
+            open={isPreviewDialogOpen}
+            onClose={() => setIsPreviewDialogOpen(false)}
+            maxWidth="md"
+            fullWidth
+            PaperProps={{ sx: { bgcolor: 'rgba(15, 23, 42, 0.95)' } }}
+          >
+            <DialogContent sx={{ p: 0, border: 'none' }}>
+              <IconButton
+                aria-label="close"
+                onClick={() => setIsPreviewDialogOpen(false)}
+                sx={{
+                  position: 'absolute',
+                  right: 8,
+                  top: 8,
+                  color: 'var(--text-secondary)',
+                  zIndex: 1,
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+              <Box sx={{ textAlign: 'center', p: 3 }}>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    mb: 2,
+                    background:
+                      'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
+                >
+                  🔭 Preview Analyzed Spaces 🔭
+                </Typography>
+                <Typography sx={{ mb: 3, color: 'var(--text-secondary)' }}>
+                  Click on any space below to see an example of the analysis
+                  output. Paste your own space URL on the homepage to try it!
+                </Typography>
+                <Box
+                  sx={{
+                    mb: 3,
+                    p: 2,
+                    bgcolor: 'rgba(96, 165, 250, 0.1)',
+                    borderRadius: 2,
+                    textAlign: 'left',
+                  }}
+                >
+                  <Typography
+                    variant="subtitle1"
+                    sx={{ mb: 2, color: '#60a5fa' }}
+                  >
+                    🚀 Available Previews:
+                  </Typography>
+
+                  {loading && (
+                    <Box
+                      sx={{ display: 'flex', justifyContent: 'center', my: 3 }}
+                    >
+                      <CircularProgress color="inherit" />
+                    </Box>
+                  )}
+                  {error && (
+                    <Typography color="error" sx={{ my: 3 }}>
+                      {t('errorLoadingSpaces', { error: error.message })}
+                    </Typography>
+                  )}
+                  {!loading && !error && spaces && spaces.length > 0 && (
+                    <List sx={{ maxHeight: 300, overflow: 'auto', p: 0 }}>
+                      {spaces.map((space: any) => (
+                        <ListItemButton
+                          key={space.spaceId}
+                          onClick={() => {
+                            setIsPreviewDialogOpen(false);
+                            navigate(`/crm/${space.spaceId}`);
+                          }}
+                          sx={{
+                            mb: 1,
+                            borderRadius: 1,
+                            bgcolor: 'rgba(255, 255, 255, 0.05)',
+                            '&:hover': {
+                              bgcolor: 'rgba(255, 255, 255, 0.1)',
+                            },
+                          }}
+                        >
+                          <ListItemText
+                            primary={space.title || `Space ${space.spaceId}`}
+                            secondary={`${t('analyzedOn')}: ${
+                              space.createdAt?.toDate
+                                ? space.createdAt.toDate().toLocaleDateString()
+                                : 'N/A'
+                            }`}
+                            primaryTypographyProps={{
+                              color: 'var(--text-primary)',
+                            }}
+                            secondaryTypographyProps={{
+                              color: 'var(--text-secondary)',
+                              fontSize: '0.8rem',
+                            }}
+                          />
+                        </ListItemButton>
+                      ))}
+                    </List>
+                  )}
+                  {!loading && !error && (!spaces || spaces.length === 0) && (
+                    <Typography
+                      sx={{
+                        my: 3,
+                        textAlign: 'center',
+                        color: 'var(--text-secondary)',
+                      }}
+                    >
+                      {t('noPreviews')}
+                    </Typography>
+                  )}
+                </Box>
+                <Typography
+                  sx={{
+                    color: 'var(--text-secondary)',
+                    fontSize: '0.9rem',
+                    textAlign: 'center',
+                  }}
+                >
+                  This is just a preview. Analyze your own space for full
+                  insights!
+                </Typography>
+              </Box>
+            </DialogContent>
+          </Dialog>
         </div>
         <div className="trust-badges">
-          <span>Powered by</span>
+          <span>{t('poweredBy')}</span>
           <div className="badge">ElizaOS</div>
           <div className="badge">Ethereum</div>
           <div className="badge">Grok</div>
@@ -274,53 +433,48 @@ export default function App() {
       <section className="features">
         <div className="feature">
           <div className="feature-icon">✍️</div>
-          <h3>Transcribe</h3>
-          <p>
-            The days of manually taking notes for your Twitter space are over
-          </p>
-          <div className="feature-detail">Get your time back</div>
+          <h3>{t('transcribeFeatureTitle')}</h3>
+          <p>{t('transcribeFeatureText')}</p>
+          <div className="feature-detail">{t('transcribeFeatureDetail')}</div>
         </div>
         <div className="feature">
           <div className="feature-icon">📋</div>
-          <h3>Summarize</h3>
-          <p>Generate awesome automated X space summaries in seconds</p>
-          <div className="feature-detail">Starting at $1/space</div>
+          <h3>{t('analyzeFeatureTitle')}</h3>
+          <p>{t('analyzeFeatureText')}</p>
+          <div className="feature-detail">{t('analyzeFeatureDetail')}</div>
         </div>
         <div className="feature">
           <div className="feature-icon">📣</div>
-          <h3>Share</h3>
-          <p>Create memorable threads and share with your audience</p>
-          <div className="feature-detail">Customizable content</div>
+          <h3>{t('shareFeatureTitle')}</h3>
+          <p>{t('shareFeatureText')}</p>
+          <div className="feature-detail">{t('shareFeatureDetail')}</div>
         </div>
       </section>
 
       <section className="how-it-works">
-        <h2>How It Works</h2>
+        <h2>{t('howItWorksTitle')}</h2>
         <div className="steps">
           <div className="step">
             <div className="step-number">1</div>
-            <h4>Connect Wallet</h4>
-            <p>Link your Web3 wallet</p>
+            <h4>{t('step1Title')}</h4>
+            <p>{t('step1Text')}</p>
           </div>
           <div className="step">
             <div className="step-number">2</div>
-            <h4>Deposit USDT</h4>
-            <p>Fund your account</p>
+            <h4>{t('step2Title')}</h4>
+            <p>{t('step2Text')}</p>
           </div>
           <div className="step">
             <div className="step-number">3</div>
-            <h4>Start Transcribing</h4>
-            <p>Deploy in any Space</p>
+            <h4>{t('step3Title')}</h4>
+            <p>{t('step3Text')}</p>
           </div>
         </div>
       </section>
 
       <section className="honors">
-        <h2>Honors</h2>
-        <p>
-          Songjam builders have won top awards from the following crypto
-          leaders:
-        </p>
+        <h2>{t('honorsTitle')}</h2>
+        <p>{t('honorsText')}</p>
         <div className="honors-grid">
           <div className="honor-item">
             <img
@@ -390,13 +544,13 @@ export default function App() {
       </section>
 
       <section className="contact">
-        <h2>Contact Us</h2>
-        <p>Got a beefy project or custom request? Drop us a line</p>
+        <h2>{t('contactTitle')}</h2>
+        <p>{t('contactText')}</p>
         <form className="contact-form">
           <div className="form-group">
             <TextField
               fullWidth
-              placeholder="Name"
+              placeholder={t('namePlaceholder')}
               variant="outlined"
               name="name"
               required
@@ -406,19 +560,19 @@ export default function App() {
           <div className="form-group">
             <TextField
               fullWidth
-              placeholder="Telegram Username"
+              placeholder={t('telegramPlaceholder')}
               variant="outlined"
               name="telegram"
               required
-              inputProps={{ pattern: "@.*" }}
-              helperText="Must start with @"
+              inputProps={{ pattern: '@.*' }}
+              helperText={t('telegramHelp')}
             />
           </div>
           <div className="form-group">
             <TextField
               fullWidth
               type="email"
-              placeholder="Email"
+              placeholder={t('emailPlaceholder')}
               variant="outlined"
               name="email"
               required
@@ -426,11 +580,11 @@ export default function App() {
           </div>
           <div className="form-group">
             <TextareaAutosize
-              placeholder="How can we help?"
+              placeholder={t('messagePlaceholder')}
               name="message"
               required
               minLength={10}
-              style={{ width: "100%", minHeight: "100px" }}
+              style={{ width: '100%', minHeight: '100px' }}
             />
           </div>
           <Button
@@ -439,7 +593,7 @@ export default function App() {
             className="primary"
             onClick={async (e) => {
               e.preventDefault();
-              const form = e.currentTarget.closest("form");
+              const form = e.currentTarget.closest('form');
               if (!form) return;
 
               if (!form.checkValidity()) {
@@ -455,37 +609,37 @@ export default function App() {
                   !import.meta.env.VITE_AIRTABLE_TABLE_NAME
                 ) {
                   alert(
-                    "Missing Airtable configuration. Please check your environment variables."
+                    'Missing Airtable configuration. Please check your environment variables.'
                   );
                   return;
                 }
 
                 const result = await submitToAirtable({
-                  name: formData.get("name") as string,
-                  email: formData.get("email") as string,
-                  telegram: formData.get("telegram") as string,
-                  message: formData.get("message") as string,
+                  name: formData.get('name') as string,
+                  email: formData.get('email') as string,
+                  telegram: formData.get('telegram') as string,
+                  message: formData.get('message') as string,
                 });
 
                 if (result) {
-                  alert("Form submitted successfully!");
+                  alert('Form submitted successfully!');
                   form.reset();
                 }
               } catch (error: any) {
-                console.error("Submission error:", error);
+                console.error('Submission error:', error);
                 alert(
-                  error?.message || "Error submitting form. Please try again."
+                  error?.message || 'Error submitting form. Please try again.'
                 );
               }
             }}
           >
-            Submit
+            {t('submitButton')}
           </Button>
         </form>
       </section>
 
       <section className="social-media">
-        <h2>Connect With Us</h2>
+        <h2>{t('connectWithUsTitle')}</h2>
         <Box display="flex" flexWrap="wrap" gap={8} justifyContent="center">
           <a
             href="https://www.producthunt.com/posts/songjam-otter-ai-for-x-spaces"
@@ -494,7 +648,7 @@ export default function App() {
             className="social-link"
           >
             <img src="/logos/product-hunt.png" alt="Product Hunt" />
-            <span>Product Hunt</span>
+            <span>{t('productHunt')}</span>
           </a>
           <a
             href="https://github.com/songjamspace"
@@ -503,7 +657,7 @@ export default function App() {
             className="social-link"
           >
             <img src="/logos/github.png" alt="GitHub" />
-            <span>GitHub</span>
+            <span>{t('github')}</span>
           </a>
           <a
             href="https://x.com/SongjamSpace"
@@ -512,7 +666,7 @@ export default function App() {
             className="social-link"
           >
             <img src="/logos/twitter.png" alt="Twitter" />
-            <span>Twitter</span>
+            <span>{t('twitter')}</span>
           </a>
           <a
             href="https://www.linkedin.com/company/songjam/"
@@ -521,13 +675,13 @@ export default function App() {
             className="social-link"
           >
             <img src="/logos/linkedin.png" alt="LinkedIn" />
-            <span>LinkedIn</span>
+            <span>{t('linkedin')}</span>
           </a>
         </Box>
       </section>
 
       <footer className="footer">
-        <p>&copy; Songjam 2025. All rights reserved.</p>
+        <p>{t('footerText')}</p>
       </footer>
     </main>
   );

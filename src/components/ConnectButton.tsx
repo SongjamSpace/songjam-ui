@@ -1,5 +1,5 @@
-import { Button, Chip, Tooltip } from "@mui/material";
-import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
+import { Button, Chip, Tooltip } from '@mui/material';
+import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 
 type Props = {
   onConnect: () => void;
@@ -38,7 +38,7 @@ const ConnectButton = ({
       disabled={isConnecting}
       size="small"
     >
-      {isConnecting ? "Connecting..." : "Connect Wallet"}
+      {isConnecting ? 'Connecting...' : 'Connect Wallet'}
     </Button>
   );
 };

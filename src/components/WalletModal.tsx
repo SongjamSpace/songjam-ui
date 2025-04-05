@@ -6,13 +6,13 @@ import {
   Button,
   Box,
   Divider,
-} from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 
 interface WalletModalProps {
   open: boolean;
   onClose: () => void;
-  onSelectChain: (chain: "eth" | "base") => void;
+  onSelectChain: (chain: 'eth' | 'base') => void;
   isConnected: boolean;
   onDisconnect: () => void;
 }
@@ -30,7 +30,7 @@ export const WalletModal = ({
         Select Network
         <IconButton
           onClick={onClose}
-          sx={{ position: "absolute", right: 8, top: 8 }}
+          sx={{ position: 'absolute', right: 8, top: 8 }}
         >
           <CloseIcon />
         </IconButton>
@@ -39,7 +39,7 @@ export const WalletModal = ({
         <Box display="flex" flexDirection="column" gap={2} py={2}>
           <Button
             variant="contained"
-            onClick={() => onSelectChain("eth")}
+            onClick={() => onSelectChain('eth')}
             fullWidth
             sx={{ height: 56 }}
           >
@@ -47,7 +47,7 @@ export const WalletModal = ({
           </Button>
           <Button
             variant="contained"
-            onClick={() => onSelectChain("base")}
+            onClick={() => onSelectChain('base')}
             fullWidth
             sx={{ height: 56 }}
           >

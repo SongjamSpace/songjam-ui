@@ -19,30 +19,22 @@ import {
   Select,
   MenuItem,
   Drawer,
-  Grid,
   Button,
   Tab,
   Tabs,
   CircularProgress,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import FilterListIcon from '@mui/icons-material/FilterList';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
-// import MarkEmailReadIcon from '@mui/icons-material/MarkEmailRead';
-// import GroupAddIcon from '@mui/icons-material/GroupAdd';
-// import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import CloseIcon from '@mui/icons-material/Close';
 import {
   getSpaceListeners,
   Space,
   TwitterUser,
 } from '../../services/db/spaces.service';
-import {
-  enrichSpeakerData,
-  XUserProfile,
-  XTweet,
-} from '../../services/x.service';
+import { XUserProfile, XTweet } from '../../services/x.service';
 import UserProfileDrawer from './UserProfileDrawer';
+import { useAuth } from '../../hooks/useAuth';
 
 // All possible interests for filtering
 const ALL_INTERESTS = [
@@ -66,38 +58,10 @@ const ALL_LOCATIONS = [
   'Remote',
 ];
 
-// Define the mock attendee type
-type MockAttendee = {
-  id: string;
-  username: string;
-  displayName: string;
-  profileImage: string;
-  bio: string;
-  followersCount: number;
-  engagement: {
-    inSpaceComments: number;
-    likedPosts: number;
-    recentInteractions: number;
-  };
-  interests: string[];
-  recentPosts: {
-    content: string;
-    engagement: number;
-    timestamp: string;
-  }[];
-  location: string;
-  joinedDate: string;
-};
-
-// Define the EnrichedUser type
-type EnrichedUser = TwitterUser & {
-  xProfile?: XUserProfile;
-  xTweets?: XTweet[];
-};
-
 interface AudiencePanelProps {
   onSelectAttendees?: (listeners: string[]) => void;
   space?: Space | null;
+  isSpaceOwner: boolean;
 }
 
 /**
@@ -109,9 +73,11 @@ interface AudiencePanelProps {
 const AudiencePanel: React.FC<AudiencePanelProps> = ({
   onSelectAttendees,
   space,
+  isSpaceOwner,
 }) => {
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedAttendees, setSelectedAttendees] = useState<string[]>([]);
+  // const [selectedAttendees, setSelectedAttendees] = useState<string[]>([]);
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [userDetailDrawer, setUserDetailDrawer] = useState<TwitterUser | null>(
     null
@@ -307,7 +273,36 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
           sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}
         >
           <Tab label="Speakers" value="speakers" />
-          <Tab label="Listeners" value="listeners" />
+          <Tab
+            label={
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                Listeners
+                <Chip
+                  size="small"
+                  label={isSpaceOwner ? 'PRO' : 'Hosts & Speakers Only'}
+                  sx={{
+                    height: 16,
+                    fontSize: '0.6rem',
+                    background: isSpaceOwner
+                      ? 'linear-gradient(90deg, #60a5fa, #8b5cf6)'
+                      : 'rgba(255,255,255,0.1)',
+                    color: isSpaceOwner ? '#fff' : 'inherit',
+                    fontWeight: isSpaceOwner ? 500 : 400,
+                    '& .MuiChip-label': {
+                      px: 1,
+                    },
+                  }}
+                />
+              </Box>
+            }
+            value="listeners"
+            disabled={!isSpaceOwner}
+            sx={{
+              '&.Mui-disabled': {
+                cursor: 'not-allowed',
+              },
+            }}
+          />
         </Tabs>
 
         <List
@@ -451,30 +446,30 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
                     {filteredSpeakers.map((speaker) => (
                       <ListItem
                         key={speaker.userId}
-                        secondaryAction={
-                          <IconButton
-                            edge="end"
-                            onClick={() => handleUserClick(speaker)}
-                            color={
-                              selectedAttendees.includes(speaker.userId)
-                                ? 'primary'
-                                : 'default'
-                            }
-                          >
-                            <BookmarkIcon />
-                          </IconButton>
-                        }
+                        // secondaryAction={
+                        //   <IconButton
+                        //     edge="end"
+                        //     onClick={() => handleUserClick(speaker)}
+                        //     color={
+                        //       selectedAttendees.includes(speaker.userId)
+                        //         ? 'primary'
+                        //         : 'default'
+                        //     }
+                        //   >
+                        //     <BookmarkIcon />
+                        //   </IconButton>
+                        // }
                         onClick={() => handleUserClick(speaker)}
                         sx={{
                           mb: 1,
                           borderRadius: 1,
-                          bgcolor: selectedAttendees.includes(speaker.userId)
-                            ? 'rgba(96, 165, 250, 0.1)'
-                            : 'transparent',
-                          '&:hover': {
-                            bgcolor: 'rgba(255, 255, 255, 0.05)',
-                            cursor: 'pointer',
-                          },
+                          // bgcolor: selectedAttendees.includes(speaker.userId)
+                          //   ? 'rgba(96, 165, 250, 0.1)'
+                          //   : 'transparent',
+                          // '&:hover': {
+                          //   bgcolor: 'rgba(255, 255, 255, 0.05)',
+                          //   cursor: 'pointer',
+                          // },
                         }}
                       >
                         <ListItemAvatar>
@@ -545,9 +540,11 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
             )
           ) : (
             <Box>
-              <Typography variant="h6" sx={{ mb: 2 }}>
-                Listeners
-              </Typography>
+              {filteredListeners.length > 0 && (
+                <Typography variant="h6" sx={{ mb: 2 }}>
+                  Listeners
+                </Typography>
+              )}
               <Box
                 sx={{
                   maxHeight: 'calc(100vh - 500px)', // Adjust this value based on your layout
@@ -578,24 +575,24 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
                           edge="end"
                           onClick={() => handleUserClick(listener)}
                         >
-                          {selectedAttendees.includes(listener.userId) ? (
+                          {/* {selectedAttendees.includes(listener.userId) ? (
                             <BookmarkIcon color="primary" />
-                          ) : (
-                            <BookmarkIcon />
-                          )}
+                          ) : ( */}
+                          <BookmarkIcon />
+                          {/* )} */}
                         </IconButton>
                       }
                       onClick={() => handleUserClick(listener)}
                       sx={{
                         mb: 1,
                         borderRadius: 1,
-                        bgcolor: selectedAttendees.includes(listener.userId)
-                          ? 'rgba(96, 165, 250, 0.1)'
-                          : 'transparent',
-                        '&:hover': {
-                          bgcolor: 'rgba(255, 255, 255, 0.05)',
-                          cursor: 'pointer',
-                        },
+                        // bgcolor: selectedAttendees.includes(listener.userId)
+                        //   ? 'rgba(96, 165, 250, 0.1)'
+                        //   : 'transparent',
+                        // '&:hover': {
+                        //   bgcolor: 'rgba(255, 255, 255, 0.05)',
+                        //   cursor: 'pointer',
+                        // },
                       }}
                     >
                       <ListItemAvatar>
@@ -663,7 +660,7 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
             </Box>
           )}
 
-          {((activeTab === 'speakers' && enrichedSpeakers.length === 0) ||
+          {/* {((activeTab === 'speakers' && enrichedSpeakers.length === 0) ||
             (activeTab === 'listeners' && filteredListeners.length === 0)) && (
             <Box sx={{ p: 3, textAlign: 'center' }}>
               <Typography variant="body2" sx={{ color: 'text.secondary' }}>
@@ -671,7 +668,7 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
                 your filters
               </Typography>
             </Box>
-          )}
+          )} */}
         </List>
       </Paper>
 

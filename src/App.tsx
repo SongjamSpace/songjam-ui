@@ -24,7 +24,7 @@ import { useNavigate } from 'react-router-dom';
 import { LoadingButton } from '@mui/lab';
 import { submitToAirtable } from './services/airtable.service';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
-import { collection, query, where, orderBy } from 'firebase/firestore';
+import { collection, query, where, limit } from 'firebase/firestore';
 import { db } from './services/firebase.service';
 import { transcribeSpace } from './services/transcription.service';
 import { toast } from 'react-hot-toast';
@@ -40,8 +40,8 @@ export default function App() {
   const [spaces, loading, error] = useCollectionData(
     query(
       collection(db, 'spaces'),
-      where('transcription_status', '==', 'ENDED'),
-      orderBy('createdAt', 'desc')
+      where('transcriptionProgress', '==', 6),
+      limit(3)
     )
   );
 
@@ -380,8 +380,17 @@ export default function App() {
                           <ListItemText
                             primary={space.title || `Space ${space.spaceId}`}
                             secondary={`${t('analyzedOn')}: ${
-                              space.createdAt?.toDate
-                                ? space.createdAt.toDate().toLocaleDateString()
+                              space.docCreatedAt
+                                ? new Date(space.docCreatedAt).toLocaleString(
+                                    [],
+                                    {
+                                      year: 'numeric',
+                                      month: 'numeric',
+                                      day: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                    }
+                                  )
                                 : 'N/A'
                             }`}
                             primaryTypographyProps={{

@@ -11,7 +11,7 @@ const Logo = () => (
     }}
   >
     <img
-      src="/logos/songjam.png"
+      src="/logos/songjam.jpeg"
       alt="SongJam Logo"
       style={{
         width: '100%',

@@ -94,20 +94,20 @@ export default function App() {
           <Logo />
           <span>Songjam</span>
         </div>
-        <Button 
+        <Button
           onClick={handleLanguageChange}
           variant="outlined"
           size="small"
-          sx={{ 
-            color: 'var(--text-secondary)', 
+          sx={{
+            color: 'var(--text-secondary)',
             borderColor: 'var(--text-secondary)',
             '&:hover': {
               borderColor: 'white',
-              color: 'white'
-            }
+              color: 'white',
+            },
           }}
         >
-           {t('switchLanguage')}
+          {t('switchLanguage')}
         </Button>
       </nav>
 
@@ -128,11 +128,15 @@ export default function App() {
         </div>
         <div className="animated-title">
           <h1>
-            {t('heroTitle1')}<br></br>{t('heroTitle2')}
+            {t('heroTitle1')}
+            <br></br>
+            {t('heroTitle2')}
           </h1>
           <div className="subtitle-wrapper">
             <p>
-              {t('heroSubtitle1')}<br></br>{t('heroSubtitle2')}
+              {t('heroSubtitle1')}
+              <br></br>
+              {t('heroSubtitle2')}
             </p>
             <Box className="space-input" display="flex" gap={2}>
               <TextField
@@ -375,7 +379,11 @@ export default function App() {
                         >
                           <ListItemText
                             primary={space.title || `Space ${space.spaceId}`}
-                            secondary={`${t('analyzedOn')}: ${space.createdAt?.toDate ? space.createdAt.toDate().toLocaleDateString() : 'N/A'}`}
+                            secondary={`${t('analyzedOn')}: ${
+                              space.createdAt?.toDate
+                                ? space.createdAt.toDate().toLocaleDateString()
+                                : 'N/A'
+                            }`}
                             primaryTypographyProps={{
                               color: 'var(--text-primary)',
                             }}
@@ -643,7 +651,7 @@ export default function App() {
             <span>{t('productHunt')}</span>
           </a>
           <a
-            href="https://github.com/nusic-fm"
+            href="https://github.com/songjamspace"
             target="_blank"
             rel="noopener noreferrer"
             className="social-link"

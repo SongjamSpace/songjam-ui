@@ -28,8 +28,10 @@ import { collection, query, where, orderBy } from 'firebase/firestore';
 import { db } from './services/firebase.service';
 import { transcribeSpace } from './services/transcription.service';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 export default function App() {
+  const { t, i18n } = useTranslation();
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false);
   const [spaceUrl, setSpaceUrl] = useState('');
@@ -75,6 +77,11 @@ export default function App() {
     setIsLoading(false);
   };
 
+  const handleLanguageChange = () => {
+    const newLang = i18n.language === 'en' ? 'zh' : 'en';
+    i18n.changeLanguage(newLang);
+  };
+
   useEffect(() => {
     document.body.className = 'dark';
   }, []);
@@ -87,36 +94,50 @@ export default function App() {
           <Logo />
           <span>Songjam</span>
         </div>
+        <Button 
+          onClick={handleLanguageChange}
+          variant="outlined"
+          size="small"
+          sx={{ 
+            color: 'var(--text-secondary)', 
+            borderColor: 'var(--text-secondary)',
+            '&:hover': {
+              borderColor: 'white',
+              color: 'white'
+            }
+          }}
+        >
+           {t('switchLanguage')}
+        </Button>
       </nav>
 
       <section className="hero">
         <div className="stats-banner">
           <div className="stat">
             <span className="stat-number">99%</span>
-            <span className="stat-label">Accuracy</span>
+            <span className="stat-label">{t('accuracy')}</span>
           </div>
           <div className="stat">
             <span className="stat-number">X</span>
-            <span className="stat-label">Spaces Native</span>
+            <span className="stat-label">{t('spacesNative')}</span>
           </div>
           <div className="stat">
             <span className="stat-number">USDT</span>
-            <span className="stat-label">Settlement</span>
+            <span className="stat-label">{t('settlement')}</span>
           </div>
         </div>
         <div className="animated-title">
           <h1>
-            Unlock Insights<br></br>Amplify Voices
+            {t('heroTitle1')}<br></br>{t('heroTitle2')}
           </h1>
           <div className="subtitle-wrapper">
             <p>
-              X Spaces Text-to-Speech and AI Analysis<br></br>Capture Every
-              Conversation
+              {t('heroSubtitle1')}<br></br>{t('heroSubtitle2')}
             </p>
             <Box className="space-input" display="flex" gap={2}>
               <TextField
                 fullWidth
-                placeholder="Paste your X space URL here to try it now"
+                placeholder={t('spaceInputPlaceholder')}
                 onChange={(e) => setSpaceUrl(e.target.value)}
                 variant="outlined"
               />
@@ -125,8 +146,9 @@ export default function App() {
                 variant="contained"
                 className="primary"
                 onClick={() => handleAnalyze(spaceUrl)}
+                sx={{ whiteSpace: 'nowrap' }}
               >
-                Analyze
+                {t('analyzeButton')}
               </LoadingButton>
             </Box>
           </div>
@@ -137,14 +159,14 @@ export default function App() {
             className="primary"
             onClick={() => setIsPreviewDialogOpen(true)}
           >
-            Try Preview
+            {t('tryPreviewButton')}
           </Button>
           <Button
             variant="outlined"
             className="secondary"
             onClick={() => setShowConfirmation(true)}
           >
-            View Pricing
+            {t('viewPricingButton')}
           </Button>
 
           <Dialog
@@ -226,7 +248,7 @@ export default function App() {
                 </Box>
                 <TextField
                   fullWidth
-                  placeholder="Paste your X space URL here (e.g., x.com/i/spaces/123...)"
+                  placeholder={t('spaceInputPlaceholderDialog')}
                   variant="outlined"
                   sx={{ mb: 3 }}
                   value={spaceUrl}
@@ -267,15 +289,13 @@ export default function App() {
             </DialogContent>
           </Dialog>
 
-          {/* New Preview Spaces Dialog - Enhanced Styling v2 */}
           <Dialog
             open={isPreviewDialogOpen}
             onClose={() => setIsPreviewDialogOpen(false)}
             maxWidth="md"
             fullWidth
-            PaperProps={{ sx: { bgcolor: 'rgba(15, 23, 42, 0.95)' } }} // Apply background to Paper
+            PaperProps={{ sx: { bgcolor: 'rgba(15, 23, 42, 0.95)' } }}
           >
-            {/* No DialogTitle needed, handled in content */}
             <DialogContent sx={{ p: 0, border: 'none' }}>
               <IconButton
                 aria-label="close"
@@ -285,7 +305,7 @@ export default function App() {
                   right: 8,
                   top: 8,
                   color: 'var(--text-secondary)',
-                  zIndex: 1, // Ensure it's above content
+                  zIndex: 1,
                 }}
               >
                 <CloseIcon />
@@ -307,34 +327,32 @@ export default function App() {
                   Click on any space below to see an example of the analysis
                   output. Paste your own space URL on the homepage to try it!
                 </Typography>
-                {/* Styled Box for List Content */}
                 <Box
                   sx={{
                     mb: 3,
                     p: 2,
-                    bgcolor: 'rgba(96, 165, 250, 0.1)', // Match highlight box bg
+                    bgcolor: 'rgba(96, 165, 250, 0.1)',
                     borderRadius: 2,
-                    textAlign: 'left', // Align content left within this box
+                    textAlign: 'left',
                   }}
                 >
                   <Typography
                     variant="subtitle1"
-                    sx={{ mb: 2, color: '#60a5fa' }} // Match highlight title
+                    sx={{ mb: 2, color: '#60a5fa' }}
                   >
                     🚀 Available Previews:
                   </Typography>
 
-                  {/* Conditional Rendering Inside Styled Box */}
                   {loading && (
                     <Box
                       sx={{ display: 'flex', justifyContent: 'center', my: 3 }}
                     >
-                      <CircularProgress color="inherit" /> {/* Inherit color */}
+                      <CircularProgress color="inherit" />
                     </Box>
                   )}
                   {error && (
                     <Typography color="error" sx={{ my: 3 }}>
-                      Error loading spaces: {error.message}
+                      {t('errorLoadingSpaces', { error: error.message })}
                     </Typography>
                   )}
                   {!loading && !error && spaces && spaces.length > 0 && (
@@ -357,11 +375,7 @@ export default function App() {
                         >
                           <ListItemText
                             primary={space.title || `Space ${space.spaceId}`}
-                            secondary={`Analyzed on: ${
-                              space.createdAt?.toDate
-                                ? space.createdAt.toDate().toLocaleDateString()
-                                : 'N/A'
-                            }`}
+                            secondary={`${t('analyzedOn')}: ${space.createdAt?.toDate ? space.createdAt.toDate().toLocaleDateString() : 'N/A'}`}
                             primaryTypographyProps={{
                               color: 'var(--text-primary)',
                             }}
@@ -382,11 +396,10 @@ export default function App() {
                         color: 'var(--text-secondary)',
                       }}
                     >
-                      No completed spaces available for preview yet.
+                      {t('noPreviews')}
                     </Typography>
                   )}
-                </Box>{' '}
-                {/* End Styled Box for List Content */}
+                </Box>
                 <Typography
                   sx={{
                     color: 'var(--text-secondary)',
@@ -397,14 +410,12 @@ export default function App() {
                   This is just a preview. Analyze your own space for full
                   insights!
                 </Typography>
-              </Box>{' '}
-              {/* End Inner Padding Box */}
+              </Box>
             </DialogContent>
-            {/* No DialogActions needed */}
           </Dialog>
         </div>
         <div className="trust-badges">
-          <span>Powered by</span>
+          <span>{t('poweredBy')}</span>
           <div className="badge">ElizaOS</div>
           <div className="badge">Ethereum</div>
           <div className="badge">Grok</div>
@@ -414,53 +425,48 @@ export default function App() {
       <section className="features">
         <div className="feature">
           <div className="feature-icon">✍️</div>
-          <h3>Transcribe</h3>
-          <p>
-            Converting your X Space audio into text makes it easy to analyze
-          </p>
-          <div className="feature-detail">Get your time back</div>
+          <h3>{t('transcribeFeatureTitle')}</h3>
+          <p>{t('transcribeFeatureText')}</p>
+          <div className="feature-detail">{t('transcribeFeatureDetail')}</div>
         </div>
         <div className="feature">
           <div className="feature-icon">📋</div>
-          <h3>Analyze</h3>
-          <p>Unlock awesome insights from your X Spaces in seconds</p>
-          <div className="feature-detail">Harness the power of AI</div>
+          <h3>{t('analyzeFeatureTitle')}</h3>
+          <p>{t('analyzeFeatureText')}</p>
+          <div className="feature-detail">{t('analyzeFeatureDetail')}</div>
         </div>
         <div className="feature">
           <div className="feature-icon">📣</div>
-          <h3>Share</h3>
-          <p>Compilie your insights and share with your audience</p>
-          <div className="feature-detail">Infinitely customizable</div>
+          <h3>{t('shareFeatureTitle')}</h3>
+          <p>{t('shareFeatureText')}</p>
+          <div className="feature-detail">{t('shareFeatureDetail')}</div>
         </div>
       </section>
 
       <section className="how-it-works">
-        <h2>How It Works</h2>
+        <h2>{t('howItWorksTitle')}</h2>
         <div className="steps">
           <div className="step">
             <div className="step-number">1</div>
-            <h4>Connect Space</h4>
-            <p>Paste the URL of your live X Space</p>
+            <h4>{t('step1Title')}</h4>
+            <p>{t('step1Text')}</p>
           </div>
           <div className="step">
             <div className="step-number">2</div>
-            <h4>Retrieve Listeners</h4>
-            <p>All listener X accounts will be retrieved</p>
+            <h4>{t('step2Title')}</h4>
+            <p>{t('step2Text')}</p>
           </div>
           <div className="step">
             <div className="step-number">3</div>
-            <h4>Dive In</h4>
-            <p>Leverage LLMs to analyze the space</p>
+            <h4>{t('step3Title')}</h4>
+            <p>{t('step3Text')}</p>
           </div>
         </div>
       </section>
 
       <section className="honors">
-        <h2>Honors</h2>
-        <p>
-          Songjam builders have won top awards from the following crypto
-          leaders:
-        </p>
+        <h2>{t('honorsTitle')}</h2>
+        <p>{t('honorsText')}</p>
         <div className="honors-grid">
           <div className="honor-item">
             <img
@@ -530,13 +536,13 @@ export default function App() {
       </section>
 
       <section className="contact">
-        <h2>Contact Us</h2>
-        <p>Got a beefy project or custom request? Drop us a line</p>
+        <h2>{t('contactTitle')}</h2>
+        <p>{t('contactText')}</p>
         <form className="contact-form">
           <div className="form-group">
             <TextField
               fullWidth
-              placeholder="Name"
+              placeholder={t('namePlaceholder')}
               variant="outlined"
               name="name"
               required
@@ -546,19 +552,19 @@ export default function App() {
           <div className="form-group">
             <TextField
               fullWidth
-              placeholder="Telegram Username"
+              placeholder={t('telegramPlaceholder')}
               variant="outlined"
               name="telegram"
               required
               inputProps={{ pattern: '@.*' }}
-              helperText="Must start with @"
+              helperText={t('telegramHelp')}
             />
           </div>
           <div className="form-group">
             <TextField
               fullWidth
               type="email"
-              placeholder="Email"
+              placeholder={t('emailPlaceholder')}
               variant="outlined"
               name="email"
               required
@@ -566,7 +572,7 @@ export default function App() {
           </div>
           <div className="form-group">
             <TextareaAutosize
-              placeholder="How can we help?"
+              placeholder={t('messagePlaceholder')}
               name="message"
               required
               minLength={10}
@@ -619,13 +625,13 @@ export default function App() {
               }
             }}
           >
-            Submit
+            {t('submitButton')}
           </Button>
         </form>
       </section>
 
       <section className="social-media">
-        <h2>Connect With Us</h2>
+        <h2>{t('connectWithUsTitle')}</h2>
         <Box display="flex" flexWrap="wrap" gap={8} justifyContent="center">
           <a
             href="https://www.producthunt.com/posts/songjam-otter-ai-for-x-spaces"
@@ -634,7 +640,7 @@ export default function App() {
             className="social-link"
           >
             <img src="/logos/product-hunt.png" alt="Product Hunt" />
-            <span>Product Hunt</span>
+            <span>{t('productHunt')}</span>
           </a>
           <a
             href="https://github.com/nusic-fm"
@@ -643,7 +649,7 @@ export default function App() {
             className="social-link"
           >
             <img src="/logos/github.png" alt="GitHub" />
-            <span>GitHub</span>
+            <span>{t('github')}</span>
           </a>
           <a
             href="https://x.com/SongjamSpace"
@@ -652,7 +658,7 @@ export default function App() {
             className="social-link"
           >
             <img src="/logos/twitter.png" alt="Twitter" />
-            <span>Twitter</span>
+            <span>{t('twitter')}</span>
           </a>
           <a
             href="https://www.linkedin.com/company/songjam/"
@@ -661,13 +667,13 @@ export default function App() {
             className="social-link"
           >
             <img src="/logos/linkedin.png" alt="LinkedIn" />
-            <span>LinkedIn</span>
+            <span>{t('linkedin')}</span>
           </a>
         </Box>
       </section>
 
       <footer className="footer">
-        <p>&copy; Songjam 2025. All rights reserved.</p>
+        <p>{t('footerText')}</p>
       </footer>
     </main>
   );

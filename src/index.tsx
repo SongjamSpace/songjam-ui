@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
@@ -8,39 +8,36 @@ import { ThemeProvider } from '@mui/material/styles';
 import theme from './theme';
 import { AuthProvider } from './contexts/AuthContext';
 import LiveDashboardContainer from './components/LiveDashboard/LiveDashboardContainer';
+import './i18n';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <ThemeProvider theme={theme}>
-        <Routes>
-          <Route path="/" element={<App />} />
-          {/* <Route
-            path="/:spaceId"
-            element={
-              <AuthProvider>
-                <SpaceDetails />
-              </AuthProvider>
-            }
-          /> */}
-          <Route
-            path="/crm/:spaceId"
-            element={
-              <AuthProvider>
-                <SpaceCRM />
-              </AuthProvider>
-            }
-          />
-          <Route
-            path="/live/:spaceId"
-            element={
-              <AuthProvider>
-                <LiveDashboardContainer />
-              </AuthProvider>
-            }
-          />
-        </Routes>
-      </ThemeProvider>
-    </BrowserRouter>
+    <Suspense fallback={<div>Loading...</div>}>
+      <BrowserRouter>
+        <ThemeProvider theme={theme}>
+          <AuthProvider>
+            <Routes>
+              <Route path="/" element={<App />} />
+              {/* <Route
+                path="/:spaceId"
+                element={
+                  <AuthProvider>
+                    <SpaceDetails />
+                  </AuthProvider>
+                }
+              /> */}
+              <Route
+                path="/crm/:spaceId"
+                element={<SpaceCRM />}
+              />
+              <Route
+                path="/live/:spaceId"
+                element={<LiveDashboardContainer />}
+              />
+            </Routes>
+          </AuthProvider>
+        </ThemeProvider>
+      </BrowserRouter>
+    </Suspense>
   </React.StrictMode>
 );

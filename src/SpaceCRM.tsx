@@ -122,6 +122,21 @@ const SpaceCRM: React.FC = () => {
     useState<VisualizationContext | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(!user);
+  const [isSpaceOwner, setIsSpaceOwner] = useState(false);
+
+  useEffect(() => {
+    if (user && space) {
+      setIsSpaceOwner(
+        [...space.admins, ...space.speakers].some(
+          (admin) => admin.twitterScreenName === user?.username
+        ) || [
+          "LHrZ0zGfQ2UnAjkRC8nt36EMmA23",
+          "M4dxYt7PjCNRcl0erxcpexCtisk2"
+        ].includes(user.uid || "")
+      );
+    }
+  }, [user, space]);
+  
 
   // Fetch space data on mount
   useEffect(() => {
@@ -742,6 +757,7 @@ ${JSON.stringify(analysisContext, null, 2)}
                     <AudiencePanel
                       onSelectAttendees={setSelectedAttendees}
                       space={space}
+                      isSpaceOwner={isSpaceOwner}
                     />
                   )}
 
@@ -757,7 +773,7 @@ ${JSON.stringify(analysisContext, null, 2)}
                          hasAccess={true}
                          isProcessingPayment={false}
                          handlePayment={() => {}}
-                         processEnded={space?.transcriptionStatus === 'ENDED'}
+                         processEnded={true}
                          refresh={space?.transcriptionStatus === 'SHORT_ENDED'}
                       />
                     </Box>

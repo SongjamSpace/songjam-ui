@@ -19,32 +19,23 @@ import {
   Select,
   MenuItem,
   Drawer,
-  Grid,
   Button,
   Tab,
   Tabs,
   CircularProgress,
+  ListItemSecondaryAction,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import FilterListIcon from '@mui/icons-material/FilterList';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
-// import MarkEmailReadIcon from '@mui/icons-material/MarkEmailRead';
-// import GroupAddIcon from '@mui/icons-material/GroupAdd';
-// import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import CloseIcon from '@mui/icons-material/Close';
 import {
   getSpaceListeners,
   Space,
   TwitterUser,
 } from '../../services/db/spaces.service';
-import {
-  enrichSpeakerData,
-  XUserProfile,
-  XTweet,
-} from '../../services/x.service';
-import UserProfileDrawer from './UserProfileDrawer';
 import { useTranslation } from 'react-i18next';
-
+import { useAuth } from '../../hooks/useAuth';
+import FilterListIcon from '@mui/icons-material/FilterList';
 // All possible interests for filtering
 const ALL_INTERESTS = [
   'AI',
@@ -67,38 +58,10 @@ const ALL_LOCATIONS = [
   'Remote',
 ];
 
-// Define the mock attendee type
-type MockAttendee = {
-  id: string;
-  username: string;
-  displayName: string;
-  profileImage: string;
-  bio: string;
-  followersCount: number;
-  engagement: {
-    inSpaceComments: number;
-    likedPosts: number;
-    recentInteractions: number;
-  };
-  interests: string[];
-  recentPosts: {
-    content: string;
-    engagement: number;
-    timestamp: string;
-  }[];
-  location: string;
-  joinedDate: string;
-};
-
-// Define the EnrichedUser type
-type EnrichedUser = TwitterUser & {
-  xProfile?: XUserProfile;
-  xTweets?: XTweet[];
-};
-
 interface AudiencePanelProps {
   onSelectAttendees?: (listeners: string[]) => void;
   space?: Space | null;
+  isSpaceOwner: boolean;
 }
 
 /**
@@ -110,10 +73,12 @@ interface AudiencePanelProps {
 const AudiencePanel: React.FC<AudiencePanelProps> = ({
   onSelectAttendees,
   space,
+  isSpaceOwner,
 }) => {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedAttendees, setSelectedAttendees] = useState<string[]>([]);
+  // const [selectedAttendees, setSelectedAttendees] = useState<string[]>([]);
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [userDetailDrawer, setUserDetailDrawer] = useState<TwitterUser | null>(
     null
@@ -132,9 +97,9 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
   // Detail drawer tab state
   const [detailTab, setDetailTab] = useState<string>('profile');
 
-  const [enrichedSpeakers, setEnrichedSpeakers] = useState<
-    (TwitterUser & { xProfile?: XUserProfile; recentTweets?: XTweet[] })[]
-  >([]);
+  // const [enrichedSpeakers, setEnrichedSpeakers] = useState<
+  //   (TwitterUser & { xProfile?: XUserProfile; recentTweets?: XTweet[] })[]
+  // >([]);
   const [isLoadingProfiles, setIsLoadingProfiles] = useState(false);
 
   // const fetchEnrichedSpeakers = async (speakersToEnrich: User[]) => {
@@ -186,21 +151,17 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
 
   useEffect(() => {
     // Only fetch if space has speakers and we haven't already fetched enriched data for this space
-    if (
-      space?.speakers &&
-      space.speakers.length > 0 &&
-      enrichedSpeakers.length === 0
-    ) {
+    if (space?.speakers && space.speakers.length > 0) {
       console.log(
         `Space data updated, fetching enriched speaker data for the FIRST speaker only...`
       );
-      setEnrichedSpeakers([]); // Clear previous before fetching
+      // setEnrichedSpeakers([]); // Clear previous before fetching
       // fetchEnrichedSpeakers(space.speakers.slice(0, 1));
     } else if (!space?.speakers || space.speakers.length === 0) {
       console.log(
         'No speakers in space data or space cleared, clearing enriched speakers.'
       );
-      setEnrichedSpeakers([]);
+      // setEnrichedSpeakers([]);
       setIsLoadingProfiles(false);
     }
     // Intentionally excluding fetchEnrichedSpeakers and enrichedSpeakers from deps
@@ -231,13 +192,18 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
   };
 
   // Filter speakers based on search term
-  const filteredSpeakers =
-    space?.speakers
-      .map((speaker) => ({
-        ...speaker,
-        xProfile: enrichedSpeakers.find((es) => es.userId === speaker.userId)
-          ?.xProfile,
-      }))
+  const filteredSpeakers = [
+    ...(space?.admins || [])
+      .filter((admin) => {
+        if (!searchTerm) return true;
+        const searchLower = searchTerm.toLowerCase();
+        return (
+          admin.displayName.toLowerCase().includes(searchLower) ||
+          admin.twitterScreenName.toLowerCase().includes(searchLower)
+        );
+      })
+      .map((s) => ({ ...s, admin: true, speaker: false })),
+    ...(space?.speakers || [])
       .filter((speaker) => {
         if (!searchTerm) return true;
         const searchLower = searchTerm.toLowerCase();
@@ -245,7 +211,10 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
           speaker.displayName.toLowerCase().includes(searchLower) ||
           speaker.twitterScreenName.toLowerCase().includes(searchLower)
         );
-      }) || [];
+      })
+      .map((s) => ({ ...s, speaker: true })),
+  ];
+
   const filteredListeners =
     spaceListeners.filter((listener) => {
       if (!searchTerm) return true;
@@ -284,7 +253,10 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
         <Box sx={{ mb: 2 }}>
           <Typography variant="h6">{t('audienceMgmtTitle')}</Typography>
           <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-            <IconButton disabled> <FilterListIcon /> </IconButton>
+            <IconButton disabled>
+              {' '}
+              <FilterListIcon />{' '}
+            </IconButton>
             <FormControl size="small" sx={{ minWidth: 120 }} disabled>
               <InputLabel>{t('engagementLabel')}</InputLabel>
               <Select
@@ -307,7 +279,36 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
           sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}
         >
           <Tab label={t('speakersTab')} value="speakers" />
-          <Tab label={t('listenersTab')} value="listeners" />
+          <Tab
+            label={
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                {t('listenersTab')}
+                <Chip
+                  size="small"
+                  label={isSpaceOwner ? 'PRO' : 'Hosts & Speakers Only'}
+                  sx={{
+                    height: 16,
+                    fontSize: '0.6rem',
+                    background: isSpaceOwner
+                      ? 'linear-gradient(90deg, #60a5fa, #8b5cf6)'
+                      : 'rgba(255,255,255,0.1)',
+                    color: isSpaceOwner ? '#fff' : 'inherit',
+                    fontWeight: isSpaceOwner ? 500 : 400,
+                    '& .MuiChip-label': {
+                      px: 1,
+                    },
+                  }}
+                />
+              </Box>
+            }
+            value="listeners"
+            disabled={!isSpaceOwner}
+            sx={{
+              '&.Mui-disabled': {
+                cursor: 'not-allowed',
+              },
+            }}
+          />
         </Tabs>
 
         <TextField
@@ -316,18 +317,59 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
           placeholder={t('searchPlaceholder')}
           value={searchTerm}
           onChange={handleSearchChange}
-          InputProps={{ startAdornment: ( <InputAdornment position="start"> <SearchIcon /> </InputAdornment> ) }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                {' '}
+                <SearchIcon />{' '}
+              </InputAdornment>
+            ),
+          }}
           sx={{ mb: 2 }}
         />
 
         {/* Display Active Filters */}
-        {(filterEngagement !== 'all' || filterInterests.length > 0 || filterFollowers !== 'all' || filterLocation !== 'all') && (
+        {(filterEngagement !== 'all' ||
+          filterInterests.length > 0 ||
+          filterFollowers !== 'all' ||
+          filterLocation !== 'all') && (
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-            {filterEngagement !== 'all' && ( <Chip label={`${t('engagementLabel')}: ${t(filterEngagement + 'Engagement')}`} onDelete={() => setFilterEngagement('all')} size="small" /> )}
-            {filterFollowers !== 'all' && ( <Chip label={`${t('followerCountLabel')}: ${filterFollowers}`} onDelete={() => setFilterFollowers('all')} size="small" /> )}
-            {filterLocation !== 'all' && ( <Chip label={`${t('locationLabel')}: ${filterLocation}`} onDelete={() => setFilterLocation('all')} size="small" /> )}
-            {filterInterests.map((interest) => ( <Chip key={interest} label={`${t('interestsLabel')}: ${interest}`} onDelete={() => handleToggleInterest(interest)} size="small" /> ))}
-            <Button size="small" onClick={handleClearFilters} sx={{ ml: 1, textTransform: 'none', fontSize: '0.75rem' }} >
+            {filterEngagement !== 'all' && (
+              <Chip
+                label={`${t('engagementLabel')}: ${t(
+                  filterEngagement + 'Engagement'
+                )}`}
+                onDelete={() => setFilterEngagement('all')}
+                size="small"
+              />
+            )}
+            {filterFollowers !== 'all' && (
+              <Chip
+                label={`${t('followerCountLabel')}: ${filterFollowers}`}
+                onDelete={() => setFilterFollowers('all')}
+                size="small"
+              />
+            )}
+            {filterLocation !== 'all' && (
+              <Chip
+                label={`${t('locationLabel')}: ${filterLocation}`}
+                onDelete={() => setFilterLocation('all')}
+                size="small"
+              />
+            )}
+            {filterInterests.map((interest) => (
+              <Chip
+                key={interest}
+                label={`${t('interestsLabel')}: ${interest}`}
+                onDelete={() => handleToggleInterest(interest)}
+                size="small"
+              />
+            ))}
+            <Button
+              size="small"
+              onClick={handleClearFilters}
+              sx={{ ml: 1, textTransform: 'none', fontSize: '0.75rem' }}
+            >
               {t('clearAllButton')}
             </Button>
           </Box>
@@ -339,48 +381,279 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
             : t('listenersFound', { count: filteredListeners.length })}
         </Typography>
 
-        {/* List Area */} 
-        <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0, /* ... scrollbar styles ... */ }} >
-          {/* Render Speaker or Listener List based on activeTab */} 
-          {/* ... (List mapping logic - text inside ListItemText remains mostly dynamic) ... */}
-          {activeTab === 'speakers' && (
-              <List>
-                {isLoadingProfiles && <CircularProgress sx={{ display: 'block', margin: '20px auto' }} />}
-                {filteredSpeakers.map((speaker) => (
-                   <ListItem key={speaker.userId} /* ... other props ... */ onClick={() => handleUserClick(speaker)}>
-                      {/* ... ListItemAvatar ... */}
+        {filterFollowers !== 'all' && (
+          <Chip
+            label={`Followers: ${filterFollowers}`}
+            onDelete={() => setFilterFollowers('all')}
+            size="small"
+          />
+        )}
+
+        {filterLocation !== 'all' && (
+          <Chip
+            label={`Location: ${filterLocation}`}
+            onDelete={() => setFilterLocation('all')}
+            size="small"
+          />
+        )}
+
+        {filterInterests.map((interest) => (
+          <Chip
+            key={interest}
+            label={`Interest: ${interest}`}
+            onDelete={() => handleToggleInterest(interest)}
+            size="small"
+          />
+        ))}
+
+        {/* <Button
+          size="small"
+          onClick={handleClearFilters}
+          sx={{ ml: 1, textTransform: 'none', fontSize: '0.75rem' }}
+        >
+          Clear All
+        </Button> */}
+
+        {/* <Typography variant="body2" sx={{ mb: 2 }}>
+            {activeTab === 'speakers'
+              ? `${filteredSpeakers.length} ${
+                  filteredSpeakers.length === 1 ? 'speaker' : 'speakers'
+                } found`
+              : `${filteredListeners.length} ${
+                  filteredListeners.length === 1 ? 'listener' : 'listeners'
+                } found`}
+          </Typography> */}
+
+        {activeTab === 'speakers' ? (
+          isLoadingProfiles ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Hosts & Speakers
+              </Typography>
+              <Box
+                sx={{
+                  maxHeight: 'calc(100vh - 500px)', // Adjust this value based on your layout
+                  overflowY: 'auto',
+                  pb: 4, // Add bottom padding
+                  '&::-webkit-scrollbar': {
+                    width: '8px',
+                  },
+                  '&::-webkit-scrollbar-track': {
+                    background: 'rgba(0, 0, 0, 0.1)',
+                    borderRadius: '4px',
+                  },
+                  '&::-webkit-scrollbar-thumb': {
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    borderRadius: '4px',
+                    '&:hover': {
+                      background: 'rgba(255, 255, 255, 0.3)',
+                    },
+                  },
+                }}
+              >
+                <List>
+                  {filteredSpeakers.map((speaker) => (
+                    <ListItem
+                      key={speaker.userId}
+                      // secondaryAction={
+                      //   <IconButton
+                      //     edge="end"
+                      //     onClick={() => handleUserClick(speaker)}
+                      //     color={
+                      //       selectedAttendees.includes(speaker.userId)
+                      //         ? 'primary'
+                      //         : 'default'
+                      //     }
+                      //   >
+                      //     <BookmarkIcon />
+                      //   </IconButton>
+                      // }
+                      onClick={() => handleUserClick(speaker)}
+                      sx={{
+                        mb: 1,
+                        borderRadius: 1,
+                        // bgcolor: selectedAttendees.includes(speaker.userId)
+                        //   ? 'rgba(96, 165, 250, 0.1)'
+                        //   : 'transparent',
+                        // '&:hover': {
+                        //   bgcolor: 'rgba(255, 255, 255, 0.05)',
+                        //   cursor: 'pointer',
+                        // },
+                      }}
+                    >
+                      <ListItemAvatar>
+                        {/* <Badge
+                            overlap="circular"
+                            badgeContent={
+                              speaker.xProfile?.isVerified ? '✓' : undefined
+                            }
+                            color="primary"
+                          > */}
+                        <Avatar
+                          src={
+                            // speaker.xProfile?.profile_image_url ||
+                            speaker.avatarUrl
+                          }
+                          alt={speaker.displayName}
+                        />
+                        {/* </Badge> */}
+                      </ListItemAvatar>
                       <ListItemText
-                         primary={speaker.displayName} // Keep dynamic data
-                         secondary={`@${speaker.twitterScreenName}`} // Keep dynamic data
-                         // ... (props)
+                        primary={speaker.displayName}
+                        secondary={
+                          <Box>
+                            <Typography variant="body2" color="text.secondary">
+                              @{speaker.twitterScreenName}
+                            </Typography>
+                            {/* {speaker.xProfile && (
+                                <>
+                                  <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                  >
+                                    {speaker.xProfile.biography}
+                                  </Typography>
+                                  <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                                    <Chip
+                                      size="small"
+                                      label={`${
+                                        speaker.xProfile.followersCount || 0
+                                      } followers`}
+                                    />
+                                    <Chip
+                                      size="small"
+                                      label={`${
+                                        speaker.xProfile.followingCount || 0
+                                      } following`}
+                                    />
+                                    <Chip
+                                      size="small"
+                                      label={`${
+                                        speaker.xProfile.tweetsCount || 0
+                                      } tweets`}
+                                    />
+                                  </Box>
+                                </>
+                              )} */}
+                          </Box>
+                        }
                       />
-                   </ListItem>
-                ))}
-              </List>
-           )}
-           {activeTab === 'listeners' && (
+                      {speaker.admin && (
+                        <ListItemSecondaryAction>
+                          <Chip size="small" label={'Host'} color={'primary'} />
+                        </ListItemSecondaryAction>
+                      )}
+                    </ListItem>
+                  ))}
+                </List>
+              </Box>
+            </Box>
+          )
+        ) : (
+          <Box>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Listeners ({filteredListeners.length})
+            </Typography>
+            <Box
+              sx={{
+                maxHeight: 'calc(100vh - 500px)', // Adjust this value based on your layout
+                overflowY: 'auto',
+                pb: 4, // Add bottom padding
+                '&::-webkit-scrollbar': {
+                  width: '8px',
+                },
+                '&::-webkit-scrollbar-track': {
+                  background: 'rgba(0, 0, 0, 0.1)',
+                  borderRadius: '4px',
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  borderRadius: '4px',
+                  '&:hover': {
+                    background: 'rgba(255, 255, 255, 0.3)',
+                  },
+                },
+              }}
+            >
               <List>
                 {filteredListeners.map((listener) => (
-                   <ListItem key={listener.userId} /* ... other props ... */ onClick={() => handleUserClick(listener)}>
-                      {/* ... ListItemAvatar ... */}
-                      <ListItemText
-                         primary={listener.displayName} // Keep dynamic data
-                         secondary={`@${listener.twitterScreenName}`} // Keep dynamic data
-                         // ... (props)
-                      />
-                   </ListItem>
+                  <ListItem
+                    key={listener.userId}
+                    // secondaryAction={
+                    //   <IconButton
+                    //     edge="end"
+                    //     onClick={() => handleUserClick(listener)}
+                    //   >
+                    //     {/* {selectedAttendees.includes(listener.userId) ? (
+                    //       <BookmarkIcon color="primary" />
+                    //     ) : ( */}
+                    //     <BookmarkIcon />
+                    //     {/* )} */}
+                    //   </IconButton>
+                    // }
+                    onClick={() => handleUserClick(listener)}
+                    sx={{
+                      mb: 1,
+                      borderRadius: 1,
+                      // bgcolor: selectedAttendees.includes(listener.userId)
+                      //   ? 'rgba(96, 165, 250, 0.1)'
+                      //   : 'transparent',
+                      // '&:hover': {
+                      //   bgcolor: 'rgba(255, 255, 255, 0.05)',
+                      //   cursor: 'pointer',
+                      // },
+                    }}
+                  >
+                    <ListItemAvatar>
+                      <Badge
+                        overlap="circular"
+                        // badgeContent={attendee.engagement.recentInteractions}
+                        // color={
+                        //   attendee.engagement.recentInteractions > 3
+                        //     ? 'success'
+                        //     : attendee.engagement.recentInteractions > 0
+                        //     ? 'primary'
+                        //     : 'default'
+                        // }
+                      >
+                        <Avatar src={listener.avatarUrl} />
+                      </Badge>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={listener.displayName} // Keep dynamic data
+                      secondary={`@${listener.twitterScreenName}`} // Keep dynamic data
+                      // ... (props)
+                    />
+                  </ListItem>
                 ))}
+                {filteredListeners.length === 0 && (
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: 'text.secondary' }}
+                    >
+                      No listeners available
+                    </Typography>
+                  </Box>
+                )}
               </List>
-           )}
-        </Box>
+            </Box>
+          </Box>
+        )}
 
-        {/* User Detail Drawer (Re-added) */}
-        <UserProfileDrawer
-          userDetailDrawer={userDetailDrawer} // Pass the state variable
-          setUserDetailDrawer={setUserDetailDrawer} // Pass the state setter
-          activeTab={activeTab} // Pass the active tab state
-        />
-
+        {/* {((activeTab === 'speakers' && enrichedSpeakers.length === 0) ||
+            (activeTab === 'listeners' && filteredListeners.length === 0)) && (
+            <Box sx={{ p: 3, textAlign: 'center' }}>
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                No {activeTab === 'speakers' ? 'speakers' : 'listeners'} match
+                your filters
+              </Typography>
+            </Box>
+          )} */}
       </Paper>
 
       {/* Filter Drawer */}
@@ -388,14 +661,31 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
         anchor="right"
         open={isFilterDrawerOpen}
         onClose={() => setIsFilterDrawerOpen(false)}
-        PaperProps={{ sx: { width: 320, background: '#1e293b', color: 'white' } }}
+        PaperProps={{
+          sx: { width: 320, background: '#1e293b', color: 'white' },
+        }}
       >
         <Box sx={{ p: 2 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }} >
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: 3,
+            }}
+          >
             <Typography variant="h6">
-              {t('filtersTitle', { tabName: activeTab === 'speakers' ? t('speakersTab') : t('listenersTab') })}
+              {t('filtersTitle', {
+                tabName:
+                  activeTab === 'speakers'
+                    ? t('speakersTab')
+                    : t('listenersTab'),
+              })}
             </Typography>
-            <IconButton onClick={() => setIsFilterDrawerOpen(false)}> <CloseIcon /> </IconButton>
+            <IconButton onClick={() => setIsFilterDrawerOpen(false)}>
+              {' '}
+              <CloseIcon />{' '}
+            </IconButton>
           </Box>
           <Divider sx={{ mb: 3 }} />
 
@@ -403,7 +693,11 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
             <>
               <FormControl fullWidth sx={{ mb: 3 }}>
                 <InputLabel>{t('engagementLevelLabel')}</InputLabel>
-                <Select value={filterEngagement} label={t('engagementLevelLabel')} onChange={(e) => setFilterEngagement(e.target.value)} >
+                <Select
+                  value={filterEngagement}
+                  label={t('engagementLevelLabel')}
+                  onChange={(e) => setFilterEngagement(e.target.value)}
+                >
                   <MenuItem value="all">{t('allLevels')}</MenuItem>
                   <MenuItem value="high">{t('highEngagement')}</MenuItem>
                   <MenuItem value="medium">{t('mediumEngagement')}</MenuItem>
@@ -413,7 +707,11 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
 
               <FormControl fullWidth sx={{ mb: 3 }}>
                 <InputLabel>{t('followerCountLabel')}</InputLabel>
-                <Select value={filterFollowers} label={t('followerCountLabel')} onChange={(e) => setFilterFollowers(e.target.value)} >
+                <Select
+                  value={filterFollowers}
+                  label={t('followerCountLabel')}
+                  onChange={(e) => setFilterFollowers(e.target.value)}
+                >
                   <MenuItem value="all">{t('allSizes')}</MenuItem>
                   <MenuItem value="large">{t('largeFollowers')}</MenuItem>
                   <MenuItem value="medium">{t('mediumFollowers')}</MenuItem>
@@ -423,9 +721,18 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
 
               <FormControl fullWidth sx={{ mb: 3 }}>
                 <InputLabel>{t('locationLabel')}</InputLabel>
-                <Select value={filterLocation} label={t('locationLabel')} onChange={(e) => setFilterLocation(e.target.value)} >
+                <Select
+                  value={filterLocation}
+                  label={t('locationLabel')}
+                  onChange={(e) => setFilterLocation(e.target.value)}
+                >
                   <MenuItem value="all">{t('allLocations')}</MenuItem>
-                  {ALL_LOCATIONS.map((location) => ( <MenuItem key={location} value={location}> {location} </MenuItem> ))} 
+                  {ALL_LOCATIONS.map((location) => (
+                    <MenuItem key={location} value={location}>
+                      {' '}
+                      {location}{' '}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
 
@@ -433,14 +740,33 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
                 {t('interestsLabel')}
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
-                {ALL_INTERESTS.map((interest) => ( <Chip key={interest} label={interest} onClick={() => handleToggleInterest(interest)} sx={{ /* ... styles ... */ }} /> ))}
+                {ALL_INTERESTS.map((interest) => (
+                  <Chip
+                    key={interest}
+                    label={interest}
+                    onClick={() => handleToggleInterest(interest)}
+                    sx={
+                      {
+                        /* ... styles ... */
+                      }
+                    }
+                  />
+                ))}
               </Box>
             </>
           )}
 
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
             <Button onClick={handleClearFilters}>{t('clearAllButton')}</Button>
-            <Button variant="contained" onClick={() => setIsFilterDrawerOpen(false)} sx={{ /* ... styles ... */ }} >
+            <Button
+              variant="contained"
+              onClick={() => setIsFilterDrawerOpen(false)}
+              sx={
+                {
+                  /* ... styles ... */
+                }
+              }
+            >
               {t('applyFiltersButton')}
             </Button>
           </Box>

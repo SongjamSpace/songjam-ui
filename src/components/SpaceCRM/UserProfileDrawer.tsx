@@ -8,6 +8,7 @@ import {
   Paper,
   Button,
   Drawer,
+  Skeleton,
 } from '@mui/material';
 import { TwitterUser } from '../../services/db/spaces.service';
 import TwitterIcon from '@mui/icons-material/Twitter';
@@ -134,56 +135,110 @@ const UserProfileDrawer = ({
 
           {detailTab === 'profile' && (
             <>
-              <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                Bio
-              </Typography>
-              <Typography variant="body2" sx={{ mb: 3 }}>
-                {profileInfo?.biography || 'No bio available'}
-              </Typography>
-              <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                X Stats
-              </Typography>
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: 2,
-                  mb: 3,
-                }}
-              >
-                <Box>
-                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    Followers
+              {isLoading ? (
+                <>
+                  <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                    Bio
                   </Typography>
-                  <Typography variant="body1">
-                    {profileInfo?.followersCount}
+                  <Skeleton
+                    variant="text"
+                    sx={{ mb: 3, bgcolor: 'rgba(255, 255, 255, 0.1)' }}
+                    height={60}
+                  />
+
+                  <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                    X Stats
                   </Typography>
-                </Box>
-                <Box>
-                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    Following
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 2,
+                      mb: 3,
+                    }}
+                  >
+                    {[...Array(4)].map((_, index) => (
+                      <Box key={index}>
+                        <Skeleton
+                          variant="text"
+                          width={60}
+                          sx={{ bgcolor: 'rgba(255, 255, 255, 0.1)' }}
+                        />
+                        <Skeleton
+                          variant="text"
+                          width={40}
+                          sx={{ bgcolor: 'rgba(255, 255, 255, 0.1)' }}
+                        />
+                      </Box>
+                    ))}
+                  </Box>
+                </>
+              ) : (
+                <>
+                  <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                    Bio
                   </Typography>
-                  <Typography variant="body1">
-                    {profileInfo?.followingCount}
+                  <Typography variant="body2" sx={{ mb: 3 }}>
+                    {profileInfo?.biography || 'No bio available'}
                   </Typography>
-                </Box>
-                <Box>
-                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    Tweets
+                  <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                    X Stats
                   </Typography>
-                  <Typography variant="body1">
-                    {profileInfo?.tweetsCount}
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    Lists
-                  </Typography>
-                  <Typography variant="body1">
-                    {profileInfo?.listedCount}
-                  </Typography>
-                </Box>
-              </Box>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 2,
+                      mb: 3,
+                    }}
+                  >
+                    <Box>
+                      <Typography
+                        variant="body2"
+                        sx={{ color: 'text.secondary' }}
+                      >
+                        Followers
+                      </Typography>
+                      <Typography variant="body1">
+                        {profileInfo?.followersCount}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography
+                        variant="body2"
+                        sx={{ color: 'text.secondary' }}
+                      >
+                        Following
+                      </Typography>
+                      <Typography variant="body1">
+                        {profileInfo?.followingCount}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography
+                        variant="body2"
+                        sx={{ color: 'text.secondary' }}
+                      >
+                        Tweets
+                      </Typography>
+                      <Typography variant="body1">
+                        {profileInfo?.tweetsCount}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography
+                        variant="body2"
+                        sx={{ color: 'text.secondary' }}
+                      >
+                        Lists
+                      </Typography>
+                      <Typography variant="body1">
+                        {profileInfo?.listedCount}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </>
+              )}
             </>
           )}
 

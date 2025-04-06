@@ -16,6 +16,11 @@ import {
   FormControl,
   InputLabel,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogActions,
+  List,
+  ListItem,
 } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import SendIcon from '@mui/icons-material/Send';
@@ -26,6 +31,8 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { AI_MODELS, generateContent } from '../../services/ai.service';
 import { getFullTranscription } from '../../services/db/spaces.service';
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../i18n';
 
 type ContentType = 'thread' | 'post' | 'reply' | 'dm';
 
@@ -115,6 +122,7 @@ const CONTENT_TEMPLATES = {
  * content for posts, threads, replies, and DMs.
  */
 const ContentStudio: React.FC = () => {
+  const { t } = useTranslation();
   const { spaceId } = useParams<{ spaceId: string }>();
   const [contentType, setContentType] = useState<ContentType>('thread');
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
@@ -126,6 +134,7 @@ const ContentStudio: React.FC = () => {
     { id: string; title: string; content: string; type: ContentType }[]
   >([]);
   const [error, setError] = useState<string | null>(null);
+  const [showSaveConfirm, setShowSaveConfirm] = useState(false);
 
   const handleContentTypeChange = (
     _: React.SyntheticEvent,
@@ -133,6 +142,9 @@ const ContentStudio: React.FC = () => {
   ) => {
     setContentType(newValue);
     setSelectedTemplateId('');
+    setCustomPrompt('');
+    setGeneratedContent('');
+    setError(null);
   };
 
   const handleTemplateSelect = (templateId: string) => {
@@ -142,6 +154,8 @@ const ContentStudio: React.FC = () => {
     );
     if (template) {
       setCustomPrompt(template.prompt);
+      setGeneratedContent('');
+      setError(null);
     }
   };
 
@@ -154,15 +168,18 @@ const ContentStudio: React.FC = () => {
 
     setIsGenerating(true);
     setError(null);
-    setGeneratedContent(''); // Clear previous content
+    setGeneratedContent('');
 
     try {
-      // Get space transcription for context
       let context = '';
       if (spaceId) {
         const transcription = await getFullTranscription(spaceId);
         if (transcription) {
-          context = `You are an AI assistant helping create content for a Twitter Space. Here's the transcription of the space:\n\n${transcription}\n\nPlease help create the following type of content: ${contentType}`;
+          const currentLang = i18n.language;
+          context = `You are an AI assistant helping create content for a Twitter Space. Please respond in ${currentLang === 'zh' ? 'Chinese' : 'English'}. Here's the transcription of the space:\n\n${transcription}\n\nPlease help create the following type of content: ${contentType}`;
+        } else {
+          const currentLang = i18n.language;
+          context = `You are an AI assistant helping create content for a Twitter Space. Please respond in ${currentLang === 'zh' ? 'Chinese' : 'English'}. Please help create the following type of content: ${contentType}`;
         }
       }
 
@@ -176,10 +193,10 @@ const ContentStudio: React.FC = () => {
       );
 
       if (response.error) {
-        setError(response.error);
+        setError(t('aiErrorAlert') + ": " + response.error);
       }
     } catch (error: any) {
-      setError(error.message || 'Failed to generate content');
+      setError(t('aiFailedError') + ": " + error.message);
     } finally {
       setIsGenerating(false);
     }
@@ -190,7 +207,7 @@ const ContentStudio: React.FC = () => {
 
     const newContent = {
       id: `saved-${Date.now()}`,
-      title: `${contentType.charAt(0).toUpperCase() + contentType.slice(1)} - ${new Date().toLocaleString()}`,
+      title: `${t(contentType + 'Tab')} - ${new Date().toLocaleString()}`,
       content: generatedContent,
       type: contentType,
     };
@@ -200,13 +217,20 @@ const ContentStudio: React.FC = () => {
 
   const handleCopyContent = () => {
     navigator.clipboard.writeText(generatedContent);
-    // Would typically show a toast notification here
+  };
+
+  const confirmChange = (action: () => void) => {
+    if (generatedContent.trim()) {
+      setShowSaveConfirm(true);
+    } else {
+      action();
+    }
   };
 
   return (
     <Box>
       <Typography variant="h6" sx={{ mb: 3 }}>
-        Content Studio
+        {t('contentStudioTitle')}
       </Typography>
 
       <Tabs
@@ -214,10 +238,10 @@ const ContentStudio: React.FC = () => {
         onChange={handleContentTypeChange}
         sx={{ mb: 3 }}
       >
-        <Tab label="Thread" value="thread" />
-        <Tab label="Post" value="post" />
-        <Tab label="Reply" value="reply" />
-        <Tab label="DM" value="dm" />
+        <Tab label={t('threadTab')} value="thread" />
+        <Tab label={t('postTab')} value="post" />
+        <Tab label={t('replyTab')} value="reply" />
+        <Tab label={t('dmTab')} value="dm" />
       </Tabs>
 
       <Grid container spacing={2}>
@@ -232,7 +256,7 @@ const ContentStudio: React.FC = () => {
             }}
           >
             <Typography variant="subtitle1" sx={{ mb: 2 }}>
-              Templates
+              {t('templatesTitle')}
             </Typography>
 
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -256,7 +280,7 @@ const ContentStudio: React.FC = () => {
               ))}
               <Chip
                 icon={<AddIcon />}
-                label="Create custom template"
+                label={t('createCustomTemplateButton')}
                 onClick={() => {}}
                 sx={{
                   justifyContent: 'flex-start',
@@ -272,7 +296,7 @@ const ContentStudio: React.FC = () => {
             <Divider sx={{ my: 2 }} />
 
             <Typography variant="subtitle1" sx={{ mb: 2 }}>
-              Saved Content
+              {t('savedContentTitle')}
             </Typography>
 
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -296,7 +320,7 @@ const ContentStudio: React.FC = () => {
                   variant="body2"
                   sx={{ color: 'text.secondary', fontStyle: 'italic' }}
                 >
-                  No saved content yet
+                  {t('noSavedContentYet')}
                 </Typography>
               )}
             </Box>
@@ -314,17 +338,34 @@ const ContentStudio: React.FC = () => {
             }}
           >
             <Box
-              sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}
+              sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}
             >
-              <Typography variant="subtitle1">Generation Prompt</Typography>
+              <Typography variant="subtitle1">
+                {t('customPromptTitle')}
+              </Typography>
+            </Box>
+            <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
+              <HelpOutlineIcon sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }}/>
+              {t('promptHelpText')}
+            </Typography>
 
+            <TextField
+              fullWidth
+              multiline
+              rows={4}
+              placeholder={t('customPromptPlaceholder')}
+              value={customPrompt}
+              onChange={handleCustomPromptChange}
+              sx={{ mb: 2 }}
+            />
+
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
               <FormControl size="small" sx={{ minWidth: 150 }}>
-                <InputLabel>AI Model</InputLabel>
+                <InputLabel>{t('selectModelLabel')}</InputLabel>
                 <Select
                   value={selectedModel}
-                  label="AI Model"
+                  label={t('selectModelLabel')}
                   onChange={(e) => setSelectedModel(e.target.value)}
-                  size="small"
                 >
                   {AI_MODELS.map((model) => (
                     <MenuItem key={model.id} value={model.id}>
@@ -333,21 +374,7 @@ const ContentStudio: React.FC = () => {
                   ))}
                 </Select>
               </FormControl>
-            </Box>
 
-            <TextField
-              fullWidth
-              multiline
-              rows={3}
-              placeholder={`Write a prompt for the AI to generate a ${contentType}...`}
-              value={customPrompt}
-              onChange={handleCustomPromptChange}
-              sx={{ mb: 2 }}
-            />
-
-            <Box
-              sx={{ display: 'flex', gap: 1, justifyContent: 'space-between' }}
-            >
               <Button
                 variant="contained"
                 startIcon={<AutoFixHighIcon />}
@@ -357,48 +384,15 @@ const ContentStudio: React.FC = () => {
                   background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
                 }}
               >
-                {isGenerating ? 'Generating...' : 'Generate Content'}
+                {isGenerating ? t('generatingButton') : t('generateButton')}
               </Button>
-
-              <IconButton size="small" title="Prompt tips">
-                <HelpOutlineIcon />
-              </IconButton>
             </Box>
-          </Paper>
 
-          <Paper
-            sx={{
-              p: 2,
-              background: 'rgba(255, 255, 255, 0.05)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-            }}
-          >
-            <Box
-              sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}
-            >
-              <Typography variant="subtitle1">Generated Content</Typography>
+            <Divider sx={{ my: 3 }} />
 
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <IconButton
-                  size="small"
-                  onClick={handleCopyContent}
-                  disabled={!generatedContent}
-                  title="Copy to clipboard"
-                >
-                  <ContentCopyIcon fontSize="small" />
-                </IconButton>
-
-                <IconButton
-                  size="small"
-                  onClick={handleSaveContent}
-                  disabled={!generatedContent}
-                  title="Save content"
-                >
-                  <SaveIcon fontSize="small" />
-                </IconButton>
-              </Box>
-            </Box>
+            <Typography variant="subtitle1" sx={{ mb: 2 }}>
+              {t('generatedContentTitle')}
+            </Typography>
 
             {error && (
               <Alert severity="error" sx={{ mb: 2 }}>
@@ -406,41 +400,49 @@ const ContentStudio: React.FC = () => {
               </Alert>
             )}
 
-            <TextField
-              fullWidth
-              multiline
-              rows={10}
-              placeholder="Generated content will appear here..."
-              value={generatedContent}
-              onChange={(e) => setGeneratedContent(e.target.value)}
-              sx={{ mb: 2 }}
-            />
+            <Paper variant="outlined" sx={{ p: 2, mb: 2, minHeight: 200, whiteSpace: 'pre-wrap', bgcolor: 'rgba(0,0,0,0.1)', overflowY: 'auto' }}>
+              {generatedContent || (isGenerating ? t('generatingProgressText') : t('generatedContentPlaceholder'))}
+            </Paper>
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
               <Button
-                variant="outlined"
-                startIcon={<AutoFixHighIcon />}
-                onClick={() => {}}
-                disabled={!generatedContent}
+                startIcon={<ContentCopyIcon />}
+                onClick={handleCopyContent}
+                disabled={!generatedContent.trim()}
+                title={t('copyButton')}
               >
-                Refine
+                {t('copyButton')}
               </Button>
-
               <Button
                 variant="contained"
-                startIcon={<SendIcon />}
-                onClick={() => {}}
-                disabled={!generatedContent}
-                sx={{
-                  background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
-                }}
+                startIcon={<SaveIcon />}
+                onClick={handleSaveContent}
+                disabled={!generatedContent.trim()}
+                title={t('saveButton')}
               >
-                Publish
+                {t('saveButton')}
               </Button>
             </Box>
           </Paper>
         </Grid>
       </Grid>
+
+      <Dialog open={showSaveConfirm} onClose={() => setShowSaveConfirm(false)}>
+        <DialogTitle>{t('saveContentPrompt')}</DialogTitle>
+        <DialogActions>
+          <Button onClick={() => {
+            setShowSaveConfirm(false);
+          }}>
+            {t('discardConfirmButton')}
+          </Button>
+          <Button onClick={() => {
+            handleSaveContent();
+            setShowSaveConfirm(false);
+          }} autoFocus>
+            {t('saveConfirmButton')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

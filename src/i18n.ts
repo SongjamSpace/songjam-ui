@@ -1,9 +1,11 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
+import { useTranslation } from 'react-i18next';
 
-// Define translation keys based on App.tsx
-const translationEN = {
+// --- English Translations ---
+
+const appTranslationsEN = {
   accuracy: 'Accuracy',
   spacesNative: 'Spaces Native',
   settlement: 'Settlement',
@@ -32,7 +34,6 @@ const translationEN = {
   noPreviews: 'No completed spaces available for preview yet.',
   previewDialogText3: 'This is just a preview. Analyze your own space for full insights!',
   poweredBy: 'Powered by',
-  // Add other App.tsx strings here...
   transcribeFeatureTitle: 'Transcribe',
   transcribeFeatureText: 'Converting your X Space audio into text makes it easy to analyze',
   transcribeFeatureDetail: 'Get your time back',
@@ -65,10 +66,150 @@ const translationEN = {
   twitter: 'Twitter',
   linkedin: 'LinkedIn',
   footerText: '© Songjam 2025. All rights reserved.',
-  switchLanguage: '中文', // Text for the language switcher button when current language is English
+  switchLanguage: '中文',
 };
 
-const translationZH = {
+const crmTranslationsEN = {
+  agenticCRM: 'Agentic CRM',
+  audienceTab: 'Audience',
+  contentTab: 'Content',
+  timelineTab: 'Timeline',
+  transcriptionTab: 'Transcription',
+  analysisTab: 'Space Analysis',
+  betaChip: 'Beta',
+  queuedChip: 'Queued',
+  analyzingChip: 'Analyzing...',
+  quickStatsTitle: 'Quick Stats',
+  attendeesStat: 'Attendees',
+  durationStat: 'Duration',
+  minStat: 'min',
+  createCampaignButton: 'Create Campaign',
+  transcriptTimelineTitle: 'Transcript Timeline',
+  fullTranscriptionTitle: 'Full Transcription & Search',
+  downloadRecordingButton: 'Download Recording',
+  downloadingButton: 'Downloading...',
+  aiAssistantTitle: 'AI Assistant',
+  selectModelLabel: 'Select Model',
+  aiPlaceholder: 'Ask the AI assistant...',
+  thinkingAI: 'Thinking...',
+  askAnythingAI: 'Ask me anything about this space or how to engage with the audience!',
+  quickActionsTitle: 'Quick Actions',
+  summarizeSpaceChip: 'Summarize Space',
+  createThreadChip: 'Create Thread',
+  engagementIdeasChip: 'Engagement Ideas',
+  mobileSidebarTitle: 'X Space CRM',
+  askAIButton: 'Ask AI',
+  authDialogTitle: 'Welcome to Songjam',
+  authDialogText: 'Connect your Twitter account to access Space analytics, audience insights, and AI-powered tools.',
+  listenersLabel: 'listeners',
+};
+
+const audiencePanelTranslationsEN = {
+  audienceMgmtTitle: 'Audience Management',
+  engagementLabel: 'Engagement',
+  allLevels: 'All Levels',
+  highEngagement: 'High',
+  mediumEngagement: 'Medium',
+  lowEngagement: 'Low',
+  speakersTab: 'Speakers',
+  listenersTab: 'Listeners',
+  searchPlaceholder: 'Search speakers/listeners...',
+  filtersTitle: 'Filter {{tabName}}',
+  engagementLevelLabel: 'Engagement Level',
+  followerCountLabel: 'Follower Count',
+  allSizes: 'All Sizes',
+  largeFollowers: 'Large (5000+)',
+  mediumFollowers: 'Medium (1000-5000)',
+  smallFollowers: 'Small (<1000)',
+  locationLabel: 'Location',
+  allLocations: 'All Locations',
+  interestsLabel: 'Interests',
+  clearAllButton: 'Clear All',
+  applyFiltersButton: 'Apply Filters',
+  speakersFound: '{{count}} speaker found',
+  speakersFound_plural: '{{count}} speakers found',
+  listenersFound: '{{count}} listener found',
+  listenersFound_plural: '{{count}} listeners found',
+};
+
+const contentStudioTranslationsEN = {
+  contentStudioTitle: 'Content Studio',
+  threadTab: 'Thread',
+  postTab: 'Post',
+  replyTab: 'Reply',
+  dmTab: 'DM',
+  templatesTitle: 'Templates',
+  customPromptTitle: 'Custom Prompt',
+  promptHelpText: "Use placeholders like [TOPIC] or [SPEAKER] to refine the AI's focus.",
+  selectModelLabel: 'Select Model',
+  generateButton: 'Generate',
+  generatingButton: 'Generating...',
+  generatedContentTitle: 'Generated Content',
+  copyButton: 'Copy',
+  saveButton: 'Save',
+  savedContentTitle: 'Saved Content',
+  saveContentPrompt: 'You have unsaved content. Save it first?',
+  saveConfirmButton: 'Save & Create New',
+  discardConfirmButton: 'Discard & Create New',
+  cancelButton: 'Cancel',
+  aiErrorAlert: 'AI Error',
+  aiFailedError: 'Failed to generate content',
+  createCustomTemplateButton: 'Create custom template',
+  noSavedContentYet: 'No saved content yet',
+  customPromptPlaceholder: 'Enter your custom prompt or modify a template...',
+  generatingProgressText: 'Generating...',
+  generatedContentPlaceholder: 'Your generated content will appear here.',
+};
+
+const spaceAnalysisTranslationsEN = {
+  loadingAnalysis: 'Loading analysis...',
+  generatingAnalysis: 'Generating analysis...',
+  errorGeneratingAnalysis: 'Error generating analysis:',
+  noAnalysisData: 'No analysis data available. Please generate the analysis.',
+  interactionGraphTab: 'Interaction Graph',
+  topicsTab: 'Topics',
+  analysisSettingsTab: 'Analysis Settings',
+  topicsTitle: 'Topics',
+  keyInsightsTitle: 'Key Insights',
+  analysisSettingsTitle: 'Analysis Settings',
+  interactionDetailsTitle: 'Interaction Details',
+  generateAnalysisButton: 'Generate Analysis',
+  updateAnalysisButton: 'Update Analysis',
+  closeButton: 'Close',
+  selectTopicLabel: 'Select Topic',
+  allTopicsOption: 'All Topics',
+  interactionTypesLabel: 'Interaction Types',
+  strengthMetricsLabel: 'Strength Metrics',
+  timeWindowLabel: 'Time Window (s)',
+  topicOverlapThresholdLabel: 'Topic Overlap Threshold',
+  directMentionsConfig: 'Direct Mentions',
+  sequentialResponsesConfig: 'Sequential Responses',
+  topicBasedConfig: 'Topic Based',
+  timeProximityConfig: 'Time Proximity',
+  frequencyConfig: 'Frequency',
+  durationConfig: 'Duration',
+  topicOverlapConfig: 'Topic Overlap',
+  sentimentConfig: 'Sentiment',
+  responseTimeConfig: 'Response Time',
+  modalFromLabel: 'From:',
+  modalToLabel: 'To:',
+  modalTypeLabel: 'Type:',
+  modalSentimentLabel: 'Sentiment:',
+  modalTimestampLabel: 'Timestamp:',
+  modalStrengthLabel: 'Strength:',
+  modalUtterancesLabel: 'Key Utterances:',
+  analysisConfigHelpTitle: 'Help: Analysis Configuration',
+  analysisConfigHelpText: 'Configure how speaker interactions and their strength are calculated. Hover over options for more details. Regenerate analysis after changing settings.',
+  mostActiveSpeakerStat: 'Most Active Speaker',
+  avgInteractionsStat: 'Avg. Interactions',
+  totalConnectionsStat: 'Total Connections',
+  noInteractionsForTopic: 'No interactions found for this topic.',
+  noTopicsFound: 'No topics found in the analysis.',
+};
+
+// --- Chinese Translations ---
+
+const appTranslationsZH = {
   accuracy: '准确率',
   spacesNative: 'Spaces 原生',
   settlement: '结算',
@@ -97,7 +238,6 @@ const translationZH = {
   noPreviews: '暂无已完成的空间可供预览。',
   previewDialogText3: '这只是预览。分析您自己的空间以获取完整见解！',
   poweredBy: '技术支持',
-  // Add other App.tsx strings here...
   transcribeFeatureTitle: '转录',
   transcribeFeatureText: '将您的 X Space 音频转换为文本，便于分析',
   transcribeFeatureDetail: '节省您的时间',
@@ -130,36 +270,197 @@ const translationZH = {
   twitter: 'Twitter',
   linkedin: 'LinkedIn',
   footerText: '© Songjam 2025. 保留所有权利。',
-  switchLanguage: 'English', // Text for the language switcher button when current language is Chinese
+  switchLanguage: 'English',
 };
 
+const crmTranslationsZH = {
+  agenticCRM: '智能 CRM',
+  audienceTab: '听众',
+  contentTab: '内容',
+  timelineTab: '时间线',
+  transcriptionTab: '文字记录',
+  analysisTab: '空间分析',
+  betaChip: '测试版',
+  queuedChip: '排队中',
+  analyzingChip: '分析中...',
+  quickStatsTitle: '快速统计',
+  attendeesStat: '参与者',
+  durationStat: '持续时间',
+  minStat: '分钟',
+  createCampaignButton: '创建活动',
+  transcriptTimelineTitle: '文字记录时间线',
+  fullTranscriptionTitle: '完整文字记录与搜索',
+  downloadRecordingButton: '下载录音',
+  downloadingButton: '下载中...',
+  aiAssistantTitle: 'AI 助手',
+  selectModelLabel: '选择模型',
+  aiPlaceholder: '询问 AI 助手...',
+  thinkingAI: '思考中...',
+  askAnythingAI: '向我询问有关此空间或如何与听众互动的任何问题！',
+  quickActionsTitle: '快捷操作',
+  summarizeSpaceChip: '总结空间',
+  createThreadChip: '创建推文串',
+  engagementIdeasChip: '互动建议',
+  mobileSidebarTitle: 'X Space CRM',
+  askAIButton: '询问 AI',
+  authDialogTitle: '欢迎来到 Songjam',
+  authDialogText: '连接您的 Twitter 帐户以访问空间分析、听众洞察和 AI 驱动的工具。',
+  listenersLabel: '听众',
+};
+
+const audiencePanelTranslationsZH = {
+  audienceMgmtTitle: '听众管理',
+  engagementLabel: '互动程度',
+  allLevels: '所有级别',
+  highEngagement: '高',
+  mediumEngagement: '中',
+  lowEngagement: '低',
+  speakersTab: '发言者',
+  listenersTab: '听众',
+  searchPlaceholder: '搜索发言者/听众...',
+  filtersTitle: '筛选 {{tabName}}',
+  engagementLevelLabel: '互动级别',
+  followerCountLabel: '粉丝数',
+  allSizes: '所有规模',
+  largeFollowers: '多 (5000+)',
+  mediumFollowers: '中 (1000-5000)',
+  smallFollowers: '少 (<1000)',
+  locationLabel: '地点',
+  allLocations: '所有地点',
+  interestsLabel: '兴趣',
+  clearAllButton: '清除全部',
+  applyFiltersButton: '应用筛选',
+  speakersFound: '找到 {{count}} 位发言者',
+  speakersFound_plural: '找到 {{count}} 位发言者',
+  listenersFound: '找到 {{count}} 位听众',
+  listenersFound_plural: '找到 {{count}} 位听众',
+};
+
+const contentStudioTranslationsZH = {
+  contentStudioTitle: '内容工作室',
+  threadTab: '推文串',
+  postTab: '帖子',
+  replyTab: '回复',
+  dmTab: '私信',
+  templatesTitle: '模板',
+  customPromptTitle: '自定义提示',
+  promptHelpText: '使用像 [主题] 或 [发言人] 这样的占位符来优化 AI 的焦点。',
+  selectModelLabel: '选择模型',
+  generateButton: '生成',
+  generatingButton: '生成中...',
+  generatedContentTitle: '生成的内容',
+  copyButton: '复制',
+  saveButton: '保存',
+  savedContentTitle: '已保存的内容',
+  saveContentPrompt: '您有未保存的内容。要先保存吗？',
+  saveConfirmButton: '保存并新建',
+  discardConfirmButton: '放弃并新建',
+  cancelButton: '取消',
+  aiErrorAlert: 'AI 错误',
+  aiFailedError: '生成内容失败',
+  createCustomTemplateButton: '创建自定义模板',
+  noSavedContentYet: '尚无已保存内容',
+  customPromptPlaceholder: '输入您的自定义提示或修改模板...',
+  generatingProgressText: '生成中...',
+  generatedContentPlaceholder: '您生成的内容将显示在此处。',
+};
+
+const spaceAnalysisTranslationsZH = {
+  loadingAnalysis: '正在加载分析...',
+  generatingAnalysis: '正在生成分析...',
+  errorGeneratingAnalysis: '生成分析时出错：',
+  noAnalysisData: '无可用分析数据。请生成分析。',
+  interactionGraphTab: '互动图谱',
+  topicsTab: '话题',
+  analysisSettingsTab: '分析设置',
+  topicsTitle: '话题',
+  keyInsightsTitle: '关键洞察',
+  analysisSettingsTitle: '分析设置',
+  interactionDetailsTitle: '互动详情',
+  generateAnalysisButton: '生成分析',
+  updateAnalysisButton: '更新分析',
+  closeButton: '关闭',
+  selectTopicLabel: '选择话题',
+  allTopicsOption: '所有话题',
+  interactionTypesLabel: '互动类型',
+  strengthMetricsLabel: '强度指标',
+  timeWindowLabel: '时间窗口 (秒)',
+  topicOverlapThresholdLabel: '话题重叠阈值',
+  directMentionsConfig: '直接提及',
+  sequentialResponsesConfig: '顺序回应',
+  topicBasedConfig: '基于话题',
+  timeProximityConfig: '时间邻近性',
+  frequencyConfig: '频率',
+  durationConfig: '持续时间',
+  topicOverlapConfig: '话题重叠',
+  sentimentConfig: '情感',
+  responseTimeConfig: '响应时间',
+  modalFromLabel: '来自：',
+  modalToLabel: '至：',
+  modalTypeLabel: '类型：',
+  modalSentimentLabel: '情感：',
+  modalTimestampLabel: '时间戳：',
+  modalStrengthLabel: '强度：',
+  modalUtterancesLabel: '关键话语：',
+  analysisConfigHelpTitle: '帮助：分析配置',
+  analysisConfigHelpText: '配置发言者互动及其强度的计算方式。将鼠标悬停在选项上可查看更多详细信息。更改设置后重新生成分析。',
+  mostActiveSpeakerStat: '最活跃发言者',
+  avgInteractionsStat: '平均互动数',
+  totalConnectionsStat: '总连接数',
+  noInteractionsForTopic: '未找到此话题的互动。',
+  noTopicsFound: '分析中未找到话题。',
+};
+
+// --- Merge Resources ---
+const enResources = {
+  ...appTranslationsEN,
+  ...crmTranslationsEN,
+  ...audiencePanelTranslationsEN,
+  ...contentStudioTranslationsEN,
+  ...spaceAnalysisTranslationsEN,
+};
+
+const zhResources = {
+  ...appTranslationsZH,
+  ...crmTranslationsZH,
+  ...audiencePanelTranslationsZH,
+  ...contentStudioTranslationsZH,
+  ...spaceAnalysisTranslationsZH,
+};
+
+// --- i18next Initialization ---
 i18n
-  // Detect user language
-  // Learn more: https://github.com/i18next/i18next-browser-languageDetector
   .use(LanguageDetector)
-  // Pass the i18n instance to react-i18next.
   .use(initReactI18next)
-  // Init i18next
-  // For all options read: https://www.i18next.com/overview/configuration-options
   .init({
     debug: true, // Set to false in production
     fallbackLng: 'en',
     detection: {
-      // Order and from where user language should be detected
       order: ['path', 'navigator', 'htmlTag', 'localStorage', 'subdomain'],
       lookupFromPathIndex: 0,
     },
     interpolation: {
-      escapeValue: false, // React already safes from xss
+      escapeValue: false, // React already protects from xss
     },
     resources: {
       en: {
-        translation: translationEN,
+        translation: enResources, // Use merged resources
       },
       zh: {
-        translation: translationZH,
+        translation: zhResources, // Use merged resources
       },
     },
   });
+
+// --- Remove post-initialization calls ---
+// The following lines are no longer needed as resources are passed during init:
+// i18n.addResourceBundle('en', 'translation', crmTranslationsEN, true, true);
+// i18n.addResourceBundle('zh', 'translation', crmTranslationsZH, true, true);
+// i18n.addResourceBundle('en', 'translation', audiencePanelTranslationsEN, true, true);
+// i18n.addResourceBundle('zh', 'translation', audiencePanelTranslationsZH, true, true);
+// i18n.addResourceBundle('en', 'translation', contentStudioTranslationsEN, true, true);
+// i18n.addResourceBundle('zh', 'translation', contentStudioTranslationsZH, true, true);
+// i18n.addResourceBundle('en', 'translation', spaceAnalysisTranslationsEN, true, true);
+// i18n.addResourceBundle('zh', 'translation', spaceAnalysisTranslationsZH, true, true);
 
 export default i18n; 

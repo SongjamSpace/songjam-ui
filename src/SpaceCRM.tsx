@@ -41,6 +41,8 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import { format } from 'date-fns';
 import { LoadingButton } from '@mui/lab';
 import DownloadIcon from '@mui/icons-material/Download';
+import i18n from './i18n';
+import { useTranslation } from 'react-i18next';
 
 import AudiencePanel from './components/SpaceCRM/AudiencePanel';
 import ContentStudio from './components/SpaceCRM/ContentStudio';
@@ -101,6 +103,7 @@ interface VisualizationContext {
  * This is the main CRM view that extends the existing SpaceDetails component.
  */
 const SpaceCRM: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { spaceId } = useParams<{ spaceId: string }>();
   const [space, setSpace] = useState<Space | null>(null);
@@ -219,7 +222,9 @@ const SpaceCRM: React.FC = () => {
     setAiPrompt('');
 
     try {
+      const currentLang = i18n.language;
       let contextString = `You are an AI assistant helping with a Twitter Space.
+      Please respond in ${currentLang === 'zh' ? 'Chinese' : 'English'}. 
       User query: ${currentPrompt}
       `;
 
@@ -423,7 +428,7 @@ ${JSON.stringify(analysisContext, null, 2)}
 
                 <Chip
                   icon={<HeadphonesIcon />}
-                  label={`${space.totalLiveListeners} listeners`}
+                  label={`${space.totalLiveListeners} ${t('listenersLabel')}`}
                   size="small"
                   sx={{
                     background: 'rgba(255, 255, 255, 0.05)',
@@ -462,7 +467,7 @@ ${JSON.stringify(analysisContext, null, 2)}
               fontWeight: 'bold',
             }}
           >
-            Agentic CRM
+            {t('agenticCRM')}
           </Typography>
         </Box>
 
@@ -537,17 +542,17 @@ ${JSON.stringify(analysisContext, null, 2)}
                     label="Dashboard"
                     value="dashboard"
                   /> */}
-                  <Tab icon={<PeopleIcon />} label="Audience" value="audience" />
+                  <Tab icon={<PeopleIcon />} label={t('audienceTab')} value="audience" />
                   <Tab 
                     disabled={(space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED}
                     icon={<MessageIcon />}
                     label={
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        Content
+                        {t('contentTab')}
                         {(space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED && (
                           <Chip
                             size="small"
-                            label={(space?.transcriptionProgress || 0) <= TranscriptionProgress.SUMMARIZING ? "Queued" : "Analyzing..."}
+                            label={(space?.transcriptionProgress || 0) <= TranscriptionProgress.SUMMARIZING ? t('queuedChip') : t('analyzingChip')}
                             sx={{
                               height: 16,
                               fontSize: '0.6rem',
@@ -564,11 +569,11 @@ ${JSON.stringify(analysisContext, null, 2)}
                     icon={<ForumIcon />}
                     label={
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        Timeline
+                        {t('timelineTab')}
                         {(space?.transcriptionProgress || 0) <= TranscriptionProgress.TRANSCRIBING && (
                           <Chip
                             size="small"
-                            label={(space?.transcriptionProgress || 0) <= TranscriptionProgress.DOWNLOADING_AUDIO ? "Queued" : "Analyzing..."}
+                            label={(space?.transcriptionProgress || 0) <= TranscriptionProgress.DOWNLOADING_AUDIO ? t('queuedChip') : t('analyzingChip')}
                             sx={{
                               height: 16,
                               fontSize: '0.6rem',
@@ -585,11 +590,11 @@ ${JSON.stringify(analysisContext, null, 2)}
                     icon={<DescriptionIcon />}
                     label={
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        Transcription
+                        {t('transcriptionTab')}
                         {(space?.transcriptionProgress || 0) <= TranscriptionProgress.TRANSCRIBING && (
                           <Chip
                             size="small"
-                            label={(space?.transcriptionProgress || 0) <= TranscriptionProgress.DOWNLOADING_AUDIO ? "Queued" : "Analyzing..."}
+                            label={(space?.transcriptionProgress || 0) <= TranscriptionProgress.DOWNLOADING_AUDIO ? t('queuedChip') : t('analyzingChip')}
                             sx={{
                               height: 16,
                               fontSize: '0.6rem',
@@ -609,10 +614,10 @@ ${JSON.stringify(analysisContext, null, 2)}
                         component="span"
                         sx={{ display: 'flex', alignItems: 'center' }}
                       >
-                        Space Analysis
+                        {t('analysisTab')}
                         <Chip
                           size="small"
-                          label="Beta"
+                          label={t('betaChip')}
                           sx={{
                             ml: 1,
                             height: 16,
@@ -630,22 +635,22 @@ ${JSON.stringify(analysisContext, null, 2)}
                 <Divider sx={{ my: 2 }} />
 
                 <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                  Quick Stats
+                  {t('quickStatsTitle')}
                 </Typography>
                 {space ? (
                   <Box sx={{ mb: 3 }}>
                     <Typography variant="body2">
-                      Attendees: {space.totalLiveListeners}
+                      {t('attendeesStat')}: {space.totalLiveListeners}
                     </Typography>
                     <Typography variant="body2">
-                      Duration:{' '}
+                      {t('durationStat')}:{' '}
                       {Math.round(
                         (space.endedAt
                           ? new Date(space.endedAt).getTime() -
                             new Date(space.startedAt).getTime()
                           : 0) / 60000
                       )}{' '}
-                      min
+                      {t('minStat')}
                     </Typography>
                     {/* <Typography variant="body2">
                       Selected: {selectedAttendees.length}
@@ -668,7 +673,7 @@ ${JSON.stringify(analysisContext, null, 2)}
                     },
                   }}
                 >
-                  Create Campaign
+                  {t('createCampaignButton')}
                 </Button>
               </Paper>
             </Grid>
@@ -761,7 +766,7 @@ ${JSON.stringify(analysisContext, null, 2)}
                   {activeTab === 'timeline' && spaceId && (
                     <Box>
                       <Typography variant="h6" sx={{ mb: 2 }}>
-                        Transcript Timeline
+                        {t('transcriptTimelineTitle')}
                       </Typography>
                       <SegmentsTimeline
                          spaceId={spaceId}
@@ -778,7 +783,7 @@ ${JSON.stringify(analysisContext, null, 2)}
                     <Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                         <Typography variant="h6">
-                          Full Transcription & Search
+                          {t('fullTranscriptionTitle')}
                         </Typography>
                         <LoadingButton
                           loading={isDownloading}
@@ -794,12 +799,12 @@ ${JSON.stringify(analysisContext, null, 2)}
                             textTransform: 'none',
                           }}
                         >
-                          {isDownloading ? 'Downloading...' : 'Download Recording'}
+                          {isDownloading ? t('downloadingButton') : t('downloadRecordingButton')}
                         </LoadingButton>
                       </Box>
                       <AlgoliaSearchTranscription 
                         spaceId={spaceId} 
-                        title={space?.title || 'Space Transcription'} 
+                        title={space?.title || t('transcriptionTab')} 
                       />
                     </Box>
                   )}
@@ -849,14 +854,14 @@ ${JSON.stringify(analysisContext, null, 2)}
                     fontWeight: 'bold',
                   }}
                 >
-                  AI Assistant
+                  {t('aiAssistantTitle')}
                 </Typography>
 
                 <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-                  <InputLabel>Select Model</InputLabel>
+                  <InputLabel>{t('selectModelLabel')}</InputLabel>
                   <Select
                     value={selectedModel}
-                    label="Select Model"
+                    label={t('selectModelLabel')}
                     onChange={(e) => setSelectedModel(e.target.value)}
                     sx={{
                       '& .MuiOutlinedInput-notchedOutline': {
@@ -1050,7 +1055,7 @@ ${JSON.stringify(analysisContext, null, 2)}
                         variant="body2"
                         sx={{ color: 'text.secondary' }}
                       >
-                        Thinking...
+                        {t('thinkingAI')}
                       </Typography>
                     </Box>
                   ) : (
@@ -1058,8 +1063,7 @@ ${JSON.stringify(analysisContext, null, 2)}
                       variant="body2"
                       sx={{ color: 'text.secondary', fontStyle: 'italic' }}
                     >
-                      Ask me anything about this space or how to engage with the
-                      audience!
+                      {t('askAnythingAI')}
                     </Typography>
                   )}
                 </Box>
@@ -1083,7 +1087,7 @@ ${JSON.stringify(analysisContext, null, 2)}
                   <TextField
                     fullWidth
                     size="small"
-                    placeholder="Ask the AI assistant..."
+                    placeholder={t('aiPlaceholder')}
                     value={aiPrompt}
                     onChange={(e) => setAiPrompt(e.target.value)}
                     disabled={isAiThinking || (space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED}
@@ -1123,17 +1127,15 @@ ${JSON.stringify(analysisContext, null, 2)}
                   <Divider sx={{ mb: 2 }} />
 
                   <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                    Quick Actions
+                    {t('quickActionsTitle')}
                   </Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                     <Chip
                       disabled={(space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED}
-                      label="Summarize Space"
+                      label={t('summarizeSpaceChip')}
                       size="small"
                       onClick={() => {
-                        setAiPrompt(
-                          'Please provide a concise summary of the key points discussed in this space.'
-                        );
+                        setAiPrompt(t('summarizeSpaceChip'));
                         handlePromptSubmit();
                       }}
                       icon={<AutorenewIcon sx={{ fontSize: 16 }} />}
@@ -1150,12 +1152,10 @@ ${JSON.stringify(analysisContext, null, 2)}
                     />
                     <Chip
                       disabled={(space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED}
-                      label="Create Thread"
+                      label={t('createThreadChip')}
                       size="small"
                       onClick={() => {
-                        setAiPrompt(
-                          'Create an engaging Twitter thread summarizing the main insights from this space.'
-                        );
+                        setAiPrompt(t('createThreadChip'));
                         handlePromptSubmit();
                       }}
                       icon={<ForumIcon sx={{ fontSize: 16 }} />}
@@ -1172,12 +1172,10 @@ ${JSON.stringify(analysisContext, null, 2)}
                     />
                     <Chip
                       disabled={(space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED}
-                      label="Engagement Ideas"
+                      label={t('engagementIdeasChip')}
                       size="small"
                       onClick={() => {
-                        setAiPrompt(
-                          'Suggest creative ways to engage with the audience based on the space discussion.'
-                        );
+                        setAiPrompt(t('engagementIdeasChip'));
                         handlePromptSubmit();
                       }}
                       icon={<MessageIcon sx={{ fontSize: 16 }} />}
@@ -1232,7 +1230,7 @@ ${JSON.stringify(analysisContext, null, 2)}
                   fontWeight: 'bold',
                 }}
               >
-                X Space CRM
+                {t('mobileSidebarTitle')}
               </Typography>
               <IconButton onClick={() => setIsMobileSidebarOpen(false)}>
                 <CloseIcon />
@@ -1270,23 +1268,23 @@ ${JSON.stringify(analysisContext, null, 2)}
               }}
             >
               {/* <Tab icon={<DashboardIcon />} label="Dashboard" value="dashboard" /> */}
-              <Tab icon={<PeopleIcon />} label="Audience" value="audience" />
-              <Tab icon={<MessageIcon />} label="Content" value="content" />
-              <Tab icon={<ForumIcon />} label="Timeline" value="timeline" />
-              <Tab icon={<DescriptionIcon />} label="Transcription" value="transcription" />
-              <Tab icon={<InsightsIcon />} label="Analysis" value="analysis" />
+              <Tab icon={<PeopleIcon />} label={t('audienceTab')} value="audience" />
+              <Tab icon={<MessageIcon />} label={t('contentTab')} value="content" />
+              <Tab icon={<ForumIcon />} label={t('timelineTab')} value="timeline" />
+              <Tab icon={<DescriptionIcon />} label={t('transcriptionTab')} value="transcription" />
+              <Tab icon={<InsightsIcon />} label={t('analysisTab')} value="analysis" />
             </Tabs>
 
             <Divider sx={{ my: 2 }} />
 
             <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              AI Assistant
+              {t('aiAssistantTitle')}
             </Typography>
             <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-              <InputLabel>Select Model</InputLabel>
+              <InputLabel>{t('selectModelLabel')}</InputLabel>
               <Select
                 value={selectedModel}
-                label="Select Model"
+                label={t('selectModelLabel')}
                 onChange={(e) => setSelectedModel(e.target.value)}
                 sx={{
                   '& .MuiOutlinedInput-notchedOutline': {
@@ -1311,7 +1309,7 @@ ${JSON.stringify(analysisContext, null, 2)}
             <TextField
               fullWidth
               size="small"
-              placeholder="Ask the AI assistant..."
+              placeholder={t('aiPlaceholder')}
               value={aiPrompt}
               onChange={(e) => setAiPrompt(e.target.value)}
               sx={{
@@ -1346,7 +1344,7 @@ ${JSON.stringify(analysisContext, null, 2)}
                 },
               }}
             >
-              {isAiThinking ? 'Thinking...' : 'Ask AI'}
+              {isAiThinking ? t('thinkingAI') : t('askAIButton')}
             </Button>
           </Box>
         </Drawer>
@@ -1374,7 +1372,7 @@ ${JSON.stringify(analysisContext, null, 2)}
               fontWeight: 'bold',
             }}
           >
-            Welcome to Songjam
+            {t('authDialogTitle')}
           </DialogTitle>
           <DialogContent>
             <DialogContentText
@@ -1384,7 +1382,7 @@ ${JSON.stringify(analysisContext, null, 2)}
                 mb: 3,
               }}
             >
-              Connect your Twitter account to access Space analytics, audience insights, and AI-powered tools.
+              {t('authDialogText')}
             </DialogContentText>
             <Box
               sx={{

@@ -23,6 +23,7 @@ import {
   Tab,
   Tabs,
   CircularProgress,
+  ListItemSecondaryAction,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
@@ -96,9 +97,9 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
   // Detail drawer tab state
   const [detailTab, setDetailTab] = useState<string>('profile');
 
-  const [enrichedSpeakers, setEnrichedSpeakers] = useState<
-    (TwitterUser & { xProfile?: XUserProfile; recentTweets?: XTweet[] })[]
-  >([]);
+  // const [enrichedSpeakers, setEnrichedSpeakers] = useState<
+  //   (TwitterUser & { xProfile?: XUserProfile; recentTweets?: XTweet[] })[]
+  // >([]);
   const [isLoadingProfiles, setIsLoadingProfiles] = useState(false);
 
   // const fetchEnrichedSpeakers = async (speakersToEnrich: User[]) => {
@@ -150,21 +151,17 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
 
   useEffect(() => {
     // Only fetch if space has speakers and we haven't already fetched enriched data for this space
-    if (
-      space?.speakers &&
-      space.speakers.length > 0 &&
-      enrichedSpeakers.length === 0
-    ) {
+    if (space?.speakers && space.speakers.length > 0) {
       console.log(
         `Space data updated, fetching enriched speaker data for the FIRST speaker only...`
       );
-      setEnrichedSpeakers([]); // Clear previous before fetching
+      // setEnrichedSpeakers([]); // Clear previous before fetching
       // fetchEnrichedSpeakers(space.speakers.slice(0, 1));
     } else if (!space?.speakers || space.speakers.length === 0) {
       console.log(
         'No speakers in space data or space cleared, clearing enriched speakers.'
       );
-      setEnrichedSpeakers([]);
+      // setEnrichedSpeakers([]);
       setIsLoadingProfiles(false);
     }
     // Intentionally excluding fetchEnrichedSpeakers and enrichedSpeakers from deps
@@ -195,13 +192,18 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
   };
 
   // Filter speakers based on search term
-  const filteredSpeakers =
-    space?.speakers
-      .map((speaker) => ({
-        ...speaker,
-        xProfile: enrichedSpeakers.find((es) => es.userId === speaker.userId)
-          ?.xProfile,
-      }))
+  const filteredSpeakers = [
+    ...(space?.admins || [])
+      .filter((admin) => {
+        if (!searchTerm) return true;
+        const searchLower = searchTerm.toLowerCase();
+        return (
+          admin.displayName.toLowerCase().includes(searchLower) ||
+          admin.twitterScreenName.toLowerCase().includes(searchLower)
+        );
+      })
+      .map((s) => ({ ...s, admin: true, speaker: false })),
+    ...(space?.speakers || [])
       .filter((speaker) => {
         if (!searchTerm) return true;
         const searchLower = searchTerm.toLowerCase();
@@ -209,7 +211,10 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
           speaker.displayName.toLowerCase().includes(searchLower) ||
           speaker.twitterScreenName.toLowerCase().includes(searchLower)
         );
-      }) || [];
+      })
+      .map((s) => ({ ...s, speaker: true })),
+  ];
+
   const filteredListeners =
     spaceListeners.filter((listener) => {
       if (!searchTerm) return true;
@@ -401,7 +406,7 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
             </Box>
           )}
 
-          <Typography variant="body2" sx={{ mb: 2 }}>
+          {/* <Typography variant="body2" sx={{ mb: 2 }}>
             {activeTab === 'speakers'
               ? `${filteredSpeakers.length} ${
                   filteredSpeakers.length === 1 ? 'speaker' : 'speakers'
@@ -409,7 +414,7 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
               : `${filteredListeners.length} ${
                   filteredListeners.length === 1 ? 'listener' : 'listeners'
                 } found`}
-          </Typography>
+          </Typography> */}
 
           {activeTab === 'speakers' ? (
             isLoadingProfiles ? (
@@ -419,7 +424,7 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
             ) : (
               <Box sx={{ mb: 4 }}>
                 <Typography variant="h6" sx={{ mb: 2 }}>
-                  Speakers
+                  Hosts & Speakers
                 </Typography>
                 <Box
                   sx={{
@@ -473,21 +478,21 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
                         }}
                       >
                         <ListItemAvatar>
-                          <Badge
+                          {/* <Badge
                             overlap="circular"
                             badgeContent={
                               speaker.xProfile?.isVerified ? '✓' : undefined
                             }
                             color="primary"
-                          >
-                            <Avatar
-                              src={
-                                speaker.xProfile?.profile_image_url ||
-                                speaker.avatarUrl
-                              }
-                              alt={speaker.displayName}
-                            />
-                          </Badge>
+                          > */}
+                          <Avatar
+                            src={
+                              // speaker.xProfile?.profile_image_url ||
+                              speaker.avatarUrl
+                            }
+                            alt={speaker.displayName}
+                          />
+                          {/* </Badge> */}
                         </ListItemAvatar>
                         <ListItemText
                           primary={speaker.displayName}
@@ -499,7 +504,7 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
                               >
                                 @{speaker.twitterScreenName}
                               </Typography>
-                              {speaker.xProfile && (
+                              {/* {speaker.xProfile && (
                                 <>
                                   <Typography
                                     variant="body2"
@@ -528,10 +533,19 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
                                     />
                                   </Box>
                                 </>
-                              )}
+                              )} */}
                             </Box>
                           }
                         />
+                        {speaker.admin && (
+                          <ListItemSecondaryAction>
+                            <Chip
+                              size="small"
+                              label={'Host'}
+                              color={'primary'}
+                            />
+                          </ListItemSecondaryAction>
+                        )}
                       </ListItem>
                     ))}
                   </List>
@@ -540,11 +554,9 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
             )
           ) : (
             <Box>
-              {filteredListeners.length > 0 && (
-                <Typography variant="h6" sx={{ mb: 2 }}>
-                  Listeners
-                </Typography>
-              )}
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Listeners ({filteredListeners.length})
+              </Typography>
               <Box
                 sx={{
                   maxHeight: 'calc(100vh - 500px)', // Adjust this value based on your layout
@@ -570,18 +582,18 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
                   {filteredListeners.map((listener) => (
                     <ListItem
                       key={listener.userId}
-                      secondaryAction={
-                        <IconButton
-                          edge="end"
-                          onClick={() => handleUserClick(listener)}
-                        >
-                          {/* {selectedAttendees.includes(listener.userId) ? (
-                            <BookmarkIcon color="primary" />
-                          ) : ( */}
-                          <BookmarkIcon />
-                          {/* )} */}
-                        </IconButton>
-                      }
+                      // secondaryAction={
+                      //   <IconButton
+                      //     edge="end"
+                      //     onClick={() => handleUserClick(listener)}
+                      //   >
+                      //     {/* {selectedAttendees.includes(listener.userId) ? (
+                      //       <BookmarkIcon color="primary" />
+                      //     ) : ( */}
+                      //     <BookmarkIcon />
+                      //     {/* )} */}
+                      //   </IconButton>
+                      // }
                       onClick={() => handleUserClick(listener)}
                       sx={{
                         mb: 1,
@@ -655,6 +667,16 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
                       />
                     </ListItem>
                   ))}
+                  {filteredListeners.length === 0 && (
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography
+                        variant="body2"
+                        sx={{ color: 'text.secondary' }}
+                      >
+                        No listeners available
+                      </Typography>
+                    </Box>
+                  )}
                 </List>
               </Box>
             </Box>

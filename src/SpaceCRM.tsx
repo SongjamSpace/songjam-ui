@@ -124,6 +124,11 @@ const SpaceCRM: React.FC = () => {
   const [showAuthDialog, setShowAuthDialog] = useState(!user);
   const [isSpaceOwner, setIsSpaceOwner] = useState(false);
 
+  // Calculate disabled state for Analysis tab
+  const isAnalysisDisabled = 
+    (space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED ||
+    (spaceId ? spaceId !== '1OwxWXyAVeWKQ' : true);
+
   useEffect(() => {
     if (user && space) {
       setIsSpaceOwner(
@@ -570,6 +575,7 @@ ${JSON.stringify(analysisContext, null, 2)}
                     label={
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         {t('timelineTab')}
+                        {(space?.transcriptionProgress || 0) <= TranscriptionProgress.DOWNLOADING_AUDIO ? t('queuedChip') : t('analyzingChip')}
                         {(space?.transcriptionProgress || 0) <= TranscriptionProgress.TRANSCRIBING && (
                           <Chip
                             size="small"
@@ -607,7 +613,7 @@ ${JSON.stringify(analysisContext, null, 2)}
                     value="transcription"
                   />
                   <Tab
-                    disabled={(space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED}
+                    disabled={isAnalysisDisabled}
                     icon={<InsightsIcon />}
                     label={
                       <Box
@@ -725,7 +731,12 @@ ${JSON.stringify(analysisContext, null, 2)}
                   <Tab icon={<MessageIcon />} value="content" />
                   <Tab icon={<ForumIcon />} value="timeline" />
                   <Tab icon={<DescriptionIcon />} value="transcription" />
-                  <Tab icon={<InsightsIcon />} value="analysis" />
+                  <Tab 
+                    disabled={isAnalysisDisabled}
+                    icon={<InsightsIcon />} 
+                    label={t('analysisTab')} 
+                    value="analysis" 
+                  />
                 </Tabs>
 
                 {/* Content based on active tab */}
@@ -1272,7 +1283,12 @@ ${JSON.stringify(analysisContext, null, 2)}
               <Tab icon={<MessageIcon />} label={t('contentTab')} value="content" />
               <Tab icon={<ForumIcon />} label={t('timelineTab')} value="timeline" />
               <Tab icon={<DescriptionIcon />} label={t('transcriptionTab')} value="transcription" />
-              <Tab icon={<InsightsIcon />} label={t('analysisTab')} value="analysis" />
+              <Tab 
+                disabled={isAnalysisDisabled}
+                icon={<InsightsIcon />} 
+                label={t('analysisTab')} 
+                value="analysis" 
+              />
             </Tabs>
 
             <Divider sx={{ my: 2 }} />

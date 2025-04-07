@@ -44,6 +44,7 @@ const ListenerRetentionChart: React.FC<ListenerRetentionChartProps> = ({
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [averageListenTimeSeconds, setAverageListenTimeSeconds] = useState<number | null>(null);
   const [lineVisibility, setLineVisibility] = useState({
     count: 1, // 1 for visible, 0 for hidden
     joinCount: 1,
@@ -79,13 +80,37 @@ const ListenerRetentionChart: React.FC<ListenerRetentionChartProps> = ({
 
       try {
         const listenerLogs = await getSpaceListeners(spaceId);
+        setAverageListenTimeSeconds(null); // Reset average time initially
 
         if (!listenerLogs || listenerLogs.length === 0) {
           setChartData([]);
           setLoading(false);
-          // Not necessarily an error, maybe no listeners were logged
           return;
         }
+
+        // --- Calculate Average Listen Time ---
+        let totalDurationMillis = 0;
+        let validListenerCount = 0;
+        listenerLogs.forEach((listener: SpaceListener) => {
+            const joinTime = listener.joinedAt;
+            // Use space end time if listener never left or leftAt is invalid
+            const leaveTime = (typeof listener.leftAt === 'number' && listener.leftAt > joinTime) ? listener.leftAt : endedAt;
+
+            if (typeof joinTime === 'number') {
+                 const duration = leaveTime - joinTime;
+                 if (duration > 0) { // Only count valid positive durations
+                    totalDurationMillis += duration;
+                    validListenerCount++;
+                 }
+            }
+        });
+
+        if (validListenerCount > 0) {
+             setAverageListenTimeSeconds(Math.round(totalDurationMillis / validListenerCount / 1000));
+        } else {
+            setAverageListenTimeSeconds(0); // Or null, depending on desired display for no listeners
+        }
+        // --- End Average Calculation ---
 
         const processedData: ChartDataPoint[] = [];
         const intervalMillis = 60 * 1000; // 1 minute intervals
@@ -192,6 +217,7 @@ const ListenerRetentionChart: React.FC<ListenerRetentionChartProps> = ({
   }
 
   return (
+    <>
     <Paper
       sx={{
         p: 2,
@@ -202,7 +228,7 @@ const ListenerRetentionChart: React.FC<ListenerRetentionChartProps> = ({
       }}
     >
       <Typography variant="h6" sx={{ mb: 2 }}>
-        {t('listenerRetentionTitle')}
+        {t('Listener Retention')}
       </Typography>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart
@@ -254,7 +280,7 @@ const ListenerRetentionChart: React.FC<ListenerRetentionChartProps> = ({
           <Line
             type="monotone"
             dataKey="count"
-            name={t('totalListenersLine')}
+            name={t('Total Listeners')}
             stroke="#8884d8"
             strokeWidth={2}
             activeDot={{ r: 8 }}
@@ -264,7 +290,7 @@ const ListenerRetentionChart: React.FC<ListenerRetentionChartProps> = ({
           <Line
             type="monotone"
             dataKey="joinCount"
-            name={t('joinsLine')} // Add translation key
+            name={t('Joins')} // Add translation key
             stroke="#82ca9d" // Green for joins
             strokeWidth={1}
             dot={false}
@@ -273,7 +299,7 @@ const ListenerRetentionChart: React.FC<ListenerRetentionChartProps> = ({
           <Line
             type="monotone"
             dataKey="leaveCount"
-            name={t('leavesLine')} // Add translation key
+            name={t('Leaves')} // Add translation key
             stroke="#ffc658" // Orange/Yellow for leaves
             strokeWidth={1}
             dot={false}
@@ -282,6 +308,28 @@ const ListenerRetentionChart: React.FC<ListenerRetentionChartProps> = ({
         </LineChart>
       </ResponsiveContainer>
     </Paper>
+
+    {/* New Section for Average Listen Time */}
+    {averageListenTimeSeconds !== null && (
+        <Paper
+            sx={{
+                mt: 4, // Increased margin top from 2 to 4
+                p: 2,
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                color: 'white',
+            }}
+        >
+            <Typography variant="subtitle1">
+                {t('Average Listen Time')}
+            </Typography>
+            <Typography variant="h6">
+                {Math.floor(averageListenTimeSeconds / 60)} {t('minutes')}, {averageListenTimeSeconds % 60} {t('seconds')}
+            </Typography>
+        </Paper>
+    )}
+
+    </>
   );
 };
 

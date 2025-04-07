@@ -81,7 +81,7 @@ const crmTranslationsEN = {
   contentTab: 'Content',
   timelineTab: 'Timeline',
   transcriptionTab: 'Transcription',
-  analysisTab: 'Space Analysis',
+  analysisTab: 'Listener Retention',
   betaChip: 'Beta',
   queuedChip: 'Queued',
   analyzingChip: 'Analyzing...',

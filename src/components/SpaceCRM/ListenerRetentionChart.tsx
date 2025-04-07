@@ -21,10 +21,17 @@ import { useTranslation } from 'react-i18next';
 
 import { getSpaceListeners, SpaceListener } from '../../services/db/spaces.service';
 
+// Define the context structure
+export interface RetentionContext {
+  averageListenTimeSeconds: number | null;
+  chartData: ChartDataPoint[]; // The processed data used by the chart
+}
+
 interface ListenerRetentionChartProps {
   spaceId: string | undefined;
   startedAt: number | undefined; // Expecting milliseconds since epoch
   endedAt: number | undefined; // Expecting milliseconds since epoch
+  onContextUpdate: (context: RetentionContext | null) => void; // New prop
 }
 
 interface ChartDataPoint {
@@ -39,6 +46,7 @@ const ListenerRetentionChart: React.FC<ListenerRetentionChartProps> = ({
   spaceId,
   startedAt,
   endedAt,
+  onContextUpdate,
 }) => {
   const { t } = useTranslation();
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
@@ -64,6 +72,8 @@ const ListenerRetentionChart: React.FC<ListenerRetentionChartProps> = ({
     if (!spaceId || !startedAt || !endedAt || startedAt >= endedAt) {
         // Reset or set empty state if props are invalid/missing
         setChartData([]);
+        setAverageListenTimeSeconds(null);
+        onContextUpdate(null); // Clear context if props are invalid
         if (startedAt && endedAt && startedAt >= endedAt) {
             setError(t('errorInvalidTimeRange'));
         } else {
@@ -77,6 +87,8 @@ const ListenerRetentionChart: React.FC<ListenerRetentionChartProps> = ({
       setLoading(true);
       setError(null);
       setChartData([]); // Clear previous data
+      setAverageListenTimeSeconds(null);
+      onContextUpdate(null); // Clear context at start of fetch
 
       try {
         const listenerLogs = await getSpaceListeners(spaceId);
@@ -146,12 +158,21 @@ const ListenerRetentionChart: React.FC<ListenerRetentionChartProps> = ({
             }
           });
 
+          // Calculate elapsed time since start
+          const elapsedMillis = t - startedAt;
+          const totalElapsedSeconds = Math.max(0, Math.floor(elapsedMillis / 1000));
+          const totalElapsedMinutes = Math.floor(totalElapsedSeconds / 60);
+          const elapsedHours = Math.floor(totalElapsedMinutes / 60);
+          const remainingMinutes = totalElapsedMinutes % 60;
+          // Format as HH:MM
+          const formattedElapsedTime = `${String(elapsedHours).padStart(2, '0')}:${String(remainingMinutes).padStart(2, '0')}`;
+
           processedData.push({
             time: t,
             count: currentListenerCount,
             joinCount: joinsInInterval,
             leaveCount: leavesInInterval,
-            timeLabel: format(new Date(t), 'HH:mm'),
+            timeLabel: formattedElapsedTime, // Use formatted HH:MM time
           });
         }
 
@@ -171,26 +192,43 @@ const ListenerRetentionChart: React.FC<ListenerRetentionChartProps> = ({
                     finalListenerCount++;
                  }
              });
+
+             // Calculate final elapsed time
+             const finalElapsedMillis = finalTime - startedAt;
+             const finalTotalElapsedSeconds = Math.max(0, Math.floor(finalElapsedMillis / 1000));
+             const finalTotalElapsedMinutes = Math.floor(finalTotalElapsedSeconds / 60);
+             const finalElapsedHours = Math.floor(finalTotalElapsedMinutes / 60);
+             const finalRemainingMinutes = finalTotalElapsedMinutes % 60;
+             // Format final as HH:MM
+             const finalFormattedElapsedTime = `${String(finalElapsedHours).padStart(2, '0')}:${String(finalRemainingMinutes).padStart(2, '0')}`;
+
              processedData.push({
                 time: finalTime,
                 count: finalListenerCount,
                 joinCount: 0, // Join/leave rates aren't calculated for this single point
                 leaveCount: 0,
-                timeLabel: format(new Date(finalTime), 'HH:mm'),
+                timeLabel: finalFormattedElapsedTime, // Use formatted HH:MM time for final point
              });
         }
 
         setChartData(processedData);
+        // Pass the calculated context up
+        onContextUpdate({
+            averageListenTimeSeconds: averageListenTimeSeconds,
+            chartData: processedData
+        });
+
       } catch (err: any) {
         console.error('Failed to load or process listener data:', err);
         setError(t('errorLoadingListenerData') + `: ${err.message}`);
+        onContextUpdate(null); // Clear context on error
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [spaceId, startedAt, endedAt, t]);
+  }, [spaceId, startedAt, endedAt, t, onContextUpdate]);
 
   if (loading) {
     return (
@@ -256,9 +294,6 @@ const ListenerRetentionChart: React.FC<ListenerRetentionChartProps> = ({
             labelStyle={{ color: '#60a5fa', fontWeight: 'bold' }}
             itemStyle={{ color: 'white' }}
             formatter={(value: number, name: string, props: any) => {
-                // props.payload contains the full data point (count, joinCount, leaveCount)
-                // We can return an array of values if needed, but standard tooltip shows one line
-                // For now, just return the value associated with the hovered line
                 return [value, name];
             }}
             labelFormatter={(label: string) => `Time: ${label}`}

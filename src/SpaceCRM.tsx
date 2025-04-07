@@ -703,7 +703,7 @@ const SpaceCRM: React.FC = () => {
                         {t('analysisTab')}
                         <Chip
                           size="small"
-                          label={t('betaChip')}
+                          label={t('pro')}
                           sx={{
                             ml: 1,
                             height: 16,

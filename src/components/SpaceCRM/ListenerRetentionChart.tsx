@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   ResponsiveContainer,
   LineChart,
@@ -29,7 +29,9 @@ interface ListenerRetentionChartProps {
 
 interface ChartDataPoint {
   time: number; // Milliseconds since epoch
-  count: number;
+  count: number; // Total listeners at this time
+  joinCount: number; // Listeners who joined in the interval leading up to this time
+  leaveCount: number; // Listeners who left in the interval leading to this time
   timeLabel: string; // Formatted time for XAxis
 }
 
@@ -42,6 +44,20 @@ const ListenerRetentionChart: React.FC<ListenerRetentionChartProps> = ({
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lineVisibility, setLineVisibility] = useState({
+    count: 1, // 1 for visible, 0 for hidden
+    joinCount: 1,
+    leaveCount: 1,
+  });
+
+  // Callback to handle legend click
+  const handleLegendClick = useCallback((o: any) => {
+    const { dataKey } = o;
+    setLineVisibility((prev) => ({
+      ...prev,
+      [dataKey]: prev[dataKey as keyof typeof prev] === 1 ? 0 : 1,
+    }));
+  }, []);
 
   useEffect(() => {
     if (!spaceId || !startedAt || !endedAt || startedAt >= endedAt) {
@@ -77,52 +93,67 @@ const ListenerRetentionChart: React.FC<ListenerRetentionChartProps> = ({
 
         for (let t = startedAt; t <= spaceEndTime; t += intervalMillis) {
           let currentListenerCount = 0;
+          let joinsInInterval = 0;
+          let leavesInInterval = 0;
+          const intervalEndTime = t + intervalMillis; // End of the current interval
+
           listenerLogs.forEach((listener: SpaceListener) => {
-            // Ensure timestamps are valid numbers
             const joinTime = listener.joinedAt;
             const leaveTime = listener.leftAt;
 
-            if (typeof joinTime !== 'number') return; // Skip if joinTime is invalid
+            if (typeof joinTime !== 'number') return;
 
-            // Check if listener joined before or during this interval
-            const joinedBeforeOrDuringInterval = joinTime <= t;
-
-            // Check if listener left after this interval (or never left)
-            const leftAfterInterval = leaveTime === null || (typeof leaveTime === 'number' && leaveTime > t);
-
-            if (joinedBeforeOrDuringInterval && leftAfterInterval) {
+            // Calculate total count at time 't'
+            const joinedBeforeOrAt = joinTime <= t;
+            const leftAfter = leaveTime === null || (typeof leaveTime === 'number' && leaveTime > t);
+            if (joinedBeforeOrAt && leftAfter) {
               currentListenerCount++;
+            }
+
+            // Calculate joins in the interval [t, intervalEndTime)
+            if (joinTime >= t && joinTime < intervalEndTime) {
+                 joinsInInterval++;
+            }
+
+            // Calculate leaves in the interval [t, intervalEndTime)
+            if (leaveTime !== null && typeof leaveTime === 'number' && leaveTime >= t && leaveTime < intervalEndTime) {
+                 leavesInInterval++;
             }
           });
 
           processedData.push({
             time: t,
             count: currentListenerCount,
-            timeLabel: format(new Date(t), 'HH:mm'), // Format time for X-axis
+            joinCount: joinsInInterval,
+            leaveCount: leavesInInterval,
+            timeLabel: format(new Date(t), 'HH:mm'),
           });
         }
 
-        // Add the final point at the exact end time if not already included
-        if (processedData[processedData.length - 1]?.time !== spaceEndTime) {
+        // Adjust final point calculation if needed - currently focuses on total count
+        // For simplicity, we'll omit specific join/leave counts for the exact end moment
+        if (processedData[processedData.length - 1]?.time < spaceEndTime) {
              let finalListenerCount = 0;
              const finalTime = spaceEndTime;
              listenerLogs.forEach((listener: SpaceListener) => {
                  const joinTime = listener.joinedAt;
                  const leaveTime = listener.leftAt;
                  if (typeof joinTime !== 'number') return;
-                 const joinedBeforeOrDuringInterval = joinTime <= finalTime;
-                 const leftAfterInterval = leaveTime === null || (typeof leaveTime === 'number' && leaveTime >= finalTime); // Use >= for final point
-                 if (joinedBeforeOrDuringInterval && leftAfterInterval) {
+                 const joinedBeforeOrAtFinal = joinTime <= finalTime;
+                 // Count as present if they left exactly at or after the end time, or never left
+                 const leftAtOrAfterFinal = leaveTime === null || (typeof leaveTime === 'number' && leaveTime >= finalTime);
+                 if (joinedBeforeOrAtFinal && leftAtOrAfterFinal) {
                     finalListenerCount++;
                  }
              });
              processedData.push({
                 time: finalTime,
                 count: finalListenerCount,
+                joinCount: 0, // Join/leave rates aren't calculated for this single point
+                leaveCount: 0,
                 timeLabel: format(new Date(finalTime), 'HH:mm'),
              });
         }
-
 
         setChartData(processedData);
       } catch (err: any) {
@@ -198,21 +229,55 @@ const ListenerRetentionChart: React.FC<ListenerRetentionChartProps> = ({
             contentStyle={{ backgroundColor: 'rgba(30, 41, 59, 0.9)', border: '1px solid rgba(255, 255, 255, 0.2)' }}
             labelStyle={{ color: '#60a5fa', fontWeight: 'bold' }}
             itemStyle={{ color: 'white' }}
-            formatter={(value: number, name: string, props: any) => [
-              value,
-              t('listenersLabel')
-            ]}
+            formatter={(value: number, name: string, props: any) => {
+                // props.payload contains the full data point (count, joinCount, leaveCount)
+                // We can return an array of values if needed, but standard tooltip shows one line
+                // For now, just return the value associated with the hovered line
+                return [value, name];
+            }}
             labelFormatter={(label: string) => `Time: ${label}`}
           />
-          <Legend wrapperStyle={{ color: 'white', paddingTop: '10px' }} />
+          <Legend
+            wrapperStyle={{ color: 'white', paddingTop: '10px' }}
+            onClick={handleLegendClick}
+            formatter={(value, entry) => {
+                const { color, dataKey } = entry;
+                const isActive = lineVisibility[dataKey as keyof typeof lineVisibility] === 1;
+                const style = {
+                    color: isActive ? color : 'grey',
+                    cursor: 'pointer',
+                    opacity: isActive ? 1 : 0.6,
+                };
+                return <span style={style}>{value}</span>;
+            }}
+          />
           <Line
             type="monotone"
             dataKey="count"
-            name={t('listenersLabel')}
+            name={t('totalListenersLine')}
             stroke="#8884d8"
             strokeWidth={2}
             activeDot={{ r: 8 }}
             dot={false}
+            strokeOpacity={lineVisibility.count}
+          />
+          <Line
+            type="monotone"
+            dataKey="joinCount"
+            name={t('joinsLine')} // Add translation key
+            stroke="#82ca9d" // Green for joins
+            strokeWidth={1}
+            dot={false}
+            strokeOpacity={lineVisibility.joinCount}
+          />
+          <Line
+            type="monotone"
+            dataKey="leaveCount"
+            name={t('leavesLine')} // Add translation key
+            stroke="#ffc658" // Orange/Yellow for leaves
+            strokeWidth={1}
+            dot={false}
+            strokeOpacity={lineVisibility.leaveCount}
           />
         </LineChart>
       </ResponsiveContainer>

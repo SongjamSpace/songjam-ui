@@ -57,6 +57,7 @@ import SpaceAnalysis from './components/SpaceCRM/SpaceAnalysis';
 import SegmentsTimeline from './components/SegmentsTimeline';
 import AlgoliaSearchTranscription from './components/AlgoliaSearchTranscription';
 import { getSpaceAudioDownloadUrl } from './services/db/spaces.service';
+import ListenerRetentionChart from './components/SpaceCRM/ListenerRetentionChart';
 
 type CRMTab =
   | 'dashboard'
@@ -880,9 +881,10 @@ ${JSON.stringify(analysisContext, null, 2)}
                   )}
 
                   {activeTab === 'analysis' && (
-                    <SpaceAnalysis
-                      space={space}
-                      onContextUpdate={handleContextUpdate}
+                    <ListenerRetentionChart
+                      spaceId={spaceId}
+                      startedAt={space?.startedAt}
+                      endedAt={space?.endedAt}
                     />
                   )}
                 </Box>

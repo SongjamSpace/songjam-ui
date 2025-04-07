@@ -357,6 +357,12 @@ const ContentStudio: React.FC = () => {
               value={customPrompt}
               onChange={handleCustomPromptChange}
               sx={{ mb: 2 }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey && customPrompt.trim() && !isGenerating) {
+                  e.preventDefault();
+                  handleGenerate();
+                }
+              }}
             />
 
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>

@@ -46,7 +46,11 @@ import { useTranslation } from 'react-i18next';
 
 import AudiencePanel from './components/SpaceCRM/AudiencePanel';
 import ContentStudio from './components/SpaceCRM/ContentStudio';
-import { getSpace, Space, TranscriptionProgress } from './services/db/spaces.service';
+import {
+  getSpace,
+  Space,
+  TranscriptionProgress,
+} from './services/db/spaces.service';
 import { useAuthContext } from './contexts/AuthContext';
 import Logo from './components/Logo';
 import TwitterLogin from './components/TwitterLogin';
@@ -56,6 +60,8 @@ import SpaceAnalysis from './components/SpaceCRM/SpaceAnalysis';
 import SegmentsTimeline from './components/SegmentsTimeline';
 import AlgoliaSearchTranscription from './components/AlgoliaSearchTranscription';
 import { getSpaceAudioDownloadUrl } from './services/db/spaces.service';
+import ListenerRetentionChart from './components/SpaceCRM/ListenerRetentionChart';
+import type { RetentionContext } from './components/SpaceCRM/ListenerRetentionChart';
 
 type CRMTab =
   | 'dashboard'
@@ -120,28 +126,29 @@ const SpaceCRM: React.FC = () => {
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [analysisContext, setAnalysisContext] =
     useState<VisualizationContext | null>(null);
+  const [retentionContext, setRetentionContext] =
+    useState<RetentionContext | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(!user);
   const [isSpaceOwner, setIsSpaceOwner] = useState(false);
 
   // Calculate disabled state for Analysis tab
-  const isAnalysisDisabled = 
-    (space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED ||
-    (spaceId ? spaceId !== '1OwxWXyAVeWKQ' : true);
+  const isAnalysisDisabled =
+    (space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED;
 
   useEffect(() => {
     if (user && space) {
       setIsSpaceOwner(
         [...space.admins, ...space.speakers].some(
           (admin) => admin.twitterScreenName === user?.username
-        ) || [
-          "LHrZ0zGfQ2UnAjkRC8nt36EMmA23",
-          "M4dxYt7PjCNRcl0erxcpexCtisk2"
-        ].includes(user.uid || "")
+        ) ||
+          [
+            'LHrZ0zGfQ2UnAjkRC8nt36EMmA23',
+            'M4dxYt7PjCNRcl0erxcpexCtisk2',
+          ].includes(user.uid || '')
       );
     }
   }, [user, space]);
-  
 
   // Fetch space data on mount
   useEffect(() => {
@@ -205,10 +212,21 @@ const SpaceCRM: React.FC = () => {
     setSelectedModel(event.target.value as string);
   };
 
-  const handleContextUpdate = useCallback((context: VisualizationContext) => {
-    setAnalysisContext(context);
-    console.log('SpaceCRM received analysis context:', context);
-  }, []);
+  const handleAnalysisContextUpdate = useCallback(
+    (context: VisualizationContext | null) => {
+      setAnalysisContext(context);
+      console.log('SpaceCRM received analysis context:', context);
+    },
+    []
+  );
+
+  const handleRetentionContextUpdate = useCallback(
+    (context: RetentionContext | null) => {
+      setRetentionContext(context);
+      console.log('SpaceCRM received retention context:', context);
+    },
+    []
+  );
 
   const handlePromptSubmit = async () => {
     if (!aiPrompt.trim()) return;
@@ -240,13 +258,33 @@ const SpaceCRM: React.FC = () => {
         }
       }
 
-      if (activeTab === 'analysis' && analysisContext) {
-        contextString += `\n\n--- Current Space Analysis Visualization Context ---
-This section provides structured data about the speaker interaction analysis currently displayed:
-${JSON.stringify(analysisContext, null, 2)}
+      if (activeTab === 'analysis' && retentionContext) {
+        const { averageListenTimeSeconds, chartData } = retentionContext;
+        let retentionSummary =
+          '\n\n--- Current Listener Retention Analysis ---';
+        if (averageListenTimeSeconds !== null) {
+          const avgMinutes = Math.floor(averageListenTimeSeconds / 60);
+          const avgSeconds = averageListenTimeSeconds % 60;
+          retentionSummary += `\nAverage Listener Time: ${avgMinutes} minutes, ${avgSeconds} seconds.`;
+        }
+        if (chartData && chartData.length > 0) {
+          const startCount = chartData[0]?.count ?? 'N/A';
+          const endCount = chartData[chartData.length - 1]?.count ?? 'N/A';
+          const peakCount = Math.max(...chartData.map((d) => d.count));
+          const peakTimeIndex = chartData.findIndex(
+            (d) => d.count === peakCount
+          );
+          const peakTimeLabel = chartData[peakTimeIndex]?.timeLabel ?? 'N/A';
 
-**Task:** When answering the user's query about the analysis, please **cross-reference** the information above with the provided **Full Space Transcription**. For example, if discussing an interaction metric (like count or sentiment) from the context, try to find and mention specific exchanges or moments in the transcription that support that data point. Correlate visual patterns (like active speakers or strong connections) with actual dialogue.
-`;
+          retentionSummary += `\nListener Count: Started at ${startCount}, peaked at ${peakCount} (around ${peakTimeLabel}), ended at ${endCount}.`;
+          const peakJoinCount = Math.max(...chartData.map((d) => d.joinCount));
+          const peakLeaveCount = Math.max(
+            ...chartData.map((d) => d.leaveCount)
+          );
+          retentionSummary += `\nPeak activity: Max joins/interval: ${peakJoinCount}, Max leaves/interval: ${peakLeaveCount}.`;
+        }
+        retentionSummary += `\n\n**Task:** Use this retention data, alongside the full transcript, to answer the user's query about audience engagement over time. Correlate listener count changes (peaks, drops) with events or topics in the transcript.`;
+        contextString += retentionSummary;
       }
 
       let currentResponse = '';
@@ -299,9 +337,9 @@ ${JSON.stringify(analysisContext, null, 2)}
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
-      console.error("Error downloading recording:", error);
+      console.error('Error downloading recording:', error);
     } finally {
-       setIsDownloading(false);
+      setIsDownloading(false);
     }
   };
 
@@ -389,12 +427,11 @@ ${JSON.stringify(analysisContext, null, 2)}
           </Box>
         </Box>
 
-          <TwitterLogin />
+        <TwitterLogin />
       </Box>
 
       {/* Content wrapper with blur effect for non-authenticated users */}
-      <Box
-      >
+      <Box>
         {/* Back Button and Space Info Bar */}
         <Box
           sx={{
@@ -445,16 +482,18 @@ ${JSON.stringify(analysisContext, null, 2)}
                     },
                   }}
                 />
-                {space.transcriptionProgress !== TranscriptionProgress.ENDED && 
-                <Chip
-                  icon={<CircularProgress size={14} />}
-                  label={space.userHelperMessage}
-                  variant="filled"
-                  size="small"
-                  sx={{
-                    ml: 2,
-                  }}
-                />}
+                {space.transcriptionProgress !==
+                  TranscriptionProgress.ENDED && (
+                  <Chip
+                    icon={<CircularProgress size={14} />}
+                    label={space.userHelperMessage}
+                    variant="filled"
+                    size="small"
+                    sx={{
+                      ml: 2,
+                    }}
+                  />
+                )}
               </>
             ) : (
               <CircularProgress size={24} sx={{ mr: 2 }} />
@@ -485,9 +524,9 @@ ${JSON.stringify(analysisContext, null, 2)}
             display: 'flex',
             flexDirection: 'column',
             flexGrow: 1,
-          filter: !user ? 'blur(8px)' : 'none',
-          pointerEvents: !user ? 'none' : 'auto',
-          userSelect: !user ? 'none' : 'auto',
+            filter: !user ? 'blur(8px)' : 'none',
+            pointerEvents: !user ? 'none' : 'auto',
+            userSelect: !user ? 'none' : 'auto',
           }}
         >
           <Grid
@@ -547,21 +586,37 @@ ${JSON.stringify(analysisContext, null, 2)}
                     label="Dashboard"
                     value="dashboard"
                   /> */}
-                  <Tab icon={<PeopleIcon />} label={t('audienceTab')} value="audience" />
-                  <Tab 
-                    disabled={(space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED}
+                  <Tab
+                    icon={<PeopleIcon />}
+                    label={t('audienceTab')}
+                    value="audience"
+                  />
+                  <Tab
+                    disabled={
+                      (space?.transcriptionProgress || 0) !==
+                      TranscriptionProgress.ENDED
+                    }
                     icon={<MessageIcon />}
                     label={
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                      >
                         {t('contentTab')}
-                        {(space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED && (
+                        {(space?.transcriptionProgress || 0) !==
+                          TranscriptionProgress.ENDED && (
                           <Chip
                             size="small"
-                            label={(space?.transcriptionProgress || 0) <= TranscriptionProgress.SUMMARIZING ? t('queuedChip') : t('analyzingChip')}
+                            label={
+                              (space?.transcriptionProgress || 0) <=
+                              TranscriptionProgress.SUMMARIZING
+                                ? t('queuedChip')
+                                : t('analyzingChip')
+                            }
                             sx={{
                               height: 16,
                               fontSize: '0.6rem',
-                              background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+                              background:
+                                'linear-gradient(90deg, #60a5fa, #8b5cf6)',
                             }}
                           />
                         )}
@@ -570,20 +625,31 @@ ${JSON.stringify(analysisContext, null, 2)}
                     value="content"
                   />
                   <Tab
-                    disabled={(space?.transcriptionProgress || 0) <= TranscriptionProgress.TRANSCRIBING}
+                    disabled={
+                      (space?.transcriptionProgress || 0) <=
+                      TranscriptionProgress.TRANSCRIBING
+                    }
                     icon={<ForumIcon />}
                     label={
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                      >
                         {t('timelineTab')}
-                        {(space?.transcriptionProgress || 0) <= TranscriptionProgress.DOWNLOADING_AUDIO ? t('queuedChip') : t('analyzingChip')}
-                        {(space?.transcriptionProgress || 0) <= TranscriptionProgress.TRANSCRIBING && (
+                        {(space?.transcriptionProgress || 0) <=
+                          TranscriptionProgress.TRANSCRIBING && (
                           <Chip
                             size="small"
-                            label={(space?.transcriptionProgress || 0) <= TranscriptionProgress.DOWNLOADING_AUDIO ? t('queuedChip') : t('analyzingChip')}
+                            label={
+                              (space?.transcriptionProgress || 0) <=
+                              TranscriptionProgress.DOWNLOADING_AUDIO
+                                ? t('queuedChip')
+                                : t('analyzingChip')
+                            }
                             sx={{
                               height: 16,
                               fontSize: '0.6rem',
-                              background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+                              background:
+                                'linear-gradient(90deg, #60a5fa, #8b5cf6)',
                             }}
                           />
                         )}
@@ -592,20 +658,32 @@ ${JSON.stringify(analysisContext, null, 2)}
                     value="timeline"
                   />
                   <Tab
-                    disabled={(space?.transcriptionProgress || 0) <= TranscriptionProgress.TRANSCRIBING}
+                    disabled={
+                      (space?.transcriptionProgress || 0) <=
+                      TranscriptionProgress.TRANSCRIBING
+                    }
                     icon={<DescriptionIcon />}
                     label={
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                      >
                         {t('transcriptionTab')}
-                        {(space?.transcriptionProgress || 0) <= TranscriptionProgress.TRANSCRIBING && (
+                        {(space?.transcriptionProgress || 0) <=
+                          TranscriptionProgress.TRANSCRIBING && (
                           <Chip
                             size="small"
-                            label={(space?.transcriptionProgress || 0) <= TranscriptionProgress.DOWNLOADING_AUDIO ? t('queuedChip') : t('analyzingChip')}
+                            label={
+                              (space?.transcriptionProgress || 0) <=
+                              TranscriptionProgress.DOWNLOADING_AUDIO
+                                ? t('queuedChip')
+                                : t('analyzingChip')
+                            }
                             sx={{
                               height: 16,
                               fontSize: '0.6rem',
-                              background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
-                            }}  
+                              background:
+                                'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+                            }}
                           />
                         )}
                       </Box>
@@ -623,7 +701,7 @@ ${JSON.stringify(analysisContext, null, 2)}
                         {t('analysisTab')}
                         <Chip
                           size="small"
-                          label={t('betaChip')}
+                          label={t('pro')}
                           sx={{
                             ml: 1,
                             height: 16,
@@ -663,7 +741,10 @@ ${JSON.stringify(analysisContext, null, 2)}
                     </Typography> */}
                   </Box>
                 ) : (
-                  <CircularProgress size={20} sx={{ my: 2, display: 'block' }} />
+                  <CircularProgress
+                    size={20}
+                    sx={{ my: 2, display: 'block' }}
+                  />
                 )}
 
                 <Button
@@ -731,11 +812,11 @@ ${JSON.stringify(analysisContext, null, 2)}
                   <Tab icon={<MessageIcon />} value="content" />
                   <Tab icon={<ForumIcon />} value="timeline" />
                   <Tab icon={<DescriptionIcon />} value="transcription" />
-                  <Tab 
+                  <Tab
                     disabled={isAnalysisDisabled}
-                    icon={<InsightsIcon />} 
-                    label={t('analysisTab')} 
-                    value="analysis" 
+                    icon={<InsightsIcon />}
+                    label={t('analysisTab')}
+                    value="analysis"
                   />
                 </Tabs>
 
@@ -780,25 +861,34 @@ ${JSON.stringify(analysisContext, null, 2)}
                         {t('transcriptTimelineTitle')}
                       </Typography>
                       <SegmentsTimeline
-                         spaceId={spaceId}
-                         hasAccess={true}
-                         isProcessingPayment={false}
-                         handlePayment={() => {}}
-                         processEnded={true}
-                         refresh={space?.transcriptionStatus === 'SHORT_ENDED'}
+                        spaceId={spaceId}
+                        hasAccess={true}
+                        isProcessingPayment={false}
+                        handlePayment={() => {}}
+                        processEnded={true}
+                        refresh={space?.transcriptionStatus === 'SHORT_ENDED'}
                       />
                     </Box>
                   )}
 
                   {activeTab === 'transcription' && spaceId && (
                     <Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          mb: 2,
+                        }}
+                      >
                         <Typography variant="h6">
                           {t('fullTranscriptionTitle')}
                         </Typography>
                         <LoadingButton
                           loading={isDownloading}
-                          disabled={!space || space.transcriptionStatus !== 'ENDED'}
+                          disabled={
+                            !space || space.transcriptionStatus !== 'ENDED'
+                          }
                           startIcon={<DownloadIcon />}
                           onClick={onDownloadRecording}
                           sx={{
@@ -810,20 +900,24 @@ ${JSON.stringify(analysisContext, null, 2)}
                             textTransform: 'none',
                           }}
                         >
-                          {isDownloading ? t('downloadingButton') : t('downloadRecordingButton')}
+                          {isDownloading
+                            ? t('downloadingButton')
+                            : t('downloadRecordingButton')}
                         </LoadingButton>
                       </Box>
-                      <AlgoliaSearchTranscription 
-                        spaceId={spaceId} 
-                        title={space?.title || t('transcriptionTab')} 
+                      <AlgoliaSearchTranscription
+                        spaceId={spaceId}
+                        title={space?.title || t('transcriptionTab')}
                       />
                     </Box>
                   )}
 
                   {activeTab === 'analysis' && (
-                    <SpaceAnalysis
-                      space={space}
-                      onContextUpdate={handleContextUpdate}
+                    <ListenerRetentionChart
+                      spaceId={spaceId}
+                      startedAt={space?.startedAt}
+                      endedAt={space?.endedAt}
+                      onContextUpdate={handleRetentionContextUpdate}
                     />
                   )}
                 </Box>
@@ -835,7 +929,7 @@ ${JSON.stringify(analysisContext, null, 2)}
               item
               xs={12}
               md={3}
-              sx={{ display: { xs: 'none', md: 'block'} }}
+              sx={{ display: { xs: 'none', md: 'block' } }}
             >
               <Paper
                 sx={{
@@ -938,7 +1032,9 @@ ${JSON.stringify(analysisContext, null, 2)}
                             flexDirection: 'column',
                             gap: 0.5,
                             alignItems:
-                              message.role === 'user' ? 'flex-end' : 'flex-start',
+                              message.role === 'user'
+                                ? 'flex-end'
+                                : 'flex-start',
                           }}
                         >
                           <Box
@@ -1101,7 +1197,22 @@ ${JSON.stringify(analysisContext, null, 2)}
                     placeholder={t('aiPlaceholder')}
                     value={aiPrompt}
                     onChange={(e) => setAiPrompt(e.target.value)}
-                    disabled={isAiThinking || (space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED}
+                    disabled={
+                      isAiThinking ||
+                      (space?.transcriptionProgress || 0) !==
+                        TranscriptionProgress.ENDED
+                    }
+                    onKeyDown={(e) => {
+                      if (
+                        e.key === 'Enter' &&
+                        !e.shiftKey &&
+                        aiPrompt.trim() &&
+                        !isAiThinking
+                      ) {
+                        e.preventDefault();
+                        handlePromptSubmit();
+                      }
+                    }}
                     sx={{
                       mr: 1,
                       '& .MuiOutlinedInput-root': {
@@ -1142,7 +1253,10 @@ ${JSON.stringify(analysisContext, null, 2)}
                   </Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                     <Chip
-                      disabled={(space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED}
+                      disabled={
+                        (space?.transcriptionProgress || 0) !==
+                        TranscriptionProgress.ENDED
+                      }
                       label={t('summarizeSpaceChip')}
                       size="small"
                       onClick={() => {
@@ -1162,7 +1276,10 @@ ${JSON.stringify(analysisContext, null, 2)}
                       }}
                     />
                     <Chip
-                      disabled={(space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED}
+                      disabled={
+                        (space?.transcriptionProgress || 0) !==
+                        TranscriptionProgress.ENDED
+                      }
                       label={t('createThreadChip')}
                       size="small"
                       onClick={() => {
@@ -1182,7 +1299,10 @@ ${JSON.stringify(analysisContext, null, 2)}
                       }}
                     />
                     <Chip
-                      disabled={(space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED}
+                      disabled={
+                        (space?.transcriptionProgress || 0) !==
+                        TranscriptionProgress.ENDED
+                      }
                       label={t('engagementIdeasChip')}
                       size="small"
                       onClick={() => {
@@ -1279,15 +1399,31 @@ ${JSON.stringify(analysisContext, null, 2)}
               }}
             >
               {/* <Tab icon={<DashboardIcon />} label="Dashboard" value="dashboard" /> */}
-              <Tab icon={<PeopleIcon />} label={t('audienceTab')} value="audience" />
-              <Tab icon={<MessageIcon />} label={t('contentTab')} value="content" />
-              <Tab icon={<ForumIcon />} label={t('timelineTab')} value="timeline" />
-              <Tab icon={<DescriptionIcon />} label={t('transcriptionTab')} value="transcription" />
-              <Tab 
+              <Tab
+                icon={<PeopleIcon />}
+                label={t('audienceTab')}
+                value="audience"
+              />
+              <Tab
+                icon={<MessageIcon />}
+                label={t('contentTab')}
+                value="content"
+              />
+              <Tab
+                icon={<ForumIcon />}
+                label={t('timelineTab')}
+                value="timeline"
+              />
+              <Tab
+                icon={<DescriptionIcon />}
+                label={t('transcriptionTab')}
+                value="transcription"
+              />
+              <Tab
                 disabled={isAnalysisDisabled}
-                icon={<InsightsIcon />} 
-                label={t('analysisTab')} 
-                value="analysis" 
+                icon={<InsightsIcon />}
+                label={t('analysisTab')}
+                value="analysis"
               />
             </Tabs>
 
@@ -1328,6 +1464,17 @@ ${JSON.stringify(analysisContext, null, 2)}
               placeholder={t('aiPlaceholder')}
               value={aiPrompt}
               onChange={(e) => setAiPrompt(e.target.value)}
+              onKeyDown={(e) => {
+                if (
+                  e.key === 'Enter' &&
+                  !e.shiftKey &&
+                  aiPrompt.trim() &&
+                  !isAiThinking
+                ) {
+                  e.preventDefault();
+                  handlePromptSubmit();
+                }
+              }}
               sx={{
                 mb: 2,
                 '& .MuiOutlinedInput-root': {

@@ -58,6 +58,7 @@ import SegmentsTimeline from './components/SegmentsTimeline';
 import AlgoliaSearchTranscription from './components/AlgoliaSearchTranscription';
 import { getSpaceAudioDownloadUrl } from './services/db/spaces.service';
 import ListenerRetentionChart from './components/SpaceCRM/ListenerRetentionChart';
+import type { RetentionContext } from './components/SpaceCRM/ListenerRetentionChart';
 
 type CRMTab =
   | 'dashboard'
@@ -122,6 +123,8 @@ const SpaceCRM: React.FC = () => {
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [analysisContext, setAnalysisContext] =
     useState<VisualizationContext | null>(null);
+  const [retentionContext, setRetentionContext] =
+    useState<RetentionContext | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(!user);
   const [isSpaceOwner, setIsSpaceOwner] = useState(false);
@@ -207,10 +210,21 @@ const SpaceCRM: React.FC = () => {
     setSelectedModel(event.target.value as string);
   };
 
-  const handleContextUpdate = useCallback((context: VisualizationContext) => {
-    setAnalysisContext(context);
-    console.log('SpaceCRM received analysis context:', context);
-  }, []);
+  const handleAnalysisContextUpdate = useCallback(
+    (context: VisualizationContext | null) => {
+      setAnalysisContext(context);
+      console.log('SpaceCRM received analysis context:', context);
+    },
+    []
+  );
+
+  const handleRetentionContextUpdate = useCallback(
+    (context: RetentionContext | null) => {
+      setRetentionContext(context);
+      console.log('SpaceCRM received retention context:', context);
+    },
+    []
+  );
 
   const handlePromptSubmit = async () => {
     if (!aiPrompt.trim()) return;
@@ -242,13 +256,33 @@ const SpaceCRM: React.FC = () => {
         }
       }
 
-      if (activeTab === 'analysis' && analysisContext) {
-        contextString += `\n\n--- Current Space Analysis Visualization Context ---
-This section provides structured data about the speaker interaction analysis currently displayed:
-${JSON.stringify(analysisContext, null, 2)}
+      if (activeTab === 'analysis' && retentionContext) {
+        const { averageListenTimeSeconds, chartData } = retentionContext;
+        let retentionSummary =
+          '\n\n--- Current Listener Retention Analysis ---';
+        if (averageListenTimeSeconds !== null) {
+          const avgMinutes = Math.floor(averageListenTimeSeconds / 60);
+          const avgSeconds = averageListenTimeSeconds % 60;
+          retentionSummary += `\nAverage Listener Time: ${avgMinutes} minutes, ${avgSeconds} seconds.`;
+        }
+        if (chartData && chartData.length > 0) {
+          const startCount = chartData[0]?.count ?? 'N/A';
+          const endCount = chartData[chartData.length - 1]?.count ?? 'N/A';
+          const peakCount = Math.max(...chartData.map((d) => d.count));
+          const peakTimeIndex = chartData.findIndex(
+            (d) => d.count === peakCount
+          );
+          const peakTimeLabel = chartData[peakTimeIndex]?.timeLabel ?? 'N/A';
 
-**Task:** When answering the user's query about the analysis, please **cross-reference** the information above with the provided **Full Space Transcription**. For example, if discussing an interaction metric (like count or sentiment) from the context, try to find and mention specific exchanges or moments in the transcription that support that data point. Correlate visual patterns (like active speakers or strong connections) with actual dialogue.
-`;
+          retentionSummary += `\nListener Count: Started at ${startCount}, peaked at ${peakCount} (around ${peakTimeLabel}), ended at ${endCount}.`;
+          const peakJoinCount = Math.max(...chartData.map((d) => d.joinCount));
+          const peakLeaveCount = Math.max(
+            ...chartData.map((d) => d.leaveCount)
+          );
+          retentionSummary += `\nPeak activity: Max joins/interval: ${peakJoinCount}, Max leaves/interval: ${peakLeaveCount}.`;
+        }
+        retentionSummary += `\n\n**Task:** Use this retention data, alongside the full transcript, to answer the user's query about audience engagement over time. Correlate listener count changes (peaks, drops) with events or topics in the transcript.`;
+        contextString += retentionSummary;
       }
 
       let currentResponse = '';
@@ -885,6 +919,7 @@ ${JSON.stringify(analysisContext, null, 2)}
                       spaceId={spaceId}
                       startedAt={space?.startedAt}
                       endedAt={space?.endedAt}
+                      onContextUpdate={handleRetentionContextUpdate}
                     />
                   )}
                 </Box>
@@ -1169,6 +1204,17 @@ ${JSON.stringify(analysisContext, null, 2)}
                       (space?.transcriptionProgress || 0) !==
                         TranscriptionProgress.ENDED
                     }
+                    onKeyDown={(e) => {
+                      if (
+                        e.key === 'Enter' &&
+                        !e.shiftKey &&
+                        aiPrompt.trim() &&
+                        !isAiThinking
+                      ) {
+                        e.preventDefault();
+                        handlePromptSubmit();
+                      }
+                    }}
                     sx={{
                       mr: 1,
                       '& .MuiOutlinedInput-root': {
@@ -1420,6 +1466,17 @@ ${JSON.stringify(analysisContext, null, 2)}
               placeholder={t('aiPlaceholder')}
               value={aiPrompt}
               onChange={(e) => setAiPrompt(e.target.value)}
+              onKeyDown={(e) => {
+                if (
+                  e.key === 'Enter' &&
+                  !e.shiftKey &&
+                  aiPrompt.trim() &&
+                  !isAiThinking
+                ) {
+                  e.preventDefault();
+                  handlePromptSubmit();
+                }
+              }}
               sx={{
                 mb: 2,
                 '& .MuiOutlinedInput-root': {

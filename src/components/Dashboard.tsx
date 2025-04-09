@@ -15,7 +15,9 @@ import {
   InputAdornment,
   IconButton,
   Divider,
-  Grid
+  Grid,
+  AppBar,
+  Toolbar
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import { useTranslation } from 'react-i18next';
@@ -30,7 +32,8 @@ import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import WhatshotIcon from '@mui/icons-material/Whatshot';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import EventIcon from '@mui/icons-material/Event';
-// TODO: Import services and types needed for fetching/displaying spaces
+import SettingsIcon from '@mui/icons-material/Settings';
+import Logo from './Logo';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -125,6 +128,12 @@ export default function Dashboard() {
   const [spaceUrl, setSpaceUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   // TODO: Add state for live, completed, scheduled spaces and loading/error states for each
+
+  const liveSpaces = dummyLiveSpaces;
+  const completedSpaces = dummyCompletedSpaces;
+  const scheduledSpaces = dummyScheduledSpaces;
+  const loading = false;
+  const error = null;
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
@@ -382,13 +391,42 @@ export default function Dashboard() {
   };
 
   return (
-    <Box sx={{ position: 'relative', minHeight: '100vh' }}>
+    <Box sx={{ position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Background />
-      <Container maxWidth="lg" sx={{ pt: 4, pb: 4, position: 'relative', zIndex: 1 }}>
+
+      {/* Header AppBar */}
+      <AppBar
+        position="static"
+        elevation={0}
+        sx={{ background: 'transparent', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', zIndex: 10 }}
+      >
+        <Toolbar sx={{ justifyContent: 'space-between' }}>
+          {/* Logo and Title */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer' }} onClick={() => navigate('/')}>
+            <Logo />
+            <Typography variant="h6" sx={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>
+              Songjam
+            </Typography>
+          </Box>
+
+          {/* Settings Button */}
+          <IconButton
+            onClick={() => toast('Settings clicked (placeholder)!')}
+            sx={{ color: 'var(--text-secondary)' }}
+          >
+            <SettingsIcon />
+          </IconButton>
+        </Toolbar>
+      </AppBar>
+
+      {/* Main Content Container - Adjust pt to account for AppBar height */}
+      <Container maxWidth="lg" sx={{ pt: 3, pb: 4, position: 'relative', zIndex: 1, flexGrow: 1 }}>
+        {/* Title below AppBar */}
         <Typography variant="h4" component="h1" gutterBottom sx={{ color: 'var(--text-primary)', textAlign: 'center', mb: 4 }}>
           {t('dashboardTitle', 'My Spaces Dashboard')}
         </Typography>
 
+        {/* Add Space Section */}
         <Paper sx={{ mb: 4, p: 3, bgcolor: 'rgba(15, 23, 42, 0.9)', borderRadius: 2, boxShadow: '0 5px 15px rgba(0, 0, 0, 0.2)' }}>
           <Typography variant="h6" gutterBottom sx={{ color: 'var(--text-primary)', mb: 2 }}>
             {t('addSpaceTitle', 'Analyze a New Space')}
@@ -464,48 +502,49 @@ export default function Dashboard() {
           </Box>
         </Paper>
 
+        {/* Tabs Section */}
         <Paper sx={{ width: '100%', bgcolor: 'rgba(15, 23, 42, 0.9)', borderRadius: 2, overflow: 'hidden', boxShadow: '0 5px 15px rgba(0, 0, 0, 0.2)' }}>
           <Box sx={{ borderBottom: 1, borderColor: 'rgba(255, 255, 255, 0.12)' }}>
-            <Tabs
-              value={value}
-              onChange={handleChange}
-              aria-label="dashboard tabs"
-              variant="fullWidth"
-              indicatorColor="primary"
-              textColor="inherit"
-              sx={{
-                '& .MuiTab-root': {
-                   color: 'var(--text-secondary)',
-                   textTransform: 'none',
-                   fontSize: '1rem',
-                   padding: '12px 16px',
-                   '&:hover': {
-                     backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                   },
-                },
-                '& .Mui-selected': {
-                    color: 'var(--primary-color)',
-                    fontWeight: 'bold',
+             <Tabs
+               value={value}
+               onChange={handleChange}
+               aria-label="dashboard tabs"
+               variant="fullWidth"
+               indicatorColor="primary"
+               textColor="inherit"
+               sx={{
+                 '& .MuiTab-root': {
+                    color: 'var(--text-secondary)',
+                    textTransform: 'none',
+                    fontSize: '1rem',
+                    padding: '12px 16px',
+                    '&:hover': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    },
                  },
-                 '& .MuiTabs-indicator': {
-                    backgroundColor: 'var(--primary-color)',
-                 }
-               }}
-            >
-              <Tab label={t('scheduledSpacesTab', 'Scheduled')} {...a11yProps(0)} />
-              <Tab label={t('liveSpacesTab', 'Live Now')} {...a11yProps(1)} />
-              <Tab label={t('completedSpacesTab', 'Completed')} {...a11yProps(2)} />
-            </Tabs>
-          </Box>
-          <TabPanel value={value} index={0}>
-            {renderScheduledList(dummyScheduledSpaces, false, null)}
-          </TabPanel>
-          <TabPanel value={value} index={1}>
-            {renderSpaceList(dummyLiveSpaces, false, null, 'Live')}
-          </TabPanel>
-          <TabPanel value={value} index={2}>
-            {renderSpaceList(dummyCompletedSpaces, false, null, 'Completed')}
-          </TabPanel>
+                 '& .Mui-selected': {
+                     color: 'var(--primary-color)',
+                     fontWeight: 'bold',
+                  },
+                  '& .MuiTabs-indicator': {
+                     backgroundColor: 'var(--primary-color)',
+                  }
+                }}
+             >
+               <Tab label={t('scheduledSpacesTab', 'Scheduled')} {...a11yProps(0)} />
+               <Tab label={t('liveSpacesTab', 'Live Now')} {...a11yProps(1)} />
+               <Tab label={t('completedSpacesTab', 'Completed')} {...a11yProps(2)} />
+             </Tabs>
+           </Box>
+           <TabPanel value={value} index={0}>
+             {renderScheduledList(scheduledSpaces, loading, error)}
+           </TabPanel>
+           <TabPanel value={value} index={1}>
+             {renderSpaceList(liveSpaces, loading, error, 'Live')}
+           </TabPanel>
+           <TabPanel value={value} index={2}>
+             {renderSpaceList(completedSpaces, loading, error, 'Completed')}
+           </TabPanel>
         </Paper>
       </Container>
     </Box>

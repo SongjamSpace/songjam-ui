@@ -48,32 +48,38 @@ export default function App() {
   const handleAnalyze = async (url: string) => {
     if (isLoading || !url.trim()) return;
     setIsLoading(true);
-    const spaceId = url.split('/').pop();
-    const res = await axios.get(
-      `${import.meta.env.VITE_JAM_SERVER_URL}/get-space/${spaceId}`
-    );
-    if (res.data.result) {
-      const state = res.data.result.metadata.state;
-      if (state === 'Ended') {
-        const path = await transcribeSpace(url);
-        navigate(path);
-      } else if (state === 'Running') {
-        const res = await axios.post(
-          `${import.meta.env.VITE_JAM_SERVER_URL}/listen-live-space`,
-          { spaceId }
-        );
-        navigate(`/live/${spaceId}`);
-      }
-    } else {
-      toast.error('Error analyzing space, please try again', {
-        duration: 3000,
-        position: 'bottom-right',
-        style: {
-          background: '#333',
-          color: '#fff',
-        },
-      });
-    }
+    // const spaceId = url.split('/').pop();
+    // const res = await axios.get(
+    //   `${import.meta.env.VITE_JAM_SERVER_URL}/get-space/${spaceId}`
+    // );
+    // if (res.data.result) {
+    //   const state = res.data.result.metadata.state;
+    //   if (state === 'Ended') {
+    //     const path = await transcribeSpace(url);
+    //     navigate(path); // Navigates to /crm/:spaceId
+    //   } else if (state === 'Running') {
+    //     const res = await axios.post(
+    //       `${import.meta.env.VITE_JAM_SERVER_URL}/listen-live-space`,
+    //       { spaceId }
+    //     );
+    //     navigate(`/live/${spaceId}`);
+    //   } // TODO: Add handling for 'Scheduled' state if needed later
+    // } else {
+    //   toast.error('Error analyzing space, please try again', {
+    //     duration: 3000,
+    //     position: 'bottom-right',
+    //     style: {
+    //       background: '#333',
+    //       color: '#fff',
+    //     },
+    //   });
+    // }
+
+    // Navigate directly to the dashboard for now
+    navigate('/dashboard');
+    // We might want to pass the URL or spaceId as state or query param later
+    // navigate('/dashboard', { state: { initialUrl: url } });
+
     setIsLoading(false);
   };
 

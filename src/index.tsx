@@ -8,6 +8,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import theme from './theme';
 import { AuthProvider } from './contexts/AuthContext';
 import LiveDashboardContainer from './components/LiveDashboard/LiveDashboardContainer';
+import Dashboard from './components/Dashboard';
 import './i18n';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
@@ -34,6 +35,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
                 path="/live/:spaceId"
                 element={<LiveDashboardContainer />}
               />
+              <Route path="/dashboard" element={<Dashboard />} />
             </Routes>
           </AuthProvider>
         </ThemeProvider>

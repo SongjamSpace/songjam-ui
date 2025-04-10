@@ -46,7 +46,8 @@ import { useTranslation } from 'react-i18next';
 
 import AudiencePanel from './components/SpaceCRM/AudiencePanel';
 import ContentStudio from './components/SpaceCRM/ContentStudio';
-import { getSpace, Space, TranscriptionProgress } from './services/db/spaces.service';
+import { getSpace } from './services/db/spaces.service';
+import { Space, TranscriptionProgress } from './types/space.types';
 import { useAuthContext } from './contexts/AuthContext';
 import Logo from './components/Logo';
 import TwitterLogin from './components/TwitterLogin';
@@ -125,7 +126,7 @@ const SpaceCRM: React.FC = () => {
   const [isSpaceOwner, setIsSpaceOwner] = useState(false);
 
   // Calculate disabled state for Analysis tab
-  const isAnalysisDisabled = 
+  const isAnalysisDisabled =
     (space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED ||
     (spaceId ? spaceId !== '1OwxWXyAVeWKQ' : true);
 
@@ -134,14 +135,14 @@ const SpaceCRM: React.FC = () => {
       setIsSpaceOwner(
         [...space.admins, ...space.speakers].some(
           (admin) => admin.twitterScreenName === user?.username
-        ) || [
-          "LHrZ0zGfQ2UnAjkRC8nt36EMmA23",
-          "M4dxYt7PjCNRcl0erxcpexCtisk2"
-        ].includes(user.uid || "")
+        ) ||
+          [
+            'LHrZ0zGfQ2UnAjkRC8nt36EMmA23',
+            'M4dxYt7PjCNRcl0erxcpexCtisk2',
+          ].includes(user.uid || '')
       );
     }
   }, [user, space]);
-  
 
   // Fetch space data on mount
   useEffect(() => {
@@ -299,9 +300,9 @@ ${JSON.stringify(analysisContext, null, 2)}
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
-      console.error("Error downloading recording:", error);
+      console.error('Error downloading recording:', error);
     } finally {
-       setIsDownloading(false);
+      setIsDownloading(false);
     }
   };
 
@@ -389,12 +390,11 @@ ${JSON.stringify(analysisContext, null, 2)}
           </Box>
         </Box>
 
-          <TwitterLogin />
+        <TwitterLogin />
       </Box>
 
       {/* Content wrapper with blur effect for non-authenticated users */}
-      <Box
-      >
+      <Box>
         {/* Back Button and Space Info Bar */}
         <Box
           sx={{
@@ -445,16 +445,18 @@ ${JSON.stringify(analysisContext, null, 2)}
                     },
                   }}
                 />
-                {space.transcriptionProgress !== TranscriptionProgress.ENDED && 
-                <Chip
-                  icon={<CircularProgress size={14} />}
-                  label={space.userHelperMessage}
-                  variant="filled"
-                  size="small"
-                  sx={{
-                    ml: 2,
-                  }}
-                />}
+                {space.transcriptionProgress !==
+                  TranscriptionProgress.ENDED && (
+                  <Chip
+                    icon={<CircularProgress size={14} />}
+                    label={space.userHelperMessage}
+                    variant="filled"
+                    size="small"
+                    sx={{
+                      ml: 2,
+                    }}
+                  />
+                )}
               </>
             ) : (
               <CircularProgress size={24} sx={{ mr: 2 }} />
@@ -485,9 +487,9 @@ ${JSON.stringify(analysisContext, null, 2)}
             display: 'flex',
             flexDirection: 'column',
             flexGrow: 1,
-          filter: !user ? 'blur(8px)' : 'none',
-          pointerEvents: !user ? 'none' : 'auto',
-          userSelect: !user ? 'none' : 'auto',
+            filter: !user ? 'blur(8px)' : 'none',
+            pointerEvents: !user ? 'none' : 'auto',
+            userSelect: !user ? 'none' : 'auto',
           }}
         >
           <Grid
@@ -547,21 +549,37 @@ ${JSON.stringify(analysisContext, null, 2)}
                     label="Dashboard"
                     value="dashboard"
                   /> */}
-                  <Tab icon={<PeopleIcon />} label={t('audienceTab')} value="audience" />
-                  <Tab 
-                    disabled={(space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED}
+                  <Tab
+                    icon={<PeopleIcon />}
+                    label={t('audienceTab')}
+                    value="audience"
+                  />
+                  <Tab
+                    disabled={
+                      (space?.transcriptionProgress || 0) !==
+                      TranscriptionProgress.ENDED
+                    }
                     icon={<MessageIcon />}
                     label={
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                      >
                         {t('contentTab')}
-                        {(space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED && (
+                        {(space?.transcriptionProgress || 0) !==
+                          TranscriptionProgress.ENDED && (
                           <Chip
                             size="small"
-                            label={(space?.transcriptionProgress || 0) <= TranscriptionProgress.SUMMARIZING ? t('queuedChip') : t('analyzingChip')}
+                            label={
+                              (space?.transcriptionProgress || 0) <=
+                              TranscriptionProgress.SUMMARIZING
+                                ? t('queuedChip')
+                                : t('analyzingChip')
+                            }
                             sx={{
                               height: 16,
                               fontSize: '0.6rem',
-                              background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+                              background:
+                                'linear-gradient(90deg, #60a5fa, #8b5cf6)',
                             }}
                           />
                         )}
@@ -570,20 +588,35 @@ ${JSON.stringify(analysisContext, null, 2)}
                     value="content"
                   />
                   <Tab
-                    disabled={(space?.transcriptionProgress || 0) <= TranscriptionProgress.TRANSCRIBING}
+                    disabled={
+                      (space?.transcriptionProgress || 0) <=
+                      TranscriptionProgress.TRANSCRIBING
+                    }
                     icon={<ForumIcon />}
                     label={
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                      >
                         {t('timelineTab')}
-                        {(space?.transcriptionProgress || 0) <= TranscriptionProgress.DOWNLOADING_AUDIO ? t('queuedChip') : t('analyzingChip')}
-                        {(space?.transcriptionProgress || 0) <= TranscriptionProgress.TRANSCRIBING && (
+                        {(space?.transcriptionProgress || 0) <=
+                        TranscriptionProgress.DOWNLOADING_AUDIO
+                          ? t('queuedChip')
+                          : t('analyzingChip')}
+                        {(space?.transcriptionProgress || 0) <=
+                          TranscriptionProgress.TRANSCRIBING && (
                           <Chip
                             size="small"
-                            label={(space?.transcriptionProgress || 0) <= TranscriptionProgress.DOWNLOADING_AUDIO ? t('queuedChip') : t('analyzingChip')}
+                            label={
+                              (space?.transcriptionProgress || 0) <=
+                              TranscriptionProgress.DOWNLOADING_AUDIO
+                                ? t('queuedChip')
+                                : t('analyzingChip')
+                            }
                             sx={{
                               height: 16,
                               fontSize: '0.6rem',
-                              background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+                              background:
+                                'linear-gradient(90deg, #60a5fa, #8b5cf6)',
                             }}
                           />
                         )}
@@ -592,20 +625,32 @@ ${JSON.stringify(analysisContext, null, 2)}
                     value="timeline"
                   />
                   <Tab
-                    disabled={(space?.transcriptionProgress || 0) <= TranscriptionProgress.TRANSCRIBING}
+                    disabled={
+                      (space?.transcriptionProgress || 0) <=
+                      TranscriptionProgress.TRANSCRIBING
+                    }
                     icon={<DescriptionIcon />}
                     label={
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                      >
                         {t('transcriptionTab')}
-                        {(space?.transcriptionProgress || 0) <= TranscriptionProgress.TRANSCRIBING && (
+                        {(space?.transcriptionProgress || 0) <=
+                          TranscriptionProgress.TRANSCRIBING && (
                           <Chip
                             size="small"
-                            label={(space?.transcriptionProgress || 0) <= TranscriptionProgress.DOWNLOADING_AUDIO ? t('queuedChip') : t('analyzingChip')}
+                            label={
+                              (space?.transcriptionProgress || 0) <=
+                              TranscriptionProgress.DOWNLOADING_AUDIO
+                                ? t('queuedChip')
+                                : t('analyzingChip')
+                            }
                             sx={{
                               height: 16,
                               fontSize: '0.6rem',
-                              background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
-                            }}  
+                              background:
+                                'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+                            }}
                           />
                         )}
                       </Box>
@@ -663,7 +708,10 @@ ${JSON.stringify(analysisContext, null, 2)}
                     </Typography> */}
                   </Box>
                 ) : (
-                  <CircularProgress size={20} sx={{ my: 2, display: 'block' }} />
+                  <CircularProgress
+                    size={20}
+                    sx={{ my: 2, display: 'block' }}
+                  />
                 )}
 
                 <Button
@@ -731,11 +779,11 @@ ${JSON.stringify(analysisContext, null, 2)}
                   <Tab icon={<MessageIcon />} value="content" />
                   <Tab icon={<ForumIcon />} value="timeline" />
                   <Tab icon={<DescriptionIcon />} value="transcription" />
-                  <Tab 
+                  <Tab
                     disabled={isAnalysisDisabled}
-                    icon={<InsightsIcon />} 
-                    label={t('analysisTab')} 
-                    value="analysis" 
+                    icon={<InsightsIcon />}
+                    label={t('analysisTab')}
+                    value="analysis"
                   />
                 </Tabs>
 
@@ -780,25 +828,34 @@ ${JSON.stringify(analysisContext, null, 2)}
                         {t('transcriptTimelineTitle')}
                       </Typography>
                       <SegmentsTimeline
-                         spaceId={spaceId}
-                         hasAccess={true}
-                         isProcessingPayment={false}
-                         handlePayment={() => {}}
-                         processEnded={true}
-                         refresh={space?.transcriptionStatus === 'SHORT_ENDED'}
+                        spaceId={spaceId}
+                        hasAccess={true}
+                        isProcessingPayment={false}
+                        handlePayment={() => {}}
+                        processEnded={true}
+                        refresh={space?.transcriptionStatus === 'SHORT_ENDED'}
                       />
                     </Box>
                   )}
 
                   {activeTab === 'transcription' && spaceId && (
                     <Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          mb: 2,
+                        }}
+                      >
                         <Typography variant="h6">
                           {t('fullTranscriptionTitle')}
                         </Typography>
                         <LoadingButton
                           loading={isDownloading}
-                          disabled={!space || space.transcriptionStatus !== 'ENDED'}
+                          disabled={
+                            !space || space.transcriptionStatus !== 'ENDED'
+                          }
                           startIcon={<DownloadIcon />}
                           onClick={onDownloadRecording}
                           sx={{
@@ -810,12 +867,14 @@ ${JSON.stringify(analysisContext, null, 2)}
                             textTransform: 'none',
                           }}
                         >
-                          {isDownloading ? t('downloadingButton') : t('downloadRecordingButton')}
+                          {isDownloading
+                            ? t('downloadingButton')
+                            : t('downloadRecordingButton')}
                         </LoadingButton>
                       </Box>
-                      <AlgoliaSearchTranscription 
-                        spaceId={spaceId} 
-                        title={space?.title || t('transcriptionTab')} 
+                      <AlgoliaSearchTranscription
+                        spaceId={spaceId}
+                        title={space?.title || t('transcriptionTab')}
                       />
                     </Box>
                   )}
@@ -835,7 +894,7 @@ ${JSON.stringify(analysisContext, null, 2)}
               item
               xs={12}
               md={3}
-              sx={{ display: { xs: 'none', md: 'block'} }}
+              sx={{ display: { xs: 'none', md: 'block' } }}
             >
               <Paper
                 sx={{
@@ -938,7 +997,9 @@ ${JSON.stringify(analysisContext, null, 2)}
                             flexDirection: 'column',
                             gap: 0.5,
                             alignItems:
-                              message.role === 'user' ? 'flex-end' : 'flex-start',
+                              message.role === 'user'
+                                ? 'flex-end'
+                                : 'flex-start',
                           }}
                         >
                           <Box
@@ -1101,7 +1162,11 @@ ${JSON.stringify(analysisContext, null, 2)}
                     placeholder={t('aiPlaceholder')}
                     value={aiPrompt}
                     onChange={(e) => setAiPrompt(e.target.value)}
-                    disabled={isAiThinking || (space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED}
+                    disabled={
+                      isAiThinking ||
+                      (space?.transcriptionProgress || 0) !==
+                        TranscriptionProgress.ENDED
+                    }
                     sx={{
                       mr: 1,
                       '& .MuiOutlinedInput-root': {
@@ -1142,7 +1207,10 @@ ${JSON.stringify(analysisContext, null, 2)}
                   </Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                     <Chip
-                      disabled={(space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED}
+                      disabled={
+                        (space?.transcriptionProgress || 0) !==
+                        TranscriptionProgress.ENDED
+                      }
                       label={t('summarizeSpaceChip')}
                       size="small"
                       onClick={() => {
@@ -1162,7 +1230,10 @@ ${JSON.stringify(analysisContext, null, 2)}
                       }}
                     />
                     <Chip
-                      disabled={(space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED}
+                      disabled={
+                        (space?.transcriptionProgress || 0) !==
+                        TranscriptionProgress.ENDED
+                      }
                       label={t('createThreadChip')}
                       size="small"
                       onClick={() => {
@@ -1182,7 +1253,10 @@ ${JSON.stringify(analysisContext, null, 2)}
                       }}
                     />
                     <Chip
-                      disabled={(space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED}
+                      disabled={
+                        (space?.transcriptionProgress || 0) !==
+                        TranscriptionProgress.ENDED
+                      }
                       label={t('engagementIdeasChip')}
                       size="small"
                       onClick={() => {
@@ -1279,15 +1353,31 @@ ${JSON.stringify(analysisContext, null, 2)}
               }}
             >
               {/* <Tab icon={<DashboardIcon />} label="Dashboard" value="dashboard" /> */}
-              <Tab icon={<PeopleIcon />} label={t('audienceTab')} value="audience" />
-              <Tab icon={<MessageIcon />} label={t('contentTab')} value="content" />
-              <Tab icon={<ForumIcon />} label={t('timelineTab')} value="timeline" />
-              <Tab icon={<DescriptionIcon />} label={t('transcriptionTab')} value="transcription" />
-              <Tab 
+              <Tab
+                icon={<PeopleIcon />}
+                label={t('audienceTab')}
+                value="audience"
+              />
+              <Tab
+                icon={<MessageIcon />}
+                label={t('contentTab')}
+                value="content"
+              />
+              <Tab
+                icon={<ForumIcon />}
+                label={t('timelineTab')}
+                value="timeline"
+              />
+              <Tab
+                icon={<DescriptionIcon />}
+                label={t('transcriptionTab')}
+                value="transcription"
+              />
+              <Tab
                 disabled={isAnalysisDisabled}
-                icon={<InsightsIcon />} 
-                label={t('analysisTab')} 
-                value="analysis" 
+                icon={<InsightsIcon />}
+                label={t('analysisTab')}
+                value="analysis"
               />
             </Tabs>
 

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Tweet } from '../types/twitter.types';
-import { TwitterUser } from './db/spaces.service';
+import { TwitterUser } from '../types/space.types';
 
 const PROXY_URL = 'http://localhost:3001/api';
 

@@ -5,8 +5,6 @@ import {
   getSpace,
   getSpaceAudioDownloadUrl,
   getTwitterThread,
-  Segment,
-  Space,
 } from './services/db/spaces.service';
 import {
   Box,
@@ -44,6 +42,7 @@ import Logo from './components/Logo';
 import AlgoliaSearchTranscription from './components/AlgoliaSearchTranscription';
 import TwitterLogin from './components/TwitterLogin';
 import { useAuthContext } from './contexts/AuthContext';
+import { Space, Segment } from './types/space.types';
 
 type ToastState = {
   open: boolean;

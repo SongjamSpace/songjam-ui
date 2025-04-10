@@ -7,7 +7,7 @@ import {
   Skeleton,
 } from '@mui/material';
 import { getUserInfo, getUserTweets } from '../services/x.service';
-import { TwitterUser } from '../services/db/spaces.service';
+import { TwitterUser } from '../types/space.types';
 import { XTweet } from '../services/x.service';
 
 interface SpaceSpeakerInfoProps {

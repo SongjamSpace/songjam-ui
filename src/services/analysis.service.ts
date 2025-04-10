@@ -1,4 +1,4 @@
-import { TwitterUser } from './db/spaces.service';
+import { TwitterUser } from '../types/space.types';
 import {
   SpaceAnalysis,
   SpeakerInteraction,

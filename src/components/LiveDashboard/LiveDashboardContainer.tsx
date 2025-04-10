@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Space, getSpace } from '../../services/db/spaces.service';
+import { getSpace } from '../../services/db/spaces.service';
 import LiveDashboardView from './LiveDashboardView';
 import { Box, CircularProgress } from '@mui/material';
+import { Space } from '../../types/space.types';
 
 const LiveDashboardContainer: React.FC = () => {
   const { spaceId } = useParams<{ spaceId: string }>();
@@ -50,4 +51,4 @@ const LiveDashboardContainer: React.FC = () => {
   return <LiveDashboardView spaceId={spaceId} space={space} />;
 };
 
-export default LiveDashboardContainer; 
+export default LiveDashboardContainer;

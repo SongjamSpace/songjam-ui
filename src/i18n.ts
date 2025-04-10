@@ -18,24 +18,29 @@ const appTranslationsEN = {
   tryPreviewButton: 'Try Preview',
   viewPricingButton: 'View Pricing',
   launchOfferTitle: 'Special Launch Offer - Only $1 USDT!',
-  launchOfferText: 'Get full access to our AI-powered transcription service for just $1 USDT. Try it now with zero risk - preview the timeline before paying!',
+  launchOfferText:
+    'Get full access to our AI-powered transcription service for just $1 USDT. Try it now with zero risk - preview the timeline before paying!',
   whatYouGetTitle: "✨ What You'll Get:",
   getDealFeature1: '1 x Full Space Transcription',
   getDealFeature2: '1 x AI-Powered Summary',
   getDealFeature3: 'Full Thread with 3 x Remixes',
-  spaceInputPlaceholderDialog: 'Paste your X space URL here (e.g., x.com/i/spaces/123...)',
+  spaceInputPlaceholderDialog:
+    'Paste your X space URL here (e.g., x.com/i/spaces/123...)',
   getDealButton: 'Get Deal Now 🚀',
   noCommitment: 'No commitment required - Preview before you pay!',
   previewDialogTitle: '🔭 Preview Analyzed Spaces 🔭',
-  previewDialogText1: 'Click on any space below to see an example of the analysis output.',
+  previewDialogText1:
+    'Click on any space below to see an example of the analysis output.',
   previewDialogText2: 'Paste your own space URL on the homepage to try it!',
   availablePreviewsTitle: '🚀 Available Previews:',
   analyzedOn: 'Analyzed on',
   noPreviews: 'No completed spaces available for preview yet.',
-  previewDialogText3: 'This is just a preview. Analyze your own space for full insights!',
+  previewDialogText3:
+    'This is just a preview. Analyze your own space for full insights!',
   poweredBy: 'Powered by',
   transcribeFeatureTitle: 'Transcribe',
-  transcribeFeatureText: 'Converting your X Space audio into text makes it easy to analyze',
+  transcribeFeatureText:
+    'Converting your X Space audio into text makes it easy to analyze',
   transcribeFeatureDetail: 'Get your time back',
   analyzeFeatureTitle: 'Analyze',
   analyzeFeatureText: 'Unlock awesome insights from your X Spaces in seconds',
@@ -51,7 +56,8 @@ const appTranslationsEN = {
   step3Title: 'Dive In',
   step3Text: 'Leverage LLMs to analyze the space',
   honorsTitle: 'Honors',
-  honorsText: 'Songjam builders have won top awards from the following crypto leaders:',
+  honorsText:
+    'Songjam builders have won top awards from the following crypto leaders:',
   contactTitle: 'Contact Us',
   contactText: 'Got a beefy project or custom request? Drop us a line',
   namePlaceholder: 'Name',
@@ -92,7 +98,8 @@ const crmTranslationsEN = {
   selectModelLabel: 'Select Model',
   aiPlaceholder: 'Ask the AI assistant...',
   thinkingAI: 'Thinking...',
-  askAnythingAI: 'Ask me anything about this space or how to engage with the audience!',
+  askAnythingAI:
+    'Ask me anything about this space or how to engage with the audience!',
   quickActionsTitle: 'Quick Actions',
   summarizeSpaceChip: 'Summarize Space',
   createThreadChip: 'Create Thread',
@@ -100,8 +107,20 @@ const crmTranslationsEN = {
   mobileSidebarTitle: 'X Space CRM',
   askAIButton: 'Ask AI',
   authDialogTitle: 'Welcome to Songjam',
-  authDialogText: 'Connect your Twitter account to access Space analytics, audience insights, and AI-powered tools.',
+  authDialogText:
+    'Connect your Twitter account to access Space analytics, audience insights, and AI-powered tools.',
   listenersLabel: 'listeners',
+  agentSettings: 'Agent Settings',
+  agentName: 'Agent Name',
+  username: 'Username',
+  password: 'Password',
+  email: 'Email',
+  twoFactorSecret: '2FA Secret',
+  twoFactorSecretHelper: 'Enter your 2FA secret key',
+  cancel: 'Cancel',
+  save: 'Save',
+  agentSettingsSaved: 'Agent settings saved successfully',
+  agentSettingsError: 'Error saving agent settings',
 };
 
 const audiencePanelTranslationsEN = {
@@ -140,7 +159,8 @@ const contentStudioTranslationsEN = {
   dmTab: 'DM',
   templatesTitle: 'Templates',
   customPromptTitle: 'Custom Prompt',
-  promptHelpText: "Use placeholders like [TOPIC] or [SPEAKER] to refine the AI's focus.",
+  promptHelpText:
+    "Use placeholders like [TOPIC] or [SPEAKER] to refine the AI's focus.",
   selectModelLabel: 'Select Model',
   generateButton: 'Generate',
   generatingButton: 'Generating...',
@@ -199,7 +219,8 @@ const spaceAnalysisTranslationsEN = {
   modalStrengthLabel: 'Strength:',
   modalUtterancesLabel: 'Key Utterances:',
   analysisConfigHelpTitle: 'Help: Analysis Configuration',
-  analysisConfigHelpText: 'Configure how speaker interactions and their strength are calculated. Hover over options for more details. Regenerate analysis after changing settings.',
+  analysisConfigHelpText:
+    'Configure how speaker interactions and their strength are calculated. Hover over options for more details. Regenerate analysis after changing settings.',
   mostActiveSpeakerStat: 'Most Active Speaker',
   avgInteractionsStat: 'Avg. Interactions',
   totalConnectionsStat: 'Total Connections',
@@ -222,12 +243,14 @@ const appTranslationsZH = {
   tryPreviewButton: '试用预览',
   viewPricingButton: '查看定价',
   launchOfferTitle: '🎉 特别启动优惠 - 仅需 1 USDT！🎉',
-  launchOfferText: '仅需 1 USDT 即可完全访问我们的 AI 驱动转录服务。立即零风险试用 - 付款前预览时间线！',
+  launchOfferText:
+    '仅需 1 USDT 即可完全访问我们的 AI 驱动转录服务。立即零风险试用 - 付款前预览时间线！',
   whatYouGetTitle: '✨ 您将获得：',
   getDealFeature1: '1 x 完整 Space 转录',
   getDealFeature2: '1 x AI 驱动摘要',
   getDealFeature3: '包含 3 x Remix 的完整 Thread',
-  spaceInputPlaceholderDialog: '在此处粘贴您的 X space URL (例如 x.com/i/spaces/123...)',
+  spaceInputPlaceholderDialog:
+    '在此处粘贴您的 X space URL (例如 x.com/i/spaces/123...)',
   getDealButton: '立即获取优惠 🚀',
   noCommitment: '无需承诺 - 付款前预览！',
   previewDialogTitle: '🔭 预览已分析的空间 🔭',
@@ -304,8 +327,20 @@ const crmTranslationsZH = {
   mobileSidebarTitle: 'X Space CRM',
   askAIButton: '询问 AI',
   authDialogTitle: '欢迎来到 Songjam',
-  authDialogText: '连接您的 Twitter 帐户以访问空间分析、听众洞察和 AI 驱动的工具。',
+  authDialogText:
+    '连接您的 Twitter 帐户以访问空间分析、听众洞察和 AI 驱动的工具。',
   listenersLabel: '听众',
+  agentSettings: '代理设置',
+  agentName: '代理名称',
+  username: '用户名',
+  password: '密码',
+  email: '电子邮件',
+  twoFactorSecret: '双重认证密钥',
+  twoFactorSecretHelper: '输入您的双重认证密钥',
+  cancel: '取消',
+  save: '保存',
+  agentSettingsSaved: '代理设置保存成功',
+  agentSettingsError: '保存代理设置时出错',
 };
 
 const audiencePanelTranslationsZH = {
@@ -403,7 +438,8 @@ const spaceAnalysisTranslationsZH = {
   modalStrengthLabel: '强度：',
   modalUtterancesLabel: '关键话语：',
   analysisConfigHelpTitle: '帮助：分析配置',
-  analysisConfigHelpText: '配置发言者互动及其强度的计算方式。将鼠标悬停在选项上可查看更多详细信息。更改设置后重新生成分析。',
+  analysisConfigHelpText:
+    '配置发言者互动及其强度的计算方式。将鼠标悬停在选项上可查看更多详细信息。更改设置后重新生成分析。',
   mostActiveSpeakerStat: '最活跃发言者',
   avgInteractionsStat: '平均互动数',
   totalConnectionsStat: '总连接数',
@@ -463,4 +499,4 @@ i18n
 // i18n.addResourceBundle('en', 'translation', spaceAnalysisTranslationsEN, true, true);
 // i18n.addResourceBundle('zh', 'translation', spaceAnalysisTranslationsZH, true, true);
 
-export default i18n; 
+export default i18n;

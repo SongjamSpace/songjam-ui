@@ -28,11 +28,8 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import CloseIcon from '@mui/icons-material/Close';
-import {
-  getSpaceListeners,
-  Space,
-  TwitterUser,
-} from '../../services/db/spaces.service';
+import { getSpaceListeners } from '../../services/db/spaces.service';
+import { Space, TwitterUser } from '../../types/space.types';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuth';
 import FilterListIcon from '@mui/icons-material/FilterList';

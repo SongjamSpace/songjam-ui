@@ -13,7 +13,7 @@ import {
   IconButton,
 } from '@mui/material';
 import { format } from 'date-fns';
-import { Space, SpaceListener } from '../../services/db/spaces.service';
+import { Space, SpaceListener } from '../../types/space.types';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 import { collection, orderBy, query, limit } from 'firebase/firestore';
 import { db } from '../../services/firebase.service';

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Paper, Typography, Grid } from '@mui/material';
-import { Space } from '../../services/db/spaces.service';
+import { Space } from '../../types/space.types';
 import { format } from 'date-fns';
 import { PeopleAlt, Timer, TrendingUp, Schedule } from '@mui/icons-material';
 

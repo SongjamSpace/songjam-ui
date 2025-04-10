@@ -18,7 +18,7 @@ import {
   TimelineDot,
   TimelineOppositeContent,
 } from '@mui/lab';
-import { Segment } from '../services/db/spaces.service';
+import { Segment } from '../types/space.types';
 import {
   Box,
   Typography,

@@ -10,7 +10,7 @@ import {
   Drawer,
   Skeleton,
 } from '@mui/material';
-import { TwitterUser } from '../../services/db/spaces.service';
+import { TwitterUser } from '../../types/space.types';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import PersonIcon from '@mui/icons-material/Person';
 import MessageIcon from '@mui/icons-material/Message';
@@ -20,7 +20,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import { useEffect, useState } from 'react';
 import { fetchXUserProfile, XUserProfile } from '../../services/x.service';
-import axios from 'axios';
 
 type Props = {
   userDetailDrawer: TwitterUser | null;

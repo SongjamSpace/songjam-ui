@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { User as FirebaseUser } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { auth, db } from '../services/firebase.service';
-import { getUser, SongjamUser } from '../services/db/user.service';
+import { auth } from '../services/firebase.service';
+import { getUser, SongjamUser, createUser } from '../services/db/user.service';
+
 export function useAuth() {
   const [user, setUser] = useState<SongjamUser | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,8 +29,8 @@ export function useAuth() {
             spaceCredits: 1,
             totalUnlockedSpaces: 0,
           };
-
-          await setDoc(doc(db, 'users', firebaseUser.uid), newUser);
+          await createUser(firebaseUser.uid, newUser);
+          // await setDoc(doc(db, 'users', firebaseUser.uid), newUser);
           setUser(newUser);
         }
       } else {

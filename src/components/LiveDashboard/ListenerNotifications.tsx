@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Box, Paper, Typography, Avatar, IconButton } from '@mui/material';
-import { SpaceListener } from '../../services/db/spaces.service';
+import { SpaceListener } from '../../types/space.types';
 import { Person } from '@mui/icons-material';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';

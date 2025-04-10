@@ -19,15 +19,12 @@ import {
   CircularProgress,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { LoadingButton } from '@mui/lab';
 import { submitToAirtable } from './services/airtable.service';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 import { collection, query, where, limit } from 'firebase/firestore';
 import { db } from './services/firebase.service';
-import { transcribeSpace } from './services/transcription.service';
-import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 
 export default function App() {
@@ -48,7 +45,7 @@ export default function App() {
   const handleAnalyze = async (url: string) => {
     if (isLoading || !url.trim()) return;
     setIsLoading(true);
-    // const spaceId = url.split('/').pop();
+    const spaceId = url.split('/').pop()?.trim();
     // const res = await axios.get(
     //   `${import.meta.env.VITE_JAM_SERVER_URL}/get-space/${spaceId}`
     // );
@@ -76,7 +73,7 @@ export default function App() {
     // }
 
     // Navigate directly to the dashboard for now
-    navigate('/dashboard');
+    navigate(`/dashboard?spaceId=${spaceId}`);
     // We might want to pass the URL or spaceId as state or query param later
     // navigate('/dashboard', { state: { initialUrl: url } });
 

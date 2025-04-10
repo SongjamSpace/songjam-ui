@@ -8,7 +8,7 @@ import React, {
 // @ts-ignore
 import ForceGraph2D from 'react-force-graph-2d';
 import { Box, CircularProgress, Typography } from '@mui/material';
-import { SpaceListener } from '../../services/db/spaces.service';
+import { SpaceListener } from '../../types/space.types';
 
 interface ListenerVisualizerProps {
   listeners: SpaceListener[];

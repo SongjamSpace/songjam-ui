@@ -1,13 +1,13 @@
 import axios from 'axios';
 import { getSpace } from './db/spaces.service';
 
-export const transcribeSpace = async (spaceUrl: string) => {
+export const transcribeSpace = async (spaceId: string) => {
   // Extract space ID from URL
-  const spaceId = spaceUrl.split('/').pop();
+  // const spaceId = spaceUrl.split('/').pop();
 
-  if (!spaceId) {
-    throw new Error('Invalid space URL');
-  }
+  // if (!spaceId) {
+  //   throw new Error('Invalid space URL');
+  // }
 
   // Check if space already exists
   const space = await getSpace(spaceId);

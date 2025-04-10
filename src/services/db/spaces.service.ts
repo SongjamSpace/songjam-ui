@@ -1,4 +1,5 @@
 import {
+  arrayUnion,
   collection,
   doc,
   getDoc,
@@ -7,127 +8,27 @@ import {
   onSnapshot,
   orderBy,
   query,
+  setDoc,
+  updateDoc,
 } from 'firebase/firestore';
 import { db, storage } from '../firebase.service';
 import { getDownloadURL } from 'firebase/storage';
 import { ref } from 'firebase/storage';
+import axios from 'axios';
+import { AudioSpace, Space, SpaceListener } from '../../types/space.types';
 
-export type TwitterUser = {
-  userId: string;
-  displayName: string;
-  twitterScreenName: string;
-  avatarUrl: string;
-  isVerified: boolean;
-  admin?: boolean;
-  speaker?: boolean;
-  listener?: boolean;
-};
-export type SpaceListener = TwitterUser & {
-  joinedAt: number;
-  leftAt: number | null;
-  timeSpent: number | null;
-};
-
-export type Segment = {
-  start: number;
-  text: string;
-  end: number;
-  seek: number;
-  no_speech_prob: number;
-};
-export type Space = {
-  transcriptionStatus:
-    | 'NOT_STARTED'
-    | 'STARTED'
-    | 'PROCESSING'
-    | 'FAILED'
-    | 'SHORT_ENDED'
-    | 'ENDED';
-  isLive?: boolean;
-  isRecorded?: boolean;
-  isScheduled?: boolean;
-  spaceId: string;
-  userHelperMessage?: string;
-  // Space details
-  hlsUrl: string;
-  title: string;
-  state: string;
-  mediaKey: string;
-  createdAt: number;
-  startedAt: number;
-  endedAt: number;
-  contentType: string;
-  isSpaceAvailableForReplay: boolean;
-  isSpaceAvailableForClipping: boolean;
-  totalReplayWatched: number;
-  totalLiveListeners: number;
-  tweetId: string | any;
-  admins: TwitterUser[];
-  speakers: TwitterUser[];
-  isLiveListenersSyncing?: boolean;
-  liveListenersCount?: number;
-
-  docCreatedAt?: number;
-  transcriptionProgress?: TranscriptionProgress;
-};
-
-export enum TranscriptionProgress {
-  NOT_STARTED = 0,
-  DOWNLOADING_AUDIO = 1,
-  TRANSCRIBING_STARTED = 2,
-  TRANSCRIBING = 3,
-  SUMMARIZING = 4,
-  AI_SUMMARY = 5,
-  ENDED = 6,
-}
-
-// Add API status tracking
-export const XApiStatus = {
-  READY: 'ready',
-  RATE_LIMITED: 'rate_limited',
-  ERROR: 'error',
-  UNAUTHORIZED: 'unauthorized',
-};
-
-let currentApiStatus = XApiStatus.READY;
-let lastApiError: Error | null = null;
-
-// Add error handling wrapper
-const handleXApiRequest = async <T>(
-  requestFn: () => Promise<T>,
-  retryCount = 3
-): Promise<T> => {
-  try {
-    const response = await requestFn();
-    currentApiStatus = XApiStatus.READY;
-    lastApiError = null;
-    return response;
-  } catch (error: any) {
-    if (error.status === 429) {
-      currentApiStatus = XApiStatus.RATE_LIMITED;
-      const retryAfter = parseInt(error.headers?.['retry-after'] || '60');
-      if (retryCount > 0) {
-        await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000));
-        return handleXApiRequest(requestFn, retryCount - 1);
-      }
-    } else if (error.status === 401) {
-      currentApiStatus = XApiStatus.UNAUTHORIZED;
-      // Trigger re-authentication
-      window.dispatchEvent(new CustomEvent('x-api-unauthorized'));
-    } else {
-      currentApiStatus = XApiStatus.ERROR;
-    }
-    lastApiError = error;
-    throw error;
-  }
-};
+const SPACE_COLLECTION = 'spaces';
+const SUMMARY_SUBCOLLECTION = 'summaries';
+const SEGMENTS_SUBCOLLECTION = 'segments';
+const TWITTER_THREADS_SUBCOLLECTION = 'twitter_threads';
+const LISTENER_LOGS_SUBCOLLECTION = 'listenerLogs';
 
 // Modify getSpace to handle null case properly
 export const getSpace = async (
   spaceId: string,
   onUpdate?: (space: Space) => void
 ): Promise<Space | null> => {
-  const docRef = doc(db, 'spaces', spaceId);
+  const docRef = doc(db, SPACE_COLLECTION, spaceId);
   const docSnap = await getDoc(docRef);
 
   if (docSnap.exists()) {
@@ -142,22 +43,10 @@ export const getSpace = async (
   return null;
 };
 
-// Add API status monitoring
-export const getXApiStatus = () => ({
-  status: currentApiStatus,
-  lastError: lastApiError,
-});
-
-// Add token refresh handling
-export const refreshXApiToken = async () => {
-  // Implement token refresh logic
-};
-
-const SUMMARY_SUBCOLLECTION = 'summaries';
 export const getSummary = async (spaceId: string) => {
   const docRef = doc(
     db,
-    'spaces',
+    SPACE_COLLECTION,
     spaceId,
     SUMMARY_SUBCOLLECTION,
     'final_summary'
@@ -167,13 +56,25 @@ export const getSummary = async (spaceId: string) => {
 };
 
 export const getDetailedSummary = async (spaceId: string) => {
-  const docRef = doc(db, 'spaces', spaceId, SUMMARY_SUBCOLLECTION, 'meta');
+  const docRef = doc(
+    db,
+    SPACE_COLLECTION,
+    spaceId,
+    SUMMARY_SUBCOLLECTION,
+    'meta'
+  );
   const docSnap = await getDoc(docRef);
   return docSnap.data()?.first_level_summaries;
 };
 
 export const getFirstLevelSummaries = async (spaceId: string) => {
-  const docRef = doc(db, 'spaces', spaceId, SUMMARY_SUBCOLLECTION, 'meta');
+  const docRef = doc(
+    db,
+    SPACE_COLLECTION,
+    spaceId,
+    SUMMARY_SUBCOLLECTION,
+    'meta'
+  );
   const docSnap = await getDoc(docRef);
   return docSnap.data()?.first_level_summaries;
 };
@@ -181,7 +82,7 @@ export const getFirstLevelSummaries = async (spaceId: string) => {
 export const getFullTranscription = async (spaceId: string) => {
   const docRef = doc(
     db,
-    'spaces',
+    SPACE_COLLECTION,
     spaceId,
     SUMMARY_SUBCOLLECTION,
     'full_transcript'
@@ -189,10 +90,9 @@ export const getFullTranscription = async (spaceId: string) => {
   const docSnap = await getDoc(docRef);
   return docSnap.data()?.text;
 };
-
 export const getSegments = async (spaceId: string) => {
   const colRef = query(
-    collection(db, 'spaces', spaceId, 'segments'),
+    collection(db, SPACE_COLLECTION, spaceId, SEGMENTS_SUBCOLLECTION),
     orderBy('idx', 'asc'),
     limit(20)
   );
@@ -201,7 +101,13 @@ export const getSegments = async (spaceId: string) => {
 };
 
 export const getTwitterThread = async (spaceId: string) => {
-  const docRef = doc(db, 'spaces', spaceId, 'twitter_threads', 'v1');
+  const docRef = doc(
+    db,
+    SPACE_COLLECTION,
+    spaceId,
+    TWITTER_THREADS_SUBCOLLECTION,
+    'v1'
+  );
   const docSnap = await getDoc(docRef);
   return docSnap.data()?.thread;
 };
@@ -214,9 +120,23 @@ export const getSpaceAudioDownloadUrl = async (spaceId: string) => {
 
 export const getSpaceListeners = async (spaceId: string) => {
   const colRef = query(
-    collection(db, 'spaces', spaceId, 'listenerLogs'),
+    collection(db, SPACE_COLLECTION, spaceId, LISTENER_LOGS_SUBCOLLECTION),
     orderBy('joinedAt', 'asc')
   );
   const snapshot = await getDocs(colRef);
   return snapshot.docs.map((doc) => doc.data() as SpaceListener);
+};
+
+export const getRawSpaceFromX = async (spaceId: string) => {
+  const res = await axios.get(
+    `${import.meta.env.VITE_JAM_SERVER_URL}/get-space/${spaceId}`
+  );
+  return res.data.result as AudioSpace;
+};
+
+export const updateAgentToSpace = async (spaceId: string, agentId: string) => {
+  const docRef = doc(db, SPACE_COLLECTION, spaceId);
+  await updateDoc(docRef, {
+    agentIds: arrayUnion(agentId),
+  });
 };

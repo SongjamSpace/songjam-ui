@@ -93,7 +93,6 @@ export default function Dashboard() {
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [agentOrg, setAgentOrg] = useState<AgentOrgDoc | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
   const [showAgentSettings, setShowAgentSettings] = useState(false);
   // const [scheduledSpaces, loadingScheduled, errorScheduled] = useCollectionData(query(collection(db, 'spaces'), where('state', '==', 'Scheduled')))
   // const [liveSpaces, loadingLive, errorLive] = useCollectionData(query(collection(db, 'spaces'), where('state', '==', 'Running')))
@@ -104,7 +103,7 @@ export default function Dashboard() {
     )
   );
   const scheduledSpaces =
-    agentSpaces?.filter((space) => space.state === 'Scheduled') ||
+    agentSpaces?.filter((space) => space.state === 'NotStarted') ||
     ([] as Space[]);
   const liveSpaces =
     agentSpaces?.filter((space) => space.state === 'Running') ||
@@ -120,11 +119,11 @@ export default function Dashboard() {
 
   const analyzeSpace = async (spaceId: string) => {
     setIsLoading(true);
-    if (agentOrg) {
-      await updateSpaceToAgent(spaceId, agentOrg.id);
-    }
     const spaceDoc = await getSpace(spaceId);
     if (spaceDoc) {
+      if (agentOrg) {
+        await updateSpaceToAgent(spaceId, agentOrg.id);
+      }
       if (spaceDoc.state === 'Ended') {
         navigate(`/crm/${spaceId}`);
       } else if (spaceDoc.state === 'Running') {
@@ -147,7 +146,15 @@ export default function Dashboard() {
           { spaceId }
         );
         navigate(`/live/${spaceId}`);
-      } // TODO: Add handling for 'Scheduled' state if needed later
+      } else if (state === 'NotStarted') {
+        await axios.post(
+          `${import.meta.env.VITE_JAM_SERVER_URL}/schedule-space`,
+          { spaceId, agentId: agentOrg?.id }
+        );
+        toast.success('Space is scheduled successfully', {
+          duration: 3000,
+        });
+      }
     } else {
       toast.error('Error analyzing space, please try again', {
         duration: 3000,
@@ -340,7 +347,7 @@ export default function Dashboard() {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <GroupIcon fontSize="inherit" sx={{ mr: 0.5 }} />
                     Speakers:
-                    {space.speakers
+                    {[...space.admins, ...space.speakers]
                       ?.map((speaker) => speaker.displayName)
                       .join(', ') || 'N/A'}
                   </Box>
@@ -439,7 +446,7 @@ export default function Dashboard() {
       <Box sx={{ p: 2 }}>
         {spaces.map((space) => (
           <Box key={space.spaceId} sx={{ mb: 3 }}>
-            <Typography
+            {/* <Typography
               variant="h6"
               sx={{
                 color: 'var(--primary-color)',
@@ -452,7 +459,7 @@ export default function Dashboard() {
               }}
             >
               <EventIcon fontSize="small" /> {space.scheduledStart}
-            </Typography>
+            </Typography> */}
             <List sx={{ p: 0 }}>
               {spaces.map((space) => (
                 <ListItemButton
@@ -503,6 +510,7 @@ export default function Dashboard() {
                           ).toLocaleTimeString([], {
                             hour: 'numeric',
                             minute: '2-digit',
+                            hour12: true,
                           })}
                         </Box>
                         <Box
@@ -513,7 +521,10 @@ export default function Dashboard() {
                           }}
                         >
                           <GroupIcon fontSize="inherit" sx={{ mr: 0.5 }} />
-                          Speakers: {space.speakers?.join(', ') || 'N/A'}
+                          Speakers:{' '}
+                          {[...space.admins, ...space.speakers]
+                            .map((speaker) => speaker.displayName)
+                            .join(', ') || 'N/A'}
                         </Box>
                       </Box>
                     }

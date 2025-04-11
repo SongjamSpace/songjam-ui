@@ -56,6 +56,7 @@ export type Space = {
   scheduledStart?: number;
   docCreatedAt?: number;
   transcriptionProgress?: TranscriptionProgress;
+  agentIds?: string[];
 };
 
 export enum TranscriptionProgress {

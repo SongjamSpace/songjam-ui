@@ -16,6 +16,8 @@ import {
   IconButton,
   Divider,
   Grid,
+  AppBar,
+  Toolbar,
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import { useTranslation } from 'react-i18next';
@@ -30,7 +32,8 @@ import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import WhatshotIcon from '@mui/icons-material/Whatshot';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import EventIcon from '@mui/icons-material/Event';
-// TODO: Import services and types needed for fetching/displaying spaces
+import SettingsIcon from '@mui/icons-material/Settings';
+import Logo from './Logo';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -153,6 +156,12 @@ export default function Dashboard() {
   const [spaceUrl, setSpaceUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   // TODO: Add state for live, completed, scheduled spaces and loading/error states for each
+
+  const liveSpaces = dummyLiveSpaces;
+  const completedSpaces = dummyCompletedSpaces;
+  const scheduledSpaces = dummyScheduledSpaces;
+  const loading = false;
+  const error = null;
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
@@ -532,12 +541,63 @@ export default function Dashboard() {
   };
 
   return (
-    <Box sx={{ position: 'relative', minHeight: '100vh' }}>
+    <Box
+      sx={{
+        position: 'relative',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       <Background />
+
+      {/* Header AppBar */}
+      <AppBar
+        position="static"
+        elevation={0}
+        sx={{
+          background: 'transparent',
+          backdropFilter: 'blur(10px)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+          zIndex: 10,
+        }}
+      >
+        <Toolbar sx={{ justifyContent: 'space-between' }}>
+          {/* Logo and Title */}
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              cursor: 'pointer',
+            }}
+            onClick={() => navigate('/')}
+          >
+            <Logo />
+            <Typography
+              variant="h6"
+              sx={{ color: 'var(--text-primary)', fontWeight: 'bold' }}
+            >
+              Songjam
+            </Typography>
+          </Box>
+
+          {/* Settings Button */}
+          <IconButton
+            onClick={() => toast('Settings clicked (placeholder)!')}
+            sx={{ color: 'var(--text-secondary)' }}
+          >
+            <SettingsIcon />
+          </IconButton>
+        </Toolbar>
+      </AppBar>
+
+      {/* Main Content Container - Adjust pt to account for AppBar height */}
       <Container
         maxWidth="lg"
-        sx={{ pt: 4, pb: 4, position: 'relative', zIndex: 1 }}
+        sx={{ pt: 3, pb: 4, position: 'relative', zIndex: 1, flexGrow: 1 }}
       >
+        {/* Title below AppBar */}
         <Typography
           variant="h4"
           component="h1"
@@ -547,6 +607,7 @@ export default function Dashboard() {
           {t('dashboardTitle', 'My Spaces Dashboard')}
         </Typography>
 
+        {/* Add Space Section */}
         <Paper
           sx={{
             mb: 4,
@@ -637,6 +698,7 @@ export default function Dashboard() {
           </Box>
         </Paper>
 
+        {/* Tabs Section */}
         <Paper
           sx={{
             width: '100%',
@@ -687,13 +749,13 @@ export default function Dashboard() {
             </Tabs>
           </Box>
           <TabPanel value={value} index={0}>
-            {renderScheduledList(dummyScheduledSpaces, false, null)}
+            {renderScheduledList(scheduledSpaces, loading, error)}
           </TabPanel>
           <TabPanel value={value} index={1}>
-            {renderSpaceList(dummyLiveSpaces, false, null, 'Live')}
+            {renderSpaceList(liveSpaces, loading, error, 'Live')}
           </TabPanel>
           <TabPanel value={value} index={2}>
-            {renderSpaceList(dummyCompletedSpaces, false, null, 'Completed')}
+            {renderSpaceList(completedSpaces, loading, error, 'Completed')}
           </TabPanel>
         </Paper>
       </Container>

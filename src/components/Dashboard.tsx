@@ -825,7 +825,7 @@ export default function Dashboard() {
           <TabPanel value={value} index={1}>
             {renderSpaceList(
               liveSpaces as Space[],
-              loadingAgentSpaces,
+              loadingAgentSpaces || loading,
               errorAgentSpaces as Error | null,
               'Live'
             )}
@@ -833,7 +833,7 @@ export default function Dashboard() {
           <TabPanel value={value} index={2}>
             {renderSpaceList(
               completedSpaces as Space[],
-              loadingAgentSpaces,
+              loadingAgentSpaces || loading,
               errorAgentSpaces as Error | null,
               'Completed'
             )}

@@ -675,25 +675,25 @@ export default function Dashboard() {
                 },
               }}
             >
-              <Tab label={t('liveSpacesTab', 'Live Now')} {...a11yProps(0)} />
-              <Tab
-                label={t('completedSpacesTab', 'Completed')}
-                {...a11yProps(1)}
-              />
               <Tab
                 label={t('scheduledSpacesTab', 'Scheduled')}
+                {...a11yProps(0)}
+              />
+              <Tab label={t('liveSpacesTab', 'Live Now')} {...a11yProps(1)} />
+              <Tab
+                label={t('completedSpacesTab', 'Completed')}
                 {...a11yProps(2)}
               />
             </Tabs>
           </Box>
           <TabPanel value={value} index={0}>
-            {renderSpaceList(dummyLiveSpaces, false, null, 'Live')}
+            {renderScheduledList(dummyScheduledSpaces, false, null)}
           </TabPanel>
           <TabPanel value={value} index={1}>
-            {renderSpaceList(dummyCompletedSpaces, false, null, 'Completed')}
+            {renderSpaceList(dummyLiveSpaces, false, null, 'Live')}
           </TabPanel>
           <TabPanel value={value} index={2}>
-            {renderScheduledList(dummyScheduledSpaces, false, null)}
+            {renderSpaceList(dummyCompletedSpaces, false, null, 'Completed')}
           </TabPanel>
         </Paper>
       </Container>

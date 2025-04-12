@@ -124,7 +124,7 @@ export default function Dashboard() {
     setIsLoading(true);
     const spaceDoc = await getSpace(spaceId);
     if (spaceDoc) {
-      if (agentOrg) {
+      if (agentOrg && !spaceDoc.agentIds?.includes(agentOrg.id)) {
         await updateSpaceToAgent(spaceId, agentOrg.id);
       }
       if (spaceDoc.state === 'Ended') {

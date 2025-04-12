@@ -9,6 +9,7 @@ import theme from './theme';
 import { AuthProvider } from './contexts/AuthContext';
 import LiveDashboardContainer from './components/LiveDashboard/LiveDashboardContainer';
 import './i18n';
+import Dashboard from './components/Dashboard';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
@@ -26,10 +27,8 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
                   </AuthProvider>
                 }
               /> */}
-              <Route
-                path="/crm/:spaceId"
-                element={<SpaceCRM />}
-              />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/crm/:spaceId" element={<SpaceCRM />} />
               <Route
                 path="/live/:spaceId"
                 element={<LiveDashboardContainer />}

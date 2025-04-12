@@ -56,7 +56,6 @@ import Logo from './components/Logo';
 import TwitterLogin from './components/TwitterLogin';
 import { AI_MODELS, generateContent } from './services/ai.service';
 import { getFullTranscription } from './services/db/spaces.service';
-import SpaceAnalysis from './components/SpaceCRM/SpaceAnalysis';
 import SegmentsTimeline from './components/SegmentsTimeline';
 import AlgoliaSearchTranscription from './components/AlgoliaSearchTranscription';
 import { getSpaceAudioDownloadUrl } from './services/db/spaces.service';
@@ -69,7 +68,7 @@ type CRMTab =
   | 'content'
   | 'timeline'
   | 'transcription'
-  | 'analysis';
+  | 'listenerRetention';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -131,10 +130,6 @@ const SpaceCRM: React.FC = () => {
   const [isDownloading, setIsDownloading] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(!user);
   const [isSpaceOwner, setIsSpaceOwner] = useState(false);
-
-  // Calculate disabled state for Analysis tab
-  const isAnalysisDisabled =
-    (space?.transcriptionProgress || 0) !== TranscriptionProgress.ENDED;
 
   useEffect(() => {
     if (user && space) {
@@ -208,18 +203,6 @@ const SpaceCRM: React.FC = () => {
     setActiveTab(newValue);
   };
 
-  const handleModelChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setSelectedModel(event.target.value as string);
-  };
-
-  const handleAnalysisContextUpdate = useCallback(
-    (context: VisualizationContext | null) => {
-      setAnalysisContext(context);
-      console.log('SpaceCRM received analysis context:', context);
-    },
-    []
-  );
-
   const handleRetentionContextUpdate = useCallback(
     (context: RetentionContext | null) => {
       setRetentionContext(context);
@@ -258,7 +241,7 @@ const SpaceCRM: React.FC = () => {
         }
       }
 
-      if (activeTab === 'analysis' && retentionContext) {
+      if (activeTab === 'listenerRetention' && retentionContext) {
         const { averageListenTimeSeconds, chartData } = retentionContext;
         let retentionSummary =
           '\n\n--- Current Listener Retention Analysis ---';
@@ -691,14 +674,13 @@ const SpaceCRM: React.FC = () => {
                     value="transcription"
                   />
                   <Tab
-                    disabled={isAnalysisDisabled}
                     icon={<InsightsIcon />}
                     label={
                       <Box
                         component="span"
                         sx={{ display: 'flex', alignItems: 'center' }}
                       >
-                        {t('analysisTab')}
+                        {t('listenerRetentionTab')}
                         <Chip
                           size="small"
                           label={t('pro')}
@@ -813,9 +795,8 @@ const SpaceCRM: React.FC = () => {
                   <Tab icon={<ForumIcon />} value="timeline" />
                   <Tab icon={<DescriptionIcon />} value="transcription" />
                   <Tab
-                    disabled={isAnalysisDisabled}
                     icon={<InsightsIcon />}
-                    label={t('analysisTab')}
+                    label={t('listenerRetentionTab')}
                     value="analysis"
                   />
                 </Tabs>
@@ -912,7 +893,7 @@ const SpaceCRM: React.FC = () => {
                     </Box>
                   )}
 
-                  {activeTab === 'analysis' && (
+                  {activeTab === 'listenerRetention' && (
                     <ListenerRetentionChart
                       spaceId={spaceId}
                       startedAt={space?.startedAt}
@@ -1420,9 +1401,8 @@ const SpaceCRM: React.FC = () => {
                 value="transcription"
               />
               <Tab
-                disabled={isAnalysisDisabled}
                 icon={<InsightsIcon />}
-                label={t('analysisTab')}
+                label={t('listenerRetentionTab')}
                 value="analysis"
               />
             </Tabs>

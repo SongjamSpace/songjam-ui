@@ -47,34 +47,43 @@ export default function App() {
 
   const handleAnalyze = async (url: string) => {
     if (isLoading || !url.trim()) return;
-    setIsLoading(true);
+    // setIsLoading(true);
     const spaceId = url.split('/').pop();
-    const res = await axios.get(
-      `${import.meta.env.VITE_JAM_SERVER_URL}/get-space/${spaceId}`
-    );
-    if (res.data.result) {
-      const state = res.data.result.metadata.state;
-      if (state === 'Ended') {
-        const path = await transcribeSpace(url);
-        navigate(path);
-      } else if (state === 'Running') {
-        const res = await axios.post(
-          `${import.meta.env.VITE_JAM_SERVER_URL}/listen-live-space`,
-          { spaceId }
-        );
-        navigate(`/live/${spaceId}`);
-      }
-    } else {
-      toast.error('Error analyzing space, please try again', {
+    if (!spaceId) {
+      toast.error('Invalid space URL', {
         duration: 3000,
         position: 'bottom-right',
-        style: {
-          background: '#333',
-          color: '#fff',
-        },
       });
+      return;
     }
-    setIsLoading(false);
+    navigate(`/dashboard?spaceId=${spaceId}`);
+    // const res = await axios.get(
+    //   `${import.meta.env.VITE_JAM_SERVER_URL}/get-space/${spaceId}`
+    // );
+    // if (res.data.result) {
+    //   const state = res.data.result.metadata.state;
+    //   if (state === 'Ended') {
+    //     const path = await transcribeSpace(url);
+    //     navigate(path);
+    //   } else if (state === 'Running') {
+    //     const res = await axios.post(
+    //       `${import.meta.env.VITE_JAM_SERVER_URL}/listen-live-space`,
+    //       { spaceId }
+    //     );
+    //     navigate(`/live/${spaceId}`);
+    //   }
+    // } else {
+    //   toast.error('Error analyzing space, please try again', {
+    //     duration: 3000,
+    //     position: 'bottom-right',
+    //     style: {
+    //       background: '#333',
+    //       color: '#fff',
+    //     },
+    //   });
+    // }
+
+    // setIsLoading(false);
   };
 
   const handleLanguageChange = () => {

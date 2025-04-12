@@ -447,125 +447,104 @@ export default function Dashboard() {
 
     return (
       <Box sx={{ p: 2 }}>
-        {spaces.map((space) => (
-          <Box key={space.spaceId} sx={{ mb: 3 }}>
-            {/* <Typography
-              variant="h6"
+        <List sx={{ p: 0 }}>
+          {spaces.map((space) => (
+            <ListItemButton
+              key={space.spaceId}
               sx={{
-                color: 'var(--primary-color)',
-                mb: 1.5,
-                pl: 1,
-                borderLeft: `3px solid var(--primary-color)`,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
+                mb: 1,
+                borderRadius: 1,
+                bgcolor: 'rgba(255, 255, 255, 0.05)',
+                '&:hover': {
+                  bgcolor: 'rgba(255, 255, 255, 0.1)',
+                },
+                p: 2,
+                alignItems: 'flex-start',
               }}
+              // Add onClick for scheduled items if needed (e.g., show details modal)
             >
-              <EventIcon fontSize="small" /> {space.scheduledStart}
-            </Typography> */}
-            <List sx={{ p: 0 }}>
-              {spaces.map((space) => (
-                <ListItemButton
-                  key={space.spaceId}
-                  sx={{
-                    mb: 1,
-                    borderRadius: 1,
-                    bgcolor: 'rgba(255, 255, 255, 0.05)',
-                    '&:hover': {
-                      bgcolor: 'rgba(255, 255, 255, 0.1)',
-                    },
-                    p: 2,
-                    alignItems: 'flex-start',
-                  }}
-                  // Add onClick for scheduled items if needed (e.g., show details modal)
-                >
-                  <ListItemText
-                    primary={space.title || `Space ${space.spaceId}`}
-                    primaryTypographyProps={{
-                      color: 'var(--text-primary)',
-                      fontWeight: '500',
-                      mb: 1,
-                    }}
-                    secondaryTypographyProps={{
-                      component: 'div',
-                      color: 'var(--text-secondary)',
-                      fontSize: '0.85rem',
-                    }}
-                    secondary={
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: 0.5,
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 0.5,
-                          }}
-                        >
-                          <EventIcon fontSize="inherit" sx={{ mr: 0.5 }} />
-                          Scheduled:{' '}
-                          {new Date(
-                            space.scheduledStart || 0
-                          ).toLocaleTimeString([], {
-                            hour: 'numeric',
-                            minute: '2-digit',
-                            hour12: true,
-                          })}
-                        </Box>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 0.5,
-                          }}
-                        >
-                          <GroupIcon fontSize="inherit" sx={{ mr: 0.5 }} />
-                          Speakers:{' '}
-                          {[...space.admins, ...space.speakers]
-                            .map((speaker) => speaker.displayName)
-                            .join(', ') || 'N/A'}
-                        </Box>
-                      </Box>
-                    }
-                  />
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={<NotificationsActiveIcon />}
-                    onClick={(e) => {
-                      e.stopPropagation(); // Prevent ListItemButton click
-                      toast.success(
-                        'Notification preference saved (placeholder)!'
-                      );
-                      // TODO: Implement actual notification logic
-                    }}
+              <ListItemText
+                primary={space.title || `Space ${space.spaceId}`}
+                primaryTypographyProps={{
+                  color: 'var(--text-primary)',
+                  fontWeight: '500',
+                  mb: 1,
+                }}
+                secondaryTypographyProps={{
+                  component: 'div',
+                  color: 'var(--text-secondary)',
+                  fontSize: '0.85rem',
+                }}
+                secondary={
+                  <Box
                     sx={{
-                      ml: 2,
-                      alignSelf: 'center', // Center button vertically
-                      color: 'var(--text-secondary)',
-                      borderColor: 'var(--text-secondary)',
-                      fontSize: '0.75rem',
-                      padding: '2px 8px',
-                      '&:hover': {
-                        borderColor: 'white',
-                        color: 'white',
-                        bgcolor: 'rgba(255, 255, 255, 0.1)',
-                      },
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 0.5,
                     }}
                   >
-                    Notify Me
-                  </Button>
-                </ListItemButton>
-              ))}
-            </List>
-            {/* Add divider between dates, except for the last one */}
-            {/* {index < sortedDates.length - 1 && <Divider sx={{ my: 2, borderColor: 'rgba(255, 255, 255, 0.1)' }} />} */}
-          </Box>
-        ))}
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.5,
+                      }}
+                    >
+                      <EventIcon fontSize="inherit" sx={{ mr: 0.5 }} />
+                      Scheduled:{' '}
+                      {new Date(space.scheduledStart || 0).toLocaleTimeString(
+                        [],
+                        {
+                          hour: 'numeric',
+                          minute: '2-digit',
+                          hour12: true,
+                        }
+                      )}
+                    </Box>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.5,
+                      }}
+                    >
+                      <GroupIcon fontSize="inherit" sx={{ mr: 0.5 }} />
+                      Speakers:{' '}
+                      {[...space.admins, ...space.speakers]
+                        .map((speaker) => speaker.displayName)
+                        .join(', ') || 'N/A'}
+                    </Box>
+                  </Box>
+                }
+              />
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<NotificationsActiveIcon />}
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent ListItemButton click
+                  toast.success('Notification preference saved (placeholder)!');
+                  // TODO: Implement actual notification logic
+                }}
+                sx={{
+                  ml: 2,
+                  alignSelf: 'center', // Center button vertically
+                  color: 'var(--text-secondary)',
+                  borderColor: 'var(--text-secondary)',
+                  fontSize: '0.75rem',
+                  padding: '2px 8px',
+                  '&:hover': {
+                    borderColor: 'white',
+                    color: 'white',
+                    bgcolor: 'rgba(255, 255, 255, 0.1)',
+                  },
+                }}
+              >
+                Notify Me
+              </Button>
+            </ListItemButton>
+          ))}
+        </List>
       </Box>
     );
   };

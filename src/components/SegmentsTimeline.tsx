@@ -1,4 +1,3 @@
-import { useCollectionData } from 'react-firebase-hooks/firestore';
 import { db } from '../services/firebase.service';
 import {
   collection,
@@ -19,14 +18,7 @@ import {
   TimelineOppositeContent,
 } from '@mui/lab';
 import { Segment } from '../services/db/spaces.service';
-import {
-  Box,
-  Typography,
-  Skeleton,
-  CircularProgress,
-  Stack,
-  Button,
-} from '@mui/material';
+import { Box, Typography, Skeleton, CircularProgress } from '@mui/material';
 import { formatSeconds } from '../utils';
 import { PaywallOverlay } from './PaywallOverlay';
 import { useState, useEffect } from 'react';

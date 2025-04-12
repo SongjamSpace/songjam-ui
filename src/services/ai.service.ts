@@ -1,5 +1,3 @@
-import axios from 'axios';
-
 export interface AIModel {
   id: string;
   name: string;
@@ -74,11 +72,6 @@ export const generateContent = async (
     };
   }
 };
-
-const RETRY_DELAY = 2000; // 2 seconds
-const MAX_RETRIES = 3;
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const generateWithGemini = async (
   prompt: string,

@@ -146,7 +146,7 @@ export default function Dashboard() {
       } else if (state === 'Running') {
         await axios.post(
           `${import.meta.env.VITE_JAM_SERVER_URL}/listen-live-space`,
-          { spaceId }
+          { spaceId, agentId: agentOrg?.id }
         );
         navigate(`/live/${spaceId}`);
       } else if (state === 'NotStarted') {

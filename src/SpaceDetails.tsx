@@ -860,6 +860,10 @@ const SpaceDetails: React.FC = () => {
                 handlePayment={handlePayment}
                 processEnded={space.transcriptionStatus === 'ENDED'}
                 refresh={space.transcriptionStatus === 'SHORT_ENDED'}
+                lastVisible={null}
+                setLastVisible={() => {}}
+                segments={[]}
+                setSegments={() => {}}
               />
             )}
           </Paper>
@@ -956,6 +960,9 @@ const SpaceDetails: React.FC = () => {
           <AlgoliaSearchTranscription
             spaceId={space.spaceId}
             title={space.title}
+            onBeforeAction={() => {
+              return true;
+            }}
           />
         )}
       </Box>

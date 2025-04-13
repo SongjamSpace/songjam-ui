@@ -54,11 +54,16 @@ import { getFullTranscription } from '../services/db/spaces.service';
 const TranscriptionDownloadButton: React.FC<{
   spaceId: string;
   title: string;
-}> = ({ spaceId, title }) => {
+  onBeforeAction: () => boolean;
+}> = ({ spaceId, title, onBeforeAction }) => {
   const [isDownloading, setIsDownloading] = useState(false);
   const onDownload = async () => {
     if (isDownloading) return;
     setIsDownloading(true);
+    if (!onBeforeAction()) {
+      setIsDownloading(false);
+      return;
+    }
     const transcription = await getFullTranscription(spaceId);
     const blob = new Blob([transcription], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);

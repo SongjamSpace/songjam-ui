@@ -252,7 +252,7 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
       >
         <Box sx={{ mb: 2 }}>
           <Typography variant="h6">{t('audienceMgmtTitle')}</Typography>
-          <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+          {/* <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
             <IconButton disabled>
               {' '}
               <FilterListIcon />{' '}
@@ -270,7 +270,7 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
                 <MenuItem value="low">{t('lowEngagement')}</MenuItem>
               </Select>
             </FormControl>
-          </Box>
+          </Box> */}
         </Box>
 
         <Tabs

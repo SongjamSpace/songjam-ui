@@ -31,6 +31,10 @@ type Props = {
   handlePayment: () => void;
   processEnded: boolean;
   refresh: boolean;
+  lastVisible: any;
+  setLastVisible: React.Dispatch<React.SetStateAction<any>>;
+  segments: Segment[];
+  setSegments: React.Dispatch<React.SetStateAction<Segment[]>>;
 };
 
 function SegmentsTimeline({
@@ -40,10 +44,12 @@ function SegmentsTimeline({
   isProcessingPayment,
   handlePayment,
   refresh,
+  lastVisible,
+  setLastVisible,
+  segments,
+  setSegments,
 }: Props) {
   const BATCH_SIZE = 50;
-  const [lastVisible, setLastVisible] = useState<any>(null);
-  const [segments, setSegments] = useState<Segment[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -69,7 +75,7 @@ function SegmentsTimeline({
       }));
 
       setLastVisible(snapshot.docs[snapshot.docs.length - 1]);
-      setSegments((prev) =>
+      setSegments((prev: Segment[]) =>
         isInitial ? newSegments : [...prev, ...newSegments]
       );
       setLoading(false);
@@ -80,7 +86,9 @@ function SegmentsTimeline({
   };
 
   useEffect(() => {
-    fetchSegments(true);
+    if (segments.length === 0) {
+      fetchSegments(true);
+    }
   }, [spaceId, hasAccess, processEnded, refresh]);
 
   // Add scroll handler

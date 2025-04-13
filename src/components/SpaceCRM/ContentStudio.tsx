@@ -23,7 +23,7 @@ import {
   ListItem,
 } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import SendIcon from '@mui/icons-material/Send';
+// import SendIcon from '@mui/icons-material/Send';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import SaveIcon from '@mui/icons-material/Save';
 import AddIcon from '@mui/icons-material/Add';
@@ -121,7 +121,9 @@ const CONTENT_TEMPLATES = {
  * This component provides a workspace for creating and refining
  * content for posts, threads, replies, and DMs.
  */
-const ContentStudio: React.FC = () => {
+const ContentStudio: React.FC<{ onBeforeAction: () => boolean }> = ({
+  onBeforeAction,
+}) => {
   const { t } = useTranslation();
   const { spaceId } = useParams<{ spaceId: string }>();
   const [contentType, setContentType] = useState<ContentType>('thread');
@@ -165,6 +167,7 @@ const ContentStudio: React.FC = () => {
 
   const handleGenerate = async () => {
     if (!customPrompt.trim()) return;
+    if (!onBeforeAction()) return;
 
     setIsGenerating(true);
     setError(null);
@@ -176,10 +179,14 @@ const ContentStudio: React.FC = () => {
         const transcription = await getFullTranscription(spaceId);
         if (transcription) {
           const currentLang = i18n.language;
-          context = `You are an AI assistant helping create content for a Twitter Space. Please respond in ${currentLang === 'zh' ? 'Chinese' : 'English'}. Here's the transcription of the space:\n\n${transcription}\n\nPlease help create the following type of content: ${contentType}`;
+          context = `You are an AI assistant helping create content for a Twitter Space. Please respond in ${
+            currentLang === 'zh' ? 'Chinese' : 'English'
+          }. Here's the transcription of the space:\n\n${transcription}\n\nPlease help create the following type of content: ${contentType}`;
         } else {
           const currentLang = i18n.language;
-          context = `You are an AI assistant helping create content for a Twitter Space. Please respond in ${currentLang === 'zh' ? 'Chinese' : 'English'}. Please help create the following type of content: ${contentType}`;
+          context = `You are an AI assistant helping create content for a Twitter Space. Please respond in ${
+            currentLang === 'zh' ? 'Chinese' : 'English'
+          }. Please help create the following type of content: ${contentType}`;
         }
       }
 
@@ -193,10 +200,10 @@ const ContentStudio: React.FC = () => {
       );
 
       if (response.error) {
-        setError(t('aiErrorAlert') + ": " + response.error);
+        setError(t('aiErrorAlert') + ': ' + response.error);
       }
     } catch (error: any) {
-      setError(t('aiFailedError') + ": " + error.message);
+      setError(t('aiFailedError') + ': ' + error.message);
     } finally {
       setIsGenerating(false);
     }
@@ -338,14 +345,25 @@ const ContentStudio: React.FC = () => {
             }}
           >
             <Box
-              sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                mb: 1,
+              }}
             >
               <Typography variant="subtitle1">
                 {t('customPromptTitle')}
               </Typography>
             </Box>
-            <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
-              <HelpOutlineIcon sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }}/>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ mb: 2, display: 'block' }}
+            >
+              <HelpOutlineIcon
+                sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }}
+              />
               {t('promptHelpText')}
             </Typography>
 
@@ -358,14 +376,26 @@ const ContentStudio: React.FC = () => {
               onChange={handleCustomPromptChange}
               sx={{ mb: 2 }}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey && customPrompt.trim() && !isGenerating) {
+                if (
+                  e.key === 'Enter' &&
+                  !e.shiftKey &&
+                  customPrompt.trim() &&
+                  !isGenerating
+                ) {
                   e.preventDefault();
                   handleGenerate();
                 }
               }}
             />
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                mb: 3,
+              }}
+            >
               <FormControl size="small" sx={{ minWidth: 150 }}>
                 <InputLabel>{t('selectModelLabel')}</InputLabel>
                 <Select
@@ -406,8 +436,21 @@ const ContentStudio: React.FC = () => {
               </Alert>
             )}
 
-            <Paper variant="outlined" sx={{ p: 2, mb: 2, minHeight: 200, whiteSpace: 'pre-wrap', bgcolor: 'rgba(0,0,0,0.1)', overflowY: 'auto' }}>
-              {generatedContent || (isGenerating ? t('generatingProgressText') : t('generatedContentPlaceholder'))}
+            <Paper
+              variant="outlined"
+              sx={{
+                p: 2,
+                mb: 2,
+                minHeight: 200,
+                whiteSpace: 'pre-wrap',
+                bgcolor: 'rgba(0,0,0,0.1)',
+                overflowY: 'auto',
+              }}
+            >
+              {generatedContent ||
+                (isGenerating
+                  ? t('generatingProgressText')
+                  : t('generatedContentPlaceholder'))}
             </Paper>
 
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
@@ -436,15 +479,20 @@ const ContentStudio: React.FC = () => {
       <Dialog open={showSaveConfirm} onClose={() => setShowSaveConfirm(false)}>
         <DialogTitle>{t('saveContentPrompt')}</DialogTitle>
         <DialogActions>
-          <Button onClick={() => {
-            setShowSaveConfirm(false);
-          }}>
+          <Button
+            onClick={() => {
+              setShowSaveConfirm(false);
+            }}
+          >
             {t('discardConfirmButton')}
           </Button>
-          <Button onClick={() => {
-            handleSaveContent();
-            setShowSaveConfirm(false);
-          }} autoFocus>
+          <Button
+            onClick={() => {
+              handleSaveContent();
+              setShowSaveConfirm(false);
+            }}
+            autoFocus
+          >
             {t('saveConfirmButton')}
           </Button>
         </DialogActions>

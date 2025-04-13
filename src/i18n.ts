@@ -110,6 +110,7 @@ const crmTranslationsEN = {
   authDialogText:
     'Connect your Twitter account to access Space analytics, audience insights, and AI-powered tools.',
   listenersLabel: 'listeners',
+  noListenerData: 'No listener data available',
 };
 
 const audiencePanelTranslationsEN = {
@@ -319,6 +320,7 @@ const crmTranslationsZH = {
   authDialogText:
     '连接您的 Twitter 帐户以访问空间分析、听众洞察和 AI 驱动的工具。',
   listenersLabel: '听众',
+  noListenerData: '无可用听众数据',
 };
 
 const audiencePanelTranslationsZH = {

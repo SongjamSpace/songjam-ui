@@ -48,6 +48,7 @@ import AudiencePanel from './components/SpaceCRM/AudiencePanel';
 import ContentStudio from './components/SpaceCRM/ContentStudio';
 import {
   getSpace,
+  Segment,
   Space,
   TranscriptionProgress,
 } from './services/db/spaces.service';
@@ -76,32 +77,6 @@ interface ChatMessage {
   timestamp: Date;
 }
 
-interface VisualizationContext {
-  type: 'space_analysis_context';
-  space: {
-    id: string;
-    title: string;
-    speakers: { id: string; name: string; handle: string }[];
-  };
-  analysis: {
-    interactions: any[];
-    topics: any[];
-    currentConfig: any;
-    visualMetrics: {
-      totalNodes: number;
-      totalEdges: number;
-      mostActiveNode?: [string, number];
-      averageInteractions: number;
-      topicCount: number;
-    };
-  };
-  suggestions: string[];
-  visualState: {
-    nodes: any[];
-    edges: any[];
-  };
-}
-
 /**
  * SpaceCRM Component
  *
@@ -123,13 +98,13 @@ const SpaceCRM: React.FC = () => {
   const { user } = useAuthContext();
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const chatContainerRef = useRef<HTMLDivElement>(null);
-  const [analysisContext, setAnalysisContext] =
-    useState<VisualizationContext | null>(null);
   const [retentionContext, setRetentionContext] =
     useState<RetentionContext | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [showAuthDialog, setShowAuthDialog] = useState(!user);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [isSpaceOwner, setIsSpaceOwner] = useState(false);
+  const [lastVisible, setLastVisible] = useState<any>(null);
+  const [segments, setSegments] = useState<Segment[]>([]);
 
   useEffect(() => {
     if (user && space) {
@@ -194,10 +169,10 @@ const SpaceCRM: React.FC = () => {
     }
   }, [chatMessages]); // This will trigger on every new chunk of the AI response
 
-  // Update useEffect to handle dialog visibility when user auth state changes
-  useEffect(() => {
-    setShowAuthDialog(!user);
-  }, [user]);
+  // // Update useEffect to handle dialog visibility when user auth state changes
+  // useEffect(() => {
+  //   setShowAuthDialog(!user);
+  // }, [user]);
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: CRMTab) => {
     setActiveTab(newValue);
@@ -213,6 +188,10 @@ const SpaceCRM: React.FC = () => {
 
   const handlePromptSubmit = async () => {
     if (!aiPrompt.trim()) return;
+    if (!user) {
+      setShowAuthDialog(true);
+      return;
+    }
 
     setIsAiThinking(true);
     setAiError(null);
@@ -306,6 +285,10 @@ const SpaceCRM: React.FC = () => {
 
   const onDownloadRecording = async () => {
     if (!spaceId) return;
+    if (!user) {
+      setShowAuthDialog(true);
+      return;
+    }
     setIsDownloading(true);
     try {
       const audioUrl = await getSpaceAudioDownloadUrl(spaceId);
@@ -507,9 +490,9 @@ const SpaceCRM: React.FC = () => {
             display: 'flex',
             flexDirection: 'column',
             flexGrow: 1,
-            filter: !user ? 'blur(8px)' : 'none',
-            pointerEvents: !user ? 'none' : 'auto',
-            userSelect: !user ? 'none' : 'auto',
+            filter: showAuthDialog ? 'blur(8px)' : 'none',
+            pointerEvents: showAuthDialog ? 'none' : 'auto',
+            userSelect: showAuthDialog ? 'none' : 'auto',
           }}
         >
           <Grid
@@ -694,7 +677,7 @@ const SpaceCRM: React.FC = () => {
                         />
                       </Box>
                     }
-                    value="analysis"
+                    value="listenerRetention"
                   />
                 </Tabs>
 
@@ -797,7 +780,7 @@ const SpaceCRM: React.FC = () => {
                   <Tab
                     icon={<InsightsIcon />}
                     label={t('listenerRetentionTab')}
-                    value="analysis"
+                    value="listenerRetention"
                   />
                 </Tabs>
 
@@ -834,8 +817,17 @@ const SpaceCRM: React.FC = () => {
                     />
                   )}
 
-                  {activeTab === 'content' && <ContentStudio />}
-
+                  {activeTab === 'content' && (
+                    <ContentStudio
+                      onBeforeAction={() => {
+                        if (!user) {
+                          setShowAuthDialog(true);
+                          return false;
+                        }
+                        return true;
+                      }}
+                    />
+                  )}
                   {activeTab === 'timeline' && spaceId && (
                     <Box>
                       <Typography variant="h6" sx={{ mb: 2 }}>
@@ -848,6 +840,10 @@ const SpaceCRM: React.FC = () => {
                         handlePayment={() => {}}
                         processEnded={true}
                         refresh={space?.transcriptionStatus === 'SHORT_ENDED'}
+                        lastVisible={lastVisible}
+                        setLastVisible={setLastVisible}
+                        segments={segments}
+                        setSegments={setSegments}
                       />
                     </Box>
                   )}
@@ -889,6 +885,13 @@ const SpaceCRM: React.FC = () => {
                       <AlgoliaSearchTranscription
                         spaceId={spaceId}
                         title={space?.title || t('transcriptionTab')}
+                        onBeforeAction={() => {
+                          if (!user) {
+                            setShowAuthDialog(true);
+                            return false;
+                          }
+                          return true;
+                        }}
                       />
                     </Box>
                   )}
@@ -1403,7 +1406,7 @@ const SpaceCRM: React.FC = () => {
               <Tab
                 icon={<InsightsIcon />}
                 label={t('listenerRetentionTab')}
-                value="analysis"
+                value="listenerRetention"
               />
             </Tabs>
 
@@ -1495,6 +1498,7 @@ const SpaceCRM: React.FC = () => {
         {/* Authentication Dialog */}
         <Dialog
           open={showAuthDialog}
+          onClose={() => setShowAuthDialog(false)}
           PaperProps={{
             sx: {
               background: 'rgba(30, 41, 59, 0.95)',

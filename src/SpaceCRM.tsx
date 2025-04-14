@@ -382,7 +382,9 @@ const SpaceCRM: React.FC = () => {
               sx={{
                 ml: 1,
                 display: { xs: 'none', sm: 'block' },
-                background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+                background:
+                  'linear-gradient(135deg, var(--gradient-start) 30%, var(--gradient-middle) 60%, var(--gradient-end) 100%)',
+                backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 fontWeight: 'bold',
@@ -416,7 +418,7 @@ const SpaceCRM: React.FC = () => {
         >
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <IconButton
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/dashboard')}
               sx={{
                 mr: 2,
                 background: 'rgba(255, 255, 255, 0.05)',
@@ -683,27 +685,74 @@ const SpaceCRM: React.FC = () => {
 
                 <Divider sx={{ my: 2 }} />
 
-                <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{
+                    mb: 2,
+                    fontWeight: 600,
+                    color: 'primary.main',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                  }}
+                >
+                  <InsightsIcon fontSize="small" />
                   {t('quickStatsTitle')}
                 </Typography>
                 {space ? (
-                  <Box sx={{ mb: 3 }}>
-                    <Typography variant="body2">
-                      {t('attendeesStat')}: {space.totalLiveListeners}
-                    </Typography>
-                    <Typography variant="body2">
-                      {t('durationStat')}:{' '}
-                      {Math.round(
-                        (space.endedAt
-                          ? new Date(space.endedAt).getTime() -
-                            new Date(space.startedAt).getTime()
-                          : 0) / 60000
-                      )}{' '}
-                      {t('minStat')}
-                    </Typography>
-                    {/* <Typography variant="body2">
-                      Selected: {selectedAttendees.length}
-                    </Typography> */}
+                  <Box
+                    sx={{
+                      mb: 3,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 1.5,
+                      '& .stat-item': {
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        p: 1,
+                        borderRadius: 1,
+                        bgcolor: 'rgba(255, 255, 255, 0.05)',
+                        '&:hover': {
+                          bgcolor: 'rgba(255, 255, 255, 0.08)',
+                        },
+                      },
+                    }}
+                  >
+                    <Box className="stat-item">
+                      <PeopleIcon fontSize="small" color="primary" />
+                      <Box>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: 'text.secondary' }}
+                        >
+                          {t('attendeesStat')}
+                        </Typography>
+                        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                          {space.totalLiveListeners}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Box className="stat-item">
+                      <AutorenewIcon fontSize="small" color="primary" />
+                      <Box>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: 'text.secondary' }}
+                        >
+                          {t('durationStat')}
+                        </Typography>
+                        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                          {Math.round(
+                            (space.endedAt
+                              ? new Date(space.endedAt).getTime() -
+                                new Date(space.startedAt).getTime()
+                              : 0) / 60000
+                          )}{' '}
+                          {t('minStat')}
+                        </Typography>
+                      </Box>
+                    </Box>
                   </Box>
                 ) : (
                   <CircularProgress

@@ -103,21 +103,31 @@ export default function App() {
           <Logo />
           <span>Songjam</span>
         </div>
-        <Button
-          onClick={handleLanguageChange}
-          variant="outlined"
-          size="small"
-          sx={{
-            color: 'var(--text-secondary)',
-            borderColor: 'var(--text-secondary)',
-            '&:hover': {
-              borderColor: 'white',
-              color: 'white',
-            },
-          }}
-        >
-          {t('switchLanguage')}
-        </Button>
+        <Box display="flex" gap={2}>
+          <Button
+            onClick={handleLanguageChange}
+            variant="outlined"
+            size="small"
+            sx={{
+              color: 'var(--text-secondary)',
+              borderColor: 'var(--text-secondary)',
+              '&:hover': {
+                borderColor: 'white',
+                color: 'white',
+              },
+            }}
+          >
+            {t('switchLanguage')}
+          </Button>
+          <Button
+            onClick={() => navigate('/dashboard')}
+            variant="contained"
+            size="small"
+            className="primary"
+          >
+            {t('Dashboard')}
+          </Button>
+        </Box>
       </nav>
 
       <section className="hero">

@@ -20,10 +20,14 @@ import {
   Toolbar,
   Skeleton,
   Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'react-hot-toast';
+import { toast, Toaster } from 'react-hot-toast';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import Background from './Background';
@@ -48,6 +52,7 @@ import {
 import AgentSettingsDialog from './AgentSettingsDialog';
 import { updateAgentOrg } from '../services/db/agent.service';
 import {
+  AudioSpace,
   getRawSpaceFromX,
   getSpace,
   Space,
@@ -86,17 +91,141 @@ function a11yProps(index: number) {
   };
 }
 
+const ProcessingDialog = ({
+  open,
+  onClose,
+  space,
+}: {
+  open: boolean;
+  onClose: () => void;
+  space: AudioSpace | null;
+}) => {
+  const { t } = useTranslation();
+
+  const getTitleAndMessage = () => {
+    if (!space) return { title: '', message: '' };
+
+    switch (space.metadata.state) {
+      case 'Running':
+        return {
+          title: t('liveSpaceTitle', 'Live Space'),
+          message: t(
+            'liveSpaceMessage',
+            'Setting up the live Twitter agent and redirecting you shortly.'
+          ),
+        };
+      case 'Ended':
+        return {
+          title: t('recordedSpaceTitle', 'Recorded Space'),
+          message: t(
+            'recordedSpaceMessage',
+            'Retrieving space data and redirecting you shortly.'
+          ),
+        };
+      case 'NotStarted':
+        return {
+          title: t('scheduledSpaceTitle', 'Schedule Space'),
+          message: t(
+            'scheduledSpaceMessage',
+            'We are scheduling the space, please wait.'
+          ),
+        };
+      default:
+        return {
+          title: t('processingSpaceTitle', 'Processing Space'),
+          message: t(
+            'processingSpaceMessage',
+            'We are processing the space and will redirect you shortly.'
+          ),
+        };
+    }
+  };
+
+  const { title, message } = getTitleAndMessage();
+
+  return (
+    <Dialog
+      open={open}
+      onClose={() => {}}
+      PaperProps={{
+        sx: {
+          background: 'rgba(30, 41, 59, 0.95)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          color: 'white',
+          minWidth: { xs: '90%', sm: 400 },
+          maxWidth: 400,
+        },
+      }}
+    >
+      <DialogTitle
+        sx={{
+          textAlign: 'center',
+          background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          fontWeight: 'bold',
+        }}
+      >
+        {title}
+      </DialogTitle>
+      <DialogContent>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 2,
+            py: 2,
+          }}
+        >
+          <CircularProgress size={40} sx={{ color: '#60a5fa' }} />
+          <DialogContentText
+            sx={{
+              color: 'rgba(255, 255, 255, 0.8)',
+              textAlign: 'center',
+            }}
+          >
+            {message}
+          </DialogContentText>
+          {space && (
+            <Box sx={{ width: '100%', mt: 2 }}>
+              <Typography
+                variant="subtitle2"
+                sx={{ color: 'var(--text-secondary)', mb: 1 }}
+              >
+                {t('spaceDetails', 'Space Details')}
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'var(--text-primary)' }}>
+                {space.metadata.title}
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{ color: 'var(--text-secondary)' }}
+              >
+                {new Date(space.metadata.created_at).toLocaleString()}
+              </Typography>
+            </Box>
+          )}
+        </Box>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 export default function Dashboard() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [value, setValue] = useState(0);
   const [spaceUrl, setSpaceUrl] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { user, loading: authLoading } = useAuthContext();
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [agentOrg, setAgentOrg] = useState<AgentOrgDoc | null>(null);
-  const [loading, setLoading] = useState(true);
   const [showAgentSettings, setShowAgentSettings] = useState(false);
+  const [processingSpace, setProcessingSpace] = useState<AudioSpace | null>(
+    null
+  );
   // const [scheduledSpaces, loadingScheduled, errorScheduled] = useCollectionData(query(collection(db, 'spaces'), where('state', '==', 'Scheduled')))
   // const [liveSpaces, loadingLive, errorLive] = useCollectionData(query(collection(db, 'spaces'), where('state', '==', 'Running')))
   const [agentSpaces, loadingAgentSpaces, errorAgentSpaces] = useCollectionData(
@@ -120,12 +249,12 @@ export default function Dashboard() {
     }
   }, [user, authLoading]);
 
-  const analyzeSpace = async (spaceId: string) => {
+  const analyzeSpace = async (spaceId: string, agentOrgId: string) => {
     setIsLoading(true);
     const spaceDoc = await getSpace(spaceId);
     if (spaceDoc) {
-      if (agentOrg && !spaceDoc.agentIds?.includes(agentOrg.id)) {
-        await updateSpaceToAgent(spaceId, agentOrg.id);
+      if (agentOrgId && !spaceDoc.agentIds?.includes(agentOrgId)) {
+        await updateSpaceToAgent(spaceId, agentOrgId);
       }
       if (spaceDoc.state === 'Ended') {
         navigate(`/crm/${spaceId}`);
@@ -138,7 +267,11 @@ export default function Dashboard() {
       return;
     }
     const space = await getRawSpaceFromX(spaceId);
-    if (space) {
+    if (
+      space &&
+      ['Ended', 'Running', 'NotStarted'].includes(space.metadata.state)
+    ) {
+      setProcessingSpace(space);
       const state = space.metadata.state;
       if (state === 'Ended') {
         const path = await transcribeSpace(spaceId);
@@ -146,20 +279,24 @@ export default function Dashboard() {
       } else if (state === 'Running') {
         await axios.post(
           `${import.meta.env.VITE_JAM_SERVER_URL}/listen-live-space`,
-          { spaceId, agentId: agentOrg?.id }
+          { spaceId, agentId: agentOrgId }
         );
         navigate(`/live/${spaceId}`);
       } else if (state === 'NotStarted') {
         await axios.post(
           `${import.meta.env.VITE_JAM_SERVER_URL}/schedule-space`,
-          { spaceId, agentId: agentOrg?.id }
+          { spaceId, agentId: agentOrgId }
         );
         toast.success('Space is scheduled successfully', {
           duration: 3000,
         });
+        setProcessingSpace(null);
       }
     } else {
-      toast.error('Error analyzing space, please try again', {
+      const msg = space
+        ? `Space is not in a valid state: ${space.metadata.state}`
+        : 'Space not found';
+      toast.error(msg, {
         duration: 3000,
         position: 'bottom-right',
         style: {
@@ -168,6 +305,7 @@ export default function Dashboard() {
         },
       });
     }
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -180,14 +318,21 @@ export default function Dashboard() {
           if (agentOrgs.length > 0) {
             setAgentOrg(agentOrgs[0]);
           } else {
-            setShowAgentSettings(true);
+            const newAgentOrg: AgentOrg = {
+              name: `${user.displayName}'s Agent`,
+              createdAt: Date.now(),
+              createdUserId: user.uid,
+              authorizedUsers: [user.uid],
+            };
+            const agentOrgId = await createAgentOrg(newAgentOrg);
+            setAgentOrg({ ...newAgentOrg, id: agentOrgId });
+            // setShowAgentSettings(true);
           }
+
+          setIsLoading(false);
         }
       };
       fetchAgentOrg();
-      setLoading(false);
-    } else {
-      setLoading(false);
     }
   }, [user]);
 
@@ -195,7 +340,7 @@ export default function Dashboard() {
     const searchParams = new URLSearchParams(window.location.search);
     const spaceId = searchParams.get('spaceId');
     if (agentOrg && spaceId) {
-      analyzeSpace(spaceId);
+      analyzeSpace(spaceId, agentOrg.id);
     }
   }, [agentOrg]);
 
@@ -205,7 +350,7 @@ export default function Dashboard() {
 
   const handleAddSpace = async () => {
     const spaceId = spaceUrl.split('/').pop()?.trim();
-    if (isLoading || !spaceId) return;
+    if (isLoading || !spaceId || !agentOrg) return;
     setIsLoading(true);
 
     // TODO: Implement logic similar to App.tsx handleAnalyze,
@@ -215,7 +360,7 @@ export default function Dashboard() {
     toast.success(`Processing space: ${spaceId}`, {
       position: 'bottom-right',
     });
-    await analyzeSpace(spaceId);
+    await analyzeSpace(spaceId, agentOrg.id);
 
     setSpaceUrl(''); // Clear input after submission
     setIsLoading(false);
@@ -585,7 +730,14 @@ export default function Dashboard() {
             <Logo />
             <Typography
               variant="h6"
-              sx={{ color: 'var(--text-primary)', fontWeight: 'bold' }}
+              sx={{
+                background:
+                  'linear-gradient(135deg, var(--gradient-start) 30%, var(--gradient-middle) 60%, var(--gradient-end) 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                fontWeight: 'bold',
+              }}
             >
               Songjam
             </Typography>
@@ -797,14 +949,14 @@ export default function Dashboard() {
           <TabPanel value={value} index={0}>
             {renderScheduledList(
               scheduledSpaces as Space[],
-              loadingAgentSpaces,
+              loadingAgentSpaces || isLoading,
               errorAgentSpaces as Error | null
             )}
           </TabPanel>
           <TabPanel value={value} index={1}>
             {renderSpaceList(
               liveSpaces as Space[],
-              loadingAgentSpaces || loading,
+              loadingAgentSpaces || isLoading,
               errorAgentSpaces as Error | null,
               'Live'
             )}
@@ -812,7 +964,7 @@ export default function Dashboard() {
           <TabPanel value={value} index={2}>
             {renderSpaceList(
               completedSpaces as Space[],
-              loadingAgentSpaces || loading,
+              loadingAgentSpaces || isLoading,
               errorAgentSpaces as Error | null,
               'Completed'
             )}
@@ -829,7 +981,15 @@ export default function Dashboard() {
           agentOrg={agentOrg}
           onSave={handleSaveAgentSettings}
         />
+
+        {/* Processing Dialog */}
+        <ProcessingDialog
+          open={!!processingSpace}
+          onClose={() => setProcessingSpace(null)}
+          space={processingSpace}
+        />
       </Container>
+      <Toaster position="bottom-right" reverseOrder={false} />
     </Box>
   );
 }

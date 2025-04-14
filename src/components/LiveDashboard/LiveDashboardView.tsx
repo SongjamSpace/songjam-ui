@@ -8,6 +8,9 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Button,
+  Stack,
+  IconButton,
 } from '@mui/material';
 import { Space, SpaceListener } from '../../services/db/spaces.service';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
@@ -29,6 +32,8 @@ import {
 import { format } from 'date-fns';
 import { useAuthContext } from '../../contexts/AuthContext';
 import TwitterLogin from '../TwitterLogin';
+import { useNavigate } from 'react-router-dom';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 interface LiveDashboardViewProps {
   spaceId: string;
@@ -94,6 +99,7 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
 }) => {
   const { user } = useAuthContext();
   const theme = useTheme();
+  const navigate = useNavigate();
   const [previousListeners, setPreviousListeners] = useState<SpaceListener[]>(
     []
   );
@@ -183,6 +189,13 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
             borderRadius: 1,
           }}
         >
+          <IconButton
+            onClick={() => {
+              navigate(`/dashboard`);
+            }}
+          >
+            <ArrowBackIcon />
+          </IconButton>
           <Typography
             variant="body2"
             sx={{ color: theme.palette.text.secondary }}

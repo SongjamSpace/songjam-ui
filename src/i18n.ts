@@ -73,6 +73,17 @@ const appTranslationsEN = {
   linkedin: 'LinkedIn',
   footerText: '© Songjam 2025. All rights reserved.',
   switchLanguage: '中文',
+  processingSpaceTitle: 'Processing Space',
+  processingSpaceMessage:
+    'We are processing the space and will redirect you shortly.',
+  spaceDetails: 'Space Details',
+  liveSpaceTitle: 'Live Space',
+  liveSpaceMessage:
+    'Setting up the live Twitter agent and redirecting you shortly.',
+  recordedSpaceTitle: 'Recorded Space',
+  recordedSpaceMessage: 'Retrieving space data and redirecting you shortly.',
+  scheduledSpaceTitle: 'Schedule Space',
+  scheduledSpaceMessage: 'We are scheduling the space, please wait.',
 };
 
 const crmTranslationsEN = {
@@ -86,7 +97,7 @@ const crmTranslationsEN = {
   queuedChip: 'Queued',
   analyzingChip: 'Analyzing...',
   quickStatsTitle: 'Quick Stats',
-  attendeesStat: 'Attendees',
+  attendeesStat: 'Participants',
   durationStat: 'Duration',
   minStat: 'min',
   createCampaignButton: 'Create Campaign',
@@ -284,6 +295,15 @@ const appTranslationsZH = {
   linkedin: 'LinkedIn',
   footerText: '© Songjam 2025. 保留所有权利。',
   switchLanguage: 'English',
+  processingSpaceTitle: '处理中',
+  processingSpaceMessage: '我们正在处理空间，稍后将重定向您。',
+  spaceDetails: '空间详情',
+  liveSpaceTitle: '直播空间',
+  liveSpaceMessage: '正在设置实时 Twitter 代理，稍后将重定向您。',
+  recordedSpaceTitle: '已录制空间',
+  recordedSpaceMessage: '正在检索空间数据，稍后将重定向您。',
+  scheduledSpaceTitle: '预定空间',
+  scheduledSpaceMessage: '我们正在预定空间，请稍候。',
 };
 
 const crmTranslationsZH = {

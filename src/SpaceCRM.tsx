@@ -38,6 +38,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import HeadphonesIcon from '@mui/icons-material/Headphones';
 import DescriptionIcon from '@mui/icons-material/Description';
+import CampaignIcon from '@mui/icons-material/Campaign';
 import { format } from 'date-fns';
 import { LoadingButton } from '@mui/lab';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -62,6 +63,7 @@ import AlgoliaSearchTranscription from './components/AlgoliaSearchTranscription'
 import { getSpaceAudioDownloadUrl } from './services/db/spaces.service';
 import ListenerRetentionChart from './components/SpaceCRM/ListenerRetentionChart';
 import type { RetentionContext } from './components/SpaceCRM/ListenerRetentionChart';
+import CampaignManager from './components/SpaceCRM/CampaignManager';
 
 type CRMTab =
   | 'dashboard'
@@ -69,7 +71,8 @@ type CRMTab =
   | 'content'
   | 'timeline'
   | 'transcription'
-  | 'listenerRetention';
+  | 'listenerRetention'
+  | 'campaigns';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -681,6 +684,11 @@ const SpaceCRM: React.FC = () => {
                     }
                     value="listenerRetention"
                   />
+                  <Tab
+                    icon={<CampaignIcon />}
+                    label={t('campaignsTab')}
+                    value="campaigns"
+                  />
                 </Tabs>
 
                 <Divider sx={{ my: 2 }} />
@@ -831,6 +839,11 @@ const SpaceCRM: React.FC = () => {
                     label={t('listenerRetentionTab')}
                     value="listenerRetention"
                   />
+                  <Tab
+                    icon={<CampaignIcon />}
+                    label={t('campaignsTab')}
+                    value="campaigns"
+                  />
                 </Tabs>
 
                 {/* Content based on active tab */}
@@ -951,6 +964,13 @@ const SpaceCRM: React.FC = () => {
                       startedAt={space?.startedAt}
                       endedAt={space?.endedAt}
                       onContextUpdate={handleRetentionContextUpdate}
+                    />
+                  )}
+
+                  {activeTab === 'campaigns' && spaceId && (
+                    <CampaignManager
+                      spaceId={spaceId}
+                      space={space}
                     />
                   )}
                 </Box>
@@ -1456,6 +1476,11 @@ const SpaceCRM: React.FC = () => {
                 icon={<InsightsIcon />}
                 label={t('listenerRetentionTab')}
                 value="listenerRetention"
+              />
+              <Tab
+                icon={<CampaignIcon />}
+                label={t('campaignsTab')}
+                value="campaigns"
               />
             </Tabs>
 

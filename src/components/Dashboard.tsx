@@ -261,6 +261,8 @@ export default function Dashboard() {
       } else if (spaceDoc.state === 'Running') {
         navigate(`/live/${spaceId}`);
       }
+      // Check if scheduled space is started on time
+      setIsLoading(false);
       toast.success('Space already Exists', {
         duration: 3000,
       });
@@ -636,10 +638,13 @@ export default function Dashboard() {
                       }}
                     >
                       <EventIcon fontSize="inherit" sx={{ mr: 0.5 }} />
-                      Scheduled:{' '}
+                      Scheduled Start:{' '}
                       {new Date(space.scheduledStart || 0).toLocaleTimeString(
                         [],
                         {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
                           hour: 'numeric',
                           minute: '2-digit',
                           hour12: true,
@@ -662,7 +667,7 @@ export default function Dashboard() {
                   </Box>
                 }
               />
-              <Button
+              {/* <Button
                 variant="outlined"
                 size="small"
                 startIcon={<NotificationsActiveIcon />}
@@ -686,7 +691,7 @@ export default function Dashboard() {
                 }}
               >
                 Notify Me
-              </Button>
+              </Button> */}
             </ListItemButton>
           ))}
         </List>

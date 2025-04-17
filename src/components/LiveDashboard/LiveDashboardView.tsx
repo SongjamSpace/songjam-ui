@@ -1,20 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import {
-  Box,
-  Typography,
-  Paper,
-  useTheme,
-  Dialog,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  Button,
-  Stack,
-  IconButton,
-} from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Typography, Paper, useTheme, IconButton } from '@mui/material';
 import { Space, SpaceListener } from '../../services/db/spaces.service';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
-import { collection, orderBy, query, DocumentData } from 'firebase/firestore';
+import { collection, orderBy, query } from 'firebase/firestore';
 import { db } from '../../services/firebase.service';
 import { Toaster } from 'react-hot-toast';
 import DashboardStats from './DashboardStats';
@@ -31,9 +19,9 @@ import {
 } from 'recharts';
 import { format } from 'date-fns';
 import { useAuthContext } from '../../contexts/AuthContext';
-import TwitterLogin from '../TwitterLogin';
 import { useNavigate } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import LoginDialog from '../LoginDialog';
 
 interface LiveDashboardViewProps {
   spaceId: string;
@@ -389,51 +377,7 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
       </Box>
 
       {/* Authentication Dialog */}
-      <Dialog
-        open={!user}
-        PaperProps={{
-          sx: {
-            background: 'rgba(30, 41, 59, 0.95)',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            color: 'white',
-            minWidth: { xs: '90%', sm: 400 },
-            maxWidth: 400,
-          },
-        }}
-      >
-        <DialogTitle
-          sx={{
-            textAlign: 'center',
-            background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            fontWeight: 'bold',
-          }}
-        >
-          Welcome to Songjam
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText
-            sx={{
-              color: 'rgba(255, 255, 255, 0.8)',
-              textAlign: 'center',
-              mb: 3,
-            }}
-          >
-            Connect your Twitter account to access Space analytics, audience
-            insights, and AI-powered tools.
-          </DialogContentText>
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-            }}
-          >
-            <TwitterLogin />
-          </Box>
-        </DialogContent>
-      </Dialog>
+      <LoginDialog open={!user} />
     </Box>
   );
 };

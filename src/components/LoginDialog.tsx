@@ -17,7 +17,7 @@ import DynamicLogin from './DynamicLogin';
 // import SendIcon from '@mui/icons-material/Send';
 // import { signInWithEmailLink } from 'firebase/auth';
 // import { auth } from '../services/firebase.service';
-
+import { useAuth } from '../hooks/useAuth';
 interface LoginDialogProps {
   open: boolean;
   onClose?: () => void;
@@ -25,6 +25,7 @@ interface LoginDialogProps {
 
 const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
   // const [email, setEmail] = useState('');
+  const { loading } = useAuth();
   return (
     <Dialog
       open={open}
@@ -62,7 +63,7 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
           Connect your Twitter account to access Space analytics, audience
           insights, and AI-powered tools.
         </DialogContentText>
-        <LinearProgress sx={{ mb: 3 }} />
+        {loading && <LinearProgress sx={{ mb: 3 }} />}
         <Box
           sx={{
             display: 'flex',

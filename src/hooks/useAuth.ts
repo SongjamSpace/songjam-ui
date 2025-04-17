@@ -9,9 +9,11 @@ export function useAuth() {
   // );
   const [user, setUser] = useState<SongjamUser | null>(null);
   const { user: dynamicUser, showAuthFlow } = useDynamicContext();
+  const [isLoading, setIsLoading] = useState(false);
 
   const getUserFromDynamic = async () => {
     if (dynamicUser?.userId) {
+      setIsLoading(true);
       const userDoc = await getUser(dynamicUser.userId, (user) => {
         setUser(user);
       });
@@ -36,6 +38,7 @@ export function useAuth() {
         await createUser(dynamicUser.userId, newUser);
         setUser(newUser);
       }
+      setIsLoading(false);
     }
   };
   useEffect(() => {
@@ -84,5 +87,5 @@ export function useAuth() {
   //   });
   // }, []);
 
-  return { user, loading: showAuthFlow };
+  return { user, loading: showAuthFlow || isLoading };
 }

@@ -697,7 +697,8 @@ const SpaceCRM: React.FC = () => {
                   )}
                 </Tabs>
 
-                {!space?.hasCampaign && (
+                {/* TODO: Add campaign creation */}
+                {/* {!space?.hasCampaign && (
                   <Button
                     variant="contained"
                     fullWidth
@@ -722,7 +723,7 @@ const SpaceCRM: React.FC = () => {
                   >
                     {t('createCampaignButton')}
                   </Button>
-                )}
+                )} */}
 
                 <Divider sx={{ my: 2 }} />
 

@@ -47,6 +47,7 @@ import { toast } from 'react-hot-toast';
 import { useAuth } from '../hooks/useAuth';
 import HourglassEmptyRoundedIcon from '@mui/icons-material/HourglassEmptyRounded';
 import DoneRoundedIcon from '@mui/icons-material/DoneRounded';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 // import VisibilityIcon from '@mui/icons-material/Visibility';
 // import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
@@ -77,6 +78,7 @@ export default function AgentSettingsDialog({
   const [userProjects, setUserProjects] = useState<ProjectDoc[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [removeLoadingFor, setRemoveLoadingFor] = useState<string>('');
+  const { handleLogOut } = useDynamicContext();
 
   const handleSave = async () => {
     if (!name || !project) {
@@ -454,6 +456,22 @@ export default function AgentSettingsDialog({
           )}
         </Stack>
       </DialogContent>
+      <DialogActions>
+        <Button
+          disabled={isLoading}
+          onClick={async () => {
+            setIsLoading(true);
+            await handleLogOut();
+            window.location.reload();
+            setIsLoading(false);
+          }}
+          variant="contained"
+          color="info"
+          sx={{ mx: 'auto', px: 4 }}
+        >
+          {t('logout', 'Logout')}
+        </Button>
+      </DialogActions>
     </Dialog>
   );
 }

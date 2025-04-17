@@ -11,15 +11,6 @@ const LoginDisplayBtn = ({
 }) => {
   const { user, loading } = useAuth();
 
-  const handleLogout = async () => {
-    if (user?.isTwitterLogin) {
-      await signOut(auth);
-    } else {
-      // Handle Dynamic logout
-      window.location.reload();
-    }
-  };
-
   if (loading) {
     return (
       <Button variant="outlined" disabled>

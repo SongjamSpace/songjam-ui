@@ -1,12 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   DialogContentText,
   Box,
+  Typography,
+  // TextField,
+  // Button,
+  // IconButton,
+  // InputAdornment,
 } from '@mui/material';
 import TwitterLogin from './TwitterLogin';
+import DynamicLogin from './DynamicLogin';
+// import SendIcon from '@mui/icons-material/Send';
+// import { signInWithEmailLink } from 'firebase/auth';
+// import { auth } from '../services/firebase.service';
 
 interface LoginDialogProps {
   open: boolean;
@@ -14,6 +23,7 @@ interface LoginDialogProps {
 }
 
 const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
+  // const [email, setEmail] = useState('');
   return (
     <Dialog
       open={open}
@@ -55,9 +65,37 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
           sx={{
             display: 'flex',
             justifyContent: 'center',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 2,
           }}
         >
-          <TwitterLogin />
+          {/* <TwitterLogin /> */}
+          {/* <Box display="flex" gap={1}> */}
+          {/* <TextField
+            label="Email"
+            size="small"
+            value={email}
+            sx={{ width: '250px' }}
+            onChange={(e) => setEmail(e.target.value)}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      signInWithEmailLink(auth, email, window.location.href);
+                    }}
+                  >
+                    <SendIcon sx={{ fontSize: 18 }} />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          /> */}
+          {/* </Box> */}
+          {/* <Typography>or</Typography> */}
+          <DynamicLogin />
         </Box>
       </DialogContent>
     </Dialog>

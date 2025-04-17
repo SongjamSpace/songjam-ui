@@ -55,7 +55,6 @@ import {
 } from './services/db/spaces.service';
 import { useAuthContext } from './contexts/AuthContext';
 import Logo from './components/Logo';
-import TwitterLogin from './components/TwitterLogin';
 import { AI_MODELS, generateContent } from './services/ai.service';
 import { getFullTranscription } from './services/db/spaces.service';
 import SegmentsTimeline from './components/SegmentsTimeline';
@@ -64,7 +63,9 @@ import { getSpaceAudioDownloadUrl } from './services/db/spaces.service';
 import ListenerRetentionChart from './components/SpaceCRM/ListenerRetentionChart';
 import type { RetentionContext } from './components/SpaceCRM/ListenerRetentionChart';
 import CampaignManager from './components/SpaceCRM/CampaignManager';
-
+import LoginDialog from './components/LoginDialog';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
+import LoginDisplayBtn from './components/LoginDisplayBtn';
 type CRMTab =
   | 'dashboard'
   | 'audience'
@@ -98,7 +99,8 @@ const SpaceCRM: React.FC = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [selectedAttendees, setSelectedAttendees] = useState<string[]>([]);
   const [aiError, setAiError] = useState<string | null>(null);
-  const { user } = useAuthContext();
+  const { user, loading } = useAuthContext();
+  const { handleLogOut } = useDynamicContext();
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [retentionContext, setRetentionContext] =
@@ -173,9 +175,11 @@ const SpaceCRM: React.FC = () => {
   }, [chatMessages]); // This will trigger on every new chunk of the AI response
 
   // // Update useEffect to handle dialog visibility when user auth state changes
-  // useEffect(() => {
-  //   setShowAuthDialog(!user);
-  // }, [user]);
+  useEffect(() => {
+    if (user) {
+      setShowAuthDialog(false);
+    }
+  }, [user]);
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: CRMTab) => {
     setActiveTab(newValue);
@@ -398,7 +402,7 @@ const SpaceCRM: React.FC = () => {
           </Box>
         </Box>
 
-        <TwitterLogin />
+        <LoginDisplayBtn setShowAuthDialog={setShowAuthDialog} />
       </Box>
 
       {/* Content wrapper with blur effect for non-authenticated users */}
@@ -684,12 +688,41 @@ const SpaceCRM: React.FC = () => {
                     }
                     value="listenerRetention"
                   />
-                  <Tab
-                    icon={<CampaignIcon />}
-                    label={t('campaignsTab')}
-                    value="campaigns"
-                  />
+                  {space?.hasCampaign && (
+                    <Tab
+                      icon={<CampaignIcon />}
+                      label={t('campaignsTab')}
+                      value="campaigns"
+                    />
+                  )}
                 </Tabs>
+
+                {!space?.hasCampaign && (
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    sx={{
+                      mb: 2,
+                      background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 4px 12px rgba(96, 165, 250, 0.3)',
+                      },
+                    }}
+                    onClick={() => {
+                      // TODO: Add campaign creation
+                      if (space) {
+                        setSpace({
+                          ...space,
+                          hasCampaign: true,
+                        });
+                      }
+                    }}
+                  >
+                    {t('createCampaignButton')}
+                  </Button>
+                )}
 
                 <Divider sx={{ my: 2 }} />
 
@@ -768,22 +801,6 @@ const SpaceCRM: React.FC = () => {
                     sx={{ my: 2, display: 'block' }}
                   />
                 )}
-
-                <Button
-                  variant="contained"
-                  fullWidth
-                  sx={{
-                    mb: 2,
-                    background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      transform: 'translateY(-2px)',
-                      boxShadow: '0 4px 12px rgba(96, 165, 250, 0.3)',
-                    },
-                  }}
-                >
-                  {t('createCampaignButton')}
-                </Button>
               </Paper>
             </Grid>
 
@@ -968,10 +985,7 @@ const SpaceCRM: React.FC = () => {
                   )}
 
                   {activeTab === 'campaigns' && spaceId && (
-                    <CampaignManager
-                      spaceId={spaceId}
-                      space={space}
-                    />
+                    <CampaignManager spaceId={spaceId} space={space} />
                   )}
                 </Box>
               </Paper>
@@ -1570,51 +1584,10 @@ const SpaceCRM: React.FC = () => {
         </Drawer>
 
         {/* Authentication Dialog */}
-        <Dialog
-          open={showAuthDialog}
+        <LoginDialog
+          open={showAuthDialog && !loading}
           onClose={() => setShowAuthDialog(false)}
-          PaperProps={{
-            sx: {
-              background: 'rgba(30, 41, 59, 0.95)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              color: 'white',
-              minWidth: { xs: '90%', sm: 400 },
-              maxWidth: 400,
-            },
-          }}
-        >
-          <DialogTitle
-            sx={{
-              textAlign: 'center',
-              background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              fontWeight: 'bold',
-            }}
-          >
-            {t('authDialogTitle')}
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText
-              sx={{
-                color: 'rgba(255, 255, 255, 0.8)',
-                textAlign: 'center',
-                mb: 3,
-              }}
-            >
-              {t('authDialogText')}
-            </DialogContentText>
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'center',
-              }}
-            >
-              <TwitterLogin />
-            </Box>
-          </DialogContent>
-        </Dialog>
+        />
       </Box>
     </Box>
   );

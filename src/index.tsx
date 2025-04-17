@@ -9,16 +9,24 @@ import { AuthProvider } from './contexts/AuthContext';
 import LiveDashboardContainer from './components/LiveDashboard/LiveDashboardContainer';
 import './i18n';
 import Dashboard from './components/Dashboard';
+import { DynamicContextProvider } from '@dynamic-labs/sdk-react-core';
+import { EthereumWalletConnectors } from '@dynamic-labs/ethereum';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <Suspense fallback={<div>Loading...</div>}>
       <BrowserRouter>
-        <ThemeProvider theme={theme}>
-          <AuthProvider>
-            <Routes>
-              <Route path="/" element={<App />} />
-              {/* <Route
+        <DynamicContextProvider
+          settings={{
+            environmentId: '50122aae-84e6-4955-a0aa-e0dc2ebf6fed',
+            walletConnectors: [EthereumWalletConnectors],
+          }}
+        >
+          <ThemeProvider theme={theme}>
+            <AuthProvider>
+              <Routes>
+                <Route path="/" element={<App />} />
+                {/* <Route
                 path="/:spaceId"
                 element={
                   <AuthProvider>
@@ -26,15 +34,16 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
                   </AuthProvider>
                 }
               /> */}
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/crm/:spaceId" element={<SpaceCRM />} />
-              <Route
-                path="/live/:spaceId"
-                element={<LiveDashboardContainer />}
-              />
-            </Routes>
-          </AuthProvider>
-        </ThemeProvider>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/crm/:spaceId" element={<SpaceCRM />} />
+                <Route
+                  path="/live/:spaceId"
+                  element={<LiveDashboardContainer />}
+                />
+              </Routes>
+            </AuthProvider>
+          </ThemeProvider>
+        </DynamicContextProvider>
       </BrowserRouter>
     </Suspense>
   </React.StrictMode>

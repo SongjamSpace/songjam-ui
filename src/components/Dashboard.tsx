@@ -6,7 +6,6 @@ import {
   Typography,
   Container,
   TextField,
-  Button,
   Paper,
   CircularProgress,
   List,
@@ -14,8 +13,6 @@ import {
   ListItemText,
   InputAdornment,
   IconButton,
-  Divider,
-  Grid,
   AppBar,
   Toolbar,
   Skeleton,
@@ -29,25 +26,17 @@ import { LoadingButton } from '@mui/lab';
 import { useTranslation } from 'react-i18next';
 import { toast, Toaster } from 'react-hot-toast';
 import axios from 'axios';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Background from './Background';
 import CloseIcon from '@mui/icons-material/Close';
 import GroupIcon from '@mui/icons-material/Group';
-import RecordVoiceOverIcon from '@mui/icons-material/RecordVoiceOver';
-import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import WhatshotIcon from '@mui/icons-material/Whatshot';
-import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import EventIcon from '@mui/icons-material/Event';
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 import Logo from './Logo';
 import { useAuthContext } from '../contexts/AuthContext';
 import LoginDialog from './LoginDialog';
-import {
-  createAgentOrg,
-  updateSpaceToAgent,
-} from '../services/db/agent.service';
 import AgentSettingsDialog from './AgentSettingsDialog';
-import { updateAgentOrg } from '../services/db/agent.service';
 import {
   AudioSpace,
   getRawSpaceFromX,
@@ -59,12 +48,12 @@ import { useCollectionData } from 'react-firebase-hooks/firestore';
 import { query, collection, where } from 'firebase/firestore';
 import { db } from '../services/firebase.service';
 import {
-  getOrganizationsById,
-  Organization,
-  OrganizationDoc,
-  updateOrganization,
-} from '../services/db/organization.service';
-import { getOrganizationInvitesFromEmail } from '../services/db/organizationInvites.service';
+  getProjectById,
+  Project,
+  ProjectDoc,
+  updateProject,
+  updateSpaceToProject,
+} from '../services/db/projects.service';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -225,27 +214,29 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const { user, loading: authLoading } = useAuthContext();
   const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const [agentOrg, setAgentOrg] = useState<OrganizationDoc | null>(null);
+  const [defaultProject, setDefaultProject] = useState<ProjectDoc | null>(null);
   const [showAgentSettings, setShowAgentSettings] = useState(false);
   const [processingSpace, setProcessingSpace] = useState<AudioSpace | null>(
     null
   );
   // const [scheduledSpaces, loadingScheduled, errorScheduled] = useCollectionData(query(collection(db, 'spaces'), where('state', '==', 'Scheduled')))
   // const [liveSpaces, loadingLive, errorLive] = useCollectionData(query(collection(db, 'spaces'), where('state', '==', 'Running')))
-  const [agentSpaces, loadingAgentSpaces, errorAgentSpaces] = useCollectionData(
-    query(
-      collection(db, 'spaces'),
-      where('organizationIds', 'array-contains', agentOrg?.id || '')
-    )
-  );
+  const [projectSpaces, loadingProjectSpaces, errorProjectSpaces] =
+    useCollectionData(
+      query(
+        collection(db, 'spaces'),
+        where('projectIds', 'array-contains', defaultProject?.id || '')
+      )
+    );
   const scheduledSpaces =
-    agentSpaces?.filter((space) => space.state === 'NotStarted') ||
+    projectSpaces?.filter((space) => space.state === 'NotStarted') ||
     ([] as Space[]);
   const liveSpaces =
-    agentSpaces?.filter((space) => space.state === 'Running') ||
+    projectSpaces?.filter((space) => space.state === 'Running') ||
     ([] as Space[]);
   const completedSpaces =
-    agentSpaces?.filter((space) => space.state === 'Ended') || ([] as Space[]);
+    projectSpaces?.filter((space) => space.state === 'Ended') ||
+    ([] as Space[]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -253,12 +244,12 @@ export default function Dashboard() {
     }
   }, [user, authLoading]);
 
-  const analyzeSpace = async (spaceId: string, agentOrgId: string) => {
+  const analyzeSpace = async (spaceId: string, projectId: string) => {
     setIsLoading(true);
     const spaceDoc = await getSpace(spaceId);
     if (spaceDoc) {
-      if (agentOrgId && !spaceDoc.agentIds?.includes(agentOrgId)) {
-        await updateSpaceToAgent(spaceId, agentOrgId);
+      if (projectId && !spaceDoc.projectIds?.includes(projectId)) {
+        await updateSpaceToProject(spaceId, projectId);
       }
       if (spaceDoc.state === 'Ended') {
         navigate(`/crm/${spaceId}`);
@@ -267,7 +258,7 @@ export default function Dashboard() {
       }
       // Check if scheduled space is started on time
       setIsLoading(false);
-      toast.success('Space already Exists', {
+      toast.success('Space already exists', {
         duration: 3000,
       });
       return;
@@ -285,13 +276,13 @@ export default function Dashboard() {
       } else if (state === 'Running') {
         await axios.post(
           `${import.meta.env.VITE_JAM_SERVER_URL}/listen-live-space`,
-          { spaceId, agentId: agentOrgId }
+          { spaceId, projectId }
         );
         navigate(`/live/${spaceId}`);
       } else if (state === 'NotStarted') {
         await axios.post(
           `${import.meta.env.VITE_JAM_SERVER_URL}/schedule-space`,
-          { spaceId, agentId: agentOrgId }
+          { spaceId, projectId }
         );
         toast.success('Space is scheduled successfully', {
           duration: 3000,
@@ -316,11 +307,10 @@ export default function Dashboard() {
 
   // TODO: Fetch actual spaces data from your backend
   const fetchAgentOrg = async () => {
-    if (user && user.organizationIds.length > 0) {
-      const agentOrg = await getOrganizationsById(
-        user.defaultOrganizationId || user.organizationIds[0]
-      );
-      setAgentOrg(agentOrg);
+    if (user && (user.projectIds.length > 0 || user.defaultProjectId)) {
+      const projectId = user.defaultProjectId || user.projectIds[0];
+      const project = await getProjectById(projectId);
+      setDefaultProject(project);
       setIsLoading(false);
     } else if (user) {
       setShowAuthDialog(false);
@@ -337,10 +327,10 @@ export default function Dashboard() {
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
     const spaceId = searchParams.get('spaceId');
-    if (agentOrg && spaceId) {
-      analyzeSpace(spaceId, agentOrg.id);
+    if (defaultProject && spaceId) {
+      analyzeSpace(spaceId, defaultProject.id || '');
     }
-  }, [agentOrg]);
+  }, [defaultProject]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
@@ -348,7 +338,7 @@ export default function Dashboard() {
 
   const handleAddSpace = async () => {
     const spaceId = spaceUrl.split('/').pop()?.trim();
-    if (isLoading || !spaceId || !agentOrg) return;
+    if (isLoading || !spaceId || !defaultProject) return;
     setIsLoading(true);
 
     // TODO: Implement logic similar to App.tsx handleAnalyze,
@@ -358,34 +348,28 @@ export default function Dashboard() {
     toast.success(`Processing space: ${spaceId}`, {
       position: 'bottom-right',
     });
-    await analyzeSpace(spaceId, agentOrg.id);
+    await analyzeSpace(spaceId, defaultProject.id);
 
     setSpaceUrl(''); // Clear input after submission
     setIsLoading(false);
   };
 
-  const handleSaveAgentSettings = async (
-    agentId?: string,
-    updatedAgentOrg?: Partial<Organization>
-  ) => {
+  const handleSaveAgentSettings = async (updatedProject?: Partial<Project>) => {
     if (!user?.uid) {
-      toast.error(t('agentSettingsError', 'Error saving agent settings'));
+      toast.error(t('projectSettingsError', 'Error saving project settings'));
       return;
     }
     try {
-      // if (agentId && updatedAgentOrg) {
-      //   await updateAgentOrg(agentId, updatedAgentOrg);
-      // } else
-      if (updatedAgentOrg && agentOrg) {
-        await updateOrganization(agentOrg.id, updatedAgentOrg);
+      if (updatedProject && defaultProject) {
+        await updateProject(defaultProject.id, updatedProject);
       }
-      if (agentOrg) {
-        setAgentOrg({ ...agentOrg, ...updatedAgentOrg });
+      if (defaultProject) {
+        setDefaultProject({ ...defaultProject, ...updatedProject });
       }
-      toast.success(t('agentSettingsSaved', 'Organization updated'));
+      toast.success(t('projectSettingsSaved', 'Project settings updated'));
     } catch (error) {
-      console.error('Error saving agent settings:', error);
-      toast.error(t('agentSettingsError', 'Error saving agent settings'));
+      console.error('Error saving project settings:', error);
+      toast.error(t('projectSettingsError', 'Error saving project settings'));
     }
   };
 
@@ -738,8 +722,8 @@ export default function Dashboard() {
             </Typography>
           </Box>
 
-          {/* Agent Name and Settings */}
-          {!agentOrg ? (
+          {/* Project Name and Settings */}
+          {!defaultProject ? (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Skeleton
                 variant="rounded"
@@ -762,7 +746,7 @@ export default function Dashboard() {
           ) : (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Chip
-                label={agentOrg.name}
+                label={defaultProject.name}
                 sx={{
                   background: 'rgba(255, 255, 255, 0.05)',
                   backdropFilter: 'blur(10px)',
@@ -927,12 +911,69 @@ export default function Dashboard() {
               }}
             >
               <Tab
-                label={t('scheduledSpacesTab', 'Scheduled')}
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {t('scheduledSpacesTab', 'Scheduled')}
+                    {scheduledSpaces.length > 0 && (
+                      <Box
+                        component="span"
+                        sx={{
+                          bgcolor: 'rgba(255,255,255,0.1)',
+                          borderRadius: '12px',
+                          px: 1,
+                          py: 0.25,
+                          fontSize: '0.75rem',
+                        }}
+                      >
+                        {scheduledSpaces.length}
+                      </Box>
+                    )}
+                  </Box>
+                }
                 {...a11yProps(0)}
               />
-              <Tab label={t('liveSpacesTab', 'Live Now')} {...a11yProps(1)} />
               <Tab
-                label={t('completedSpacesTab', 'Completed')}
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {t('liveSpacesTab', 'Live Now')}
+                    {liveSpaces.length > 0 && (
+                      <Box
+                        component="span"
+                        sx={{
+                          bgcolor: 'rgba(255,255,255,0.1)',
+                          borderRadius: '12px',
+                          px: 1,
+                          py: 0.25,
+                          fontSize: '0.75rem',
+                        }}
+                      >
+                        {liveSpaces.length}
+                      </Box>
+                    )}
+                  </Box>
+                }
+                {...a11yProps(1)}
+              />
+              <Tab
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {t('completedSpacesTab', 'Completed')}
+                    {completedSpaces.length > 0 && (
+                      <Box
+                        component="span"
+                        sx={{
+                          bgcolor: 'rgba(255,255,255,0.1)',
+                          borderRadius: '12px',
+                          px: 1,
+                          py: 0.25,
+                          fontSize: '0.75rem',
+                        }}
+                      >
+                        {completedSpaces.length}
+                      </Box>
+                    )}
+                  </Box>
+                }
                 {...a11yProps(2)}
               />
             </Tabs>
@@ -940,23 +981,23 @@ export default function Dashboard() {
           <TabPanel value={value} index={0}>
             {renderScheduledList(
               scheduledSpaces as Space[],
-              loadingAgentSpaces || isLoading,
-              errorAgentSpaces as Error | null
+              loadingProjectSpaces || isLoading,
+              errorProjectSpaces as Error | null
             )}
           </TabPanel>
           <TabPanel value={value} index={1}>
             {renderSpaceList(
               liveSpaces as Space[],
-              loadingAgentSpaces || isLoading,
-              errorAgentSpaces as Error | null,
+              loadingProjectSpaces || isLoading,
+              errorProjectSpaces as Error | null,
               'Live'
             )}
           </TabPanel>
           <TabPanel value={value} index={2}>
             {renderSpaceList(
               completedSpaces as Space[],
-              loadingAgentSpaces || isLoading,
-              errorAgentSpaces as Error | null,
+              loadingProjectSpaces || isLoading,
+              errorProjectSpaces as Error | null,
               'Completed'
             )}
           </TabPanel>
@@ -967,12 +1008,17 @@ export default function Dashboard() {
 
         {/* Agent Settings Dialog */}
 
-        <AgentSettingsDialog
-          open={showAgentSettings}
-          onClose={() => setShowAgentSettings(false)}
-          agentOrg={agentOrg}
-          onSave={handleSaveAgentSettings}
-        />
+        {defaultProject && (
+          <AgentSettingsDialog
+            open={showAgentSettings}
+            onClose={() => setShowAgentSettings(false)}
+            project={defaultProject}
+            onSave={handleSaveAgentSettings}
+            onSwitchProject={(project: ProjectDoc) =>
+              setDefaultProject(project)
+            }
+          />
+        )}
 
         {/* Processing Dialog */}
         <ProcessingDialog

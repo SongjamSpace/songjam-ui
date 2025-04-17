@@ -6,6 +6,7 @@ import {
   DialogContentText,
   Box,
   Typography,
+  LinearProgress,
   // TextField,
   // Button,
   // IconButton,
@@ -61,6 +62,7 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
           Connect your Twitter account to access Space analytics, audience
           insights, and AI-powered tools.
         </DialogContentText>
+        <LinearProgress sx={{ mb: 3 }} />
         <Box
           sx={{
             display: 'flex',

@@ -91,8 +91,8 @@ export type Space = {
   docCreatedAt?: number;
   transcriptionProgress?: TranscriptionProgress;
   scheduledStart?: number;
-  agentIds?: string[];
   hasCampaign?: boolean;
+  projectIds?: string[];
 };
 
 export enum TranscriptionProgress {
@@ -260,6 +260,8 @@ export const getRawSpaceFromX = async (spaceId: string) => {
   );
   return res.data.result as AudioSpace;
 };
+
+export const spaceColRef = collection(db, SPACE_COLLECTION);
 
 export const updateAgentToSpace = async (spaceId: string, agentId: string) => {
   const docRef = doc(db, SPACE_COLLECTION, spaceId);

@@ -30,8 +30,8 @@ export function useAuth() {
           totalUnlockedSpaces: 0,
           isTwitterLogin: false,
           isDynamicLogin: true,
-          organizationIds: [],
-          defaultOrganizationId: null,
+          projectIds: [],
+          defaultProjectId: null,
         };
         await createUser(dynamicUser.userId, newUser);
         setUser(newUser);

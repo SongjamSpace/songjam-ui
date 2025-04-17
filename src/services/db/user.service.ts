@@ -5,12 +5,11 @@ import {
   increment,
   onSnapshot,
   serverTimestamp,
-  setDoc,
   updateDoc,
+  writeBatch,
 } from 'firebase/firestore';
 import { db } from '../firebase.service';
-import { createOrganization } from './organization.service';
-import { getOrganizationInvitesFromEmail } from './organizationInvites.service';
+import { projectsColRef } from './projects.service';
 
 export type SongjamUser = {
   displayName: string | null;
@@ -24,8 +23,8 @@ export type SongjamUser = {
 
   isTwitterLogin: boolean;
   isDynamicLogin: boolean;
-  organizationIds: string[];
-  defaultOrganizationId: string | null;
+  projectIds: string[];
+  defaultProjectId: string | null;
 };
 
 type SongjamUserDoc = SongjamUser & {
@@ -41,41 +40,67 @@ export const createUser = async (id: string, user: SongjamUser) => {
     return userDoc.data();
   }
   // Check if the user has an organization invite
-  const orgInvites = await getOrganizationInvitesFromEmail(user.email);
-  if (orgInvites.length > 0) {
-    await setDoc(userRef, {
-      ...user,
-      createdAt: serverTimestamp(),
-      organizationIds: [],
-      defaultOrganizationId: null,
-    });
-  } else {
-    const orgId = await createOrganization(
-      {
-        createdUserId: id,
-        createdAt: Date.now(),
-        name: 'My Organization',
-      },
-      [
-        {
-          email: user.email,
-          role: 'creator',
-          isPending: false,
-          isAccepted: true,
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-          userId: id,
-        },
-      ]
-    );
+  // const orgInvites = await getOrganizationInvitesFromEmail(user.email);
+  // if (orgInvites.length > 0) {
+  //   await setDoc(userRef, {
+  //     ...user,
+  //     createdAt: serverTimestamp(),
+  //     organizationIds: [],
+  //     defaultOrganizationId: null,
+  //   });
+  // } else {
+  // const orgId = await createOrganization(
+  //   {
+  //     createdUserId: id,
+  //     createdAt: Date.now(),
+  //     name: 'My Organization',
+  //   },
+  //   [
+  //     {
+  //       email: user.email,
+  //       role: 'creator',
+  //       isPending: false,
+  //       isAccepted: true,
+  //       createdAt: Date.now(),
+  //       updatedAt: Date.now(),
+  //       userId: id,
+  //     },
+  //   ]
+  // );
+  const batch = writeBatch(db);
+  const projectRef = doc(projectsColRef);
+  batch.set(projectRef, {
+    createdUserId: id,
+    createdEmail: user.email,
+    createdAt: Date.now(),
+    name: 'Project 1',
+  });
+  batch.set(doc(projectRef, 'members', user.email), {
+    email: user.email,
+    role: 'creator',
+    isPending: false,
+    isAccepted: true,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    userId: id,
+  });
+  const projectId = projectRef.id;
 
-    await setDoc(userRef, {
-      ...user,
-      createdAt: serverTimestamp(),
-      organizationIds: arrayUnion(orgId),
-      defaultOrganizationId: orgId,
-    });
-  }
+  batch.set(userRef, {
+    ...user,
+    createdAt: serverTimestamp(),
+    projectIds: arrayUnion(projectId),
+    defaultProjectId: projectId,
+  });
+
+  await batch.commit();
+  // await setDoc(userRef, {
+  //   ...user,
+  //   createdAt: serverTimestamp(),
+  //   organizationIds: arrayUnion(orgId),
+  //   defaultOrganizationId: orgId,
+  // });
+  // }
 };
 
 export const getUser = async (
@@ -109,10 +134,18 @@ export const hasAccessToSpace = async (id: string, spaceId: string) => {
   return user?.spaceIds.includes(spaceId);
 };
 
-export const updateUserOrgId = async (id: string, orgId: string) => {
+export const addProjectToUser = async (id: string, projectId: string) => {
   const userRef = doc(db, USER_COLLECTION, id);
   await updateDoc(userRef, {
-    organizationIds: arrayUnion(orgId),
-    defaultOrganizationId: orgId,
+    projectIds: arrayUnion(projectId),
+    defaultProjectId: projectId,
   });
+};
+
+export const updateUserDefaultProjectId = async (
+  id: string,
+  projectId: string
+) => {
+  const userRef = doc(db, USER_COLLECTION, id);
+  await updateDoc(userRef, { defaultProjectId: projectId });
 };

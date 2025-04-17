@@ -6,8 +6,11 @@ const theme = createTheme({
     primary: {
       main: '#60a5fa', // Updated to match --accent
     },
+    info: {
+      main: '#8973F8', // Updated to match --accent
+    },
     secondary: {
-      main: '#94a3b8', // Updated to match --text-secondary
+      main: '#ffffff', // Updated to match --text-secondary
     },
     background: {
       default: '#0f172a', // Updated to match --bg-primary
@@ -35,13 +38,14 @@ const theme = createTheme({
           // padding: '0.8rem 1.5rem', // Updated to match your CSS
         },
         contained: {
-          background: `linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)`, // Added gradient from CSS
           boxShadow: 'none',
-          '&:hover': {
-            boxShadow: '0 5px 15px rgba(96, 165, 250, 0.4)', // Added from your CSS
-            transform: 'translateY(-2px)', // Added from your CSS
-          },
         },
+        containedPrimary: {
+          background: `linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)`,
+        },
+        // outlinedPrimary: {
+        //   borderColor: '#8b5cf6',
+        // },
       },
     },
     MuiTextField: {

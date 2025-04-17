@@ -22,24 +22,27 @@ import {
 import { useTranslation } from 'react-i18next';
 import { LoadingButton } from '@mui/lab';
 import {
-  acceptOrgInvite,
-  rejectOrgInvite,
-  addMemberToOrganization,
-  getOrganizationMembers,
-  Organization,
-  OrganizationDoc,
-  OrganizationMember,
+  acceptProjectInvite,
+  rejectProjectInvite,
+  addMemberToProject,
+  getProjectMembers,
+  Project,
+  ProjectDoc,
+  ProjectMember,
   removeUserFromMembers,
-  getOrganizationsByIds,
-  createOrganization,
-} from '../services/db/organization.service';
-import { updateUserOrgId } from '../services/db/user.service';
+  getProjectsByIds,
+  createProject,
+} from '../services/db/projects.service';
+import {
+  addProjectToUser,
+  updateUserDefaultProjectId,
+} from '../services/db/user.service';
 import axios from 'axios';
 import {
-  createOrganizationInvite,
-  getOrganizationInvitesFromEmail,
-  OrganizationInvite,
-} from '../services/db/organizationInvites.service';
+  createProjectInvite,
+  getProjectInvitesFromEmail,
+  ProjectInvite,
+} from '../services/db/projectInvites.service';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../hooks/useAuth';
 import HourglassEmptyRoundedIcon from '@mui/icons-material/HourglassEmptyRounded';
@@ -50,15 +53,17 @@ import DoneRoundedIcon from '@mui/icons-material/DoneRounded';
 interface AgentSettingsDialogProps {
   open: boolean;
   onClose: () => void;
-  agentOrg: OrganizationDoc | null;
-  onSave: (agentId?: string, agentOrg?: Partial<Organization>) => void;
+  project: ProjectDoc;
+  onSave: (project?: Partial<Project>) => void;
+  onSwitchProject: (project: ProjectDoc) => void;
 }
 
 export default function AgentSettingsDialog({
   open,
   onClose,
-  agentOrg,
+  project,
   onSave,
+  onSwitchProject,
 }: AgentSettingsDialogProps) {
   const { t } = useTranslation();
   const [name, setName] = useState<string | null>(null);
@@ -66,27 +71,22 @@ export default function AgentSettingsDialog({
   const [isInviting, setIsInviting] = useState(false);
   const [memberEmail, setMemberEmail] = useState('');
   const [memberRole, setMemberRole] = useState<'admin' | 'viewer'>('admin');
-  const [members, setMembers] = useState<OrganizationMember[]>([]);
+  const [members, setMembers] = useState<ProjectMember[]>([]);
   const { user } = useAuth();
-  const [orgInvites, setOrgInvites] = useState<OrganizationInvite[]>([]);
-  const [userOrgs, setUserOrgs] = useState<OrganizationDoc[]>([]);
+  const [projectInvites, setProjectInvites] = useState<ProjectInvite[]>([]);
+  const [userProjects, setUserProjects] = useState<ProjectDoc[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [removeLoadingFor, setRemoveLoadingFor] = useState<string>('');
-  const [isSwitchingOrg, setIsSwitchingOrg] = useState(false);
-  // const [username, setUsername] = useState('');
-  // const [password, setPassword] = useState('');
-  // const [email, setEmail] = useState('');
-  // const [twoFactorSecret, setTwoFactorSecret] = useState('');
-  // const [showPassword, setShowPassword] = useState(false);
 
   const handleSave = async () => {
-    if (!name || !agentOrg) {
+    if (!name || !project) {
       return;
     }
     setIsLoading(true);
-    await onSave(agentOrg.id, {
+    await onSave({
       name,
     });
+    await refresh();
     setIsLoading(false);
     onClose();
   };
@@ -95,15 +95,15 @@ export default function AgentSettingsDialog({
     if (
       members.map((m) => m.email).includes(memberEmail) ||
       isInviting ||
-      !agentOrg
+      !project
     )
       return;
     setIsInviting(true);
     // TODO: Implement member invitation logic
     console.log('Inviting member:', { email: memberEmail, role: memberRole });
-    const isNew = await createOrganizationInvite(
-      agentOrg.id,
-      agentOrg.name,
+    const isNew = await createProjectInvite(
+      project.id,
+      project.name,
       memberEmail,
       {
         email: user?.email || '',
@@ -119,10 +119,10 @@ export default function AgentSettingsDialog({
       `${import.meta.env.VITE_JAM_SERVER_URL}/send-invite-email`,
       {
         email: memberEmail,
-        organizationName: agentOrg.name,
+        projectName: project.name,
       }
     );
-    await addMemberToOrganization(agentOrg.id, {
+    await addMemberToProject(project.id, {
       email: memberEmail,
       role: memberRole,
       isPending: true,
@@ -134,52 +134,53 @@ export default function AgentSettingsDialog({
     setMemberEmail('');
     toast.success(t('memberInvited', 'Member invited'));
     setIsInviting(false);
-    await fetchMembers();
+    await fetchMembers(project.id);
   };
-  const fetchMembers = async () => {
-    if (agentOrg) {
-      const members = await getOrganizationMembers(agentOrg.id);
-      setMembers(members);
-      setIsAdmin(
-        members.some(
-          (m) =>
-            m.email === user?.email &&
-            (m.role === 'admin' || m.role === 'creator')
-        )
-      );
-    }
+  const fetchMembers = async (projectId: string) => {
+    const members = await getProjectMembers(projectId);
+    setMembers(members);
+    setIsAdmin(
+      members.some(
+        (m) =>
+          m.email === user?.email &&
+          (m.role === 'admin' || m.role === 'creator')
+      )
+    );
   };
-  const fetchOrgInvites = async () => {
+  const fetchProjectInvites = async () => {
     if (user?.email) {
-      const invites = await getOrganizationInvitesFromEmail(user.email);
-      setOrgInvites(invites as OrganizationInvite[]);
+      const invites = await getProjectInvitesFromEmail(user.email);
+      setProjectInvites(invites as ProjectInvite[]);
     }
   };
-  // const fetchUserOrgs = async () => {
-  //   if (user && user.organizationIds) {
-  //     const orgs = await getOrganizationsByIds(user.organizationIds);
-  //     setUserOrgs(orgs);
-  //   }
-  // };
-  const refresh = () => {
-    fetchMembers();
-    fetchOrgInvites();
-    // fetchUserOrgs();
+  const fetchUserProjects = async () => {
+    if (user && user.projectIds) {
+      const projects = await getProjectsByIds(user.projectIds);
+      setUserProjects(projects);
+    }
+  };
+  const refresh = async () => {
+    await fetchMembers(project.id);
+    await fetchProjectInvites();
+    await fetchUserProjects();
   };
 
   useEffect(() => {
     if (open) {
-      if (members.length === 0) {
-        fetchMembers();
+      if (projectInvites.length === 0) {
+        fetchProjectInvites();
       }
-      if (orgInvites.length === 0) {
-        fetchOrgInvites();
+      if (userProjects.length === 0) {
+        fetchUserProjects();
       }
-      // if (userOrgs.length === 0) {
-      //   fetchUserOrgs();
-      // }
     }
-  }, [agentOrg, open, members, orgInvites, userOrgs]);
+  }, [project, open, members, projectInvites, userProjects]);
+
+  useEffect(() => {
+    if (open && project) {
+      fetchMembers(project.id);
+    }
+  }, [project, open]);
 
   // const handleDefaultOrgChange = async (orgId: string) => {
   //   if (!user?.uid || isSwitchingOrg) return;
@@ -202,7 +203,7 @@ export default function AgentSettingsDialog({
     <Dialog
       open={open}
       onClose={() => {
-        if (agentOrg) {
+        if (project) {
           onClose();
         }
       }}
@@ -211,235 +212,273 @@ export default function AgentSettingsDialog({
     >
       <DialogTitle>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <Typography variant="h6">
-            {agentOrg
-              ? t('agentSettings', 'Agent Settings')
-              : t('setupAgent', 'Setup Your Agent')}
-          </Typography>
+          <Box display="flex" gap={2} alignItems="center">
+            <Typography variant="h6">
+              {t('projectSettings', 'Project Settings')}
+            </Typography>
+            <Select
+              size="small"
+              color="info"
+              value={project.id}
+              onChange={async (e) => {
+                if (!user?.uid) {
+                  return;
+                }
+                const _project = userProjects.find(
+                  (p) => p.id === e.target.value
+                );
+                if (_project) {
+                  onSwitchProject(_project);
+                  await fetchMembers(_project.id);
+                }
+                // await updateUserDefaultProjectId(
+                //   user?.uid || '',
+                //   e.target.value
+                // );
+                // await refresh();
+              }}
+            >
+              {userProjects.map((p) => (
+                <MenuItem key={p.id} value={p.id}>
+                  {p.name}
+                </MenuItem>
+              ))}
+            </Select>
+            {project.id !== user?.defaultProjectId && (
+              <Button
+                variant="outlined"
+                color="secondary"
+                size="small"
+                sx={{ ml: 'auto' }}
+                onClick={async () => {
+                  if (!user?.uid) {
+                    return;
+                  }
+                  await updateUserDefaultProjectId(user.uid, project.id);
+                }}
+              >
+                Set as Default
+              </Button>
+            )}
+          </Box>
+
           <Typography variant="subtitle2" color="text.secondary">
             {t('accessSpaces', 'Access all your spaces in one place')}
           </Typography>
-          {(!user?.organizationIds || user?.organizationIds.length === 0) &&
-            orgInvites.length === 0 && (
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={async () => {
-                  const orgId = await createOrganization(
-                    {
-                      name: 'My Organization',
-                      createdAt: Date.now(),
-                      createdUserId: user?.uid || '',
-                    },
-                    [
-                      {
-                        email: user?.email || '',
-                        role: 'admin',
-                        isPending: false,
-                        isAccepted: true,
-                        createdAt: Date.now(),
-                        updatedAt: Date.now(),
-                        userId: user?.uid || '',
-                      },
-                    ]
-                  );
-                  await updateUserOrgId(user?.uid || '', orgId);
-                }}
-              >
-                {t('setupOrganization', 'Setup Organization')}
-              </Button>
-            )}
         </Box>
       </DialogTitle>
       <DialogContent>
-        {agentOrg ? (
-          <Stack gap={2} mt={2}>
+        <Stack gap={2} mt={2}>
+          <Box display="flex" gap={2} alignItems="center">
             <TextField
-              label={t('agentName', 'Agent Name')}
-              value={name === null ? agentOrg.name : name}
+              label={t('projectName', 'Project Name')}
+              value={name === null ? project.name : name}
               onChange={(e) => setName(e.target.value)}
               fullWidth
               variant="outlined"
+              color="info"
               disabled={!isAdmin}
+              size="small"
             />
-            <Divider sx={{ my: 2 }} />
-            <Typography variant="h6">{t('members', 'Members')}</Typography>
+            <LoadingButton
+              loading={isLoading}
+              onClick={handleSave}
+              variant="contained"
+              color="primary"
+              disabled={!name}
+            >
+              {t('save', 'Save')}
+            </LoadingButton>
+          </Box>
+          <Divider sx={{ my: 2 }} />
+          <Typography variant="h6">{t('members', 'Members')}</Typography>
 
-            <Box sx={{ overflow: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr>
-                    <th style={{ textAlign: 'left', padding: '8px' }}>
-                      {t('email', 'Email')}
-                    </th>
-                    <th style={{ textAlign: 'left', padding: '8px' }}>
-                      {t('role', 'Role')}
-                    </th>
-                    <th style={{ textAlign: 'left', padding: '8px' }}>
-                      {t('status', 'Status')}
-                    </th>
-                    <th style={{ textAlign: 'left', padding: '8px' }}>
-                      {t('actions', 'Actions')}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {members.map((m) => (
-                    <tr key={m.email}>
-                      <td style={{ padding: '8px' }}>{m.email}</td>
-                      <td
-                        style={{
-                          padding: '8px',
-                          textTransform: 'capitalize',
+          <Box sx={{ overflow: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  <th style={{ textAlign: 'left', padding: '8px' }}>
+                    {t('email', 'Email')}
+                  </th>
+                  <th style={{ textAlign: 'left', padding: '8px' }}>
+                    {t('role', 'Role')}
+                  </th>
+                  <th style={{ textAlign: 'left', padding: '8px' }}>
+                    {t('status', 'Status')}
+                  </th>
+                  <th style={{ textAlign: 'left', padding: '8px' }}>
+                    {t('actions', 'Actions')}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {members.map((m) => (
+                  <tr key={m.email}>
+                    <td style={{ padding: '8px' }}>{m.email}</td>
+                    <td
+                      style={{
+                        padding: '8px',
+                        textTransform: 'capitalize',
+                      }}
+                    >
+                      {m.role}
+                    </td>
+                    <td style={{ padding: '8px' }}>
+                      {m.isPending ? (
+                        <HourglassEmptyRoundedIcon />
+                      ) : (
+                        <DoneRoundedIcon />
+                      )}
+                    </td>
+                    <td style={{ padding: '8px' }}>
+                      <LoadingButton
+                        loading={removeLoadingFor === m.email}
+                        variant="outlined"
+                        color="primary"
+                        size="small"
+                        onClick={async () => {
+                          setRemoveLoadingFor(m.email);
+                          await removeUserFromMembers(
+                            m.email,
+                            project.id,
+                            m.userId || ''
+                          );
+                          await fetchMembers(project.id);
+                          setRemoveLoadingFor('');
                         }}
+                        disabled={
+                          user?.email === m.email || m.role === 'creator'
+                        }
                       >
-                        {m.role}
-                      </td>
-                      <td style={{ padding: '8px' }}>
-                        {m.isPending ? (
-                          <HourglassEmptyRoundedIcon />
-                        ) : (
-                          <DoneRoundedIcon />
-                        )}
-                      </td>
-                      <td style={{ padding: '8px' }}>
-                        <LoadingButton
-                          loading={removeLoadingFor === m.email}
-                          variant="contained"
-                          size="small"
-                          onClick={async () => {
-                            setRemoveLoadingFor(m.email);
-                            await removeUserFromMembers(
-                              m.email,
-                              agentOrg.id,
-                              m.userId || ''
-                            );
-                            await fetchMembers();
-                            setRemoveLoadingFor('');
-                          }}
-                          disabled={
-                            user?.email === m.email || m.role === 'creator'
-                          }
-                        >
-                          {t('remove', 'Remove')}
-                        </LoadingButton>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </Box>
+                        {t('remove', 'Remove')}
+                      </LoadingButton>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Box>
 
-            {isAdmin && (
-              <Box sx={{ mt: 3 }}>
-                <Typography variant="subtitle1" sx={{ mb: 2 }}>
-                  {t('inviteNewMember', 'Invite New Member')}
+          {isAdmin && (
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 2 }}>
+                {t('inviteNewMember', 'Invite New Member')}
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                <TextField
+                  label={t('email', 'Email')}
+                  value={memberEmail}
+                  onChange={(e) => setMemberEmail(e.target.value)}
+                  fullWidth
+                  variant="outlined"
+                  color="info"
+                  size="small"
+                  sx={{ flexBasis: '50%' }}
+                />
+                <FormControl sx={{ minWidth: 120 }} size="small">
+                  <InputLabel color="info">{t('role', 'Role')}</InputLabel>
+                  <Select
+                    value={memberRole}
+                    color="info"
+                    label={t('role', 'Role')}
+                    onChange={(e) =>
+                      setMemberRole(e.target.value as 'admin' | 'viewer')
+                    }
+                  >
+                    <MenuItem value="admin">{t('admin', 'Admin')}</MenuItem>
+                    <MenuItem value="viewer">{t('viewer', 'Viewer')}</MenuItem>
+                  </Select>
+                </FormControl>
+                <LoadingButton
+                  loading={isInviting}
+                  variant="outlined"
+                  color="secondary"
+                  size="small"
+                  onClick={handleInviteMember}
+                  disabled={!memberEmail}
+                  sx={{ flexBasis: '20%' }}
+                >
+                  {t('invite', 'Invite')}
+                </LoadingButton>
+              </Box>
+            </Box>
+          )}
+
+          {projectInvites.length > 0 && (
+            <Stack gap={2} mt={2}>
+              <Typography variant="h6">
+                {t('pendingInvites', 'Pending Invites')}
+              </Typography>
+              {projectInvites.length === 0 && (
+                <Typography variant="subtitle2" color="text.secondary">
+                  {t('noPendingInvites', 'No pending invites')}
                 </Typography>
-                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                  <TextField
-                    label={t('email', 'Email')}
-                    value={memberEmail}
-                    onChange={(e) => setMemberEmail(e.target.value)}
-                    fullWidth
+              )}
+              {projectInvites.map((invite) => (
+                <Box
+                  key={invite.projectId}
+                  display="flex"
+                  gap={2}
+                  alignItems="center"
+                >
+                  <Typography variant="body1">{invite.projectName}</Typography>
+                  <Button
                     variant="outlined"
                     size="small"
-                    sx={{ flexBasis: '50%' }}
-                  />
-                  <FormControl sx={{ minWidth: 120 }} size="small">
-                    <InputLabel>{t('role', 'Role')}</InputLabel>
-                    <Select
-                      value={memberRole}
-                      label={t('role', 'Role')}
-                      onChange={(e) =>
-                        setMemberRole(e.target.value as 'admin' | 'viewer')
+                    onClick={async () => {
+                      if (!user?.uid) {
+                        return;
                       }
-                    >
-                      <MenuItem value="admin">{t('admin', 'Admin')}</MenuItem>
-                      <MenuItem value="viewer">
-                        {t('viewer', 'Viewer')}
-                      </MenuItem>
-                    </Select>
-                  </FormControl>
-                  <LoadingButton
-                    loading={isInviting}
+                      await rejectProjectInvite(invite, user.uid);
+                      await refresh();
+                    }}
+                  >
+                    {t('decline', 'Decline')}
+                  </Button>
+                  <Button
                     variant="contained"
                     size="small"
-                    onClick={handleInviteMember}
-                    disabled={!memberEmail}
-                    sx={{ flexBasis: '20%' }}
+                    onClick={async () => {
+                      if (!user?.uid) {
+                        return;
+                      }
+                      await acceptProjectInvite(invite, user.uid);
+                      await refresh();
+                    }}
                   >
-                    {t('invite', 'Invite')}
-                  </LoadingButton>
+                    {t('accept', 'Accept')}
+                  </Button>
                 </Box>
-              </Box>
-            )}
-          </Stack>
-        ) : (
-          <Stack gap={2} mt={2}>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              {t('pendingInvites', 'Pending Invites')}
-            </Typography>
-            {orgInvites.length === 0 && (
-              <Typography variant="subtitle2" color="text.secondary">
-                {t('noPendingInvites', 'No pending invites')}
-              </Typography>
-            )}
-            {orgInvites.map((invite) => (
-              <Box
-                key={invite.organizationId}
-                display="flex"
-                gap={2}
-                alignItems="center"
-              >
-                <Typography variant="body1">
-                  {invite.organizationName}
-                </Typography>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={async () => {
-                    if (!user?.uid) {
-                      return;
-                    }
-                    console.log('Removing member:', invite);
-                    await rejectOrgInvite(invite, user.uid);
-                    await refresh();
-                  }}
-                >
-                  {t('decline', 'Decline')}
-                </Button>
-                <Button
-                  variant="contained"
-                  size="small"
-                  onClick={async () => {
-                    if (!user?.uid) {
-                      return;
-                    }
-                    await acceptOrgInvite(invite, user.uid);
-                    await refresh();
-                  }}
-                >
-                  {t('accept', 'Accept')}
-                </Button>
-              </Box>
-            ))}
-          </Stack>
-        )}
+              ))}
+            </Stack>
+          )}
+        </Stack>
       </DialogContent>
-      {isAdmin && (
-        <DialogActions>
-          <Button onClick={onClose}>{t('cancel', 'Cancel')}</Button>
-          <LoadingButton
-            loading={isLoading}
-            onClick={handleSave}
-            variant="contained"
-            color="primary"
-            disabled={!name}
-          >
-            {t('save', 'Save')}
-          </LoadingButton>
-        </DialogActions>
-      )}
     </Dialog>
   );
 }
+
+// onClick={async () => {
+//   if (!user?.uid) {
+//     return;
+//   }
+//   await createProject(
+//     {
+//       name: 'My Project',
+//       createdAt: Date.now(),
+//       createdUserId: user?.uid || '',
+//     },
+//     {
+//       email: user?.email || '',
+//       role: 'admin',
+//       isPending: false,
+//       isAccepted: true,
+//       createdAt: Date.now(),
+//       updatedAt: Date.now(),
+//       userId: user?.uid || '',
+//     },
+//     user.uid
+//   );
+//   await refresh();
+//   // await addProjectToUser(user?.uid || '', projectId);
+// }}

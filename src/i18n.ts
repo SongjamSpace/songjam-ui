@@ -122,6 +122,7 @@ const crmTranslationsEN = {
     'Connect your Twitter account to access Space analytics, audience insights, and AI-powered tools.',
   listenersLabel: 'listeners',
   noListenerData: 'No listener data available',
+  campaignsTab: 'Campaigns',
 };
 
 const audiencePanelTranslationsEN = {
@@ -227,6 +228,21 @@ const spaceAnalysisTranslationsEN = {
   totalConnectionsStat: 'Total Connections',
   noInteractionsForTopic: 'No interactions found for this topic.',
   noTopicsFound: 'No topics found in the analysis.',
+};
+
+const campaignTranslationsEN = {
+  createCampaignTitle: 'Create Campaign',
+  ctaTypeLabel: 'CTA Type',
+  followAccount: 'Follow Account',
+  futureSpace: 'Future Space',
+  setupCampaignButton: 'Setup Campaign',
+  campaignDetails: 'Campaign Details',
+  target: 'Target',
+  ctaTarget: 'CTA Target',
+  status: 'Status',
+  statusDraft: 'Draft',
+  selectAiModelLabel: 'Select AI Model',
+  generateMessagesButton: 'Generate Messages',
 };
 
 // --- Chinese Translations ---
@@ -341,6 +357,7 @@ const crmTranslationsZH = {
     '连接您的 Twitter 帐户以访问空间分析、听众洞察和 AI 驱动的工具。',
   listenersLabel: '听众',
   noListenerData: '无可用听众数据',
+  campaignsTab: '活动',
 };
 
 const audiencePanelTranslationsZH = {
@@ -447,6 +464,19 @@ const spaceAnalysisTranslationsZH = {
   noTopicsFound: '分析中未找到话题。',
 };
 
+const campaignTranslationsZH = {
+  createCampaignTitle: '创建活动',
+  ctaTypeLabel: 'CTA 类型',
+  followAccount: '关注账号',
+  futureSpace: '未来空间',
+  setupCampaignButton: '设置活动',
+  campaignDetails: '活动详情',
+  target: '目标',
+  ctaTarget: 'CTA 目标',
+  status: '状态',
+  statusDraft: '草稿',
+};
+
 // --- Merge Resources ---
 const enResources = {
   ...appTranslationsEN,
@@ -454,6 +484,7 @@ const enResources = {
   ...audiencePanelTranslationsEN,
   ...contentStudioTranslationsEN,
   ...spaceAnalysisTranslationsEN,
+  ...campaignTranslationsEN,
 };
 
 const zhResources = {
@@ -462,6 +493,7 @@ const zhResources = {
   ...audiencePanelTranslationsZH,
   ...contentStudioTranslationsZH,
   ...spaceAnalysisTranslationsZH,
+  ...campaignTranslationsZH,
 };
 
 // --- i18next Initialization ---
@@ -469,7 +501,7 @@ i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    debug: true, // Set to false in production
+    debug: false, // Set to false in production
     fallbackLng: 'en',
     detection: {
       order: ['path', 'navigator', 'htmlTag', 'localStorage', 'subdomain'],

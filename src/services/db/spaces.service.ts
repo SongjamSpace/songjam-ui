@@ -8,6 +8,7 @@ import {
   onSnapshot,
   orderBy,
   query,
+  setDoc,
   updateDoc,
 } from 'firebase/firestore';
 import { db, storage } from '../firebase.service';
@@ -28,7 +29,24 @@ export type TwitterUser = {
 export type SpaceListener = TwitterUser & {
   joinedAt: number;
   leftAt: number | null;
-  timeSpent: number | null;
+  timeSpent?: number | null;
+  timeSpentInMs?: number | null;
+
+  isProfileFetched: boolean;
+  followersCount: number;
+  followingCount: number;
+  tweetsCount: number;
+  biography: string;
+  location: string;
+  joined: string;
+  isPrivate: boolean;
+  isBlueVerified: boolean;
+  isVerified: boolean;
+  pinnedTweetIds: string[];
+  website: string;
+  canDm: boolean;
+  banner: string;
+  likesCount: number;
 };
 
 export type Segment = {
@@ -73,7 +91,8 @@ export type Space = {
   docCreatedAt?: number;
   transcriptionProgress?: TranscriptionProgress;
   scheduledStart?: number;
-  agentIds?: string[];
+  hasCampaign?: boolean;
+  projectIds?: string[];
 };
 
 export enum TranscriptionProgress {
@@ -91,6 +110,7 @@ const SUMMARY_SUBCOLLECTION = 'summaries';
 const SEGMENTS_SUBCOLLECTION = 'segments';
 const TWITTER_THREADS_SUBCOLLECTION = 'twitter_threads';
 const LISTENER_LOGS_SUBCOLLECTION = 'listenerLogs';
+const CAMPAIGNS_SUBCOLLECTION = 'campaigns';
 
 // Modify getSpace to handle null case properly
 export const getSpace = async (
@@ -241,9 +261,25 @@ export const getRawSpaceFromX = async (spaceId: string) => {
   return res.data.result as AudioSpace;
 };
 
+export const spaceColRef = collection(db, SPACE_COLLECTION);
+
 export const updateAgentToSpace = async (spaceId: string, agentId: string) => {
   const docRef = doc(db, SPACE_COLLECTION, spaceId);
   await updateDoc(docRef, {
     agentIds: arrayUnion(agentId),
+  });
+};
+
+export type Campaign = {
+  createdAt: number;
+  updatedAt: number;
+
+  ctaType: 'tweet' | 'dm';
+};
+
+export const createCampaign = async (spaceId: string, campaign: Campaign) => {
+  const docRef = doc(db, SPACE_COLLECTION, spaceId, CAMPAIGNS_SUBCOLLECTION);
+  await setDoc(docRef, {
+    createdAt: new Date(),
   });
 };

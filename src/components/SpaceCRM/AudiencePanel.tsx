@@ -285,15 +285,13 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
                 {t('listenersTab')}
                 <Chip
                   size="small"
-                  label={isSpaceOwner ? 'PRO' : 'Hosts & Speakers Only'}
+                  label={'PRO'}
                   sx={{
                     height: 16,
                     fontSize: '0.6rem',
-                    background: isSpaceOwner
-                      ? 'linear-gradient(90deg, #60a5fa, #8b5cf6)'
-                      : 'rgba(255,255,255,0.1)',
-                    color: isSpaceOwner ? '#fff' : 'inherit',
-                    fontWeight: isSpaceOwner ? 500 : 400,
+                    background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+                    color: '#fff',
+                    fontWeight: 500,
                     '& .MuiChip-label': {
                       px: 1,
                     },
@@ -302,7 +300,7 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
               </Box>
             }
             value="listeners"
-            disabled={!isSpaceOwner}
+            // disabled={!isSpaceOwner}
             sx={{
               '&.Mui-disabled': {
                 cursor: 'not-allowed',

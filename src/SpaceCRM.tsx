@@ -107,23 +107,23 @@ const SpaceCRM: React.FC = () => {
     useState<RetentionContext | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const [isSpaceOwner, setIsSpaceOwner] = useState(false);
+  // const [isSpaceOwner, setIsSpaceOwner] = useState(false);
   const [lastVisible, setLastVisible] = useState<any>(null);
   const [segments, setSegments] = useState<Segment[]>([]);
 
-  useEffect(() => {
-    if (user && space) {
-      setIsSpaceOwner(
-        [...space.admins, ...space.speakers].some(
-          (admin) => admin.twitterScreenName === user?.username
-        ) ||
-          [
-            'LHrZ0zGfQ2UnAjkRC8nt36EMmA23',
-            'M4dxYt7PjCNRcl0erxcpexCtisk2',
-          ].includes(user.uid || '')
-      );
-    }
-  }, [user, space]);
+  // useEffect(() => {
+  //   if (user && space) {
+  //     setIsSpaceOwner(
+  //       [...space.admins, ...space.speakers].some(
+  //         (admin) => admin.twitterScreenName === user?.username
+  //       ) ||
+  //         [
+  //           'LHrZ0zGfQ2UnAjkRC8nt36EMmA23',
+  //           'M4dxYt7PjCNRcl0erxcpexCtisk2',
+  //         ].includes(user.uid || '')
+  //     );
+  //   }
+  // }, [user, space]);
 
   // Fetch space data on mount
   useEffect(() => {
@@ -893,7 +893,7 @@ const SpaceCRM: React.FC = () => {
                     <AudiencePanel
                       onSelectAttendees={setSelectedAttendees}
                       space={space}
-                      isSpaceOwner={isSpaceOwner}
+                      isSpaceOwner
                     />
                   )}
 

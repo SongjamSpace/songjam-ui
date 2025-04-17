@@ -20,8 +20,6 @@
     "@types/lodash": "^4.17.16",
     "@types/react": "^18.2.55",
     "@types/react-dom": "^18.2.19",
-    "@types/react-virtualized-auto-sizer": "^1.0.4",
-    "@types/react-window": "^1.8.8",
     "@vitejs/plugin-react": "^4.2.1",
     "concurrently": "^8.2.2",
     "eslint": "^8.56.0",
@@ -34,6 +32,9 @@
   },
   "dependencies": {
     "@algolia/client-search": "^5.22.0",
+    "@dynamic-labs/ethereum": "^4.12.1",
+    "@dynamic-labs/ethers-v6": "^4.12.1",
+    "@dynamic-labs/sdk-react-core": "^4.12.1",
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.15.10",
@@ -63,12 +64,11 @@
     "react-icons": "^5.4.0",
     "react-markdown": "^10.1.0",
     "react-router-dom": "^6.22.1",
-    "react-virtualized-auto-sizer": "^1.0.26",
-    "react-window": "^1.8.11",
     "reactflow": "^11.11.4",
     "recharts": "^2.15.1",
     "remark-gfm": "^4.0.1",
     "three": "^0.174.0",
-    "typed.js": "^2.1.0"
+    "typed.js": "^2.1.0",
+    "viem": "^2.27.0"
   }
 }

@@ -38,16 +38,13 @@ import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import WhatshotIcon from '@mui/icons-material/Whatshot';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import EventIcon from '@mui/icons-material/Event';
-import SettingsIcon from '@mui/icons-material/Settings';
+import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 import Logo from './Logo';
 import { useAuthContext } from '../contexts/AuthContext';
 import LoginDialog from './LoginDialog';
 import {
-  AgentOrg,
   createAgentOrg,
-  getAgentsByUserId,
   updateSpaceToAgent,
-  AgentOrgDoc,
 } from '../services/db/agent.service';
 import AgentSettingsDialog from './AgentSettingsDialog';
 import { updateAgentOrg } from '../services/db/agent.service';
@@ -61,6 +58,13 @@ import { transcribeSpace } from '../services/transcription.service';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 import { query, collection, where } from 'firebase/firestore';
 import { db } from '../services/firebase.service';
+import {
+  getOrganizationsById,
+  Organization,
+  OrganizationDoc,
+  updateOrganization,
+} from '../services/db/organization.service';
+import { getOrganizationInvitesFromEmail } from '../services/db/organizationInvites.service';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -221,7 +225,7 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const { user, loading: authLoading } = useAuthContext();
   const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const [agentOrg, setAgentOrg] = useState<AgentOrgDoc | null>(null);
+  const [agentOrg, setAgentOrg] = useState<OrganizationDoc | null>(null);
   const [showAgentSettings, setShowAgentSettings] = useState(false);
   const [processingSpace, setProcessingSpace] = useState<AudioSpace | null>(
     null
@@ -231,7 +235,7 @@ export default function Dashboard() {
   const [agentSpaces, loadingAgentSpaces, errorAgentSpaces] = useCollectionData(
     query(
       collection(db, 'spaces'),
-      where('agentIds', 'array-contains', agentOrg?.id || '')
+      where('organizationIds', 'array-contains', agentOrg?.id || '')
     )
   );
   const scheduledSpaces =
@@ -308,30 +312,22 @@ export default function Dashboard() {
     setIsLoading(false);
   };
 
+  // TODO: Fetch actual spaces data from your backend
+  const fetchAgentOrg = async () => {
+    if (user && user.organizationIds.length > 0) {
+      const agentOrg = await getOrganizationsById(
+        user.defaultOrganizationId || user.organizationIds[0]
+      );
+      setAgentOrg(agentOrg);
+      setIsLoading(false);
+    } else if (user) {
+      setShowAuthDialog(false);
+      setShowAgentSettings(true);
+    }
+  };
   useEffect(() => {
     if (user) {
       setShowAuthDialog(false);
-      // TODO: Fetch actual spaces data from your backend
-      const fetchAgentOrg = async () => {
-        if (user && user.uid) {
-          const agentOrgs = await getAgentsByUserId(user.uid);
-          if (agentOrgs.length > 0) {
-            setAgentOrg(agentOrgs[0]);
-          } else {
-            const newAgentOrg: AgentOrg = {
-              name: `${user.displayName}'s Agent`,
-              createdAt: Date.now(),
-              createdUserId: user.uid,
-              authorizedUsers: [user.uid],
-            };
-            const agentOrgId = await createAgentOrg(newAgentOrg);
-            setAgentOrg({ ...newAgentOrg, id: agentOrgId });
-            // setShowAgentSettings(true);
-          }
-
-          setIsLoading(false);
-        }
-      };
       fetchAgentOrg();
     }
   }, [user]);
@@ -368,29 +364,23 @@ export default function Dashboard() {
 
   const handleSaveAgentSettings = async (
     agentId?: string,
-    updatedAgentOrg?: Partial<AgentOrg>
+    updatedAgentOrg?: Partial<Organization>
   ) => {
     if (!user?.uid) {
       toast.error(t('agentSettingsError', 'Error saving agent settings'));
       return;
     }
     try {
-      if (agentId && updatedAgentOrg) {
-        await updateAgentOrg(agentId, updatedAgentOrg);
-      } else if (updatedAgentOrg) {
-        await createAgentOrg({
-          name: updatedAgentOrg.name || '',
-          createdAt: Date.now(),
-          createdUserId: user.uid,
-          authorizedUsers: [user.uid],
-        });
+      // if (agentId && updatedAgentOrg) {
+      //   await updateAgentOrg(agentId, updatedAgentOrg);
+      // } else
+      if (updatedAgentOrg && agentOrg) {
+        await updateOrganization(agentOrg.id, updatedAgentOrg);
       }
       if (agentOrg) {
         setAgentOrg({ ...agentOrg, ...updatedAgentOrg });
       }
-      toast.success(
-        t('agentSettingsSaved', 'Agent settings saved successfully')
-      );
+      toast.success(t('agentSettingsSaved', 'Organization updated'));
     } catch (error) {
       console.error('Error saving agent settings:', error);
       toast.error(t('agentSettingsError', 'Error saving agent settings'));
@@ -776,13 +766,9 @@ export default function Dashboard() {
                     background: 'rgba(255, 255, 255, 0.1)',
                   },
                 }}
+                deleteIcon={<ExpandMoreRoundedIcon />}
+                onDelete={() => setShowAgentSettings(true)}
               />
-              <IconButton
-                onClick={() => setShowAgentSettings(true)}
-                sx={{ color: 'var(--text-secondary)' }}
-              >
-                <SettingsIcon />
-              </IconButton>
             </Box>
           )}
         </Toolbar>
@@ -972,9 +958,10 @@ export default function Dashboard() {
         </Paper>
 
         {/* Authentication Dialog */}
-        <LoginDialog open={showAuthDialog} />
+        <LoginDialog open={showAuthDialog && !authLoading} />
 
         {/* Agent Settings Dialog */}
+
         <AgentSettingsDialog
           open={showAgentSettings}
           onClose={() => setShowAgentSettings(false)}

@@ -30,8 +30,9 @@ const theme = createTheme({
         root: {
           borderRadius: '6px', // Updated to match your CSS
           textTransform: 'none',
-          fontWeight: 500,
-          padding: '0.8rem 1.5rem', // Updated to match your CSS
+          color: 'white',
+          // fontWeight: 500,
+          // padding: '0.8rem 1.5rem', // Updated to match your CSS
         },
         contained: {
           background: `linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)`, // Added gradient from CSS

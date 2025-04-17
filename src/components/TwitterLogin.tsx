@@ -41,7 +41,7 @@ const TwitterLogin = () => {
         borderRadius: '4px',
         padding: '0 32px',
         height: '40px',
-        // width: '100%',
+        // width: '250px',
         maxWidth: '380px',
         textTransform: 'none',
         gap: 1,

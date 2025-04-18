@@ -66,6 +66,9 @@ import CampaignManager from './components/SpaceCRM/CampaignManager';
 import LoginDialog from './components/LoginDialog';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import LoginDisplayBtn from './components/LoginDisplayBtn';
+import toast from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
+
 type CRMTab =
   | 'dashboard'
   | 'audience'
@@ -133,7 +136,14 @@ const SpaceCRM: React.FC = () => {
       const space = await getSpace(spaceId, (space) => {
         setSpace(space);
       });
-      setSpace(space);
+      if (space) {
+        setSpace(space);
+      } else {
+        toast.error('Space not found');
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 500);
+      }
     };
 
     fetchSpace();
@@ -1590,6 +1600,7 @@ const SpaceCRM: React.FC = () => {
           onClose={() => setShowAuthDialog(false)}
         />
       </Box>
+      <Toaster position="bottom-right" />
     </Box>
   );
 };

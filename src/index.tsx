@@ -18,7 +18,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
       <BrowserRouter>
         <DynamicContextProvider
           settings={{
-            environmentId: '50122aae-84e6-4955-a0aa-e0dc2ebf6fed',
+            environmentId: import.meta.env.VITE_DYNAMIC_ENV_ID,
             walletConnectors: [EthereumWalletConnectors],
           }}
         >

@@ -10,6 +10,8 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase.service';
 import { projectsColRef } from './projects.service';
+import { Project } from './projects.service';
+import { isCustomDomain } from '../../utils';
 
 export type SongjamUser = {
   displayName: string | null;
@@ -69,12 +71,14 @@ export const createUser = async (id: string, user: SongjamUser) => {
   // );
   const batch = writeBatch(db);
   const projectRef = doc(projectsColRef);
+  const domain = user.email.split('@')[1];
   batch.set(projectRef, {
     createdUserId: id,
     createdEmail: user.email,
     createdAt: Date.now(),
+    domain: isCustomDomain(domain) ? domain : '',
     name: 'Project 1',
-  });
+  } as Project);
   batch.set(doc(projectRef, 'members', user.email), {
     email: user.email,
     role: 'creator',
@@ -83,6 +87,7 @@ export const createUser = async (id: string, user: SongjamUser) => {
     createdAt: Date.now(),
     updatedAt: Date.now(),
     userId: id,
+    projectId: projectRef.id,
   });
   const projectId = projectRef.id;
 
@@ -91,6 +96,7 @@ export const createUser = async (id: string, user: SongjamUser) => {
     createdAt: serverTimestamp(),
     projectIds: arrayUnion(projectId),
     defaultProjectId: projectId,
+    domain: isCustomDomain(domain) ? domain : '',
   });
 
   await batch.commit();

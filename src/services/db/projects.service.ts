@@ -22,6 +22,7 @@ export type Project = {
   name: string;
   createdAt: number;
   createdUserId: string;
+  domain: string;
 };
 
 export type ProjectDoc = Project & {
@@ -241,4 +242,11 @@ export const removeUserFromMembers = async (
   }
 
   await batch.commit();
+};
+
+export const getProjectsByDomain = async (domain: string) => {
+  const projects = await getDocs(
+    query(collection(db, COLLECTION_NAME), where('domain', '==', domain))
+  );
+  return projects.docs.map((doc) => doc.data() as Project);
 };

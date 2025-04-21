@@ -26,7 +26,6 @@ import {
   ListItemSecondaryAction,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import BookmarkIcon from '@mui/icons-material/Bookmark';
 import CloseIcon from '@mui/icons-material/Close';
 import {
   getSpaceListeners,
@@ -34,8 +33,6 @@ import {
   TwitterUser,
 } from '../../services/db/spaces.service';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../hooks/useAuth';
-import FilterListIcon from '@mui/icons-material/FilterList';
 // All possible interests for filtering
 const ALL_INTERESTS = [
   'AI',
@@ -76,13 +73,13 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
   isSpaceOwner,
 }) => {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  // const { user } = useAuthContext();
   const [searchTerm, setSearchTerm] = useState('');
   // const [selectedAttendees, setSelectedAttendees] = useState<string[]>([]);
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
-  const [userDetailDrawer, setUserDetailDrawer] = useState<TwitterUser | null>(
-    null
-  );
+  // const [userDetailDrawer, setUserDetailDrawer] = useState<TwitterUser | null>(
+  //   null
+  // );
   const [activeTab, setActiveTab] = useState<'speakers' | 'listeners'>(
     'speakers'
   );
@@ -173,7 +170,7 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
   };
 
   const handleUserClick = (user: TwitterUser) => {
-    setUserDetailDrawer(user);
+    // setUserDetailDrawer(user);
   };
 
   const handleClearFilters = () => {

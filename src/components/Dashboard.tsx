@@ -54,6 +54,7 @@ import {
   updateProject,
   updateSpaceToProject,
 } from '../services/db/projects.service';
+import LoginDisplayBtn from './LoginDisplayBtn';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -721,7 +722,6 @@ export default function Dashboard() {
               Songjam
             </Typography>
           </Box>
-
           {/* Project Name and Settings */}
           {!defaultProject ? (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -760,6 +760,8 @@ export default function Dashboard() {
               />
             </Box>
           )}
+
+          {/* <LoginDisplayBtn setShowAuthDialog={setShowAuthDialog} /> */}
         </Toolbar>
       </AppBar>
 

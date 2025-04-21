@@ -2,21 +2,19 @@ import {
   collection,
   getDoc,
   doc,
-  addDoc,
   updateDoc,
   getDocs,
   query,
   where,
   increment,
   setDoc,
-  deleteDoc,
   writeBatch,
   arrayRemove,
   arrayUnion,
   documentId,
 } from 'firebase/firestore';
 import { db } from '../firebase.service';
-import { updateAgentToSpace, spaceColRef } from './spaces.service';
+import { spaceColRef } from './spaces.service';
 import { USER_COLLECTION } from './user.service';
 import { ProjectInvite } from './projectInvites.service';
 
@@ -123,7 +121,6 @@ export const updateSpaceToProject = async (
   batch.update(doc(spaceColRef, spaceId), {
     projectIds: arrayUnion(projectId),
   });
-  // await updateAgentToSpace(spaceId, projectId);
   await batch.commit();
 };
 

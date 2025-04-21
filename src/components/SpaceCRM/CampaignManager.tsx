@@ -12,12 +12,10 @@ import {
   Grid,
   Card,
   CardContent,
-  CardActions,
   IconButton,
   Chip,
   CircularProgress,
   Alert,
-  Divider,
   Avatar,
   Tooltip,
 } from '@mui/material';
@@ -26,13 +24,11 @@ import {
   Edit as EditIcon,
   Check as CheckIcon,
   Close as CloseIcon,
-  Person as PersonIcon,
   Timer as TimerIcon,
   Error as ErrorIcon,
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
-import axios from 'axios';
 import {
   getSpaceListeners,
   SpaceListener,
@@ -41,25 +37,15 @@ import { AI_MODELS, generateContent } from '../../services/ai.service';
 import { LoadingButton } from '@mui/lab';
 import LocationOnRoundedIcon from '@mui/icons-material/LocationOnRounded';
 import VerifiedRoundedIcon from '@mui/icons-material/VerifiedRounded';
-
-interface Campaign {
-  id: string;
-  ctaType: 'follow' | 'space';
-  ctaTarget: string;
-  status: 'draft' | 'generating' | 'ready' | 'sending' | 'completed';
-  messages: {
-    [userId: string]: {
-      content: string;
-      status: 'pending' | 'generating' | 'ready' | 'sent' | 'failed';
-    };
-  };
-}
+import { Campaign, createCampaign } from '../../services/db/campaign.service';
+import { useAuthContext } from '../../contexts/AuthContext';
 
 const CampaignManager: React.FC<{
   spaceId: string;
   space: any;
 }> = ({ spaceId, space }) => {
   const { t } = useTranslation();
+  const { user } = useAuthContext();
   const [listeners, setListeners] = useState<SpaceListener[]>([]);
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [isLoadingListeners, setIsLoadingListeners] = useState(false);
@@ -170,19 +156,26 @@ const CampaignManager: React.FC<{
     }
   };
 
-  const handleCreateCampaign = () => {
+  const handleCreateCampaign = async () => {
+    if (!user || !user.uid) {
+      setError('Please login to create a campaign');
+      return;
+    }
     if (!ctaTarget.trim()) {
       setError('Please provide a CTA target');
       return;
     }
 
     const newCampaign: Campaign = {
-      id: Date.now().toString(),
       ctaType,
       ctaTarget,
       status: 'draft',
+      spaceId,
+      userId: user.uid,
+      projectId: user.defaultProjectId || '',
       messages: {},
     };
+    await createCampaign(newCampaign);
 
     setCampaign(newCampaign);
   };
@@ -190,7 +183,7 @@ const CampaignManager: React.FC<{
   const handleGenerateMessages = async () => {
     if (!campaign || !listeners.length) return;
 
-    setCampaign({ ...campaign, status: 'generating', messages: {} });
+    setCampaign({ ...campaign, status: 'generating' });
     setIsGeneratingMessages(true);
     setIsPaused(false);
     setError(null);
@@ -230,76 +223,76 @@ const CampaignManager: React.FC<{
           ctaInstruction = `The goal is to inform them about a future space: ${campaign.ctaTarget}.`;
         }
 
-        //         // - Their Twitter bio: "${listener.bio || 'Not available'}"
-        //         const prompt = `Generate a short, snappy, personalized Twitter DM for ${
-        //           listener.displayName
-        //         } (@${listener.twitterScreenName}).
+        // - Their Twitter bio: "${listener.bio || 'Not available'}"
+        const prompt = `Generate a short, snappy, personalized Twitter DM for ${
+          listener.displayName
+        } (@${listener.twitterScreenName}).
 
-        // Context:
-        // - They listened to our Twitter Space from ${joinTime} to ${leaveTime} (duration: ${duration} minutes).
-        // - The Space Title: ${space?.title || 'Our recent discussion'}
-        // - Language: Respond in ${currentLang === 'zh' ? 'Chinese' : 'English'}.
+        Context:
+        - They listened to our Twitter Space from ${joinTime} to ${leaveTime} (duration: ${duration} minutes).
+        - The Space Title: ${space?.title || 'Our recent discussion'}
+        - Language: Respond in ${currentLang === 'zh' ? 'Chinese' : 'English'}.
 
-        // Instructions:
-        // - Keep it brief and engaging (1-2 sentences).
-        // - Reference their listening time OR something specific from their bio to personalize it.
-        // - ${ctaInstruction}
-        // - End with a friendly closing like "Let's connect!" or "Hope to see you there!" or similar.
-        // - Output only the DM text, nothing else.`;
+        Instructions:
+        - Keep it brief and engaging (1-2 sentences).
+        - Reference their listening time OR something specific from their bio to personalize it.
+        - ${ctaInstruction}
+        - End with a friendly closing like "Let's connect!" or "Hope to see you there!" or similar.
+        - Output only the DM text, nothing else.`;
 
-        //         try {
-        //           let generatedDm = '';
-        //           await generateContent(selectedModel, prompt, '', (chunk) => {
-        //             generatedDm += chunk;
-        //             setCampaign((prevCampaign) => {
-        //               if (!prevCampaign || !prevCampaign.messages[listener.userId])
-        //                 return prevCampaign;
-        //               return {
-        //                 ...prevCampaign,
-        //                 messages: {
-        //                   ...prevCampaign.messages,
-        //                   [listener.userId]: {
-        //                     ...prevCampaign.messages[listener.userId],
-        //                     content: generatedDm,
-        //                   },
-        //                 },
-        //               };
-        //             });
-        //           });
+        try {
+          let generatedDm = '';
+          await generateContent(selectedModel, prompt, '', (chunk) => {
+            generatedDm += chunk;
+            setCampaign((prevCampaign) => {
+              if (!prevCampaign || !prevCampaign.messages[listener.userId])
+                return prevCampaign;
+              return {
+                ...prevCampaign,
+                messages: {
+                  ...prevCampaign.messages,
+                  [listener.userId]: {
+                    ...prevCampaign.messages[listener.userId],
+                    content: generatedDm,
+                  },
+                },
+              };
+            });
+          });
 
-        //           setCampaign((prevCampaign) => {
-        //             if (!prevCampaign || !prevCampaign.messages[listener.userId])
-        //               return prevCampaign;
-        //             return {
-        //               ...prevCampaign,
-        //               messages: {
-        //                 ...prevCampaign.messages,
-        //                 [listener.userId]: {
-        //                   content: generatedDm.trim(),
-        //                   status: 'ready',
-        //                 },
-        //               },
-        //             };
-        //           });
-        //         } catch (genError: any) {
-        //           console.error(
-        //             `Error generating DM for ${listener.twitterScreenName}:`,
-        //             genError
-        //           );
-        //           setCampaign((prevCampaign) => {
-        //             if (!prevCampaign) return prevCampaign;
-        //             return {
-        //               ...prevCampaign,
-        //               messages: {
-        //                 ...prevCampaign.messages,
-        //                 [listener.userId]: {
-        //                   content: t('errorGeneratingDm'),
-        //                   status: 'failed',
-        //                 },
-        //               },
-        //             };
-        //           });
-        //         }
+          setCampaign((prevCampaign) => {
+            if (!prevCampaign || !prevCampaign.messages[listener.userId])
+              return prevCampaign;
+            return {
+              ...prevCampaign,
+              messages: {
+                ...prevCampaign.messages,
+                [listener.userId]: {
+                  content: generatedDm.trim(),
+                  status: 'ready',
+                },
+              },
+            };
+          });
+        } catch (genError: any) {
+          console.error(
+            `Error generating DM for ${listener.twitterScreenName}:`,
+            genError
+          );
+          setCampaign((prevCampaign) => {
+            if (!prevCampaign) return prevCampaign;
+            return {
+              ...prevCampaign,
+              messages: {
+                ...prevCampaign.messages,
+                [listener.userId]: {
+                  content: t('errorGeneratingDm'),
+                  status: 'failed',
+                },
+              },
+            };
+          });
+        }
       }
       setCampaign((prevCampaign) => {
         if (!prevCampaign) return prevCampaign;

@@ -54,6 +54,7 @@ import {
   updateProject,
   updateSpaceToProject,
 } from '../services/db/projects.service';
+import LoginDisplayBtn from './LoginDisplayBtn';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -722,44 +723,7 @@ export default function Dashboard() {
             </Typography>
           </Box>
 
-          {/* Project Name and Settings */}
-          {!defaultProject ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Skeleton
-                variant="rounded"
-                width={100}
-                height={32}
-                sx={{
-                  bgcolor: 'rgba(255, 255, 255, 0.05)',
-                  borderRadius: '16px',
-                }}
-              />
-              <Skeleton
-                variant="circular"
-                width={32}
-                height={32}
-                sx={{
-                  bgcolor: 'rgba(255, 255, 255, 0.05)',
-                }}
-              />
-            </Box>
-          ) : (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Chip
-                label={defaultProject.name}
-                sx={{
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  '&:hover': {
-                    background: 'rgba(255, 255, 255, 0.1)',
-                  },
-                }}
-                deleteIcon={<ExpandMoreRoundedIcon />}
-                onDelete={() => setShowAgentSettings(true)}
-              />
-            </Box>
-          )}
+          <LoginDisplayBtn setShowAuthDialog={setShowAuthDialog} />
         </Toolbar>
       </AppBar>
 

@@ -953,9 +953,7 @@ const SpaceCRM: React.FC = () => {
                         </Typography>
                         <LoadingButton
                           loading={isDownloading}
-                          disabled={
-                            !space || space.transcriptionStatus !== 'ENDED'
-                          }
+                          disabled={!space || space.transcriptionProgress !== 6}
                           startIcon={<DownloadIcon />}
                           onClick={onDownloadRecording}
                           sx={{

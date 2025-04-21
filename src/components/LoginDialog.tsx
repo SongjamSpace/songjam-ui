@@ -17,7 +17,7 @@ import DynamicLogin from './DynamicLogin';
 // import SendIcon from '@mui/icons-material/Send';
 // import { signInWithEmailLink } from 'firebase/auth';
 // import { auth } from '../services/firebase.service';
-import { useAuth } from '../hooks/useAuth';
+import { useAuthContext } from '../contexts/AuthContext';
 interface LoginDialogProps {
   open: boolean;
   onClose?: () => void;
@@ -25,7 +25,7 @@ interface LoginDialogProps {
 
 const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
   // const [email, setEmail] = useState('');
-  const { loading } = useAuth();
+  const { loading } = useAuthContext();
   return (
     <Dialog
       open={open}

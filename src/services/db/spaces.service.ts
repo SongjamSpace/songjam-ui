@@ -93,6 +93,7 @@ export type Space = {
   scheduledStart?: number;
   hasCampaign?: boolean;
   projectIds?: string[];
+  createdProjectId?: string;
 };
 
 export enum TranscriptionProgress {
@@ -262,24 +263,3 @@ export const getRawSpaceFromX = async (spaceId: string) => {
 };
 
 export const spaceColRef = collection(db, SPACE_COLLECTION);
-
-export const updateAgentToSpace = async (spaceId: string, agentId: string) => {
-  const docRef = doc(db, SPACE_COLLECTION, spaceId);
-  await updateDoc(docRef, {
-    agentIds: arrayUnion(agentId),
-  });
-};
-
-export type Campaign = {
-  createdAt: number;
-  updatedAt: number;
-
-  ctaType: 'tweet' | 'dm';
-};
-
-export const createCampaign = async (spaceId: string, campaign: Campaign) => {
-  const docRef = doc(db, SPACE_COLLECTION, spaceId, CAMPAIGNS_SUBCOLLECTION);
-  await setDoc(docRef, {
-    createdAt: new Date(),
-  });
-};

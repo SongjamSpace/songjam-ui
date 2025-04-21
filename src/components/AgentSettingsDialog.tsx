@@ -44,10 +44,10 @@ import {
   ProjectInvite,
 } from '../services/db/projectInvites.service';
 import { toast } from 'react-hot-toast';
-import { useAuth } from '../hooks/useAuth';
 import HourglassEmptyRoundedIcon from '@mui/icons-material/HourglassEmptyRounded';
 import DoneRoundedIcon from '@mui/icons-material/DoneRounded';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
+import { useAuthContext } from '../contexts/AuthContext';
 // import VisibilityIcon from '@mui/icons-material/Visibility';
 // import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
@@ -73,7 +73,7 @@ export default function AgentSettingsDialog({
   const [memberEmail, setMemberEmail] = useState('');
   const [memberRole, setMemberRole] = useState<'admin' | 'viewer'>('admin');
   const [members, setMembers] = useState<ProjectMember[]>([]);
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const [projectInvites, setProjectInvites] = useState<ProjectInvite[]>([]);
   const [userProjects, setUserProjects] = useState<ProjectDoc[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);

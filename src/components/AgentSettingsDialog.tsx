@@ -14,10 +14,6 @@ import {
   InputLabel,
   Divider,
   Stack,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemButton,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { LoadingButton } from '@mui/lab';
@@ -31,12 +27,8 @@ import {
   ProjectMember,
   removeUserFromMembers,
   getProjectsByIds,
-  createProject,
 } from '../services/db/projects.service';
-import {
-  addProjectToUser,
-  updateUserDefaultProjectId,
-} from '../services/db/user.service';
+import { updateUserDefaultProjectId } from '../services/db/user.service';
 import axios from 'axios';
 import {
   createProjectInvite,
@@ -75,6 +67,7 @@ export default function AgentSettingsDialog({
   const [members, setMembers] = useState<ProjectMember[]>([]);
   const { user } = useAuthContext();
   const [projectInvites, setProjectInvites] = useState<ProjectInvite[]>([]);
+  // const [domainProjects, setDomainProjects] = useState<ProjectDoc[]>([]);
   const [userProjects, setUserProjects] = useState<ProjectDoc[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [removeLoadingFor, setRemoveLoadingFor] = useState<string>('');

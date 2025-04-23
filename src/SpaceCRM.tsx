@@ -22,10 +22,6 @@ import {
   TextField,
   CircularProgress,
   Alert,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
 } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import InsightsIcon from '@mui/icons-material/Insights';
@@ -62,12 +58,12 @@ import AlgoliaSearchTranscription from './components/AlgoliaSearchTranscription'
 import { getSpaceAudioDownloadUrl } from './services/db/spaces.service';
 import ListenerRetentionChart from './components/SpaceCRM/ListenerRetentionChart';
 import type { RetentionContext } from './components/SpaceCRM/ListenerRetentionChart';
-import CampaignManager from './components/SpaceCRM/CampaignManager';
 import LoginDialog from './components/LoginDialog';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import LoginDisplayBtn from './components/LoginDisplayBtn';
 import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
+import CampaignList from './components/SpaceCRM/CampaignList';
 
 type CRMTab =
   | 'dashboard'
@@ -680,7 +676,12 @@ const SpaceCRM: React.FC = () => {
                     label={
                       <Box
                         component="span"
-                        sx={{ display: 'flex', alignItems: 'center' }}
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          width: '100%',
+                        }}
                       >
                         {t('listenerRetentionTab')}
                         <Chip
@@ -698,13 +699,36 @@ const SpaceCRM: React.FC = () => {
                     }
                     value="listenerRetention"
                   />
-                  {space?.hasCampaign && (
-                    <Tab
-                      icon={<CampaignIcon />}
-                      label={t('campaignsTab')}
-                      value="campaigns"
-                    />
-                  )}
+                  {/* {space?.hasCampaign && ( */}
+                  <Tab
+                    icon={<CampaignIcon />}
+                    label={
+                      <Box
+                        component="span"
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          width: '100%',
+                        }}
+                      >
+                        {t('campaignsTab')}
+                        <Chip
+                          size="small"
+                          label={t('pro')}
+                          sx={{
+                            ml: 1,
+                            height: 16,
+                            fontSize: '0.6rem',
+                            background:
+                              'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+                          }}
+                        />
+                      </Box>
+                    }
+                    value="campaigns"
+                  />
+                  {/* )} */}
                 </Tabs>
 
                 {/* TODO: Add campaign creation */}
@@ -994,7 +1018,7 @@ const SpaceCRM: React.FC = () => {
                   )}
 
                   {activeTab === 'campaigns' && spaceId && (
-                    <CampaignManager spaceId={spaceId} space={space} />
+                    <CampaignList spaceId={spaceId} space={space} />
                   )}
                 </Box>
               </Paper>

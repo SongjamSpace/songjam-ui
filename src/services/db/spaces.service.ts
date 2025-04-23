@@ -1,5 +1,4 @@
 import {
-  arrayUnion,
   collection,
   doc,
   getDoc,
@@ -8,8 +7,7 @@ import {
   onSnapshot,
   orderBy,
   query,
-  setDoc,
-  updateDoc,
+  where,
 } from 'firebase/firestore';
 import { db, storage } from '../firebase.service';
 import { getDownloadURL } from 'firebase/storage';
@@ -213,6 +211,15 @@ export const getSpaceListeners = async (spaceId: string) => {
   const colRef = query(
     collection(db, SPACE_COLLECTION, spaceId, LISTENER_LOGS_SUBCOLLECTION),
     orderBy('joinedAt', 'asc')
+  );
+  const snapshot = await getDocs(colRef);
+  return snapshot.docs.map((doc) => doc.data() as SpaceListener);
+};
+
+export const getSpaceListenersForDm = async (spaceId: string) => {
+  const colRef = query(
+    collection(db, SPACE_COLLECTION, spaceId, LISTENER_LOGS_SUBCOLLECTION),
+    where('canDm', '==', true)
   );
   const snapshot = await getDocs(colRef);
   return snapshot.docs.map((doc) => doc.data() as SpaceListener);

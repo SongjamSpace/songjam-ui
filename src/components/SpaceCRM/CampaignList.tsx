@@ -166,6 +166,7 @@ const CampaignList = ({ spaceId, space }: Props) => {
       setError(null);
     } catch (err) {
       setError('Failed to create campaign');
+      toast.error('Failed to create campaign');
     }
   };
 

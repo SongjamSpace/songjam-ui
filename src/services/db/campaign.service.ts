@@ -37,7 +37,7 @@ export const CAMPAIGN_MESSAGES_SUBCOLLECTION = 'messages';
 export const createCampaign = async (campaign: Campaign) => {
   const campaignRef = collection(db, CAMPAIGN_COLLECTION);
   const newCampaignRef = await addDoc(campaignRef, campaign);
-  return { ...newCampaignRef, id: newCampaignRef.id } as unknown as Campaign;
+  return { ...campaign, id: newCampaignRef.id } as unknown as Campaign;
 };
 
 export const getCampaigns = async (spaceId: string, projectId: string) => {

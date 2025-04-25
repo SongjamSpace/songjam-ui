@@ -16,6 +16,8 @@ import {
   LinearProgress,
   IconButton,
   TextField,
+  Stack,
+  Button,
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import ArrowBack from '@mui/icons-material/ArrowBack';
@@ -236,6 +238,7 @@ const CampaignManager: React.FC<{
                   boxShadow: '0 4px 12px rgba(96, 165, 250, 0.3)',
                 },
               }}
+              disabled={listeners.length === 0}
             >
               {t('generateMessagesButton')}
             </LoadingButton>
@@ -348,6 +351,19 @@ const CampaignManager: React.FC<{
               </Grid>
             );
           })}
+        {listeners.length === 0 && (
+          <Stack gap={2}>
+            <Typography variant="body2" color="text.secondary">
+              No listeners found
+            </Typography>
+            <Button
+              variant="contained"
+              onClick={() => fetchListenersAndProfiles()}
+            >
+              Fetch Listeners
+            </Button>
+          </Stack>
+        )}
         {campaign.status !== 'DRAFT' && campaign.id && (
           <CampaignListeners
             campaignId={campaign.id}

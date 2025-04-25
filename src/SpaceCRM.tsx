@@ -64,6 +64,7 @@ import LoginDisplayBtn from './components/LoginDisplayBtn';
 import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
 import CampaignList from './components/SpaceCRM/CampaignList';
+import ViewersChart from './components/LiveDashboard/ViewersChart';
 
 type CRMTab =
   | 'dashboard'
@@ -133,6 +134,7 @@ const SpaceCRM: React.FC = () => {
         setSpace(space);
       });
       if (space) {
+        setActiveTab(space.isBroadcast ? 'listenerRetention' : 'audience');
         setSpace(space);
       } else {
         toast.error('Space not found');
@@ -567,11 +569,19 @@ const SpaceCRM: React.FC = () => {
                     label="Dashboard"
                     value="dashboard"
                   /> */}
-                  <Tab
-                    icon={<PeopleIcon />}
-                    label={t('audienceTab')}
-                    value="audience"
-                  />
+                  {space && space.isBroadcast ? (
+                    <Tab
+                      icon={<PeopleIcon />}
+                      label={t('listenerRetentionTab')}
+                      value="listenerRetention"
+                    />
+                  ) : (
+                    <Tab
+                      icon={<PeopleIcon />}
+                      label={t('audienceTab')}
+                      value="audience"
+                    />
+                  )}
                   <Tab
                     disabled={
                       (space?.transcriptionProgress || 0) !==
@@ -671,63 +681,67 @@ const SpaceCRM: React.FC = () => {
                     }
                     value="transcription"
                   />
-                  <Tab
-                    icon={<InsightsIcon />}
-                    label={
-                      <Box
-                        component="span"
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          width: '100%',
-                        }}
-                      >
-                        {t('listenerRetentionTab')}
-                        <Chip
-                          size="small"
-                          label={t('pro')}
+                  {space && !space.isBroadcast && (
+                    <Tab
+                      icon={<InsightsIcon />}
+                      label={
+                        <Box
+                          component="span"
                           sx={{
-                            ml: 1,
-                            height: 16,
-                            fontSize: '0.6rem',
-                            background:
-                              'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            width: '100%',
                           }}
-                        />
-                      </Box>
-                    }
-                    value="listenerRetention"
-                  />
+                        >
+                          {t('listenerRetentionTab')}
+                          <Chip
+                            size="small"
+                            label={t('pro')}
+                            sx={{
+                              ml: 1,
+                              height: 16,
+                              fontSize: '0.6rem',
+                              background:
+                                'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+                            }}
+                          />
+                        </Box>
+                      }
+                      value="listenerRetention"
+                    />
+                  )}
                   {/* {space?.hasCampaign && ( */}
-                  <Tab
-                    icon={<CampaignIcon />}
-                    label={
-                      <Box
-                        component="span"
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          width: '100%',
-                        }}
-                      >
-                        {t('campaignsTab')}
-                        <Chip
-                          size="small"
-                          label={t('pro')}
+                  {space && !space.isBroadcast && (
+                    <Tab
+                      icon={<CampaignIcon />}
+                      label={
+                        <Box
+                          component="span"
                           sx={{
-                            ml: 1,
-                            height: 16,
-                            fontSize: '0.6rem',
-                            background:
-                              'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            width: '100%',
                           }}
-                        />
-                      </Box>
-                    }
-                    value="campaigns"
-                  />
+                        >
+                          {t('campaignsTab')}
+                          <Chip
+                            size="small"
+                            label={t('pro')}
+                            sx={{
+                              ml: 1,
+                              height: 16,
+                              fontSize: '0.6rem',
+                              background:
+                                'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+                            }}
+                          />
+                        </Box>
+                      }
+                      value="campaigns"
+                    />
+                  )}
                   {/* )} */}
                 </Tabs>
 
@@ -882,20 +896,29 @@ const SpaceCRM: React.FC = () => {
                     label="Dashboard"
                     value="dashboard"
                   /> */}
-                  <Tab icon={<PeopleIcon />} value="audience" />
+                  {space && !space.isBroadcast && (
+                    <Tab icon={<PeopleIcon />} value="audience" />
+                  )}
+                  {space && space.isBroadcast && (
+                    <Tab icon={<InsightsIcon />} value="listenerRetention" />
+                  )}
                   <Tab icon={<MessageIcon />} value="content" />
                   <Tab icon={<ForumIcon />} value="timeline" />
                   <Tab icon={<DescriptionIcon />} value="transcription" />
-                  <Tab
-                    icon={<InsightsIcon />}
-                    label={t('listenerRetentionTab')}
-                    value="listenerRetention"
-                  />
-                  <Tab
-                    icon={<CampaignIcon />}
-                    label={t('campaignsTab')}
-                    value="campaigns"
-                  />
+                  {space && !space.isBroadcast && (
+                    <Tab
+                      icon={<InsightsIcon />}
+                      label={t('listenerRetentionTab')}
+                      value="listenerRetention"
+                    />
+                  )}
+                  {space && !space.isBroadcast && (
+                    <Tab
+                      icon={<CampaignIcon />}
+                      label={t('campaignsTab')}
+                      value="campaigns"
+                    />
+                  )}
                 </Tabs>
 
                 {/* Content based on active tab */}
@@ -1008,14 +1031,19 @@ const SpaceCRM: React.FC = () => {
                     </Box>
                   )}
 
-                  {activeTab === 'listenerRetention' && (
-                    <ListenerRetentionChart
-                      spaceId={spaceId}
-                      startedAt={space?.startedAt}
-                      endedAt={space?.endedAt}
-                      onContextUpdate={handleRetentionContextUpdate}
-                    />
-                  )}
+                  {activeTab === 'listenerRetention' &&
+                    space &&
+                    !space.isBroadcast && (
+                      <ListenerRetentionChart
+                        spaceId={spaceId}
+                        startedAt={space?.startedAt}
+                        endedAt={space?.endedAt}
+                        onContextUpdate={handleRetentionContextUpdate}
+                      />
+                    )}
+                  {activeTab === 'listenerRetention' &&
+                    space &&
+                    space.isBroadcast && <ViewersChart broadcast={space} />}
 
                   {activeTab === 'campaigns' && spaceId && (
                     <CampaignList spaceId={spaceId} space={space} />
@@ -1498,12 +1526,16 @@ const SpaceCRM: React.FC = () => {
                 },
               }}
             >
-              {/* <Tab icon={<DashboardIcon />} label="Dashboard" value="dashboard" /> */}
-              <Tab
-                icon={<PeopleIcon />}
-                label={t('audienceTab')}
-                value="audience"
-              />
+              {space && !space.isBroadcast && (
+                <Tab
+                  icon={<PeopleIcon />}
+                  label={t('audienceTab')}
+                  value="audience"
+                />
+              )}
+              {space && space.isBroadcast && (
+                <Tab icon={<InsightsIcon />} value="listenerRetention" />
+              )}
               <Tab
                 icon={<MessageIcon />}
                 label={t('contentTab')}
@@ -1519,16 +1551,20 @@ const SpaceCRM: React.FC = () => {
                 label={t('transcriptionTab')}
                 value="transcription"
               />
-              <Tab
-                icon={<InsightsIcon />}
-                label={t('listenerRetentionTab')}
-                value="listenerRetention"
-              />
-              <Tab
-                icon={<CampaignIcon />}
-                label={t('campaignsTab')}
-                value="campaigns"
-              />
+              {space && !space.isBroadcast && (
+                <Tab
+                  icon={<InsightsIcon />}
+                  label={t('listenerRetentionTab')}
+                  value="listenerRetention"
+                />
+              )}
+              {space && !space.isBroadcast && (
+                <Tab
+                  icon={<CampaignIcon />}
+                  label={t('campaignsTab')}
+                  value="campaigns"
+                />
+              )}
             </Tabs>
 
             <Divider sx={{ my: 2 }} />

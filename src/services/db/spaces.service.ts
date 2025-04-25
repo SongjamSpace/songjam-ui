@@ -92,6 +92,12 @@ export type Space = {
   hasCampaign?: boolean;
   projectIds?: string[];
   createdProjectId?: string;
+  // Broadcast specific fields
+  isBroadcast?: boolean;
+  viewCountGraph?: number[];
+  broadcastInfo: {
+    viewCountGraph: number[];
+  };
 };
 
 export enum TranscriptionProgress {

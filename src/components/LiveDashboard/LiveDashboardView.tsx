@@ -29,7 +29,7 @@ interface LiveDashboardViewProps {
 }
 
 // Custom shape component for Scatter plot points
-const CustomScatterShape = (props: any) => {
+export const CustomScatterShape = (props: any) => {
   const { cx, cy, payload } = props;
   const { avatarUrl, displayName, twitterScreenName, userId } = payload;
   const SIZE = 20; // Size of the avatar

@@ -195,6 +195,20 @@ export const getSegments = async (spaceId: string) => {
   return snapshot.docs.map((doc) => doc.data());
 };
 
+export const getSegmentsByStartSeconds = async (
+  spaceId: string,
+  startSeconds: number
+) => {
+  const colRef = query(
+    collection(db, SPACE_COLLECTION, spaceId, SEGMENTS_SUBCOLLECTION),
+    orderBy('idx', 'desc'),
+    where('start', '<=', startSeconds),
+    limit(1)
+  );
+  const snapshot = await getDocs(colRef);
+  return snapshot.docs.map((doc) => doc.data());
+};
+
 export const getTwitterThread = async (spaceId: string) => {
   const docRef = doc(
     db,

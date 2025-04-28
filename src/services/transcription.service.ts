@@ -1,7 +1,11 @@
 import axios from 'axios';
 import { getSpace } from './db/spaces.service';
 
-export const transcribeSpace = async (spaceId: string) => {
+export const transcribeSpace = async (
+  spaceId: string,
+  projectId: string,
+  isBroadcast = false
+) => {
   // Check if space already exists
   const space = await getSpace(spaceId);
 
@@ -13,7 +17,7 @@ export const transcribeSpace = async (spaceId: string) => {
   try {
     const res = await axios.post(
       `${import.meta.env.VITE_JAM_SERVER_URL}/transcribe-recorded-space`,
-      { spaceId }
+      { spaceId, isBroadcast, projectId }
     );
 
     if (res.data.status === 'success') {

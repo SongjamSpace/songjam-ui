@@ -39,6 +39,7 @@ import LoginDialog from './LoginDialog';
 import AgentSettingsDialog from './AgentSettingsDialog';
 import {
   AudioSpace,
+  getBroadcastFromX,
   getRawSpaceFromX,
   getSpace,
   Space,
@@ -54,7 +55,7 @@ import {
   updateProject,
   updateSpaceToProject,
 } from '../services/db/projects.service';
-import LoginDisplayBtn from './LoginDisplayBtn';
+import { extractSpaceId } from '../utils';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -245,23 +246,38 @@ export default function Dashboard() {
     }
   }, [user, authLoading]);
 
-  const analyzeSpace = async (spaceId: string, projectId: string) => {
+  const analyzeSpace = async (
+    spaceId: string,
+    projectId: string,
+    isBroadcast: boolean
+  ) => {
     setIsLoading(true);
     const spaceDoc = await getSpace(spaceId);
     if (spaceDoc) {
       if (projectId && !spaceDoc.projectIds?.includes(projectId)) {
         await updateSpaceToProject(spaceId, projectId);
       }
-      if (spaceDoc.state === 'Ended') {
-        navigate(`/crm/${spaceId}`);
-      } else if (spaceDoc.state === 'Running') {
+      if (spaceDoc.state === 'Running') {
         navigate(`/live/${spaceId}`);
+      } else {
+        navigate(`/crm/${spaceId}`);
       }
       // Check if scheduled space is started on time
       setIsLoading(false);
       toast.success('Space already exists', {
         duration: 3000,
       });
+      return;
+    }
+    if (isBroadcast) {
+      const space = await getBroadcastFromX(spaceId);
+      if (space && space.state === 'Ended') {
+        const path = await transcribeSpace(spaceId, projectId, true);
+        navigate(path);
+      } else {
+        toast.error('Broadcast is not finished');
+      }
+      setIsLoading(false);
       return;
     }
     const space = await getRawSpaceFromX(spaceId);
@@ -272,7 +288,7 @@ export default function Dashboard() {
       setProcessingSpace(space);
       const state = space.metadata.state;
       if (state === 'Ended') {
-        const path = await transcribeSpace(spaceId);
+        const path = await transcribeSpace(spaceId, projectId);
         navigate(path); // Navigates to /crm/:spaceId
       } else if (state === 'Running') {
         await axios.post(
@@ -328,8 +344,13 @@ export default function Dashboard() {
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
     const spaceId = searchParams.get('spaceId');
-    if (defaultProject && spaceId) {
-      analyzeSpace(spaceId, defaultProject.id || '');
+    const broadcastId = searchParams.get('broadcastId');
+    if (defaultProject && (spaceId || broadcastId)) {
+      analyzeSpace(
+        spaceId || broadcastId || '',
+        defaultProject.id || '',
+        broadcastId ? true : false
+      );
     }
   }, [defaultProject]);
 
@@ -338,9 +359,10 @@ export default function Dashboard() {
   };
 
   const handleAddSpace = async () => {
-    const spaceId = spaceUrl.split('/').pop()?.trim();
+    const spaceId = extractSpaceId(spaceUrl);
     if (isLoading || !spaceId || !defaultProject) return;
     setIsLoading(true);
+    const isBroadcast = spaceUrl.includes('broadcasts');
 
     // TODO: Implement logic similar to App.tsx handleAnalyze,
     // but potentially just add to a list or trigger analysis without navigating immediately.
@@ -349,7 +371,7 @@ export default function Dashboard() {
     toast.success(`Processing space: ${spaceId}`, {
       position: 'bottom-right',
     });
-    await analyzeSpace(spaceId, defaultProject.id);
+    await analyzeSpace(spaceId, defaultProject.id, isBroadcast);
 
     setSpaceUrl(''); // Clear input after submission
     setIsLoading(false);

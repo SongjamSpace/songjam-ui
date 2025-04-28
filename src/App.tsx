@@ -19,16 +19,15 @@ import {
   CircularProgress,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { LoadingButton } from '@mui/lab';
 import { submitToAirtable } from './services/airtable.service';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 import { collection, query, where, limit } from 'firebase/firestore';
 import { db } from './services/firebase.service';
-import { transcribeSpace } from './services/transcription.service';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { extractSpaceId } from './utils';
 
 export default function App() {
   const { t, i18n } = useTranslation();
@@ -47,8 +46,10 @@ export default function App() {
 
   const handleAnalyze = async (url: string) => {
     if (isLoading || !url.trim()) return;
-    // setIsLoading(true);
-    const spaceId = url.split('/').pop();
+    // Regex to get spaces/id or broadcasts/id
+    // example urls: ['https://x.com/i/spaces/1OdKrDYpvzwJX', 'https://x.com/i/broadcasts/1vAGRDzePAPxl']
+    // extract the id from the url
+    const spaceId = extractSpaceId(url);
     if (!spaceId) {
       toast.error('Invalid space URL', {
         duration: 3000,
@@ -56,7 +57,12 @@ export default function App() {
       });
       return;
     }
-    navigate(`/dashboard?spaceId=${spaceId}`);
+    const isBroadcast = url.includes('broadcasts');
+    const navigateUrl = isBroadcast
+      ? `/dashboard?broadcastId=${spaceId}`
+      : `/dashboard?spaceId=${spaceId}`;
+    navigate(navigateUrl);
+    // setIsLoading(true);
     // const res = await axios.get(
     //   `${import.meta.env.VITE_JAM_SERVER_URL}/get-space/${spaceId}`
     // );

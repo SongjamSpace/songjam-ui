@@ -289,4 +289,11 @@ export const getRawSpaceFromX = async (spaceId: string) => {
   return res.data.result as AudioSpace;
 };
 
+export const getBroadcastFromX = async (broadcastId: string) => {
+  const res = await axios.get(
+    `${import.meta.env.VITE_JAM_SERVER_URL}/get-broadcast/${broadcastId}`
+  );
+  return res.data.result as Space;
+};
+
 export const spaceColRef = collection(db, SPACE_COLLECTION);

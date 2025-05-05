@@ -33,7 +33,7 @@ import { useAuthContext } from './contexts/AuthContext';
 
 export default function App() {
   const { t, i18n } = useTranslation();
-  const { user } = useAuthContext();
+  const { user, loading: authLoading } = useAuthContext();
   const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false);
   const [spaceUrl, setSpaceUrl] = useState('');
   const navigate = useNavigate();
@@ -616,7 +616,7 @@ export default function App() {
       <footer className="footer">
         <p>{t('footerText')}</p>
       </footer>
-      <LoginDialog open={showAuthDialog} />
+      <LoginDialog open={showAuthDialog && !authLoading} />
     </main>
   );
 }

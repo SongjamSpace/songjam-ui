@@ -41,6 +41,8 @@
     "@mui/lab": "^5.0.0-alpha.165",
     "@mui/material": "^5.15.10",
     "@mui/x-date-pickers": "^7.28.2",
+    "@stripe/react-stripe-js": "^3.6.0",
+    "@stripe/stripe-js": "^7.2.0",
     "@types/recharts": "^1.8.29",
     "@types/three": "^0.174.0",
     "@types/typed.js": "^2.0.0",

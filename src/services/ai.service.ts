@@ -1,3 +1,5 @@
+import { getDynamicToken } from '../utils';
+
 export interface AIModel {
   id: string;
   name: string;
@@ -80,12 +82,17 @@ const generateWithGemini = async (
   retryCount = 0
 ): Promise<AIResponse> => {
   try {
+    const token = getDynamicToken();
+    if (!token) {
+      throw new Error('No token found');
+    }
     const response = await fetch(
-      `${import.meta.env.VITE_JAM_SERVER_URL}/gemini/stream`,
+      `${import.meta.env.VITE_JAM_SERVER_URL}/api/gemini/stream`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           contents: [
@@ -166,12 +173,17 @@ const generateWithGrok = async (
   onStream?: AIStreamCallback
 ): Promise<AIResponse> => {
   try {
+    const token = getDynamicToken();
+    if (!token) {
+      throw new Error('No token found');
+    }
     const response = await fetch(
-      `${import.meta.env.VITE_JAM_SERVER_URL}/grok/stream`,
+      `${import.meta.env.VITE_JAM_SERVER_URL}/api/grok/stream`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           messages: [
@@ -246,13 +258,18 @@ const generateWithClaude = async (
   onStream?: AIStreamCallback
 ): Promise<AIResponse> => {
   try {
+    const token = getDynamicToken();
+    if (!token) {
+      throw new Error('No token found');
+    }
     console.log('Sending request to streaming endpoint');
     const response = await fetch(
-      `${import.meta.env.VITE_JAM_SERVER_URL}/claude/stream`,
+      `${import.meta.env.VITE_JAM_SERVER_URL}/api/claude/stream`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           model: 'claude-3-5-sonnet-20241022',

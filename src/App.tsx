@@ -7,9 +7,7 @@ import {
   TextField,
   TextareaAutosize,
   Dialog,
-  DialogTitle,
   DialogContent,
-  DialogActions,
   IconButton,
   Box,
   Typography,
@@ -28,10 +26,14 @@ import { db } from './services/firebase.service';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { extractSpaceId } from './utils';
+import PricingBanner from './components/PricingBanner';
+import LoginDialog from './components/LoginDialog';
+import { createCheckoutSession } from './services/db/stripe';
+import { useAuthContext } from './contexts/AuthContext';
 
 export default function App() {
   const { t, i18n } = useTranslation();
-  const [showConfirmation, setShowConfirmation] = useState(false);
+  const { user } = useAuthContext();
   const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false);
   const [spaceUrl, setSpaceUrl] = useState('');
   const navigate = useNavigate();
@@ -43,7 +45,7 @@ export default function App() {
       limit(3)
     )
   );
-
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
   const handleAnalyze = async (url: string) => {
     if (isLoading || !url.trim()) return;
     // Regex to get spaces/id or broadcasts/id
@@ -190,133 +192,13 @@ export default function App() {
           >
             {t('tryPreviewButton')}
           </Button>
-          <Button
+          {/* <Button
             variant="outlined"
             className="secondary"
-            onClick={() => setShowConfirmation(true)}
+            onClick={() => navigate('/pricing')}
           >
             {t('viewPricingButton')}
-          </Button>
-
-          <Dialog
-            open={showConfirmation}
-            onClose={() => setShowConfirmation(false)}
-            maxWidth="sm"
-            fullWidth
-          >
-            <DialogContent sx={{ bgcolor: 'rgba(15, 23, 42, 0.95)', p: 0 }}>
-              <IconButton
-                onClick={() => setShowConfirmation(false)}
-                sx={{
-                  position: 'absolute',
-                  right: 8,
-                  top: 8,
-                  color: 'var(--text-secondary)',
-                }}
-              >
-                <CloseIcon />
-              </IconButton>
-              <Box sx={{ textAlign: 'center', p: 3 }}>
-                <Typography
-                  variant="h5"
-                  sx={{
-                    mb: 2,
-                    background:
-                      'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                  }}
-                >
-                  🎉 Special Launch Offer - Only $1 USDT! 🎉
-                </Typography>
-                <Typography sx={{ mb: 3, color: 'var(--text-secondary)' }}>
-                  Get full access to our AI-powered transcription service for
-                  just $1 USDT. Try it now with zero risk - preview the timeline
-                  before paying!
-                </Typography>
-                <Box
-                  sx={{
-                    mb: 3,
-                    p: 2,
-                    bgcolor: 'rgba(96, 165, 250, 0.1)',
-                    borderRadius: 2,
-                  }}
-                >
-                  <Typography
-                    variant="subtitle1"
-                    sx={{ mb: 2, color: '#60a5fa' }}
-                  >
-                    ✨ What You'll Get:
-                  </Typography>
-                  <Typography
-                    sx={{
-                      color: 'var(--text-secondary)',
-                      fontSize: '0.9rem',
-                      mb: 1,
-                    }}
-                  >
-                    • 1 x Full Space Transcription
-                  </Typography>
-                  <Typography
-                    sx={{
-                      color: 'var(--text-secondary)',
-                      fontSize: '0.9rem',
-                      mb: 1,
-                    }}
-                  >
-                    • 1 x AI-Powered Summary
-                  </Typography>
-                  <Typography
-                    sx={{
-                      color: 'var(--text-secondary)',
-                      fontSize: '0.9rem',
-                    }}
-                  >
-                    • Full Thread with 3 x Remixes
-                  </Typography>
-                </Box>
-                <TextField
-                  fullWidth
-                  placeholder={t('spaceInputPlaceholderDialog')}
-                  variant="outlined"
-                  sx={{ mb: 3 }}
-                  value={spaceUrl}
-                  onChange={(e) => setSpaceUrl(e.target.value)}
-                />
-                <LoadingButton
-                  loading={isLoading}
-                  variant="contained"
-                  fullWidth
-                  onClick={() => {
-                    setShowConfirmation(false);
-                    handleAnalyze(spaceUrl);
-                  }}
-                  sx={{
-                    py: 1.5,
-                    fontSize: '1.1rem',
-                    background:
-                      'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
-                    '&:hover': {
-                      transform: 'translateY(-2px)',
-                      boxShadow: '0 5px 15px rgba(96, 165, 250, 0.4)',
-                    },
-                  }}
-                >
-                  Get Deal Now 🚀
-                </LoadingButton>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    display: 'block',
-                    mt: 2,
-                    color: 'var(--text-secondary)',
-                  }}
-                >
-                  No commitment required - Preview before you pay!
-                </Typography>
-              </Box>
-            </DialogContent>
-          </Dialog>
+          </Button> */}
 
           <Dialog
             open={isPreviewDialogOpen}
@@ -505,8 +387,25 @@ export default function App() {
           </div>
         </div>
       </section>
+      <PricingBanner
+        user={user}
+        onSubscribe={async (plan) => {
+          if (user?.uid) {
+            // if user.currentPlan is business, don't allow them to subscribe to business
+            if (user.currentPlan === 'business' && plan === 'pro') {
+              toast.error('You already have a business plan');
+              return;
+            }
+            if (plan !== 'free') {
+              await createCheckoutSession(user.uid, plan);
+            }
+          } else {
+            setShowAuthDialog(true);
+          }
+        }}
+      />
 
-      <section className="honors">
+      <section className="honors" style={{ marginTop: '100px' }}>
         <h2>{t('honorsTitle')}</h2>
         <p>{t('honorsText')}</p>
         <div className="honors-grid">
@@ -717,6 +616,7 @@ export default function App() {
       <footer className="footer">
         <p>{t('footerText')}</p>
       </footer>
+      <LoginDialog open={showAuthDialog} />
     </main>
   );
 }

@@ -11,6 +11,7 @@ import './i18n';
 import Dashboard from './components/Dashboard';
 import { DynamicContextProvider } from '@dynamic-labs/sdk-react-core';
 import { EthereumWalletConnectors } from '@dynamic-labs/ethereum';
+import Settings from './pages/Settings';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
@@ -40,6 +41,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
                   path="/live/:spaceId"
                   element={<LiveDashboardContainer />}
                 />
+                <Route path="/settings" element={<Settings />} />
               </Routes>
             </AuthProvider>
           </ThemeProvider>

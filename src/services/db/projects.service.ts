@@ -23,6 +23,7 @@ export type Project = {
   createdAt: number;
   createdUserId: string;
   domain: string;
+  createdEmail?: string;
 };
 
 export type ProjectDoc = Project & {

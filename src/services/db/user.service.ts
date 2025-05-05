@@ -18,7 +18,7 @@ export type SongjamUser = {
   photoURL: string | null;
   username: string | null;
   email: string;
-  uid: string | null;
+  uid: string;
   spaceIds: string[];
   spaceCredits: number;
   totalUnlockedSpaces: number;
@@ -27,6 +27,13 @@ export type SongjamUser = {
   isDynamicLogin: boolean;
   projectIds: string[];
   defaultProjectId: string | null;
+
+  currentPlan: 'free' | 'pro' | 'business' | 'enterprise';
+  aiAssistantRequests: number;
+  transcriptionRequests: number;
+  totalRequests: number;
+  endsAt: number;
+  startsAt: number;
 };
 
 type SongjamUserDoc = SongjamUser & {
@@ -117,11 +124,25 @@ export const getUser = async (
   const userDoc = await getDoc(userRef);
   if (listener) {
     onSnapshot(userRef, (snapshot) => {
-      listener(snapshot.data() as SongjamUser);
+      const user = snapshot.data() as SongjamUser;
+      user.aiAssistantRequests = user.aiAssistantRequests || 0;
+      user.transcriptionRequests = user.transcriptionRequests || 0;
+      user.totalRequests = user.totalRequests || 0;
+      user.currentPlan = user.currentPlan || 'free';
+      listener(user);
     });
   }
   if (userDoc.exists()) {
-    return userDoc.data() as SongjamUser;
+    const user = userDoc.data() as SongjamUser;
+    // if currentPlan is not set, set it to free in the db
+    if (!user.currentPlan) {
+      await updateDoc(userRef, { currentPlan: 'free' });
+    }
+    user.aiAssistantRequests = user.aiAssistantRequests || 0;
+    user.transcriptionRequests = user.transcriptionRequests || 0;
+    user.totalRequests = user.totalRequests || 0;
+    user.currentPlan = user.currentPlan || 'free';
+    return user;
   }
   return null;
 };
@@ -154,4 +175,21 @@ export const updateUserDefaultProjectId = async (
 ) => {
   const userRef = doc(db, USER_COLLECTION, id);
   await updateDoc(userRef, { defaultProjectId: projectId });
+};
+
+export const updateUserPlan = async (
+  id: string,
+  plan: string,
+  startsAt: number,
+  endsAt: number
+) => {
+  const userRef = doc(db, USER_COLLECTION, id);
+  await updateDoc(userRef, { currentPlan: plan, startsAt, endsAt });
+};
+
+const requestLimit = {
+  free: 5,
+  pro: 20,
+  business: 50,
+  enterprise: 100,
 };

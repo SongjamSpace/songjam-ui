@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { createUser } from '../services/db/user.service';
 
 export type Chain = {
   id: number;

@@ -9,6 +9,7 @@ import {
   Stack,
   IconButton,
   Tooltip,
+  Divider,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -16,6 +17,7 @@ import {
   Remove as RemoveIcon,
 } from '@mui/icons-material';
 import { getSpaces, Space } from '../services/db/spaces.service';
+import SpaceSpeakerInfo from './SpaceSpeakerInfo';
 
 const SourceSpeakers: React.FC = () => {
   const [spaces, setSpaces] = useState<(Space & { id: string })[]>([]);
@@ -135,60 +137,99 @@ const SourceSpeakers: React.FC = () => {
                 }}
                 onClick={() => handleSpaceSelect(space)}
               >
-                <Stack
-                  direction="row"
-                  spacing={2}
-                  alignItems="center"
-                  justifyContent="space-between"
-                >
-                  <Stack spacing={1}>
-                    <Typography variant="h6">
-                      {space.title} ({space.id})
-                    </Typography>
-                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                      <Chip
-                        size="small"
-                        label={`${
-                          Array.isArray(space.speakers)
-                            ? space.speakers.length
-                            : 0
-                        } Speakers`}
-                        color={isSelected ? 'default' : 'primary'}
-                        variant={isSelected ? 'filled' : 'outlined'}
-                        sx={{
-                          bgcolor: isSelected
-                            ? 'rgba(255,255,255,0.2)'
-                            : 'transparent',
-                          color: isSelected ? 'white' : 'inherit',
-                        }}
-                      />
-                      <Chip
-                        size="small"
-                        label={`${space.totalLiveListeners || 0} Listeners`}
-                        color={isSelected ? 'default' : 'secondary'}
-                        variant={isSelected ? 'filled' : 'outlined'}
-                        sx={{
-                          bgcolor: isSelected
-                            ? 'rgba(255,255,255,0.2)'
-                            : 'transparent',
-                          color: isSelected ? 'white' : 'inherit',
-                        }}
-                      />
-                    </Box>
-                  </Stack>
-                  <IconButton
-                    size="small"
-                    sx={{
-                      color: isSelected ? 'white' : 'inherit',
-                      '&:hover': {
-                        bgcolor: isSelected
-                          ? 'rgba(255,255,255,0.2)'
-                          : 'rgba(0,0,0,0.1)',
-                      },
-                    }}
+                <Stack spacing={2}>
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    alignItems="center"
+                    justifyContent="space-between"
                   >
-                    {isSelected ? <RemoveIcon /> : <AddIcon />}
-                  </IconButton>
+                    <Stack spacing={1}>
+                      <Typography variant="h6">
+                        {space.title} ({space.id})
+                      </Typography>
+                      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                        <Chip
+                          size="small"
+                          label={`${
+                            Array.isArray(space.speakers)
+                              ? space.speakers.length
+                              : 0
+                          } Speakers`}
+                          color={isSelected ? 'default' : 'primary'}
+                          variant={isSelected ? 'filled' : 'outlined'}
+                          sx={{
+                            bgcolor: isSelected
+                              ? 'rgba(255,255,255,0.2)'
+                              : 'transparent',
+                            color: isSelected ? 'white' : 'inherit',
+                          }}
+                        />
+                        <Chip
+                          size="small"
+                          label={`${space.totalLiveListeners || 0} Listeners`}
+                          color={isSelected ? 'default' : 'secondary'}
+                          variant={isSelected ? 'filled' : 'outlined'}
+                          sx={{
+                            bgcolor: isSelected
+                              ? 'rgba(255,255,255,0.2)'
+                              : 'transparent',
+                            color: isSelected ? 'white' : 'inherit',
+                          }}
+                        />
+                      </Box>
+                    </Stack>
+                    <IconButton
+                      size="small"
+                      sx={{
+                        color: isSelected ? 'white' : 'inherit',
+                        '&:hover': {
+                          bgcolor: isSelected
+                            ? 'rgba(255,255,255,0.2)'
+                            : 'rgba(0,0,0,0.1)',
+                        },
+                      }}
+                    >
+                      {isSelected ? <RemoveIcon /> : <AddIcon />}
+                    </IconButton>
+                  </Stack>
+
+                  {/* Speaker Previews */}
+                  {isSelected && space.speakers.length > 0 && (
+                    <>
+                      <Divider sx={{ my: 1 }} />
+                      <Box>
+                        <Typography 
+                          variant="subtitle2" 
+                          sx={{ 
+                            mb: 1,
+                            color: 'text.secondary',
+                            fontWeight: 500 
+                          }}
+                        >
+                          Speakers
+                        </Typography>
+                        <Grid container spacing={1}>
+                          {space.speakers.map((speaker) => (
+                            <Grid item xs={12} sm={6} lg={4} key={speaker.userId}>
+                              <Box
+                                sx={{
+                                  bgcolor: 'rgba(255, 255, 255, 0.05)',
+                                  borderRadius: 1,
+                                  overflow: 'hidden',
+                                  '&:hover': {
+                                    bgcolor: 'rgba(255, 255, 255, 0.08)',
+                                  },
+                                }}
+                              >
+                                <SpaceSpeakerInfo speaker={speaker} />
+                              </Box>
+                            </Grid>
+                          ))}
+                        </Grid>
+                      </Box>
+                    </>
+                  )}
                 </Stack>
               </Box>
             );

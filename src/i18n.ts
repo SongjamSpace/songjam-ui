@@ -6,15 +6,15 @@ import { useTranslation } from 'react-i18next';
 // --- English Translations ---
 
 const appTranslationsEN = {
-  accuracy: 'Accuracy',
+  automated: 'Automated',
   spacesNative: 'Spaces Native',
-  settlement: 'Settlement',
-  heroTitle1: 'Unlock Insights',
-  heroTitle2: 'Amplify Voices',
-  heroSubtitle1: 'X Spaces Text-to-Speech and AI Analysis',
-  heroSubtitle2: 'Capture Every Conversation',
+  engagement: 'Engagement',
+  heroTitle1: 'Automated Outreach',
+  heroTitle2: 'Effortless Growth',
+  heroSubtitle1: 'The all-in-one toolkit for X Spaces hosts and speakers',
+  heroSubtitle2: 'Automate DMs, unlock analytics, and capture every conversation',
   spaceInputPlaceholder: 'Paste your X space URL here to try it now',
-  analyzeButton: 'Analyze',
+  analyzeButton: 'Boost',
   tryPreviewButton: 'Try Preview',
   viewPricingButton: 'View Pricing',
   launchOfferTitle: 'Special Launch Offer - Only $1 USDT!',
@@ -38,23 +38,23 @@ const appTranslationsEN = {
   previewDialogText3:
     'This is just a preview. Analyze your own space for full insights!',
   poweredBy: 'Powered by',
-  transcribeFeatureTitle: 'Transcribe',
+  transcribeFeatureTitle: 'Compose',
   transcribeFeatureText:
-    'Converting your X Space audio into text makes it easy to analyze',
-  transcribeFeatureDetail: 'Get your time back',
-  analyzeFeatureTitle: 'Analyze',
-  analyzeFeatureText: 'Unlock awesome insights from your X Spaces in seconds',
-  analyzeFeatureDetail: 'Harness the power of AI',
-  shareFeatureTitle: 'Share',
-  shareFeatureText: 'Compile your insights and share with your audience',
-  shareFeatureDetail: 'Infinitely customizable',
+    'Leverage top LLMs like Claude, Grok & Gemini to create personalized DMs',
+  transcribeFeatureDetail: 'Harness the power of AI',
+  analyzeFeatureTitle: 'Automate',
+  analyzeFeatureText: 'Reach 100s of potential speakers and listeners within seconds',
+  analyzeFeatureDetail: 'No need to share account details',
+  shareFeatureTitle: 'Grow',
+  shareFeatureText: 'Benefit from the high CTR of X DMs to grow your audience',
+  shareFeatureDetail: 'Invite top speakers to your space',
   howItWorksTitle: 'How It Works',
   step1Title: 'Connect Space',
-  step1Text: 'Paste the URL of your live X Space',
-  step2Title: 'Retrieve Listeners',
-  step2Text: 'All listener X accounts will be retrieved',
-  step3Title: 'Dive In',
-  step3Text: 'Leverage LLMs to analyze the space',
+  step1Text: 'Paste the URL of your X Space',
+  step2Title: 'Compose DMs',
+  step2Text: 'LLM customized for every X account',
+  step3Title: 'Blast Out',
+  step3Text: 'Save hours of manual outreach',
   honorsTitle: 'Honors',
   honorsText:
     'Songjam builders have won top awards from the following crypto leaders:',
@@ -84,6 +84,38 @@ const appTranslationsEN = {
   recordedSpaceMessage: 'Retrieving space data and redirecting you shortly.',
   scheduledSpaceTitle: 'Schedule Space',
   scheduledSpaceMessage: 'We are scheduling the space, please wait.',
+  pricingTitle: 'Pricing',
+  freePlanTitle: 'Free',
+  freePlanSubtitle: 'Perfect for getting started',
+  proPlanTitle: 'Pro',
+  proPlanSubtitle: 'For power users & content creators',
+  businessPlanTitle: 'Business',
+  businessPlanSubtitle: 'For teams and enterprises',
+  popularChip: 'Popular',
+  currentPlanChip: 'Current Plan',
+  getStartedButton: 'Get Started',
+  contactSalesButton: 'Contact Sales',
+  perMonth: '/month',
+  perUserPerMonth: '/user/month',
+  freePlanFeatures: {
+    spaces: '8 Spaces',
+    autoDMs: 'Upto 100 autoDMs',
+    aiRequests: '50 AI Assistant Requests',
+    support: 'Community support'
+  },
+  proPlanFeatures: {
+    spaces: 'Unlimited Spaces',
+    autoDMs: 'Unlimited autoDMs',
+    aiRequests: '200 AI Assistant Requests',
+    support: 'Priority support'
+  },
+  businessPlanFeatures: {
+    unlimited: 'Unlimited Spaces, autoDMs & AI Assistant Requests',
+    support: 'Dedicated support',
+    privacy: 'Org-wide data privacy',
+    encryption: 'AES-256 encryption',
+    tls: 'TLS 1.2 min for all connections'
+  }
 };
 
 const crmTranslationsEN = {
@@ -248,15 +280,15 @@ const campaignTranslationsEN = {
 // --- Chinese Translations ---
 
 const appTranslationsZH = {
-  accuracy: '准确率',
+  automated: '自动化',
   spacesNative: 'Spaces 原生',
-  settlement: '结算',
-  heroTitle1: '解锁洞见',
-  heroTitle2: '放大声音',
-  heroSubtitle1: 'X Spaces 语音转文本与 AI 分析',
-  heroSubtitle2: '捕捉每一次对话',
+  engagement: '订婚',
+  heroTitle1: '自动化触达',
+  heroTitle2: '轻松增长',
+  heroSubtitle1: 'X Spaces 主持人和扬声器的一体化工具包',
+  heroSubtitle2: '自动化私信，解锁分析，捕捉每一次对话',
   spaceInputPlaceholder: '在此处粘贴您的 X space URL 立即试用',
-  analyzeButton: '分析',
+  analyzeButton: '提升',
   tryPreviewButton: '试用预览',
   viewPricingButton: '查看定价',
   launchOfferTitle: '🎉 特别启动优惠 - 仅需 1 USDT！🎉',
@@ -278,22 +310,22 @@ const appTranslationsZH = {
   noPreviews: '暂无已完成的空间可供预览。',
   previewDialogText3: '这只是预览。分析您自己的空间以获取完整见解！',
   poweredBy: '技术支持',
-  transcribeFeatureTitle: '转录',
-  transcribeFeatureText: '将您的 X Space 音频转换为文本，便于分析',
-  transcribeFeatureDetail: '节省您的时间',
-  analyzeFeatureTitle: '分析',
-  analyzeFeatureText: '在几秒钟内从您的 X Spaces 中解锁精彩见解',
-  analyzeFeatureDetail: '利用 AI 的力量',
-  shareFeatureTitle: '分享',
-  shareFeatureText: '整理您的见解并与您的受众分享',
-  shareFeatureDetail: '无限可定制',
+  transcribeFeatureTitle: '创作',
+  transcribeFeatureText: '利用 Claude、Grok 和 Gemini 等顶级 LLM 创建个性化私信',
+  transcribeFeatureDetail: '利用 AI 的力量',
+  analyzeFeatureTitle: '自动化',
+  analyzeFeatureText: '在几秒钟内触达数百位潜在发言者和听众',
+  analyzeFeatureDetail: '无需分享账号详情',
+  shareFeatureTitle: '增长',
+  shareFeatureText: '利用 X 私信的高点击率来增长您的受众',
+  shareFeatureDetail: '邀请顶级发言者加入您的空间',
   howItWorksTitle: '运作方式',
   step1Title: '连接空间',
-  step1Text: '粘贴您的实时 X Space 的 URL',
-  step2Title: '检索听众',
-  step2Text: '将检索所有听众的 X 帐户',
-  step3Title: '深入了解',
-  step3Text: '利用 LLM 分析空间',
+  step1Text: '粘贴您的 X Space URL',
+  step2Title: '创作私信',
+  step2Text: '为每个 X 账号定制 LLM',
+  step3Title: '批量发送',
+  step3Text: '节省数小时的手动触达时间',
   honorsTitle: '荣誉',
   honorsText: 'Songjam 构建者已赢得以下加密货币领导者的最高奖项：',
   contactTitle: '联系我们',
@@ -320,6 +352,38 @@ const appTranslationsZH = {
   recordedSpaceMessage: '正在检索空间数据，稍后将重定向您。',
   scheduledSpaceTitle: '预定空间',
   scheduledSpaceMessage: '我们正在预定空间，请稍候。',
+  pricingTitle: '定价',
+  freePlanTitle: '免费版',
+  freePlanSubtitle: '适合入门使用',
+  proPlanTitle: '专业版',
+  proPlanSubtitle: '适合高级用户和内容创作者',
+  businessPlanTitle: '企业版',
+  businessPlanSubtitle: '适合团队和企业',
+  popularChip: '热门',
+  currentPlanChip: '当前方案',
+  getStartedButton: '开始使用',
+  contactSalesButton: '联系销售',
+  perMonth: '/月',
+  perUserPerMonth: '/用户/月',
+  freePlanFeatures: {
+    spaces: '8 个空间',
+    autoDMs: '最多 100 条自动私信',
+    aiRequests: '50 次 AI 助手请求',
+    support: '社区支持'
+  },
+  proPlanFeatures: {
+    spaces: '无限空间',
+    autoDMs: '无限自动私信',
+    aiRequests: '200 次 AI 助手请求',
+    support: '优先支持'
+  },
+  businessPlanFeatures: {
+    unlimited: '无限空间、自动私信和 AI 助手请求',
+    support: '专属支持',
+    privacy: '组织级数据隐私',
+    encryption: 'AES-256 加密',
+    tls: '所有连接最低 TLS 1.2'
+  }
 };
 
 const crmTranslationsZH = {
@@ -475,6 +539,8 @@ const campaignTranslationsZH = {
   ctaTarget: 'CTA 目标',
   status: '状态',
   statusDraft: '草稿',
+  selectAiModelLabel: '选择 AI 模型',
+  generateMessagesButton: '生成消息',
 };
 
 // --- Merge Resources ---
@@ -504,19 +570,23 @@ i18n
     debug: false, // Set to false in production
     fallbackLng: 'en',
     detection: {
-      order: ['path', 'navigator', 'htmlTag', 'localStorage', 'subdomain'],
-      lookupFromPathIndex: 0,
+      order: ['localStorage', 'navigator'],
+      lookupLocalStorage: 'i18nextLng',
+      caches: ['localStorage'],
     },
     interpolation: {
       escapeValue: false, // React already protects from xss
     },
     resources: {
       en: {
-        translation: enResources, // Use merged resources
+        translation: enResources,
       },
       zh: {
-        translation: zhResources, // Use merged resources
+        translation: zhResources,
       },
+    },
+    react: {
+      useSuspense: false, // This prevents the app from freezing during language changes
     },
   });
 

@@ -94,9 +94,15 @@ export default function App() {
     // setIsLoading(false);
   };
 
-  const handleLanguageChange = () => {
+  const handleLanguageChange = async () => {
     const newLang = i18n.language === 'en' ? 'zh' : 'en';
-    i18n.changeLanguage(newLang);
+    try {
+      await i18n.changeLanguage(newLang);
+      // Force a re-render of the app to ensure all translations are updated
+      window.location.reload();
+    } catch (error) {
+      console.error('Failed to change language:', error);
+    }
   };
 
   useEffect(() => {
@@ -141,16 +147,16 @@ export default function App() {
       <section className="hero">
         <div className="stats-banner">
           <div className="stat">
-            <span className="stat-number">99%</span>
-            <span className="stat-label">{t('accuracy')}</span>
+            <span className="stat-number">DMs</span>
+            <span className="stat-label">{t('automated')}</span>
           </div>
           <div className="stat">
             <span className="stat-number">X</span>
             <span className="stat-label">{t('spacesNative')}</span>
           </div>
           <div className="stat">
-            <span className="stat-number">USDT</span>
-            <span className="stat-label">{t('settlement')}</span>
+            <span className="stat-number">10X</span>
+            <span className="stat-label">{t('engagement')}</span>
           </div>
         </div>
         <div className="animated-title">
@@ -354,13 +360,13 @@ export default function App() {
           <div className="feature-detail">{t('transcribeFeatureDetail')}</div>
         </div>
         <div className="feature">
-          <div className="feature-icon">📋</div>
+          <div className="feature-icon">🤖</div>
           <h3>{t('analyzeFeatureTitle')}</h3>
           <p>{t('analyzeFeatureText')}</p>
           <div className="feature-detail">{t('analyzeFeatureDetail')}</div>
         </div>
         <div className="feature">
-          <div className="feature-icon">📣</div>
+          <div className="feature-icon">📈</div>
           <h3>{t('shareFeatureTitle')}</h3>
           <p>{t('shareFeatureText')}</p>
           <div className="feature-detail">{t('shareFeatureDetail')}</div>

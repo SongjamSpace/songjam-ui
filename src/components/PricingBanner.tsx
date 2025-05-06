@@ -69,7 +69,7 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
           }}
         >
           <Typography variant="h5" sx={{ mb: 2, color: 'var(--text-primary)' }}>
-            Free
+            {t('freePlanTitle')}
           </Typography>
           <Typography
             variant="h3"
@@ -86,7 +86,7 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
             variant="body1"
             sx={{ mb: 3, color: 'var(--text-secondary)' }}
           >
-            Perfect for trying out Songjam
+            {t('freePlanSubtitle')}
           </Typography>
           <Box sx={{ flexGrow: 1 }}>
             <List sx={{ mb: 3 }}>
@@ -94,30 +94,30 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
                 <ListItemIcon sx={{ minWidth: 40, color: '#60a5fa' }}>
                   <CheckIcon />
                 </ListItemIcon>
-                <ListItemText primary="3 Spaces" />
+                <ListItemText primary={t('freePlanFeatures.spaces')} />
               </ListItem>
               <ListItem sx={{ px: 0, color: 'var(--text-secondary)' }}>
                 <ListItemIcon sx={{ minWidth: 40, color: '#60a5fa' }}>
                   <CheckIcon />
                 </ListItemIcon>
-                <ListItemText primary="Upto 3 Hours of Transcription" />
+                <ListItemText primary={t('freePlanFeatures.autoDMs')} />
               </ListItem>
               <ListItem sx={{ px: 0, color: 'var(--text-secondary)' }}>
                 <ListItemIcon sx={{ minWidth: 40, color: '#60a5fa' }}>
                   <CheckIcon />
                 </ListItemIcon>
-                <ListItemText primary="50 AI Assistant Requests" />
+                <ListItemText primary={t('freePlanFeatures.aiRequests')} />
               </ListItem>
               <ListItem sx={{ px: 0, color: 'var(--text-secondary)' }}>
                 <ListItemIcon sx={{ minWidth: 40, color: '#60a5fa' }}>
                   <CheckIcon />
                 </ListItemIcon>
-                <ListItemText primary="Community support" />
+                <ListItemText primary={t('freePlanFeatures.support')} />
               </ListItem>
             </List>
           </Box>
           {user?.currentPlan === 'free' ? (
-            <Chip label="Current Plan" />
+            <Chip label={t('currentPlanChip')} />
           ) : (
             <LoadingButton
               loading={loadingBtnId === 'free'}
@@ -137,7 +137,7 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
                 onSubscribe('free');
               }}
             >
-              Get Started
+              {t('getStartedButton')}
             </LoadingButton>
           )}
         </Paper>
@@ -171,13 +171,14 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
               px: 2,
               py: 0.5,
               borderBottomLeftRadius: 3,
+              borderTopRightRadius: 8,
               fontSize: '0.875rem',
             }}
           >
-            Popular
+            {t('popularChip')}
           </Box>
           <Typography variant="h5" sx={{ mb: 2, color: 'var(--text-primary)' }}>
-            Pro
+            {t('proPlanTitle')}
           </Typography>
           <Typography
             variant="h3"
@@ -188,13 +189,13 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
               WebkitTextFillColor: 'transparent',
             }}
           >
-            $25 <span style={{ fontSize: '0.8rem' }}> /month</span>
+            $25 <span style={{ fontSize: '0.8rem' }}>{t('perMonth')}</span>
           </Typography>
           <Typography
             variant="body1"
             sx={{ mb: 3, color: 'var(--text-secondary)' }}
           >
-            For power users & content creators
+            {t('proPlanSubtitle')}
           </Typography>
           <Box sx={{ flexGrow: 1 }}>
             <List sx={{ mb: 3 }}>
@@ -202,30 +203,30 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
                 <ListItemIcon sx={{ minWidth: 40, color: '#60a5fa' }}>
                   <CheckIcon />
                 </ListItemIcon>
-                <ListItemText primary="Unlimited Spaces" />
+                <ListItemText primary={t('proPlanFeatures.spaces')} />
               </ListItem>
               <ListItem sx={{ px: 0, color: 'var(--text-secondary)' }}>
                 <ListItemIcon sx={{ minWidth: 40, color: '#60a5fa' }}>
                   <CheckIcon />
                 </ListItemIcon>
-                <ListItemText primary="Upto 20 Hours of Transcription" />
+                <ListItemText primary={t('proPlanFeatures.autoDMs')} />
               </ListItem>
               <ListItem sx={{ px: 0, color: 'var(--text-secondary)' }}>
                 <ListItemIcon sx={{ minWidth: 40, color: '#60a5fa' }}>
                   <CheckIcon />
                 </ListItemIcon>
-                <ListItemText primary="200 AI Assistant Requests" />
+                <ListItemText primary={t('proPlanFeatures.aiRequests')} />
               </ListItem>
               <ListItem sx={{ px: 0, color: 'var(--text-secondary)' }}>
                 <ListItemIcon sx={{ minWidth: 40, color: '#60a5fa' }}>
                   <CheckIcon />
                 </ListItemIcon>
-                <ListItemText primary="Priority support" />
+                <ListItemText primary={t('proPlanFeatures.support')} />
               </ListItem>
             </List>
           </Box>
           {user?.currentPlan === 'pro' ? (
-            <Chip label="Current Plan" />
+            <Chip label={t('currentPlanChip')} />
           ) : (
             <LoadingButton
               loading={loadingBtnId === 'pro'}
@@ -243,7 +244,7 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
                 onSubscribe('pro');
               }}
             >
-              Get Started
+              {t('getStartedButton')}
             </LoadingButton>
           )}
         </Paper>
@@ -267,7 +268,7 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
           }}
         >
           <Typography variant="h5" sx={{ mb: 2, color: 'var(--text-primary)' }}>
-            Business
+            {t('businessPlanTitle')}
           </Typography>
           <Typography
             variant="h3"
@@ -278,14 +279,14 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
               WebkitTextFillColor: 'transparent',
             }}
           >
-            $100
-            <span style={{ fontSize: '0.8rem' }}>/user/month</span>
+            $200
+            <span style={{ fontSize: '0.8rem' }}>{t('perUserPerMonth')}</span>
           </Typography>
           <Typography
             variant="body1"
             sx={{ mb: 3, color: 'var(--text-secondary)' }}
           >
-            For teams and enterprises
+            {t('businessPlanSubtitle')}
           </Typography>
           <Box sx={{ flexGrow: 1 }}>
             <List sx={{ mb: 3 }}>
@@ -293,30 +294,36 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
                 <ListItemIcon sx={{ minWidth: 40, color: '#60a5fa' }}>
                   <CheckIcon />
                 </ListItemIcon>
-                <ListItemText primary="Unlimited Spaces" />
+                <ListItemText primary={t('businessPlanFeatures.unlimited')} />
               </ListItem>
               <ListItem sx={{ px: 0, color: 'var(--text-secondary)' }}>
                 <ListItemIcon sx={{ minWidth: 40, color: '#60a5fa' }}>
                   <CheckIcon />
                 </ListItemIcon>
-                <ListItemText primary="Unlimited Hours of Transcription" />
+                <ListItemText primary={t('businessPlanFeatures.support')} />
               </ListItem>
               <ListItem sx={{ px: 0, color: 'var(--text-secondary)' }}>
                 <ListItemIcon sx={{ minWidth: 40, color: '#60a5fa' }}>
                   <CheckIcon />
                 </ListItemIcon>
-                <ListItemText primary="Unlimited AI Assistant Requests" />
+                <ListItemText primary={t('businessPlanFeatures.privacy')} />
               </ListItem>
               <ListItem sx={{ px: 0, color: 'var(--text-secondary)' }}>
                 <ListItemIcon sx={{ minWidth: 40, color: '#60a5fa' }}>
                   <CheckIcon />
                 </ListItemIcon>
-                <ListItemText primary="Dedicated support" />
+                <ListItemText primary={t('businessPlanFeatures.encryption')} />
+              </ListItem>
+              <ListItem sx={{ px: 0, color: 'var(--text-secondary)' }}>
+                <ListItemIcon sx={{ minWidth: 40, color: '#60a5fa' }}>
+                  <CheckIcon />
+                </ListItemIcon>
+                <ListItemText primary={t('businessPlanFeatures.tls')} />
               </ListItem>
             </List>
           </Box>
           {user?.currentPlan === 'business' ? (
-            <Chip label="Current Plan" />
+            <Chip label={t('currentPlanChip')} />
           ) : (
             <LoadingButton
               loading={loadingBtnId === 'business'}
@@ -336,7 +343,7 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
                 onSubscribe('business');
               }}
             >
-              Get Started
+              {t('getStartedButton')}
             </LoadingButton>
           )}
         </Paper>

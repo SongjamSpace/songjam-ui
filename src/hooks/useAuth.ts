@@ -51,27 +51,27 @@ export function useAuth() {
         });
         if (userDoc) {
           // TODO: Remove after webhook is setup
-          if (!userDoc.currentPlan) {
-            const activeSubscription = await getActiveSubscription(
-              dynamicUser.userId
-            );
-            if (activeSubscription.length > 0) {
-              const subscription = activeSubscription[0];
-              await updateUserPlan(
-                dynamicUser.userId,
-                getPlanFromPriceId(subscription.items[0].price.id),
-                subscription.current_period_start,
-                subscription.current_period_end
-              );
-            } else {
-              await updateUserPlan(
-                dynamicUser.userId,
-                'free',
-                Date.now(),
-                Date.now()
-              );
-            }
-          }
+          // if (!userDoc.currentPlan) {
+          //   const activeSubscription = await getActiveSubscription(
+          //     dynamicUser.userId
+          //   );
+          //   if (activeSubscription.length > 0) {
+          //     const subscription = activeSubscription[0];
+          //     await updateUserPlan(
+          //       dynamicUser.userId,
+          //       getPlanFromPriceId(subscription.items[0].price.id),
+          //       subscription.current_period_start,
+          //       subscription.current_period_end
+          //     );
+          //   } else {
+          //     await updateUserPlan(
+          //       dynamicUser.userId,
+          //       'free',
+          //       Date.now(),
+          //       Date.now()
+          //     );
+          //   }
+          // }
           setUser(userDoc);
         } else {
           // Create new user document if it doesn't exist

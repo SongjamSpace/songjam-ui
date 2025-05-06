@@ -47,7 +47,7 @@ export default function App() {
   );
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const handleAnalyze = async (url: string) => {
-    if (isLoading || !url.trim()) return;
+    if (isLoading || !url.trim()) return navigate('/dashboard?spaceId=new');
     // Regex to get spaces/id or broadcasts/id
     // example urls: ['https://x.com/i/spaces/1OdKrDYpvzwJX', 'https://x.com/i/broadcasts/1vAGRDzePAPxl']
     // extract the id from the url

@@ -12,9 +12,10 @@ const appTranslationsEN = {
   heroTitle1: 'Automated Outreach',
   heroTitle2: 'Effortless Growth',
   heroSubtitle1: 'The all-in-one toolkit for X Spaces hosts and speakers',
-  heroSubtitle2: 'Automate DMs, unlock analytics, and capture every conversation',
+  heroSubtitle2:
+    'Automate DMs, unlock analytics, and capture every conversation',
   spaceInputPlaceholder: 'Paste your X space URL here to try it now',
-  analyzeButton: 'Boost',
+  analyzeButton: 'Create Campaign',
   tryPreviewButton: 'Try Preview',
   viewPricingButton: 'View Pricing',
   launchOfferTitle: 'Special Launch Offer - Only $1 USDT!',
@@ -43,7 +44,8 @@ const appTranslationsEN = {
     'Leverage top LLMs like Claude, Grok & Gemini to create personalized DMs',
   transcribeFeatureDetail: 'Harness the power of AI',
   analyzeFeatureTitle: 'Automate',
-  analyzeFeatureText: 'Reach 100s of potential speakers and listeners within seconds',
+  analyzeFeatureText:
+    'Reach 100s of potential speakers and listeners within seconds',
   analyzeFeatureDetail: 'No need to share account details',
   shareFeatureTitle: 'Grow',
   shareFeatureText: 'Benefit from the high CTR of X DMs to grow your audience',
@@ -101,21 +103,21 @@ const appTranslationsEN = {
     spaces: '8 Spaces',
     autoDMs: 'Upto 100 autoDMs',
     aiRequests: '50 AI Assistant Requests',
-    support: 'Community support'
+    support: 'Community support',
   },
   proPlanFeatures: {
     spaces: 'Unlimited Spaces',
     autoDMs: 'Unlimited autoDMs',
     aiRequests: '200 AI Assistant Requests',
-    support: 'Priority support'
+    support: 'Priority support',
   },
   businessPlanFeatures: {
     unlimited: 'Unlimited Spaces, autoDMs & AI Assistant Requests',
     support: 'Dedicated support',
     privacy: 'Org-wide data privacy',
     encryption: 'AES-256 encryption',
-    tls: 'TLS 1.2 min for all connections'
-  }
+    tls: 'TLS 1.2 min for all connections',
+  },
 };
 
 const crmTranslationsEN = {
@@ -311,7 +313,8 @@ const appTranslationsZH = {
   previewDialogText3: '这只是预览。分析您自己的空间以获取完整见解！',
   poweredBy: '技术支持',
   transcribeFeatureTitle: '创作',
-  transcribeFeatureText: '利用 Claude、Grok 和 Gemini 等顶级 LLM 创建个性化私信',
+  transcribeFeatureText:
+    '利用 Claude、Grok 和 Gemini 等顶级 LLM 创建个性化私信',
   transcribeFeatureDetail: '利用 AI 的力量',
   analyzeFeatureTitle: '自动化',
   analyzeFeatureText: '在几秒钟内触达数百位潜在发言者和听众',
@@ -369,21 +372,21 @@ const appTranslationsZH = {
     spaces: '8 个空间',
     autoDMs: '最多 100 条自动私信',
     aiRequests: '50 次 AI 助手请求',
-    support: '社区支持'
+    support: '社区支持',
   },
   proPlanFeatures: {
     spaces: '无限空间',
     autoDMs: '无限自动私信',
     aiRequests: '200 次 AI 助手请求',
-    support: '优先支持'
+    support: '优先支持',
   },
   businessPlanFeatures: {
     unlimited: '无限空间、自动私信和 AI 助手请求',
     support: '专属支持',
     privacy: '组织级数据隐私',
     encryption: 'AES-256 加密',
-    tls: '所有连接最低 TLS 1.2'
-  }
+    tls: '所有连接最低 TLS 1.2',
+  },
 };
 
 const crmTranslationsZH = {

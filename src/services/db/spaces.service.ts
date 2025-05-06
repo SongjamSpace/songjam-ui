@@ -245,6 +245,21 @@ export const getSpaceListenersForDm = async (spaceId: string) => {
   return snapshot.docs.map((doc) => doc.data() as SpaceListener);
 };
 
+export const getSpaces = async () => {
+  const colRef = query(
+    collection(db, SPACE_COLLECTION),
+    orderBy('docCreatedAt', 'desc'),
+    limit(30)
+  );
+  const snapshot = await getDocs(colRef);
+  return (
+    snapshot.docs.map((doc) => ({
+      ...doc.data(),
+      id: doc.id,
+    })) as (Space & { id: string })[]
+  ).filter((space) => space.speakers.length > 0);
+};
+
 export type AudioSpace = {
   metadata: {
     title: string;

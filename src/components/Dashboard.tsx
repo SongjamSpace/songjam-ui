@@ -56,6 +56,7 @@ import {
   updateSpaceToProject,
 } from '../services/db/projects.service';
 import { extractSpaceId } from '../utils';
+import ScheduledSpaceCampaign from './ScheduledSpaceCampaign';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -221,6 +222,7 @@ export default function Dashboard() {
   const [processingSpace, setProcessingSpace] = useState<AudioSpace | null>(
     null
   );
+  const [isShowNewCampaign, setIsShowNewCampaign] = useState(false);
   // const [scheduledSpaces, loadingScheduled, errorScheduled] = useCollectionData(query(collection(db, 'spaces'), where('state', '==', 'Scheduled')))
   // const [liveSpaces, loadingLive, errorLive] = useCollectionData(query(collection(db, 'spaces'), where('state', '==', 'Running')))
   const [projectSpaces, loadingProjectSpaces, errorProjectSpaces] =
@@ -346,11 +348,15 @@ export default function Dashboard() {
     const spaceId = searchParams.get('spaceId');
     const broadcastId = searchParams.get('broadcastId');
     if (defaultProject && (spaceId || broadcastId)) {
-      analyzeSpace(
-        spaceId || broadcastId || '',
-        defaultProject.id || '',
-        broadcastId ? true : false
-      );
+      if (spaceId === 'new') {
+        setIsShowNewCampaign(true);
+      } else {
+        analyzeSpace(
+          spaceId || broadcastId || '',
+          defaultProject.id || '',
+          broadcastId ? true : false
+        );
+      }
     }
   }, [defaultProject]);
 
@@ -1052,6 +1058,7 @@ export default function Dashboard() {
         />
       </Container>
       <Toaster position="bottom-right" reverseOrder={false} />
+      {isShowNewCampaign && <ScheduledSpaceCampaign isNew />}
     </Box>
   );
 }

@@ -153,7 +153,7 @@ const crmTranslationsEN = {
   askAIButton: 'Ask AI',
   authDialogTitle: 'Welcome to Songjam',
   authDialogText:
-    'Connect your Twitter account to access Space analytics, audience insights, and AI-powered tools.',
+    'Sign with your Email to access Space analytics, audience insights, and AI-powered tools.',
   listenersLabel: 'listeners',
   noListenerData: 'No listener data available',
   campaignsTab: 'Campaigns',

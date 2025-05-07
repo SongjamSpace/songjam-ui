@@ -60,8 +60,8 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
             mb: 3,
           }}
         >
-          Connect your Twitter account to access Space analytics, audience
-          insights, and AI-powered tools.
+          Sign in with your Email to access Space analytics, audience insights,
+          and AI-powered tools.
         </DialogContentText>
         {loading && <LinearProgress sx={{ mb: 3 }} />}
         <Box

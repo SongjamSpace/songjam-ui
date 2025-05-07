@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { Dispatch, SetStateAction, useState } from 'react';
 import {
   Box,
   TextField,
@@ -14,29 +14,33 @@ import {
 // import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
-import { Space, TwitterUser } from '../services/db/spaces.service';
-
-interface SpaceFormProps {
-  space?: Space;
-  onSubmit: (formData: SpaceFormData) => void;
-  title: string;
-  setTitle: (title: string) => void;
-  description: string;
-  setDescription: (description: string) => void;
-  agenda: string[];
-  setAgenda: (agenda: string[]) => void;
-  scheduledStart: Date;
-  setScheduledStart: (scheduledStart: Date) => void;
-  speakers: TwitterUser[];
-  setSpeakers: (speakers: TwitterUser[]) => void;
-}
+import { SpaceDoc, TwitterUser } from '../services/db/spaces.service';
+import { LoadingButton } from '@mui/lab';
 
 export interface SpaceFormData {
   title: string;
   description?: string;
   scheduledStart: Date;
-  agenda: string[];
-  speakers: TwitterUser[];
+  topics: string[];
+  hostHandle: string;
+}
+
+interface SpaceFormProps {
+  space?: SpaceDoc;
+  onSubmit: (formData: SpaceFormData) => void;
+  title: string;
+  setTitle: (title: string) => void;
+  description: string;
+  setDescription: (description: string) => void;
+  scheduledStart: Date;
+  setScheduledStart: (scheduledStart: Date) => void;
+  speakers?: TwitterUser[];
+
+  topics: string[];
+  setTopics: Dispatch<SetStateAction<string[]>>;
+  hostHandle: string;
+  setHostHandle: (hostHandle: string) => void;
+  actionLoading: boolean;
 }
 
 const SpaceForm: React.FC<SpaceFormProps> = ({
@@ -44,27 +48,30 @@ const SpaceForm: React.FC<SpaceFormProps> = ({
   setTitle,
   description,
   setDescription,
-  agenda,
-  setAgenda,
   scheduledStart,
   setScheduledStart,
   speakers,
-  setSpeakers,
   onSubmit,
-}) => {
+  topics,
+  setTopics,
+  hostHandle,
+  setHostHandle,
+  actionLoading,
+}: SpaceFormProps) => {
+  const [spaceUrl, setSpaceUrl] = useState('');
   const handleAgendaChange = (index: number, value: string) => {
-    const newAgenda = [...agenda];
-    newAgenda[index] = value;
-    setAgenda(newAgenda);
+    const newTopics = [...topics];
+    newTopics[index] = value;
+    setTopics(newTopics);
   };
 
   const addAgendaItem = () => {
-    setAgenda([...agenda, '']);
+    setTopics([...topics, '']);
   };
 
   const removeAgendaItem = (index: number) => {
-    const newAgenda = agenda.filter((_, i) => i !== index);
-    setAgenda(newAgenda);
+    const newTopics = topics.filter((_, i) => i !== index);
+    setTopics(newTopics);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -75,13 +82,23 @@ const SpaceForm: React.FC<SpaceFormProps> = ({
       title,
       description,
       scheduledStart,
-      agenda: agenda.filter((item) => item.trim() !== ''),
-      speakers,
+      topics: topics.filter((item) => item.trim() !== ''),
+      hostHandle,
     });
   };
 
   return (
     <Paper elevation={3} sx={{ p: 3, maxWidth: 800, mx: 'auto', mt: 3 }}>
+      <TextField
+        label="Scheduled space url"
+        value={spaceUrl}
+        onChange={(e) => setSpaceUrl(e.target.value)}
+        fullWidth
+        sx={{ mb: 2 }}
+      />
+      <Typography variant="body2" sx={{ mb: 2 }} textAlign="center">
+        Or
+      </Typography>
       <form onSubmit={handleSubmit}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <TextField
@@ -91,9 +108,17 @@ const SpaceForm: React.FC<SpaceFormProps> = ({
             required
             fullWidth
           />
+          <TextField
+            label="Host"
+            value={hostHandle}
+            onChange={(e) => setHostHandle(e.target.value)}
+            fullWidth
+            required
+            placeholder="@twitterhandle"
+          />
 
           <TextField
-            label="Description (Optional)"
+            label="Description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             multiline
@@ -112,20 +137,20 @@ const SpaceForm: React.FC<SpaceFormProps> = ({
 
           <Box>
             <Typography variant="h6" gutterBottom>
-              Agenda List
+              Topics
             </Typography>
             <List>
-              {agenda.map((item, index) => (
+              {topics.map((item, index) => (
                 <ListItem key={index} sx={{ px: 0 }}>
                   <TextField
                     value={item}
                     onChange={(e) => handleAgendaChange(index, e.target.value)}
                     fullWidth
-                    placeholder="Enter agenda item"
+                    placeholder="Enter topic"
                   />
                   <IconButton
                     onClick={() => removeAgendaItem(index)}
-                    disabled={agenda.length === 1}
+                    disabled={topics.length === 1}
                   >
                     <DeleteIcon />
                   </IconButton>
@@ -141,22 +166,25 @@ const SpaceForm: React.FC<SpaceFormProps> = ({
             </Button>
           </Box>
 
-          <Box>
-            <Typography variant="h6" gutterBottom>
-              Existing Speakers
-            </Typography>
-            <List>
-              {speakers.map((speaker, index) => (
-                <ListItem key={index}>
-                  <Typography>
-                    {speaker.displayName} (@{speaker.twitterScreenName})
-                  </Typography>
-                </ListItem>
-              ))}
-            </List>
-          </Box>
+          {speakers && speakers.length > 0 && (
+            <Box>
+              <Typography variant="h6" gutterBottom>
+                Existing Speakers
+              </Typography>
+              <List>
+                {speakers.map((speaker, index) => (
+                  <ListItem key={index}>
+                    <Typography>
+                      {speaker.displayName} (@{speaker.twitterScreenName})
+                    </Typography>
+                  </ListItem>
+                ))}
+              </List>
+            </Box>
+          )}
 
-          <Button
+          <LoadingButton
+            loading={actionLoading}
             variant="contained"
             color="primary"
             type="submit"
@@ -164,7 +192,7 @@ const SpaceForm: React.FC<SpaceFormProps> = ({
             sx={{ mt: 2 }}
           >
             Source Speakers
-          </Button>
+          </LoadingButton>
         </Box>
       </form>
     </Paper>

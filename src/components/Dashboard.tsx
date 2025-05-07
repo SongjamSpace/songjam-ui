@@ -21,6 +21,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogContentText,
+  ListItem,
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import { useTranslation } from 'react-i18next';
@@ -42,6 +43,7 @@ import {
   getBroadcastFromX,
   getRawSpaceFromX,
   getSpace,
+  getSpacesByProjectId,
   Space,
 } from '../services/db/spaces.service';
 import { transcribeSpace } from '../services/transcription.service';
@@ -57,6 +59,10 @@ import {
 } from '../services/db/projects.service';
 import { extractSpaceId } from '../utils';
 import ScheduledSpaceCampaign from './ScheduledSpaceCampaign';
+import {
+  Campaign,
+  getNewCampaignsByProjectId,
+} from '../services/db/campaign.service';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -225,13 +231,9 @@ export default function Dashboard() {
   const [isShowNewCampaign, setIsShowNewCampaign] = useState(false);
   // const [scheduledSpaces, loadingScheduled, errorScheduled] = useCollectionData(query(collection(db, 'spaces'), where('state', '==', 'Scheduled')))
   // const [liveSpaces, loadingLive, errorLive] = useCollectionData(query(collection(db, 'spaces'), where('state', '==', 'Running')))
-  const [projectSpaces, loadingProjectSpaces, errorProjectSpaces] =
-    useCollectionData(
-      query(
-        collection(db, 'spaces'),
-        where('projectIds', 'array-contains', defaultProject?.id || '')
-      )
-    );
+  const [projectSpaces, setProjectSpaces] = useState<Space[]>([]);
+  const [loadingProjectSpaces, setLoadingProjectSpaces] = useState(false);
+  const [newCampaigns, setNewCampaigns] = useState<Campaign[]>([]);
   const scheduledSpaces =
     projectSpaces?.filter((space) => space.state === 'NotStarted') ||
     ([] as Space[]);
@@ -330,6 +332,16 @@ export default function Dashboard() {
       const projectId = user.defaultProjectId || user.projectIds[0];
       const project = await getProjectById(projectId);
       setDefaultProject(project);
+      setLoadingProjectSpaces(true);
+      await Promise.all([
+        getSpacesByProjectId(projectId, (spaces) => {
+          setProjectSpaces(spaces);
+        }),
+        getNewCampaignsByProjectId(projectId, (campaigns) => {
+          setNewCampaigns(campaigns);
+        }),
+      ]);
+      setLoadingProjectSpaces(false);
       setIsLoading(false);
     } else if (user) {
       setShowAuthDialog(false);
@@ -611,7 +623,9 @@ export default function Dashboard() {
                 p: 2,
                 alignItems: 'flex-start',
               }}
-              // Add onClick for scheduled items if needed (e.g., show details modal)
+              onClick={() => {
+                navigate(`/live/${space.spaceId}`);
+              }}
             >
               <ListItemText
                 primary={space.title || `Space ${space.spaceId}`}
@@ -665,6 +679,138 @@ export default function Dashboard() {
                       Speakers:{' '}
                       {[...space.admins, ...space.speakers]
                         .map((speaker) => speaker.displayName)
+                        .join(', ') || 'N/A'}
+                    </Box>
+                  </Box>
+                }
+              />
+              {/* <Button
+                variant="outlined"
+                size="small"
+                startIcon={<NotificationsActiveIcon />}
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent ListItemButton click
+                  toast.success('Notification preference saved (placeholder)!');
+                  // TODO: Implement actual notification logic
+                }}
+                sx={{
+                  ml: 2,
+                  alignSelf: 'center', // Center button vertically
+                  color: 'var(--text-secondary)',
+                  borderColor: 'var(--text-secondary)',
+                  fontSize: '0.75rem',
+                  padding: '2px 8px',
+                  '&:hover': {
+                    borderColor: 'white',
+                    color: 'white',
+                    bgcolor: 'rgba(255, 255, 255, 0.1)',
+                  },
+                }}
+              >
+                Notify Me
+              </Button> */}
+            </ListItemButton>
+          ))}
+        </List>
+      </Box>
+    );
+  };
+
+  const renderNewCampaignsList = (
+    campaigns: Campaign[],
+    loading: boolean,
+    error: Error | null
+  ) => {
+    if (loading || !user) {
+      return renderSpaceListSkeleton(5);
+    }
+    if (error) {
+      return (
+        <Typography color="error" sx={{ p: 3, color: '#f44336' }}>
+          Error loading Scheduled spaces: {error.message || 'Unknown error'}
+        </Typography>
+      );
+    }
+    if (!campaigns || campaigns.length === 0) {
+      return (
+        <Typography sx={{ p: 3, color: 'var(--text-secondary)' }}>
+          No new campaigns found.
+        </Typography>
+      );
+    }
+
+    return (
+      <Box sx={{ p: 2 }}>
+        <List sx={{ p: 0 }}>
+          {campaigns.map((campaign) => (
+            <ListItemButton
+              key={campaign.id}
+              onClick={() => {
+                navigate(`/campaigns/${campaign.id}`);
+              }}
+              sx={{
+                mb: 1,
+                borderRadius: 1,
+                bgcolor: 'rgba(255, 255, 255, 0.05)',
+                '&:hover': {
+                  bgcolor: 'rgba(255, 255, 255, 0.1)',
+                },
+                p: 2,
+                alignItems: 'flex-start',
+              }}
+              // Add onClick for scheduled items if needed (e.g., show details modal)
+            >
+              <ListItemText
+                primary={campaign.ctaTarget}
+                primaryTypographyProps={{
+                  color: 'var(--text-primary)',
+                  fontWeight: '500',
+                  mb: 1,
+                }}
+                secondaryTypographyProps={{
+                  component: 'div',
+                  color: 'var(--text-secondary)',
+                  fontSize: '0.85rem',
+                }}
+                secondary={
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 0.5,
+                    }}
+                  >
+                    {/* <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.5,
+                      }}
+                    >
+                      <EventIcon fontSize="inherit" sx={{ mr: 0.5 }} />
+                      Scheduled Start:{' '}
+                      {new Date(
+                        campaign.scheduledStart || 0
+                      ).toLocaleTimeString([], {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true,
+                      })}
+                    </Box> */}
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.5,
+                      }}
+                    >
+                      <GroupIcon fontSize="inherit" sx={{ mr: 0.5 }} />
+                      Speakers:{' '}
+                      {campaign.spaceSpeakerUsernames
+                        ?.map((speaker) => speaker)
                         .join(', ') || 'N/A'}
                     </Box>
                   </Box>
@@ -943,6 +1089,28 @@ export default function Dashboard() {
               <Tab
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {t('newCampaignsTab', 'Campaigns')}
+                    {newCampaigns.length > 0 && (
+                      <Box
+                        component="span"
+                        sx={{
+                          bgcolor: 'rgba(255,255,255,0.1)',
+                          borderRadius: '12px',
+                          px: 1,
+                          py: 0.25,
+                          fontSize: '0.75rem',
+                        }}
+                      >
+                        {newCampaigns.length}
+                      </Box>
+                    )}
+                  </Box>
+                }
+                {...a11yProps(0)}
+              />
+              <Tab
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     {t('scheduledSpacesTab', 'Scheduled')}
                     {scheduledSpaces.length > 0 && (
                       <Box
@@ -960,7 +1128,7 @@ export default function Dashboard() {
                     )}
                   </Box>
                 }
-                {...a11yProps(0)}
+                {...a11yProps(1)}
               />
               <Tab
                 label={
@@ -982,7 +1150,7 @@ export default function Dashboard() {
                     )}
                   </Box>
                 }
-                {...a11yProps(1)}
+                {...a11yProps(2)}
               />
               <Tab
                 label={
@@ -1004,30 +1172,37 @@ export default function Dashboard() {
                     )}
                   </Box>
                 }
-                {...a11yProps(2)}
+                {...a11yProps(3)}
               />
             </Tabs>
           </Box>
           <TabPanel value={value} index={0}>
-            {renderScheduledList(
-              scheduledSpaces as Space[],
+            {renderNewCampaignsList(
+              newCampaigns as Campaign[],
               loadingProjectSpaces || isLoading,
-              errorProjectSpaces as Error | null
+              null
             )}
           </TabPanel>
           <TabPanel value={value} index={1}>
-            {renderSpaceList(
-              liveSpaces as Space[],
+            {renderScheduledList(
+              scheduledSpaces as Space[],
               loadingProjectSpaces || isLoading,
-              errorProjectSpaces as Error | null,
-              'Live'
+              null
             )}
           </TabPanel>
           <TabPanel value={value} index={2}>
             {renderSpaceList(
+              liveSpaces as Space[],
+              loadingProjectSpaces || isLoading,
+              null,
+              'Live'
+            )}
+          </TabPanel>
+          <TabPanel value={value} index={3}>
+            {renderSpaceList(
               completedSpaces as Space[],
               loadingProjectSpaces || isLoading,
-              errorProjectSpaces as Error | null,
+              null,
               'Completed'
             )}
           </TabPanel>

@@ -1,34 +1,28 @@
-import {
-  Box,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  Typography,
-} from '@mui/material';
-import { Space, TwitterUser } from '../services/db/spaces.service';
+import { Dialog, DialogContent, DialogTitle } from '@mui/material';
+import { SpaceDoc } from '../services/db/spaces.service';
 import SpaceForm, { SpaceFormData } from './SpaceForm';
 import { useEffect, useState } from 'react';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import SourceSpeakers from './SourceSpeakers';
+import { createCampaign } from '../services/db/campaign.service';
+import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 type Props = {
-  space?: Space;
+  space?: SpaceDoc;
   isNew: boolean;
 };
 
 const ScheduledSpaceCampaign = ({ space, isNew }: Props) => {
-  const [currentStep, setCurrentStep] = useState(0);
+  const { user } = useAuth();
 
   const [title, setTitle] = useState(space?.title || '');
   const [description, setDescription] = useState('');
   const [scheduledStart, setScheduledStart] = useState<Date | null>(
     space?.scheduledStart ? new Date(space.scheduledStart) : new Date()
   );
-  const [agenda, setAgenda] = useState<string[]>(['']);
-  const [speakers, setSpeakers] = useState<TwitterUser[]>(
-    space?.speakers || []
-  );
+  const [topics, setTopics] = useState<string[]>(['']);
+  const [hostHandle, setHostHandle] = useState('');
+  const navigate = useNavigate();
+  const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
     if (space) {
@@ -36,43 +30,49 @@ const ScheduledSpaceCampaign = ({ space, isNew }: Props) => {
       setScheduledStart(
         space.scheduledStart ? new Date(space.scheduledStart) : new Date()
       );
-      setSpeakers(space.speakers);
     }
   }, [space]);
-  const handleSubmit = (formData: SpaceFormData) => {
+
+  const handleSubmit = async (formData: SpaceFormData) => {
     // Handle the form submission
     console.log(formData);
-    setCurrentStep(currentStep + 1);
+    setActionLoading(true);
+    const campaign = await createCampaign({
+      ctaType: 'space',
+      ctaTarget: title,
+      spaceId: space?.id || '',
+      spaceTitle: title,
+      projectId: user?.defaultProjectId || '',
+      userId: user?.uid || '',
+      status: 'DRAFT',
+      addedType: 'NEW',
+      createdAt: Date.now(),
+      topics,
+      hostHandle,
+      description,
+    });
+    navigate(`/campaigns/${campaign.id}`);
   };
 
   return (
     <Dialog open={true} onClose={() => {}} fullWidth>
       <DialogTitle>Create Campaign</DialogTitle>
       <DialogContent>
-        {currentStep > 0 && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <IconButton onClick={() => setCurrentStep(currentStep - 1)}>
-              <ArrowBackIcon />
-            </IconButton>
-            <Typography variant="h6">{title}</Typography>
-          </Box>
-        )}
-        {currentStep === 0 && (
-          <SpaceForm
-            onSubmit={handleSubmit}
-            title={title}
-            setTitle={setTitle}
-            description={description}
-            setDescription={setDescription}
-            agenda={agenda}
-            setAgenda={setAgenda}
-            scheduledStart={scheduledStart || new Date()}
-            setScheduledStart={setScheduledStart}
-            speakers={speakers}
-            setSpeakers={setSpeakers}
-          />
-        )}
-        {currentStep === 1 && <SourceSpeakers />}
+        <SpaceForm
+          onSubmit={handleSubmit}
+          title={title}
+          setTitle={setTitle}
+          description={description}
+          setDescription={setDescription}
+          topics={topics}
+          setTopics={setTopics}
+          scheduledStart={scheduledStart || new Date()}
+          setScheduledStart={setScheduledStart}
+          speakers={space?.speakers}
+          hostHandle={hostHandle}
+          setHostHandle={setHostHandle}
+          actionLoading={actionLoading}
+        />
       </DialogContent>
     </Dialog>
   );

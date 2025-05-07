@@ -100,6 +100,10 @@ export type Space = {
   };
 };
 
+export type SpaceDoc = Space & {
+  id: string;
+};
+
 export enum TranscriptionProgress {
   NOT_STARTED = 0,
   DOWNLOADING_AUDIO = 1,
@@ -256,7 +260,7 @@ export const getSpaces = async () => {
     snapshot.docs.map((doc) => ({
       ...doc.data(),
       id: doc.id,
-    })) as (Space & { id: string })[]
+    })) as SpaceDoc[]
   ).filter((space) => space.speakers.length > 0);
 };
 
@@ -312,3 +316,28 @@ export const getBroadcastFromX = async (broadcastId: string) => {
 };
 
 export const spaceColRef = collection(db, SPACE_COLLECTION);
+
+export const getSpacesByProjectId = async (
+  projectId: string,
+  listener?: (spaces: SpaceDoc[]) => void
+) => {
+  const colRef = query(
+    spaceColRef,
+    where('projectIds', 'array-contains', projectId)
+  );
+  const snapshot = await getDocs(colRef);
+  if (listener) {
+    onSnapshot(colRef, (snapshot) => {
+      listener(
+        snapshot.docs.map((doc) => ({
+          ...doc.data(),
+          id: doc.id,
+        })) as SpaceDoc[]
+      );
+    });
+  }
+  return snapshot.docs.map((doc) => ({
+    ...doc.data(),
+    id: doc.id,
+  })) as SpaceDoc[];
+};

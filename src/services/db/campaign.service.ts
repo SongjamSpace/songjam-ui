@@ -7,6 +7,8 @@ import {
   getDocs,
   where,
   updateDoc,
+  getDoc,
+  onSnapshot,
 } from 'firebase/firestore';
 import { SpaceListener } from './spaces.service';
 
@@ -16,12 +18,21 @@ export type Campaign = {
   ctaTarget: string;
   spaceId: string;
   spaceTitle: string;
-
   projectId: string;
   userId: string;
   status: 'DRAFT' | 'GENERATING' | 'READY' | 'COMPLETED';
   createdAt: number;
   totalDms?: number;
+
+  // Scheduled Campaign
+  description?: string;
+  topics?: string[];
+  scheduledStart?: number;
+  spaceSpeakerUsernames?: string[];
+  selectedSpaceIds?: string[];
+  addedType?: 'NEW' | 'ENDED_SPACE';
+  hostHandle?: string;
+  spaceUrl?: string;
 };
 
 export type CampaignListener = SpaceListener & {
@@ -29,6 +40,7 @@ export type CampaignListener = SpaceListener & {
   messageContent: string;
   messageCreatedAt: number;
   messageUpdatedAt: number;
+  customLabel?: string;
 };
 
 export const CAMPAIGN_COLLECTION = 'campaigns';
@@ -38,6 +50,26 @@ export const createCampaign = async (campaign: Campaign) => {
   const campaignRef = collection(db, CAMPAIGN_COLLECTION);
   const newCampaignRef = await addDoc(campaignRef, campaign);
   return { ...campaign, id: newCampaignRef.id } as unknown as Campaign;
+};
+
+export const createScheduledCampaign = async (campaign: Campaign) => {
+  const campaignRef = collection(db, CAMPAIGN_COLLECTION);
+  const newCampaignRef = await addDoc(campaignRef, campaign);
+  return { ...campaign, id: newCampaignRef.id } as unknown as Campaign;
+};
+
+export const getCampaign = async (
+  campaignId: string,
+  listener: (campaign: Campaign) => void
+) => {
+  const campaignRef = doc(db, CAMPAIGN_COLLECTION, campaignId);
+  const campaignDoc = await getDoc(campaignRef);
+  if (listener) {
+    onSnapshot(campaignRef, (snapshot) => {
+      listener(snapshot.data() as Campaign);
+    });
+  }
+  return campaignDoc.data() as Campaign;
 };
 
 export const getCampaigns = async (spaceId: string, projectId: string) => {
@@ -72,7 +104,8 @@ export const updateCampaign = async (
 export const updateCampaignListenerMessage = async (
   campaignId: string,
   listenerId: string,
-  message: string
+  message: string,
+  customLabel?: string
 ) => {
   const campaignRef = doc(
     db,
@@ -84,5 +117,33 @@ export const updateCampaignListenerMessage = async (
   await updateDoc(campaignRef, {
     messageContent: message,
     messageUpdatedAt: Date.now(),
+    customLabel: customLabel,
   });
+};
+
+export const getNewCampaignsByProjectId = async (
+  projectId: string,
+  listener?: (campaigns: Campaign[]) => void
+) => {
+  const campaignsRef = collection(db, CAMPAIGN_COLLECTION);
+  const q = query(
+    campaignsRef,
+    where('projectId', '==', projectId),
+    where('addedType', '==', 'NEW')
+  );
+  const snapshot = await getDocs(q);
+  if (listener) {
+    onSnapshot(q, (snapshot) => {
+      listener(
+        snapshot.docs.map((doc) => ({
+          ...doc.data(),
+          id: doc.id,
+        })) as Campaign[]
+      );
+    });
+  }
+  return snapshot.docs.map((doc) => ({
+    ...doc.data(),
+    id: doc.id,
+  })) as Campaign[];
 };

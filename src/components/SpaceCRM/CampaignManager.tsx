@@ -44,6 +44,7 @@ import { collection } from 'firebase/firestore';
 import { db } from '../../services/firebase.service';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
+import SaveIcon from '@mui/icons-material/Save';
 
 const CampaignManager: React.FC<{
   spaceId: string;
@@ -369,7 +370,7 @@ const CampaignManager: React.FC<{
             campaignId={campaign.id}
             campaign={campaign}
             t={t}
-            totalListeners={listeners.length}
+            // totalListeners={listeners.length}
           />
         )}
       </Grid>
@@ -412,30 +413,32 @@ const ListenerCardContent = ({ listener }: { listener: SpaceListener }) => {
       )}
 
       <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-        <Chip
-          icon={<AccessTimeIcon />}
-          label={`Joined: ${format(listener.joinedAt, 'h:mm a')}`}
-          size="small"
-        />
-        <Chip
-          icon={<AccessTimeIcon />}
-          label={`Left: ${format(listener.leftAt || new Date(), 'h:mm a')}`}
-          size="small"
-        />
+        {listener.joinedAt && (
+          <Chip
+            icon={<AccessTimeIcon />}
+            label={`Joined: ${format(listener.joinedAt, 'h:mm a')}`}
+            size="small"
+          />
+        )}
+        {listener.leftAt && (
+          <Chip
+            icon={<AccessTimeIcon />}
+            label={`Left: ${format(listener.leftAt || new Date(), 'h:mm a')}`}
+            size="small"
+          />
+        )}
       </Box>
     </>
   );
 };
-const CampaignListeners = ({
+export const CampaignListeners = ({
   campaignId,
   campaign,
   t,
-  totalListeners,
 }: {
   campaignId: string;
   campaign: Campaign;
   t: TFunction<'translation', undefined>;
-  totalListeners: number;
 }) => {
   const [messages, loading, error] = useCollectionData(
     collection(db, 'campaigns', campaignId, 'messages')
@@ -455,7 +458,8 @@ const CampaignListeners = ({
     <Box>
       {campaign?.status !== 'DRAFT' &&
         campaign.totalDms &&
-        messages?.length && (
+        messages &&
+        messages.length > 0 && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
             <Typography variant="body2" color="text.secondary">
               {campaign.status}
@@ -497,43 +501,89 @@ const CampaignListeners = ({
                       <Typography variant="body2" color="text.secondary">
                         {t('generatedDmLabel', 'Generated DM')}
                       </Typography>
-                      <Box display={'flex'} gap={1}>
-                        {editMessage?.userId === listener.userId && (
-                          <IconButton
-                            size="small"
-                            onClick={() => {
-                              setEditMessage(null);
-                            }}
-                          >
-                            <CloseIcon fontSize="inherit" />
-                          </IconButton>
-                        )}
-                        {editMessage?.userId === listener.userId ? (
-                          <IconButton
-                            size="small"
-                            onClick={async () => {
-                              // Update the message
-                              setEditMessage(null);
-                              await updateCampaignListenerMessage(
-                                campaignId,
-                                listener.userId,
-                                editMessage.messageContent
-                              );
-                            }}
-                          >
-                            <CheckIcon fontSize="inherit" />
-                          </IconButton>
-                        ) : (
-                          <IconButton
-                            size="small"
-                            onClick={() => {
-                              setEditMessage(listener);
-                            }}
-                          >
-                            <EditIcon fontSize="inherit" />
-                          </IconButton>
-                        )}
-                      </Box>
+                      {listener.messageStatus === 'READY' ? (
+                        <Box display={'flex'} gap={1}>
+                          {editMessage?.userId === listener.userId && (
+                            <IconButton
+                              size="small"
+                              onClick={() => {
+                                setEditMessage(null);
+                              }}
+                            >
+                              <CloseIcon fontSize="inherit" />
+                            </IconButton>
+                          )}
+                          {editMessage?.userId === listener.userId ? (
+                            <IconButton
+                              size="small"
+                              onClick={async () => {
+                                // Update the message
+                                setEditMessage(null);
+                                await updateCampaignListenerMessage(
+                                  campaignId,
+                                  listener.userId,
+                                  editMessage.messageContent
+                                );
+                              }}
+                            >
+                              <CheckIcon fontSize="inherit" />
+                            </IconButton>
+                          ) : (
+                            <IconButton
+                              size="small"
+                              onClick={() => {
+                                setEditMessage(listener);
+                              }}
+                            >
+                              <EditIcon fontSize="inherit" />
+                            </IconButton>
+                          )}
+                        </Box>
+                      ) : (
+                        <Chip
+                          label={listener.messageStatus}
+                          size="small"
+                          color={
+                            listener.messageStatus === 'FAILED'
+                              ? 'error'
+                              : 'default'
+                          }
+                        />
+                        // <TextField
+                        //   size="small"
+                        //   value={
+                        //     editMessage?.userId === listener.userId
+                        //       ? editMessage.customLabel
+                        //       : listener.customLabel
+                        //   }
+                        //   onChange={(e) => {
+                        //     setEditMessage({
+                        //       ...listener,
+                        //       customLabel: e.target.value,
+                        //     });
+                        //   }}
+                        //   sx={{ width: '180px' }}
+                        //   placeholder="Custom label"
+                        //   InputProps={{
+                        //     endAdornment: (
+                        //       <IconButton
+                        //         size="small"
+                        //         onClick={async () => {
+                        //           setEditMessage(null);
+                        //           await updateCampaignListenerMessage(
+                        //             campaignId,
+                        //             listener.userId,
+                        //             listener.messageContent,
+                        //             editMessage?.customLabel
+                        //           );
+                        //         }}
+                        //       >
+                        //         <SaveIcon fontSize="inherit" />
+                        //       </IconButton>
+                        //     ),
+                        //   }}
+                        // />
+                      )}
                     </Box>
                     <Paper
                       variant="outlined"

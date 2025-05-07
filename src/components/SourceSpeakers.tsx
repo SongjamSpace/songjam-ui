@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Dispatch, SetStateAction } from 'react';
 import {
   Box,
   Grid,
@@ -8,24 +8,34 @@ import {
   Chip,
   Stack,
   IconButton,
-  Tooltip,
-  Divider,
 } from '@mui/material';
 import {
   Search as SearchIcon,
   Add as AddIcon,
   Remove as RemoveIcon,
 } from '@mui/icons-material';
-import { getSpaces, Space } from '../services/db/spaces.service';
+import { getSpaces, SpaceDoc } from '../services/db/spaces.service';
 import SpaceSpeakerInfo from './SpaceSpeakerInfo';
+import { LoadingButton } from '@mui/lab';
 
-const SourceSpeakers: React.FC = () => {
-  const [spaces, setSpaces] = useState<(Space & { id: string })[]>([]);
+type SourceSpeakersProps = {
+  handleGenerateDMs: () => void;
+  selectedSpaces: SpaceDoc[];
+  setSelectedSpaces: Dispatch<SetStateAction<SpaceDoc[]>>;
+  currentPlan: string;
+  upgradePlan: () => void;
+};
+
+const SourceSpeakers: React.FC<SourceSpeakersProps> = ({
+  handleGenerateDMs,
+  selectedSpaces,
+  setSelectedSpaces,
+  currentPlan,
+  upgradePlan,
+}) => {
+  const [spaces, setSpaces] = useState<SpaceDoc[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedSpaces, setSelectedSpaces] = useState<
-    (Space & { id: string })[]
-  >([]);
-  const [loading, setLoading] = useState(true);
+  //   const [loading, setLoading] = useState(false);
 
   // Fetch spaces on component mount
   useEffect(() => {
@@ -37,10 +47,8 @@ const SourceSpeakers: React.FC = () => {
       // TODO: Replace with actual API call
       const _spaces = await getSpaces();
       setSpaces(_spaces);
-      setLoading(false);
     } catch (error) {
       console.error('Error fetching spaces:', error);
-      setLoading(false);
     }
   };
 
@@ -48,7 +56,7 @@ const SourceSpeakers: React.FC = () => {
     space.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleSpaceSelect = (space: Space & { id: string }) => {
+  const handleSpaceSelect = (space: SpaceDoc) => {
     if (
       selectedSpaces.length >= 8 &&
       !selectedSpaces.find((s) => s.id === space.id)
@@ -65,19 +73,10 @@ const SourceSpeakers: React.FC = () => {
     });
   };
 
-  const totalSpeakers = selectedSpaces.reduce(
-    (sum, space) => sum + space.speakers.length,
-    0
-  );
-
-  const handleGenerateDMs = () => {
-    // TODO: Implement DM generation logic
-    console.log('Generating DMs for selected spaces:', selectedSpaces);
-  };
-
   return (
     <Box sx={{ p: 3 }}>
       <Stack spacing={3}>
+        <Typography variant="h6">Source Speakers</Typography>
         {/* Search Bar */}
         <TextField
           fullWidth
@@ -94,20 +93,28 @@ const SourceSpeakers: React.FC = () => {
 
         {/* Selected Spaces Summary */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Typography variant="body1">
-            Spaces: {selectedSpaces.length}/8
-          </Typography>
-          <Typography variant="body1">
-            Total Speakers: {totalSpeakers}
-          </Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleGenerateDMs}
-            disabled={selectedSpaces.length === 0}
-          >
-            Generate DMs
-          </Button>
+          <Box display={'flex'} alignItems={'center'} gap={1} flexGrow={1}>
+            <Chip size="small" label={currentPlan.toUpperCase()} />
+            <Typography variant="body1">
+              {currentPlan === 'free'
+                ? `Spaces: ${selectedSpaces.length}/8`
+                : `Unlimited Spaces`}
+            </Typography>
+            {true && (
+              <Typography variant="body2" sx={{ ml: 'auto' }}>
+                <span
+                  style={{
+                    cursor: 'pointer',
+                    color: 'rgba(255,255,255,0.8)',
+                    textDecoration: 'underline',
+                  }}
+                >
+                  Upgrade to PRO
+                </span>{' '}
+                for unlimited spaces
+              </Typography>
+            )}
+          </Box>
         </Box>
 
         {/* Space Cards Grid */}
@@ -122,17 +129,19 @@ const SourceSpeakers: React.FC = () => {
                   p: 2,
                   borderRadius: 1,
                   background: isSelected
-                    ? 'rgba(96, 165, 250, 0.15)'
+                    ? 'linear-gradient(135deg, rgba(96, 165, 250, 0.2) 0%, rgba(59, 130, 246, 0.15) 100%)'
                     : 'linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%)',
-                  color: isSelected ? 'inherit' : 'inherit',
+                  color: isSelected ? 'white' : 'inherit',
                   transition: 'all 0.3s ease',
-                  borderLeft: isSelected ? '3px solid #60a5fa' : 'none',
+                  borderLeft: isSelected ? '4px solid #3b82f6' : 'none',
                   boxShadow: isSelected
-                    ? '0 2px 8px rgba(15, 23, 42, 0.2)'
+                    ? '0 4px 12px rgba(59, 130, 246, 0.25)'
                     : 'none',
                   '&:hover': {
                     transform: 'translateX(8px)',
-                    boxShadow: 3,
+                    boxShadow: isSelected
+                      ? '0 6px 16px rgba(59, 130, 246, 0.3)'
+                      : 3,
                   },
                 }}
                 onClick={() => handleSpaceSelect(space)}
@@ -194,42 +203,31 @@ const SourceSpeakers: React.FC = () => {
                     </IconButton>
                   </Stack>
 
-                  {/* Speaker Previews */}
-                  {isSelected && space.speakers.length > 0 && (
-                    <>
-                      <Divider sx={{ my: 1 }} />
-                      <Box>
-                        <Typography 
-                          variant="subtitle2" 
-                          sx={{ 
-                            mb: 1,
-                            color: 'text.secondary',
-                            fontWeight: 500 
+                  <Box
+                    sx={{
+                      overflowX: 'auto',
+                      display: 'flex',
+                      gap: 1,
+                      width: '100%',
+                    }}
+                  >
+                    {space.speakers.map((speaker) => (
+                      <Grid item xs={12} sm={6} lg={4} key={speaker.userId}>
+                        <Box
+                          sx={{
+                            bgcolor: 'rgba(255, 255, 255, 0.05)',
+                            borderRadius: 1,
+                            overflow: 'hidden',
+                            '&:hover': {
+                              bgcolor: 'rgba(255, 255, 255, 0.08)',
+                            },
                           }}
                         >
-                          Speakers
-                        </Typography>
-                        <Grid container spacing={1}>
-                          {space.speakers.map((speaker) => (
-                            <Grid item xs={12} sm={6} lg={4} key={speaker.userId}>
-                              <Box
-                                sx={{
-                                  bgcolor: 'rgba(255, 255, 255, 0.05)',
-                                  borderRadius: 1,
-                                  overflow: 'hidden',
-                                  '&:hover': {
-                                    bgcolor: 'rgba(255, 255, 255, 0.08)',
-                                  },
-                                }}
-                              >
-                                <SpaceSpeakerInfo speaker={speaker} />
-                              </Box>
-                            </Grid>
-                          ))}
-                        </Grid>
-                      </Box>
-                    </>
-                  )}
+                          <SpaceSpeakerInfo speaker={speaker} />
+                        </Box>
+                      </Grid>
+                    ))}
+                  </Box>
                 </Stack>
               </Box>
             );

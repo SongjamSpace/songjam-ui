@@ -13,6 +13,7 @@ import {
   Chip,
   Avatar,
   Skeleton,
+  Stack,
 } from '@mui/material';
 import SourceSpeakers from '../components/SourceSpeakers';
 import { useAuthContext } from '../contexts/AuthContext';
@@ -23,6 +24,7 @@ import { CampaignListeners } from '../components/SpaceCRM/CampaignManager';
 import { useTranslation } from 'react-i18next';
 import LoginDialog from '../components/LoginDialog';
 import { LoadingButton } from '@mui/lab';
+import CampaignPromptCustomizer, { PromptSettings } from '../components/CampaignPromptCustomizer';
 
 type Props = {};
 
@@ -38,6 +40,16 @@ const Campaign = (props: Props) => {
   const [actionLoading, setActionLoading] = useState(false);
   const navigate = useNavigate();
   const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [promptSettings, setPromptSettings] = useState<PromptSettings>({
+    tone: 'professional',
+    length: 'moderate',
+    enthusiasm: 50,
+    personalization: 75,
+    formality: 50,
+    customInstructions: '',
+    keyPoints: [],
+    callToAction: 'soft',
+  });
 
   const fetchCampaign = async () => {
     if (id) {
@@ -87,14 +99,13 @@ const Campaign = (props: Props) => {
     if (!token) {
       return alert('No token found, please login again');
     }
-    // TODO: Implement DM generation logic
-    console.log('Generate DMs for selected spaces:', selectedSpaces);
+
     await updateCampaign(id, {
       spaceSpeakerUsernames: selectedSpeakers.map((s) => s.twitterScreenName),
       selectedSpaceIds: selectedSpaces.map((s) => s.id),
       totalDms: selectedSpeakers.length,
     });
-    // contruct an object with the speaker id as the key and the space title as the value
+
     const speakersWithSpaceTitlesObj: Record<string, string> = {};
     selectedSpeakers.forEach((s) => {
       const space = selectedSpaces.find((space) =>
@@ -104,6 +115,7 @@ const Campaign = (props: Props) => {
         speakersWithSpaceTitlesObj[s.userId] = space.title;
       }
     });
+
     await axios.post(
       `${import.meta.env.VITE_JAM_SERVER_URL}/api/generate-new-campaign-dms`,
       {
@@ -112,6 +124,7 @@ const Campaign = (props: Props) => {
         campaignDescription: campaign?.description,
         speakers: selectedSpeakers,
         speakersWithSpaceTitlesObj,
+        promptSettings,
       },
       {
         headers: {
@@ -127,7 +140,6 @@ const Campaign = (props: Props) => {
     }
   }, [selectedSpaces]);
 
-  // if (isOwner) {
   return (
     <Box
       sx={{
@@ -160,89 +172,103 @@ const Campaign = (props: Props) => {
           </Grid>
         </Grid>
       )}
-      {/* <Background /> */}
       {isOwner && campaign && (
         <Grid container spacing={3} sx={{ position: 'relative', p: 3 }}>
-          {/* Left Column - Campaign Details */}
+          {/* Left Column - Campaign Details and Prompt Customizer */}
           <Grid item xs={12} md={4}>
-            <Paper
-              sx={{
-                p: 3,
-                height: '100%',
-                bgcolor: 'rgba(255, 255, 255, 0.05)',
-              }}
-            >
-              <Typography
-                variant="h5"
-                gutterBottom
+            <Stack spacing={3}>
+              <Paper
                 sx={{
-                  color: 'white',
-                  mb: 3,
-                  background:
-                    'linear-gradient(90deg, #60A5FA, #8B5CF6, #EC4899)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundSize: '200% auto',
+                  p: 3,
+                  bgcolor: 'rgba(255, 255, 255, 0.05)',
                 }}
               >
-                {campaign.spaceTitle}
-              </Typography>
-
-              <Box sx={{ mt: 2 }}>
                 <Typography
-                  variant="subtitle1"
-                  sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
+                  variant="h5"
+                  gutterBottom
+                  sx={{
+                    color: 'white',
+                    mb: 3,
+                    background:
+                      'linear-gradient(90deg, #60A5FA, #8B5CF6, #EC4899)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundSize: '200% auto',
+                  }}
                 >
-                  {campaign.scheduledStart
-                    ? new Date(campaign.scheduledStart).toLocaleString()
-                    : 'Not yet scheduled'}
+                  {campaign.spaceTitle}
                 </Typography>
-              </Box>
 
-              {campaign.description && (
                 <Box sx={{ mt: 2 }}>
                   <Typography
                     variant="subtitle1"
                     sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
                   >
-                    Description
+                    {campaign.scheduledStart
+                      ? new Date(campaign.scheduledStart).toLocaleString()
+                      : 'Not yet scheduled'}
+                  </Typography>
+                </Box>
+
+                {campaign.description && (
+                  <Box sx={{ mt: 2 }}>
+                    <Typography
+                      variant="subtitle1"
+                      sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
+                    >
+                      Description
+                    </Typography>
+                    <Typography variant="body1" sx={{ color: 'white' }}>
+                      {campaign.description}
+                    </Typography>
+                  </Box>
+                )}
+
+                {campaign.topics && campaign.topics.length > 0 && (
+                  <Box sx={{ mt: 2 }}>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                      {campaign.topics.map((item, index) => (
+                        <Chip
+                          key={index}
+                          label={item}
+                          sx={{
+                            bgcolor: 'rgba(255, 255, 255, 0.1)',
+                            color: 'white',
+                            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.2)' },
+                          }}
+                        />
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+                <Box sx={{ mt: 2 }}>
+                  <Typography
+                    variant="subtitle1"
+                    sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
+                  >
+                    Hosted by
                   </Typography>
                   <Typography variant="body1" sx={{ color: 'white' }}>
-                    {campaign.description}
+                    {campaign.hostHandle}
                   </Typography>
                 </Box>
+              </Paper>
+
+              {/* Prompt Customizer */}
+              {campaign?.status === 'DRAFT' && (
+                <CampaignPromptCustomizer
+                  settings={promptSettings}
+                  onChange={setPromptSettings}
+                />
               )}
 
-              {campaign.topics && campaign.topics.length > 0 && (
-                <Box sx={{ mt: 2 }}>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                    {campaign.topics.map((item, index) => (
-                      <Chip
-                        key={index}
-                        label={item}
-                        sx={{
-                          bgcolor: 'rgba(255, 255, 255, 0.1)',
-                          color: 'white',
-                          '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.2)' },
-                        }}
-                      />
-                    ))}
-                  </Box>
-                </Box>
-              )}
-              <Box sx={{ mt: 2 }}>
-                <Typography
-                  variant="subtitle1"
-                  sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
-                >
-                  Hosted by
-                </Typography>
-                <Typography variant="body1" sx={{ color: 'white' }}>
-                  {campaign.hostHandle}
-                </Typography>
-              </Box>
               {selectedSpeakers.length > 0 && campaign?.status === 'DRAFT' && (
-                <Box sx={{ mt: 2 }}>
+                <Paper
+                  sx={{
+                    p: 3,
+                    bgcolor: 'rgba(255, 255, 255, 0.05)',
+                  }}
+                >
                   <Typography
                     variant="subtitle1"
                     sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
@@ -324,8 +350,9 @@ const Campaign = (props: Props) => {
                       </Box>
                     ))}
                   </Box>
-                </Box>
+                </Paper>
               )}
+
               {selectedSpaces.length > 0 && campaign?.status === 'DRAFT' && (
                 <LoadingButton
                   loading={actionLoading}
@@ -342,11 +369,10 @@ const Campaign = (props: Props) => {
                   Generate DMs
                 </LoadingButton>
               )}
-            </Paper>
+            </Stack>
           </Grid>
 
           {/* Right Column - Selected Spaces & Speakers */}
-
           {campaign && id && user && (
             <Grid item xs={12} md={8}>
               <Paper sx={{ height: '100%', p: 2 }}>
@@ -373,127 +399,6 @@ const Campaign = (props: Props) => {
       <LoginDialog open={showAuthDialog && !authLoading} />
     </Box>
   );
-  // } else {
-  //   return (
-  //     <Box
-  //       sx={{
-  //         background: 'linear-gradient(135deg, #0f172a, #1e293b)',
-  //         minHeight: '100vh',
-  //         color: 'white',
-  //         position: 'relative',
-  //         '&::before': {
-  //           content: '""',
-  //           position: 'absolute',
-  //           top: 0,
-  //           left: 0,
-  //           right: 0,
-  //           height: '100%',
-  //           background:
-  //             'radial-gradient(circle at 50% 0%, rgba(96, 165, 250, 0.15), rgba(139, 92, 246, 0.12), rgba(236, 72, 153, 0.1))',
-  //           opacity: 0.7,
-  //           pointerEvents: 'none',
-  //           maskImage:
-  //             'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 70%, rgba(0,0,0,0) 100%)',
-  //           WebkitMaskImage:
-  //             'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 70%, rgba(0,0,0,0) 100%)',
-  //         },
-  //       }}
-  //     >
-  //       <Grid container justifyContent="center" sx={{ p: 3 }}>
-  //         <Grid item xs={12} md={8}>
-  //           <Paper
-  //             sx={{
-  //               p: 4,
-  //               bgcolor: 'rgba(255, 255, 255, 0.05)',
-  //               backdropFilter: 'blur(10px)',
-  //               borderRadius: 2,
-  //               boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
-  //               border: '1px solid rgba(255, 255, 255, 0.1)',
-  //             }}
-  //           >
-  //             <Typography
-  //               variant="h4"
-  //               gutterBottom
-  //               sx={{
-  //                 color: 'white',
-  //                 mb: 3,
-  //                 background:
-  //                   'linear-gradient(90deg, #60A5FA, #8B5CF6, #EC4899)',
-  //                 WebkitBackgroundClip: 'text',
-  //                 WebkitTextFillColor: 'transparent',
-  //                 backgroundSize: '200% auto',
-  //               }}
-  //             >
-  //               {campaign.spaceTitle}
-  //             </Typography>
-
-  //             <Box sx={{ mt: 2 }}>
-  //               <Typography
-  //                 variant="subtitle1"
-  //                 sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
-  //               >
-  //                 {campaign.scheduledStart
-  //                   ? new Date(campaign.scheduledStart).toLocaleString()
-  //                   : 'Not yet scheduled'}
-  //               </Typography>
-  //             </Box>
-
-  //             {campaign.topics && campaign.topics.length > 0 && (
-  //               <Box sx={{ mt: 3 }}>
-  //                 <Box
-  //                   sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}
-  //                 >
-  //                   {campaign.topics.map((topic, index) => (
-  //                     <Chip
-  //                       key={index}
-  //                       label={topic}
-  //                       sx={{
-  //                         bgcolor: 'rgba(255, 255, 255, 0.1)',
-  //                         color: 'white',
-  //                         '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.2)' },
-  //                       }}
-  //                     />
-  //                   ))}
-  //                 </Box>
-  //               </Box>
-  //             )}
-
-  //             <Box sx={{ mt: 3 }}>
-  //               <Typography
-  //                 variant="subtitle1"
-  //                 sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
-  //               >
-  //                 Hosted by
-  //               </Typography>
-  //               <Typography variant="body1" sx={{ color: 'white' }}>
-  //                 {campaign.hostHandle}
-  //               </Typography>
-  //             </Box>
-
-  //             {campaign.description && (
-  //               <Box sx={{ mt: 3 }}>
-  //                 <Typography
-  //                   variant="subtitle1"
-  //                   sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
-  //                 >
-  //                   Description
-  //                 </Typography>
-  //                 <Typography variant="body1" sx={{ color: 'white' }}>
-  //                   {campaign.description}
-  //                 </Typography>
-  //               </Box>
-  //             )}
-  //             <Box display={'flex'} justifyContent={'center'} my={2}>
-  //               <Button variant="contained" color="primary">
-  //                 Join as Speaker
-  //               </Button>
-  //             </Box>
-  //           </Paper>
-  //         </Grid>
-  //       </Grid>
-  //     </Box>
-  //   );
-  // }
 };
 
 export default Campaign;

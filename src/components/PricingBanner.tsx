@@ -270,18 +270,37 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
           <Typography variant="h5" sx={{ mb: 2, color: 'var(--text-primary)' }}>
             {t('businessPlanTitle')}
           </Typography>
-          <Typography
-            variant="h3"
+          <Box
             sx={{
               mb: 2,
-              background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 1,
             }}
           >
-            $200
-            <span style={{ fontSize: '0.8rem' }}>{t('perUserPerMonth')}</span>
-          </Typography>
+            <Typography
+              variant="h4"
+              sx={{
+                background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                fontWeight: 600,
+              }}
+            >
+              Growth Plan
+            </Typography>
+            <Typography
+              variant="subtitle1"
+              sx={{
+                color: 'var(--text-secondary)',
+                textAlign: 'center',
+                fontStyle: 'italic',
+              }}
+            >
+              Scale with security
+            </Typography>
+          </Box>
           <Typography
             variant="body1"
             sx={{ mb: 3, color: 'var(--text-secondary)' }}
@@ -331,19 +350,19 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
               variant="outlined"
               fullWidth
               sx={{
-                borderColor: 'var(--text-secondary)',
-                color: 'var(--text-secondary)',
+                borderColor: '#60a5fa',
+                color: '#60a5fa',
                 '&:hover': {
-                  borderColor: 'white',
-                  color: 'white',
+                  borderColor: '#3b82f6',
+                  color: '#3b82f6',
+                  bgcolor: 'rgba(96, 165, 250, 0.1)',
                 },
               }}
               onClick={() => {
-                setLoadingBtnId('business');
-                onSubscribe('business');
+                window.open('https://calendly.com/songjam', '_blank');
               }}
             >
-              {t('getStartedButton')}
+              Schedule a Call
             </LoadingButton>
           )}
         </Paper>

@@ -33,6 +33,7 @@ export type Campaign = {
   addedType?: 'NEW' | 'ENDED_SPACE';
   hostHandle?: string;
   spaceUrl?: string;
+  campaignType?: 'speakers' | 'listeners';
 };
 
 export type CampaignListener = SpaceListener & {

@@ -4,7 +4,6 @@ import {
   Grid,
   Typography,
   TextField,
-  Button,
   Chip,
   Stack,
   IconButton,
@@ -14,24 +13,24 @@ import {
   Add as AddIcon,
   Remove as RemoveIcon,
 } from '@mui/icons-material';
-import { getSpaces, SpaceDoc } from '../services/db/spaces.service';
-import SpaceSpeakerInfo from './SpaceSpeakerInfo';
-import { LoadingButton } from '@mui/lab';
+import { getSpaces, SpaceDoc } from '../../services/db/spaces.service';
+import SpaceSpeakerInfo from '../SpaceSpeakerInfo';
+import { SongjamUser } from '../../services/db/user.service';
 
 type SourceSpeakersProps = {
-  handleGenerateDMs: () => void;
   selectedSpaces: SpaceDoc[];
   setSelectedSpaces: Dispatch<SetStateAction<SpaceDoc[]>>;
   currentPlan: string;
   upgradePlan: () => void;
+  user: SongjamUser;
 };
 
 const SourceSpeakers: React.FC<SourceSpeakersProps> = ({
-  handleGenerateDMs,
   selectedSpaces,
   setSelectedSpaces,
   currentPlan,
   upgradePlan,
+  user,
 }) => {
   const [spaces, setSpaces] = useState<SpaceDoc[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -74,7 +73,7 @@ const SourceSpeakers: React.FC<SourceSpeakersProps> = ({
   };
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ px: 2 }}>
       <Stack spacing={3}>
         <Typography variant="h6">Source Speakers</Typography>
         {/* Search Bar */}
@@ -92,30 +91,32 @@ const SourceSpeakers: React.FC<SourceSpeakersProps> = ({
         />
 
         {/* Selected Spaces Summary */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Box display={'flex'} alignItems={'center'} gap={1} flexGrow={1}>
-            <Chip size="small" label={currentPlan.toUpperCase()} />
-            <Typography variant="body1">
-              {currentPlan === 'free'
-                ? `Spaces: ${selectedSpaces.length}/8`
-                : `Unlimited Spaces`}
-            </Typography>
-            {true && (
-              <Typography variant="body2" sx={{ ml: 'auto' }}>
-                <span
-                  style={{
-                    cursor: 'pointer',
-                    color: 'rgba(255,255,255,0.8)',
-                    textDecoration: 'underline',
-                  }}
-                >
-                  Upgrade to PRO
-                </span>{' '}
-                for unlimited spaces
+        {user.currentPlan === 'free' && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box display={'flex'} alignItems={'center'} gap={1} flexGrow={1}>
+              <Chip size="small" label={currentPlan.toUpperCase()} />
+              <Typography variant="body1">
+                {currentPlan === 'free'
+                  ? `Spaces: ${selectedSpaces.length}/8`
+                  : `Unlimited Spaces`}
               </Typography>
-            )}
+              {true && (
+                <Typography variant="body2" sx={{ ml: 'auto' }}>
+                  <span
+                    style={{
+                      cursor: 'pointer',
+                      color: 'rgba(255,255,255,0.8)',
+                      textDecoration: 'underline',
+                    }}
+                  >
+                    Upgrade to PRO
+                  </span>{' '}
+                  for unlimited spaces
+                </Typography>
+              )}
+            </Box>
           </Box>
-        </Box>
+        )}
 
         {/* Space Cards Grid */}
         <Stack spacing={2}>

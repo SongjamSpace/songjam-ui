@@ -1,5 +1,6 @@
 import {
   collection,
+  collectionGroup,
   doc,
   getDoc,
   getDocs,
@@ -340,4 +341,153 @@ export const getSpacesByProjectId = async (
     ...doc.data(),
     id: doc.id,
   })) as SpaceDoc[];
+};
+
+export const getListenersAcrossSpaces = async () => {
+  const colRef = query(
+    collectionGroup(db, LISTENER_LOGS_SUBCOLLECTION),
+    // where('twitterScreenName', '==', 'Bkess75'),
+    limit(5)
+  );
+  const snapshot = await getDocs(colRef);
+  return snapshot.docs.map((doc) => doc.data() as SpaceListener);
+};
+
+export const getTestListeners = (): SpaceListener[] => {
+  return [
+    {
+      avatarUrl:
+        'https://pbs.twimg.com/profile_images/1899456885809627136/8FjDgfMT_normal.jpg',
+      banner:
+        'https://pbs.twimg.com/profile_banners/1517949596118487043/1742760293',
+      biography:
+        'Building @SongjamSpace\n\n10 Hackathon Wins @Chainlink Grand Prize & NFT @Filecoin @Polkadot X2 @MoonbeamNetwork @Coinbase @NethermindETH @0n1Force @Consensus_HK',
+      canDm: true,
+      displayName: 'Adam Place',
+      followersCount: 362,
+      followingCount: 345,
+      isBlueVerified: false,
+      isPrivate: false,
+      isProfileFetched: true,
+      isVerified: false,
+      joined: '1650742491',
+      joinedAt: 1746637600416,
+      leftAt: 1746638510483,
+      likesCount: 738,
+      listener: true,
+      location: 'Celestial Kingdom',
+      pinnedTweetIds: [],
+      timeSpentInMs: 910067,
+      tweetsCount: 827,
+      twitterScreenName: 'adam_songjam',
+      userId: '1517949596118487043',
+      website: 'https://songjam.space',
+    },
+    {
+      avatarUrl:
+        'https://pbs.twimg.com/profile_images/1617764613881499651/mVz38s8O_normal.jpg',
+      displayName: 'Logesh',
+      twitterScreenName: 'logeshr24',
+      isVerified: false,
+      joinedAt: 1743700715382,
+      leftAt: 1743700745254,
+      listener: true,
+      timeSpentInMs: 29872,
+      userId: '1MWKwnWexprQb',
+      banner: '',
+      biography: 'Building @SongjamSpace http://devpost.com/logesh665',
+      canDm: true,
+      followersCount: 100,
+      followingCount: 100,
+      tweetsCount: 100,
+      isProfileFetched: true,
+      location: '',
+      pinnedTweetIds: [],
+      website: '',
+      isBlueVerified: false,
+      isPrivate: false,
+      joined: '',
+      likesCount: 0,
+    },
+    {
+      avatarUrl:
+        'https://pbs.twimg.com/profile_images/1910521121193275392/SPYPj_ay_normal.jpg',
+      banner:
+        'https://pbs.twimg.com/profile_banners/1902034473400872960/1742760534',
+      biography:
+        '🎙️ @Xspaces Text-to-Speech & AI Analysis\n\n🔍 Unlock Insights. Amplify Voices\n\n📡 Capture Every Conversation\n\n#AMA #TextToSpeech #Xspace',
+      canDm: true,
+      displayName: 'Songjam',
+      followersCount: 168,
+      followingCount: 0,
+      isBlueVerified: true,
+      isPrivate: false,
+      isProfileFetched: true,
+      isVerified: false,
+      joined: '',
+      joinedAt: 1745510492173,
+      leftAt: 1745512252188,
+      likesCount: 27,
+      listener: true,
+      location: 'Trusted Execution Environment',
+      pinnedTweetIds: ['1904279473543155738'],
+      timeSpentInMs: 1760015,
+      tweetsCount: 27,
+      twitterScreenName: 'SongjamSpace',
+      userId: '1902034473400872960',
+      website: 'https://songjam.space',
+    },
+    {
+      avatarUrl:
+        'https://pbs.twimg.com/profile_images/1775232074338721792/CQY_1wkW_normal.jpg',
+      banner: 'https://pbs.twimg.com/profile_banners/37118689/1744562546',
+      biography: 'Community Director @0n1force | Coffee & Anime Enjoyer ☕️',
+      canDm: true,
+      displayName: 'Bobby-San',
+      followersCount: 6045,
+      followingCount: 4751,
+      isBlueVerified: true,
+      isPrivate: false,
+      isProfileFetched: true,
+      isVerified: false,
+      joined: '',
+      joinedAt: 1744920081394,
+      leftAt: 1744920091486,
+      likesCount: 143812,
+      listener: true,
+      location: 'New Tokyo',
+      pinnedTweetIds: ['1886798962231017662'],
+      timeSpentInMs: 10092,
+      tweetsCount: 47079,
+      twitterScreenName: 'Bkess75',
+      userId: '1PXEdmlXNVZQe',
+      website: '',
+    },
+    {
+      avatarUrl:
+        'https://pbs.twimg.com/profile_images/1729790698369495040/IisjDluB.jpg',
+      banner:
+        'https://pbs.twimg.com/profile_banners/1516412295546613761/1678093951',
+      biography:
+        'I build resilient communities that thrive no matter the market conditions.\nCM @bigaarcade.',
+      followersCount: 2921,
+      followingCount: 921,
+      isPrivate: false,
+      isVerified: false,
+      likesCount: 22373,
+      location: 'Kenya',
+      displayName: 'mrKonsole',
+      pinnedTweetIds: [],
+      tweetsCount: 6860,
+      isProfileFetched: true,
+      joinedAt: 1743700715382,
+      leftAt: 1743700745254,
+      userId: '1516412295546613761',
+      twitterScreenName: 'mrKonsole',
+      isBlueVerified: true,
+      canDm: true,
+      joined: '2022-04-19T13:44:33.000Z',
+      website: 'https://www.youtube.com/@mrkonsole',
+    },
+  ];
 };

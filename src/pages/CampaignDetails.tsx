@@ -14,19 +14,24 @@ import {
   Avatar,
   Skeleton,
 } from '@mui/material';
-import SourceSpeakers from '../components/SourceSpeakers';
+import SourceSpeakers from '../components/NewCampaign/SourceSpeakers';
 import { useAuthContext } from '../contexts/AuthContext';
-import { SpaceDoc, TwitterUser } from '../services/db/spaces.service';
+import {
+  getTestListeners,
+  SpaceDoc,
+  TwitterUser,
+} from '../services/db/spaces.service';
 import axios from 'axios';
 import { getDynamicToken } from '../utils';
 import { CampaignListeners } from '../components/SpaceCRM/CampaignManager';
 import { useTranslation } from 'react-i18next';
 import LoginDialog from '../components/LoginDialog';
 import { LoadingButton } from '@mui/lab';
+import SourceListeners from '../components/NewCampaign/SourceListeners';
 
 type Props = {};
 
-const Campaign = (props: Props) => {
+const CampaignDetails = (props: Props) => {
   const { id } = useParams();
   const { t } = useTranslation();
   const [campaign, setCampaign] = useState<CampaignType | null>(null);
@@ -38,6 +43,7 @@ const Campaign = (props: Props) => {
   const [actionLoading, setActionLoading] = useState(false);
   const navigate = useNavigate();
   const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
 
   const fetchCampaign = async () => {
     if (id) {
@@ -89,36 +95,70 @@ const Campaign = (props: Props) => {
     }
     // TODO: Implement DM generation logic
     console.log('Generate DMs for selected spaces:', selectedSpaces);
-    await updateCampaign(id, {
-      spaceSpeakerUsernames: selectedSpeakers.map((s) => s.twitterScreenName),
-      selectedSpaceIds: selectedSpaces.map((s) => s.id),
-      totalDms: selectedSpeakers.length,
-    });
-    // contruct an object with the speaker id as the key and the space title as the value
-    const speakersWithSpaceTitlesObj: Record<string, string> = {};
-    selectedSpeakers.forEach((s) => {
-      const space = selectedSpaces.find((space) =>
-        space.speakers.some((sp) => sp.userId === s.userId)
-      );
-      if (space) {
-        speakersWithSpaceTitlesObj[s.userId] = space.title;
-      }
-    });
-    await axios.post(
-      `${import.meta.env.VITE_JAM_SERVER_URL}/api/generate-new-campaign-dms`,
-      {
-        campaignId: id,
-        campaignTitle: campaign?.spaceTitle,
-        campaignDescription: campaign?.description,
-        speakers: selectedSpeakers,
-        speakersWithSpaceTitlesObj,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
+    setActionLoading(true);
+    if (campaign?.campaignType === 'speakers') {
+      await updateCampaign(id, {
+        spaceSpeakerUsernames: selectedSpeakers.map((s) => s.twitterScreenName),
+        selectedSpaceIds: selectedSpaces.map((s) => s.id),
+        totalDms: selectedSpeakers.length,
+      });
+      // contruct an object with the speaker id as the key and the space title as the value
+      const profilesWithSpaceTitlesObj: Record<string, string> = {};
+      selectedSpeakers.forEach((s) => {
+        const space = selectedSpaces.find((space) =>
+          space.speakers.some((sp) => sp.userId === s.userId)
+        );
+        if (space) {
+          profilesWithSpaceTitlesObj[s.userId] = space.title;
+        }
+      });
+      await axios.post(
+        `${import.meta.env.VITE_JAM_SERVER_URL}/api/generate-new-campaign-dms`,
+        {
+          campaignId: id,
+          campaignTitle: campaign?.spaceTitle,
+          campaignDescription: campaign?.description,
+          profiles: selectedSpeakers,
+          profilesWithSpaceTitlesObj,
+          campaignType: campaign?.campaignType,
         },
-      }
-    );
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+    } else if (campaign?.campaignType === 'listeners') {
+      // TODO: Implement listener DM generation logic
+      console.log('Generate DMs for selected listeners:', selectedSpaces);
+      const listeners = getTestListeners();
+      await updateCampaign(id, {
+        spaceSpeakerUsernames: listeners.map((l) => l.twitterScreenName),
+        selectedSpaceIds: selectedSpaces.map((s) => s.id),
+        totalDms: listeners.length,
+      });
+      // contruct an object with the speaker id as the key and the space title as the value
+      const listenersWithTopicsObj: Record<string, string> = {};
+      listeners.forEach((l) => {
+        listenersWithTopicsObj[l.userId] = selectedTopics.join(', ');
+      });
+      await axios.post(
+        `${import.meta.env.VITE_JAM_SERVER_URL}/api/generate-new-campaign-dms`,
+        {
+          campaignId: id,
+          campaignTitle: campaign?.spaceTitle,
+          campaignDescription: campaign?.description,
+          profiles: listeners.map(({ joinedAt, leftAt, ...rest }) => rest),
+          profilesWithSpaceTitlesObj: listenersWithTopicsObj,
+          campaignType: campaign?.campaignType,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+    }
   };
 
   useEffect(() => {
@@ -241,107 +281,125 @@ const Campaign = (props: Props) => {
                   {campaign.hostHandle}
                 </Typography>
               </Box>
-              {selectedSpeakers.length > 0 && campaign?.status === 'DRAFT' && (
-                <Box sx={{ mt: 2 }}>
-                  <Typography
-                    variant="subtitle1"
-                    sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
-                  >
-                    Speaker Invites ({selectedSpeakers.length})
-                  </Typography>
-                  <Box
-                    display="flex"
-                    gap={2}
-                    flexWrap="wrap"
-                    mt={1}
-                    justifyContent={'center'}
-                    alignItems={'center'}
-                    sx={{ overflow: 'auto', maxHeight: '420px' }}
-                  >
-                    {selectedSpeakers.map((speaker) => (
-                      <Box
-                        key={speaker.userId}
-                        display="flex"
-                        alignItems="center"
-                        gap={2}
-                        flex={1}
-                        sx={{
-                          bgcolor: 'rgba(255, 255, 255, 0.05)',
-                          p: 1.5,
-                          borderRadius: 1,
-                          '&:hover': {
-                            bgcolor: 'rgba(255, 255, 255, 0.1)',
-                          },
-                        }}
-                      >
-                        <Avatar src={speaker.avatarUrl} />
-                        <Box flex={1}>
-                          <Box display="flex" alignItems="center" gap={1}>
-                            <Typography
-                              variant="subtitle2"
-                              sx={{ color: 'white' }}
-                            >
-                              {speaker.displayName}
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              sx={{ color: 'rgba(255, 255, 255, 0.6)' }}
-                            >
-                              @{speaker.twitterScreenName}
-                            </Typography>
-                          </Box>
-                          <Box display="flex" alignItems="center" gap={1}>
-                            <Typography
-                              variant="caption"
-                              sx={{ color: 'rgba(255, 255, 255, 0.6)' }}
-                            >
-                              {20} followers
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              sx={{ color: 'rgba(255, 255, 255, 0.6)' }}
-                            >
-                              •
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                color: 'rgba(255, 255, 255, 0.6)',
-                                maxWidth: '200px',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                              }}
-                            >
-                              {selectedSpaces.find((space) =>
-                                space.speakers.some(
-                                  (sp) => sp.userId === speaker.userId
-                                )
-                              )?.title || 'No space'}
-                            </Typography>
+              {selectedSpeakers.length > 0 &&
+                campaign?.status === 'DRAFT' &&
+                campaign.campaignType === 'speakers' && (
+                  <Box sx={{ mt: 2 }}>
+                    <Typography
+                      variant="subtitle1"
+                      sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
+                    >
+                      Speaker Invites ({selectedSpeakers.length})
+                    </Typography>
+                    <Box
+                      display="flex"
+                      gap={2}
+                      flexWrap="wrap"
+                      mt={1}
+                      justifyContent={'center'}
+                      alignItems={'center'}
+                      sx={{ overflow: 'auto', maxHeight: '420px' }}
+                    >
+                      {selectedSpeakers.map((speaker) => (
+                        <Box
+                          key={speaker.userId}
+                          display="flex"
+                          alignItems="center"
+                          gap={2}
+                          flex={1}
+                          sx={{
+                            bgcolor: 'rgba(255, 255, 255, 0.05)',
+                            p: 1.5,
+                            borderRadius: 1,
+                            '&:hover': {
+                              bgcolor: 'rgba(255, 255, 255, 0.1)',
+                            },
+                          }}
+                        >
+                          <Avatar src={speaker.avatarUrl} />
+                          <Box flex={1}>
+                            <Box display="flex" alignItems="center" gap={1}>
+                              <Typography
+                                variant="subtitle2"
+                                sx={{ color: 'white' }}
+                              >
+                                {speaker.displayName}
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                sx={{ color: 'rgba(255, 255, 255, 0.6)' }}
+                              >
+                                @{speaker.twitterScreenName}
+                              </Typography>
+                            </Box>
+                            <Box display="flex" alignItems="center" gap={1}>
+                              <Typography
+                                variant="caption"
+                                sx={{ color: 'rgba(255, 255, 255, 0.6)' }}
+                              >
+                                {20} followers
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                sx={{ color: 'rgba(255, 255, 255, 0.6)' }}
+                              >
+                                •
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  color: 'rgba(255, 255, 255, 0.6)',
+                                  maxWidth: '200px',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                {selectedSpaces.find((space) =>
+                                  space.speakers.some(
+                                    (sp) => sp.userId === speaker.userId
+                                  )
+                                )?.title || 'No space'}
+                              </Typography>
+                            </Box>
                           </Box>
                         </Box>
-                      </Box>
-                    ))}
+                      ))}
+                    </Box>
                   </Box>
-                </Box>
-              )}
-              {selectedSpaces.length > 0 && campaign?.status === 'DRAFT' && (
-                <LoadingButton
-                  loading={actionLoading}
-                  variant="contained"
-                  color="primary"
-                  fullWidth
-                  onClick={() => {
-                    setActionLoading(true);
-                    handleGenerateDMs();
-                  }}
-                  disabled={selectedSpaces.length === 0}
-                  sx={{ mt: 2 }}
-                >
-                  Generate DMs
-                </LoadingButton>
-              )}
+                )}
+              {campaign?.status === 'DRAFT' &&
+                campaign?.campaignType === 'speakers' &&
+                selectedSpaces.length > 0 && (
+                  <LoadingButton
+                    loading={actionLoading}
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    onClick={() => {
+                      handleGenerateDMs();
+                    }}
+                    disabled={selectedSpaces.length === 0}
+                    sx={{ mt: 2 }}
+                  >
+                    Generate DMs
+                  </LoadingButton>
+                )}
+              {campaign?.status === 'DRAFT' &&
+                campaign?.campaignType === 'listeners' && (
+                  <LoadingButton
+                    loading={actionLoading}
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    onClick={() => {
+                      handleGenerateDMs();
+                    }}
+                    sx={{ mt: 2 }}
+                  >
+                    Generate DMs
+                  </LoadingButton>
+                )}
             </Paper>
           </Grid>
 
@@ -351,13 +409,25 @@ const Campaign = (props: Props) => {
             <Grid item xs={12} md={8}>
               <Paper sx={{ height: '100%', p: 2 }}>
                 {campaign.status === 'DRAFT' ? (
-                  <SourceSpeakers
-                    handleGenerateDMs={handleGenerateDMs}
-                    selectedSpaces={selectedSpaces}
-                    setSelectedSpaces={setSelectedSpaces}
-                    currentPlan={user?.currentPlan}
-                    upgradePlan={() => {}}
-                  />
+                  campaign.campaignType === 'speakers' ? (
+                    <SourceSpeakers
+                      selectedSpaces={selectedSpaces}
+                      setSelectedSpaces={setSelectedSpaces}
+                      currentPlan={user?.currentPlan}
+                      upgradePlan={() => {}}
+                      user={user}
+                    />
+                  ) : (
+                    <SourceListeners
+                      selectedSpaces={selectedSpaces}
+                      setSelectedSpaces={setSelectedSpaces}
+                      currentPlan={user?.currentPlan}
+                      upgradePlan={() => {}}
+                      user={user}
+                      selectedTopics={selectedTopics}
+                      setSelectedTopics={setSelectedTopics}
+                    />
+                  )
                 ) : (
                   <CampaignListeners
                     campaignId={id}
@@ -496,4 +566,4 @@ const Campaign = (props: Props) => {
   // }
 };
 
-export default Campaign;
+export default CampaignDetails;

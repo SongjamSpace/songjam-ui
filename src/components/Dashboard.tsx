@@ -47,9 +47,6 @@ import {
   Space,
 } from '../services/db/spaces.service';
 import { transcribeSpace } from '../services/transcription.service';
-import { useCollectionData } from 'react-firebase-hooks/firestore';
-import { query, collection, where } from 'firebase/firestore';
-import { db } from '../services/firebase.service';
 import {
   getProjectById,
   Project,
@@ -58,7 +55,7 @@ import {
   updateSpaceToProject,
 } from '../services/db/projects.service';
 import { extractSpaceId } from '../utils';
-import ScheduledSpaceCampaign from './ScheduledSpaceCampaign';
+import AddCampaignDialog from './NewCampaign/AddCampaignDialog';
 import {
   Campaign,
   getNewCampaignsByProjectId,
@@ -1233,7 +1230,7 @@ export default function Dashboard() {
         />
       </Container>
       <Toaster position="bottom-right" reverseOrder={false} />
-      {isShowNewCampaign && <ScheduledSpaceCampaign isNew />}
+      {isShowNewCampaign && <AddCampaignDialog isNew />}
     </Box>
   );
 }

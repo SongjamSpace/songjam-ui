@@ -12,7 +12,7 @@ import Dashboard from './components/Dashboard';
 import { DynamicContextProvider } from '@dynamic-labs/sdk-react-core';
 import { EthereumWalletConnectors } from '@dynamic-labs/ethereum';
 import Settings from './pages/Settings';
-import NewCampaign from './pages/NewCampaign';
+import CampaignDetails from './pages/CampaignDetails';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
@@ -43,7 +43,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
                   element={<LiveDashboardContainer />}
                 />
                 <Route path="/settings" element={<Settings />} />
-                <Route path="/campaigns/:id" element={<NewCampaign />} />
+                <Route path="/campaigns/:id" element={<CampaignDetails />} />
               </Routes>
             </AuthProvider>
           </ThemeProvider>

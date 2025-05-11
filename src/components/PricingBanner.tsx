@@ -180,16 +180,71 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
           <Typography variant="h5" sx={{ mb: 2, color: 'var(--text-primary)' }}>
             {t('proPlanTitle')}
           </Typography>
+          <Box sx={{ mb: 2, position: 'relative', pt: 3 }}>
+            <Typography
+              variant="h6"
+              sx={{
+                color: 'var(--text-secondary)',
+                textDecoration: 'line-through',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                opacity: 0.7,
+                fontSize: '1.1rem',
+              }}
+            >
+              $50
+            </Typography>
+            <Typography
+              variant="h3"
+              sx={{
+                background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                mt: 1,
+              }}
+            >
+              $25
+              <Typography
+                component="span"
+                sx={{
+                  fontSize: '0.8rem',
+                  color: 'var(--text-secondary)',
+                  textDecoration: 'none',
+                }}
+              >
+                {t('perMonth')}
+              </Typography>
+            </Typography>
+            <Chip
+              label="50% OFF"
+              size="small"
+              sx={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                bgcolor: '#10b981',
+                color: 'white',
+                fontSize: '0.75rem',
+                height: '20px',
+              }}
+            />
+          </Box>
           <Typography
-            variant="h3"
+            variant="body2"
             sx={{
-              mb: 2,
-              background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+              mb: 3,
+              color: '#10b981',
+              fontStyle: 'italic',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5,
             }}
           >
-            $25 <span style={{ fontSize: '0.8rem' }}>{t('perMonth')}</span>
+            ⏰ Limited offer for May signups
           </Typography>
           <Typography
             variant="body1"

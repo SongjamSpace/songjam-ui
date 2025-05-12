@@ -18,6 +18,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Autocomplete,
 } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -301,24 +302,33 @@ const CampaignPromptCustomizer: React.FC<CampaignPromptCustomizerProps> = ({
               <Typography variant="subtitle1" gutterBottom>
                 📌 Key Points to Include
               </Typography>
-              <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-                <TextField
-                  fullWidth
-                  size="small"
-                  value={newKeyPoint}
-                  onChange={(e) => setNewKeyPoint(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleAddKeyPoint()}
-                  placeholder="Add a key point and press Enter"
+              <Box sx={{ mb: 2 }}>
+                <Autocomplete
+                  multiple
+                  freeSolo
+                  options={[]}
+                  value={settings.keyPoints}
+                  onChange={(_, newValue) => {
+                    const limitedValue = newValue.slice(0, 3);
+                    onChange({
+                      ...settings,
+                      keyPoints: limitedValue,
+                    });
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      size="small"
+                      disabled={settings.keyPoints.length >= 3}
+                      placeholder={'Add upto 3 key points...'}
+                    />
+                  )}
+                  renderTags={(value, getTagProps) =>
+                    value.map((option, index) => (
+                      <Chip label={option} {...getTagProps({ index })} />
+                    ))
+                  }
                 />
-              </Box>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {settings.keyPoints.map((point) => (
-                  <Chip
-                    key={point}
-                    label={point}
-                    onDelete={() => handleRemoveKeyPoint(point)}
-                  />
-                ))}
               </Box>
             </Box>
 

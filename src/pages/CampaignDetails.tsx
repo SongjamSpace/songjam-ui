@@ -347,6 +347,7 @@ const CampaignDetails = (props: Props) => {
                       display="flex"
                       gap={2}
                       flexWrap="wrap"
+                      // flexDirection={'column'}
                       mt={1}
                       justifyContent={'center'}
                       alignItems={'center'}
@@ -357,6 +358,7 @@ const CampaignDetails = (props: Props) => {
                           key={speaker.userId}
                           display="flex"
                           alignItems="center"
+                          width={'100%'}
                           gap={2}
                           flex={1}
                           sx={{
@@ -373,7 +375,13 @@ const CampaignDetails = (props: Props) => {
                             <Box display="flex" alignItems="center" gap={1}>
                               <Typography
                                 variant="subtitle2"
-                                sx={{ color: 'white' }}
+                                sx={{
+                                  color: 'white',
+                                  maxWidth: '200px',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                }}
                               >
                                 {speaker.displayName}
                               </Typography>

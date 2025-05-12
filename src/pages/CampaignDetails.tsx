@@ -168,6 +168,7 @@ const CampaignDetails = (props: Props) => {
           profilesWithSpaceTitlesObj: listenersWithTopicsObj,
           campaignType: campaign?.campaignType,
           spaceId: campaign?.spaceId,
+          promptSettings,
         },
         {
           headers: {
@@ -176,6 +177,7 @@ const CampaignDetails = (props: Props) => {
         }
       );
     }
+    setActionLoading(false);
   };
 
   useEffect(() => {

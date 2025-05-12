@@ -22,6 +22,7 @@ import {
   DialogContent,
   DialogContentText,
   ListItem,
+  Button,
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import { useTranslation } from 'react-i18next';
@@ -58,6 +59,7 @@ import { extractSpaceId } from '../utils';
 import AddCampaignDialog from './NewCampaign/AddCampaignDialog';
 import {
   Campaign,
+  deleteCampaign,
   getNewCampaignsByProjectId,
 } from '../services/db/campaign.service';
 
@@ -813,6 +815,24 @@ export default function Dashboard() {
                   </Box>
                 }
               />
+
+              <Button
+                onClick={(e) => {
+                  if (!campaign.id) {
+                    return;
+                  }
+                  e.stopPropagation();
+                  if (
+                    confirm('Are you sure you want to delete this campaign?')
+                  ) {
+                    deleteCampaign(campaign.id);
+                  }
+                }}
+                variant="outlined"
+                size="small"
+              >
+                Delete
+              </Button>
               {/* <Button
                 variant="outlined"
                 size="small"
@@ -968,7 +988,13 @@ export default function Dashboard() {
           >
             {t('addSpaceTitle', 'Analyze a New Space')}
           </Typography>
-          <Box display="flex" gap={2} alignItems="center">
+          <Box
+            display="flex"
+            gap={2}
+            alignItems="center"
+            // justifyContent={'space-between'}
+            width={'100%'}
+          >
             <TextField
               fullWidth
               placeholder={t(
@@ -1018,29 +1044,39 @@ export default function Dashboard() {
                 ) : undefined,
               }}
             />
-            <LoadingButton
-              loading={isLoading}
-              variant="contained"
-              onClick={handleAddSpace}
-              disabled={!user || isLoading}
-              sx={{
-                whiteSpace: 'nowrap',
-                bgcolor: 'var(--primary-color)',
-                color: 'white',
-                padding: '8px 20px',
-                '&:hover': {
-                  bgcolor: 'var(--primary-color-dark)',
-                  transform: 'translateY(-1px)',
-                  boxShadow: '0 4px 10px rgba(96, 165, 250, 0.3)',
-                },
-                '&.MuiLoadingButton-loading': {
-                  bgcolor: 'rgba(96, 165, 250, 0.5)',
-                  color: 'rgba(255, 255, 255, 0.7)',
-                },
-              }}
-            >
-              {t('addSpaceButton', 'Add Space')}
-            </LoadingButton>
+            <Box display={'flex'} gap={2} alignItems={'center'}>
+              <LoadingButton
+                loading={isLoading}
+                variant="contained"
+                onClick={handleAddSpace}
+                disabled={!user || isLoading}
+                sx={{
+                  whiteSpace: 'nowrap',
+                  bgcolor: 'var(--primary-color)',
+                  color: 'white',
+                  padding: '8px 20px',
+                  '&:hover': {
+                    bgcolor: 'var(--primary-color-dark)',
+                    transform: 'translateY(-1px)',
+                    boxShadow: '0 4px 10px rgba(96, 165, 250, 0.3)',
+                  },
+                  '&.MuiLoadingButton-loading': {
+                    bgcolor: 'rgba(96, 165, 250, 0.5)',
+                    color: 'rgba(255, 255, 255, 0.7)',
+                  },
+                }}
+              >
+                {t('addSpaceButton', 'Add Space')}
+              </LoadingButton>
+
+              <Button
+                onClick={() => setIsShowNewCampaign(true)}
+                sx={{ mx: 'auto', width: '160px', padding: '8px 20px' }}
+                variant="outlined"
+              >
+                Create Campaign
+              </Button>
+            </Box>
           </Box>
         </Paper>
 

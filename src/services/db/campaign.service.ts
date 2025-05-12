@@ -9,6 +9,7 @@ import {
   updateDoc,
   getDoc,
   onSnapshot,
+  deleteDoc,
 } from 'firebase/firestore';
 import { SpaceListener } from './spaces.service';
 
@@ -147,4 +148,9 @@ export const getNewCampaignsByProjectId = async (
     ...doc.data(),
     id: doc.id,
   })) as Campaign[];
+};
+
+export const deleteCampaign = async (campaignId: string) => {
+  const campaignRef = doc(db, CAMPAIGN_COLLECTION, campaignId);
+  await deleteDoc(campaignRef);
 };

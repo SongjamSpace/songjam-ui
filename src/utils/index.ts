@@ -21,6 +21,7 @@ export const isCustomDomain = (domain: string) =>
   !publicDomains.includes(domain);
 
 export const extractSpaceId = (url: string) => {
+  if (!url) return '';
   const match = url.match(/(?:spaces|broadcasts)\/([a-zA-Z0-9]+)/);
   return match?.[1] || url.split('/').pop();
 };

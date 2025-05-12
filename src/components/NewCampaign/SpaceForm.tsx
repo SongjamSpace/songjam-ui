@@ -54,6 +54,8 @@ interface SpaceFormProps {
   actionLoading: boolean;
   campaignType: 'speakers' | 'listeners';
   setCampaignType: (campaignType: 'speakers' | 'listeners') => void;
+  spaceUrl: string;
+  setSpaceUrl: (spaceUrl: string) => void;
 }
 
 const SpaceForm: React.FC<SpaceFormProps> = ({
@@ -72,8 +74,9 @@ const SpaceForm: React.FC<SpaceFormProps> = ({
   hostHandle,
   setHostHandle,
   actionLoading,
+  spaceUrl,
+  setSpaceUrl,
 }: SpaceFormProps) => {
-  const [spaceUrl, setSpaceUrl] = useState('');
   const [isSpaceLoading, setIsSpaceLoading] = useState(false);
 
   const handleAgendaChange = (index: number, value: string) => {

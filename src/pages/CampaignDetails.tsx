@@ -13,6 +13,7 @@ import {
   Chip,
   Avatar,
   Skeleton,
+  Button,
 } from '@mui/material';
 import SourceSpeakers from '../components/NewCampaign/SourceSpeakers';
 import { useAuthContext } from '../contexts/AuthContext';
@@ -22,7 +23,7 @@ import {
   TwitterUser,
 } from '../services/db/spaces.service';
 import axios from 'axios';
-import { getDynamicToken } from '../utils';
+import { extractSpaceId, getDynamicToken } from '../utils';
 import { CampaignListeners } from '../components/SpaceCRM/CampaignManager';
 import { useTranslation } from 'react-i18next';
 import LoginDialog from '../components/LoginDialog';
@@ -135,6 +136,7 @@ const CampaignDetails = (props: Props) => {
           profilesWithSpaceTitlesObj,
           campaignType: campaign?.campaignType,
           promptSettings,
+          spaceId: campaign?.spaceId,
         },
         {
           headers: {
@@ -165,6 +167,7 @@ const CampaignDetails = (props: Props) => {
           profiles: listeners.map(({ joinedAt, leftAt, ...rest }) => rest),
           profilesWithSpaceTitlesObj: listenersWithTopicsObj,
           campaignType: campaign?.campaignType,
+          spaceId: campaign?.spaceId,
         },
         {
           headers: {
@@ -213,7 +216,8 @@ const CampaignDetails = (props: Props) => {
           borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
+          // justifyContent: 'space-between',
+          gap: 2,
         }}
       >
         <Typography
@@ -244,6 +248,14 @@ const CampaignDetails = (props: Props) => {
             }}
           />
         )}
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => navigate('/dashboard')}
+          sx={{ ml: 'auto' }}
+        >
+          Dashboard
+        </Button>
       </Box>
       {isLoading && (
         <Grid container justifyContent={'center'}>

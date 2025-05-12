@@ -12,6 +12,7 @@ import { createCampaign } from '../../services/db/campaign.service';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import CloseIcon from '@mui/icons-material/Close';
+import { extractSpaceId } from '../../utils';
 
 type Props = {
   space?: SpaceDoc;
@@ -29,6 +30,7 @@ const AddCampaignDialog = ({ space, isNew, onClose }: Props) => {
   const [topics, setTopics] = useState<string[]>(['']);
   const [hostHandle, setHostHandle] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  const [spaceUrl, setSpaceUrl] = useState('');
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -39,7 +41,7 @@ const AddCampaignDialog = ({ space, isNew, onClose }: Props) => {
       const campaign = await createCampaign({
         ctaType: 'space',
         ctaTarget: formData.title,
-        spaceId: space?.id || '',
+        spaceId: space?.id || extractSpaceId(spaceUrl) || '',
         spaceTitle: formData.title,
         projectId: user.defaultProjectId,
         userId: user.uid,
@@ -106,6 +108,8 @@ const AddCampaignDialog = ({ space, isNew, onClose }: Props) => {
       <DialogContent sx={{ p: 3 }}>
         <SpaceForm
           space={space}
+          spaceUrl={spaceUrl}
+          setSpaceUrl={setSpaceUrl}
           onSubmit={handleSubmit}
           title={title}
           setTitle={setTitle}

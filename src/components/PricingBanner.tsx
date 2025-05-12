@@ -180,16 +180,71 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
           <Typography variant="h5" sx={{ mb: 2, color: 'var(--text-primary)' }}>
             {t('proPlanTitle')}
           </Typography>
+          <Box sx={{ mb: 2, position: 'relative', pt: 3 }}>
+            <Typography
+              variant="h6"
+              sx={{
+                color: 'var(--text-secondary)',
+                textDecoration: 'line-through',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                opacity: 0.7,
+                fontSize: '1.1rem',
+              }}
+            >
+              $50
+            </Typography>
+            <Typography
+              variant="h3"
+              sx={{
+                background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                mt: 1,
+              }}
+            >
+              $25
+              <Typography
+                component="span"
+                sx={{
+                  fontSize: '0.8rem',
+                  color: 'var(--text-secondary)',
+                  textDecoration: 'none',
+                }}
+              >
+                {t('perMonth')}
+              </Typography>
+            </Typography>
+            <Chip
+              label="50% OFF"
+              size="small"
+              sx={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                bgcolor: '#10b981',
+                color: 'white',
+                fontSize: '0.75rem',
+                height: '20px',
+              }}
+            />
+          </Box>
           <Typography
-            variant="h3"
+            variant="body2"
             sx={{
-              mb: 2,
-              background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+              mb: 3,
+              color: '#10b981',
+              fontStyle: 'italic',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5,
             }}
           >
-            $25 <span style={{ fontSize: '0.8rem' }}>{t('perMonth')}</span>
+            ⏰ Limited offer for May signups
           </Typography>
           <Typography
             variant="body1"
@@ -270,18 +325,37 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
           <Typography variant="h5" sx={{ mb: 2, color: 'var(--text-primary)' }}>
             {t('businessPlanTitle')}
           </Typography>
-          <Typography
-            variant="h3"
+          <Box
             sx={{
               mb: 2,
-              background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 1,
             }}
           >
-            $200
-            <span style={{ fontSize: '0.8rem' }}>{t('perUserPerMonth')}</span>
-          </Typography>
+            <Typography
+              variant="h4"
+              sx={{
+                background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                fontWeight: 600,
+              }}
+            >
+              Growth Plan
+            </Typography>
+            <Typography
+              variant="subtitle1"
+              sx={{
+                color: 'var(--text-secondary)',
+                textAlign: 'center',
+                fontStyle: 'italic',
+              }}
+            >
+              Scale with security
+            </Typography>
+          </Box>
           <Typography
             variant="body1"
             sx={{ mb: 3, color: 'var(--text-secondary)' }}
@@ -331,19 +405,19 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
               variant="outlined"
               fullWidth
               sx={{
-                borderColor: 'var(--text-secondary)',
-                color: 'var(--text-secondary)',
+                borderColor: '#60a5fa',
+                color: '#60a5fa',
                 '&:hover': {
-                  borderColor: 'white',
-                  color: 'white',
+                  borderColor: '#3b82f6',
+                  color: '#3b82f6',
+                  bgcolor: 'rgba(96, 165, 250, 0.1)',
                 },
               }}
               onClick={() => {
-                setLoadingBtnId('business');
-                onSubscribe('business');
+                window.open('https://calendly.com/songjam', '_blank');
               }}
             >
-              {t('getStartedButton')}
+              Schedule a Call
             </LoadingButton>
           )}
         </Paper>

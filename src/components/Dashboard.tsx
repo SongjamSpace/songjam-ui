@@ -1230,7 +1230,9 @@ export default function Dashboard() {
         />
       </Container>
       <Toaster position="bottom-right" reverseOrder={false} />
-      {isShowNewCampaign && <AddCampaignDialog isNew />}
+      {isShowNewCampaign && (
+        <AddCampaignDialog isNew onClose={() => setIsShowNewCampaign(false)} />
+      )}
     </Box>
   );
 }

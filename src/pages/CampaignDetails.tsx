@@ -28,6 +28,9 @@ import { useTranslation } from 'react-i18next';
 import LoginDialog from '../components/LoginDialog';
 import { LoadingButton } from '@mui/lab';
 import SourceListeners from '../components/NewCampaign/SourceListeners';
+import CampaignPromptCustomizer, {
+  PromptSettings,
+} from '../components/NewCampaign/PromptCustomizer';
 
 type Props = {};
 
@@ -44,6 +47,16 @@ const CampaignDetails = (props: Props) => {
   const navigate = useNavigate();
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
+  const [promptSettings, setPromptSettings] = useState<PromptSettings>({
+    tone: 'professional',
+    length: 'moderate',
+    enthusiasm: 50,
+    personalization: 75,
+    formality: 50,
+    customInstructions: '',
+    keyPoints: [],
+    callToAction: 'soft',
+  });
 
   const fetchCampaign = async () => {
     if (id) {
@@ -121,6 +134,7 @@ const CampaignDetails = (props: Props) => {
           profiles: selectedSpeakers,
           profilesWithSpaceTitlesObj,
           campaignType: campaign?.campaignType,
+          promptSettings,
         },
         {
           headers: {
@@ -193,6 +207,44 @@ const CampaignDetails = (props: Props) => {
         },
       }}
     >
+      <Box
+        sx={{
+          p: 3,
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Typography
+          variant="h5"
+          sx={{
+            background: 'linear-gradient(90deg, #60A5FA, #8B5CF6, #EC4899)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundSize: '200% auto',
+            cursor: 'pointer',
+          }}
+          onClick={() => {
+            navigate('/dashboard');
+          }}
+        >
+          Campaign Details
+        </Typography>
+        {campaign && (
+          <Chip
+            label={campaign.status}
+            sx={{
+              bgcolor:
+                campaign.status === 'DRAFT'
+                  ? 'rgba(255, 255, 255, 0.1)'
+                  : 'rgba(34, 197, 94, 0.2)',
+              color: campaign.status === 'DRAFT' ? 'white' : '#22c55e',
+              textTransform: 'capitalize',
+            }}
+          />
+        )}
+      </Box>
       {isLoading && (
         <Grid container justifyContent={'center'}>
           <Grid item xs={12}>
@@ -213,7 +265,7 @@ const CampaignDetails = (props: Props) => {
               }}
             >
               <Typography
-                variant="h5"
+                variant="h6"
                 gutterBottom
                 sx={{
                   color: 'white',
@@ -333,7 +385,7 @@ const CampaignDetails = (props: Props) => {
                               </Typography>
                             </Box>
                             <Box display="flex" alignItems="center" gap={1}>
-                              <Typography
+                              {/* <Typography
                                 variant="caption"
                                 sx={{ color: 'rgba(255, 255, 255, 0.6)' }}
                               >
@@ -344,12 +396,12 @@ const CampaignDetails = (props: Props) => {
                                 sx={{ color: 'rgba(255, 255, 255, 0.6)' }}
                               >
                                 •
-                              </Typography>
+                              </Typography> */}
                               <Typography
                                 variant="caption"
                                 sx={{
                                   color: 'rgba(255, 255, 255, 0.6)',
-                                  maxWidth: '200px',
+                                  maxWidth: '420px',
                                   overflow: 'hidden',
                                   textOverflow: 'ellipsis',
                                   whiteSpace: 'nowrap',
@@ -368,6 +420,14 @@ const CampaignDetails = (props: Props) => {
                     </Box>
                   </Box>
                 )}
+              <Box sx={{ mt: 2 }}>
+                {campaign?.status === 'DRAFT' && (
+                  <CampaignPromptCustomizer
+                    settings={promptSettings}
+                    onChange={setPromptSettings}
+                  />
+                )}
+              </Box>
               {campaign?.status === 'DRAFT' &&
                 campaign?.campaignType === 'speakers' &&
                 selectedSpaces.length > 0 && (

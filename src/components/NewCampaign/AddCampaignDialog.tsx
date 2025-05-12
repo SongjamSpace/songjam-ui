@@ -16,9 +16,10 @@ import CloseIcon from '@mui/icons-material/Close';
 type Props = {
   space?: SpaceDoc;
   isNew: boolean;
+  onClose: () => void;
 };
 
-const AddCampaignDialog = ({ space, isNew }: Props) => {
+const AddCampaignDialog = ({ space, isNew, onClose }: Props) => {
   const [campaignType, setCampaignType] = useState<'speakers' | 'listeners'>(
     'speakers'
   );
@@ -96,7 +97,7 @@ const AddCampaignDialog = ({ space, isNew }: Props) => {
           Create New Campaign
         </Box>
         <IconButton
-          onClick={() => navigate('/dashboard')}
+          onClick={onClose}
           sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
         >
           <CloseIcon />

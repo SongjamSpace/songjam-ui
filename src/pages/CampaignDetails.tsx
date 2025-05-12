@@ -18,8 +18,8 @@ import {
 import SourceSpeakers from '../components/NewCampaign/SourceSpeakers';
 import { useAuthContext } from '../contexts/AuthContext';
 import {
-  getTestListeners,
   SpaceDoc,
+  SpaceListener,
   TwitterUser,
 } from '../services/db/spaces.service';
 import axios from 'axios';
@@ -32,6 +32,8 @@ import SourceListeners from '../components/NewCampaign/SourceListeners';
 import CampaignPromptCustomizer, {
   PromptSettings,
 } from '../components/NewCampaign/PromptCustomizer';
+import toast from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
 
 type Props = {};
 
@@ -58,6 +60,7 @@ const CampaignDetails = (props: Props) => {
     keyPoints: [],
     callToAction: 'soft',
   });
+  const [listeners, setListeners] = useState<SpaceListener[]>([]);
 
   const fetchCampaign = async () => {
     if (id) {
@@ -107,7 +110,6 @@ const CampaignDetails = (props: Props) => {
     if (!token) {
       return alert('No token found, please login again');
     }
-    // TODO: Implement DM generation logic
     console.log('Generate DMs for selected spaces:', selectedSpaces);
     setActionLoading(true);
     if (campaign?.campaignType === 'speakers') {
@@ -147,7 +149,12 @@ const CampaignDetails = (props: Props) => {
     } else if (campaign?.campaignType === 'listeners') {
       // TODO: Implement listener DM generation logic
       console.log('Generate DMs for selected listeners:', selectedSpaces);
-      const listeners = getTestListeners();
+      if (!listeners.length) {
+        // setListeners(getTestListeners());
+        toast.error('No listeners found');
+        return;
+      }
+      // const listeners = getTestListeners();
       await updateCampaign(id, {
         spaceSpeakerUsernames: listeners.map((l) => l.twitterScreenName),
         selectedSpaceIds: selectedSpaces.map((s) => s.id),
@@ -508,6 +515,8 @@ const CampaignDetails = (props: Props) => {
                       user={user}
                       selectedTopics={selectedTopics}
                       setSelectedTopics={setSelectedTopics}
+                      listeners={listeners}
+                      setListeners={setListeners}
                     />
                   )
                 ) : (
@@ -523,6 +532,7 @@ const CampaignDetails = (props: Props) => {
         </Grid>
       )}
       <LoginDialog open={showAuthDialog && !authLoading} />
+      <Toaster />
     </Box>
   );
   // } else {

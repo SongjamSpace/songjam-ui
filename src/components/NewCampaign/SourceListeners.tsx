@@ -15,7 +15,6 @@ import {
 } from '@mui/icons-material';
 import {
   getListenersAcrossSpaces,
-  getTestListeners,
   SpaceDoc,
   SpaceListener,
 } from '../../services/db/spaces.service';
@@ -29,6 +28,8 @@ type SourceListenersProps = {
   user: SongjamUser;
   selectedTopics: string[];
   setSelectedTopics: Dispatch<SetStateAction<string[]>>;
+  listeners: SpaceListener[];
+  setListeners: Dispatch<SetStateAction<SpaceListener[]>>;
 };
 
 const SourceListeners: React.FC<SourceListenersProps> = ({
@@ -37,12 +38,14 @@ const SourceListeners: React.FC<SourceListenersProps> = ({
   user,
   selectedTopics,
   setSelectedTopics,
+  listeners,
+  setListeners,
 }) => {
-  const [listeners, setListeners] = useState<SpaceListener[]>([]);
-
   // Fetch spaces on component mount
   useEffect(() => {
-    fetchListeners();
+    if (!listeners.length) {
+      fetchListeners();
+    }
   }, []);
 
   const fetchListeners = async () => {
@@ -78,9 +81,11 @@ const SourceListeners: React.FC<SourceListenersProps> = ({
               label={topic}
               variant={selectedTopics.includes(topic) ? 'filled' : 'outlined'}
               onClick={async () => {
-                setSelectedTopics([...selectedTopics, topic]);
-                const listeners = await getTestListeners();
-                setListeners(listeners);
+                if (selectedTopics.includes(topic)) {
+                  setSelectedTopics(selectedTopics.filter((t) => t !== topic));
+                } else {
+                  setSelectedTopics([...selectedTopics, topic]);
+                }
               }}
             />
           ))}

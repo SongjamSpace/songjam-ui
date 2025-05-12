@@ -347,10 +347,15 @@ export const getListenersAcrossSpaces = async () => {
   const colRef = query(
     collectionGroup(db, LISTENER_LOGS_SUBCOLLECTION),
     // where('twitterScreenName', '==', 'Bkess75'),
-    limit(5)
+    limit(100)
   );
   const snapshot = await getDocs(colRef);
-  return snapshot.docs.map((doc) => doc.data() as SpaceListener);
+  // Unique listeners
+  const listeners = snapshot.docs.map((doc) => doc.data() as SpaceListener);
+  return listeners.filter(
+    (listener, index, self) =>
+      index === self.findIndex((t) => t.userId === listener.userId)
+  );
 };
 
 export const getTestListeners = (): SpaceListener[] => {

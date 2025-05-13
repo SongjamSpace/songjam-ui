@@ -23,11 +23,15 @@ import { getPlanLimits } from '../utils';
 import Close from '@mui/icons-material/Close';
 import { useNavigate } from 'react-router-dom';
 import LoginDialog from '../components/LoginDialog';
+import Background from '../components/Background';
+import { createCheckoutSession } from '../services/db/stripe';
+import { LoadingButton } from '@mui/lab';
 
 const Settings = () => {
   const { user, loading } = useAuthContext();
   const navigate = useNavigate();
   const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [loadingBtn, setLoadingBtn] = useState('');
 
   const planLimits = getPlanLimits(user?.currentPlan || 'free');
 
@@ -81,8 +85,20 @@ const Settings = () => {
   );
 
   return (
-    <Box sx={{ bgcolor: '#11131a', minHeight: '100vh', color: 'white', pb: 8 }}>
-      <Container maxWidth="lg" sx={{ pt: 6 }}>
+    <Box
+      sx={{
+        position: 'relative',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        pb: 8,
+      }}
+    >
+      <Background />
+      <Container
+        maxWidth="lg"
+        sx={{ pt: 3, pb: 4, position: 'relative', zIndex: 1, flexGrow: 1 }}
+      >
         <Stack
           direction="row"
           spacing={2}
@@ -126,10 +142,17 @@ const Settings = () => {
                 renderSkeleton()
               ) : (
                 <Box
-                  sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    mb: 2,
+                    // justifyContent: 'space-between',
+                  }}
                 >
+                  <Typography fontWeight={'bolder'}>Email</Typography>
                   <Typography
-                    variant="body2"
+                    variant="body1"
                     sx={{ color: 'rgba(255,255,255,0.7)' }}
                   >
                     {user?.email}
@@ -164,6 +187,7 @@ const Settings = () => {
                   <Chip
                     label={user?.currentPlan?.toUpperCase() || 'FREE'}
                     size="small"
+                    variant="outlined"
                     sx={{
                       ml: 1,
                       bgcolor: '#23262f',
@@ -173,43 +197,63 @@ const Settings = () => {
                     }}
                   />
                 )}
+                {user?.currentPlan === 'free' && (
+                  <LoadingButton
+                    loading={loadingBtn === 'pro'}
+                    variant="contained"
+                    sx={{
+                      ml: 2,
+                      bgcolor: '#23262f',
+                      color: '#fff',
+                      borderRadius: 2,
+                      fontWeight: 700,
+                      textTransform: 'none',
+                      px: 2,
+                      '&:hover': { bgcolor: '#2d313c' },
+                    }}
+                    size="small"
+                    onClick={async () => {
+                      if (!user) return;
+                      setLoadingBtn('pro');
+                      await createCheckoutSession(user?.uid || '', 'pro');
+                    }}
+                  >
+                    UPGRADE TO PRO
+                  </LoadingButton>
+                )}
+                {user?.currentPlan === 'pro' && (
+                  <LoadingButton
+                    loading={loadingBtn === 'business'}
+                    variant="contained"
+                    sx={{
+                      ml: 2,
+                      bgcolor: '#23262f',
+                      color: '#fff',
+                      borderRadius: 2,
+                      fontWeight: 700,
+                      textTransform: 'none',
+                      px: 2,
+                      '&:hover': { bgcolor: '#2d313c' },
+                    }}
+                    size="small"
+                    onClick={async () => {
+                      if (!user) return;
+                      setLoadingBtn('business');
+                      await createCheckoutSession(user?.uid || '', 'business');
+                    }}
+                  >
+                    UPGRADE TO BUSINESS
+                  </LoadingButton>
+                )}
               </Box>
-              {user?.currentPlan === 'free' && (
-                <Button
-                  variant="contained"
-                  sx={{
-                    ml: 2,
-                    bgcolor: '#23262f',
-                    color: '#fff',
-                    borderRadius: 2,
-                    fontWeight: 700,
-                    textTransform: 'none',
-                    px: 2,
-                    '&:hover': { bgcolor: '#2d313c' },
-                  }}
-                  size="small"
-                >
-                  UPGRADE TO PRO
-                </Button>
-              )}
-              {user?.currentPlan === 'pro' && (
-                <Button
-                  variant="contained"
-                  sx={{
-                    ml: 2,
-                    bgcolor: '#23262f',
-                    color: '#fff',
-                    borderRadius: 2,
-                    fontWeight: 700,
-                    textTransform: 'none',
-                    px: 2,
-                    '&:hover': { bgcolor: '#2d313c' },
-                  }}
-                  size="small"
-                >
-                  UPGRADE TO BUSINESS
-                </Button>
-              )}
+              <Button
+                variant="outlined"
+                sx={{
+                  mt: 2,
+                }}
+              >
+                Manage Subscription
+              </Button>
             </Paper>
           </Grid>
           {/* Right Column */}
@@ -245,7 +289,7 @@ const Settings = () => {
                         sx={{ display: 'flex', alignItems: 'center', mb: 1 }}
                       >
                         <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                          Transcription Requests
+                          Spaces
                         </Typography>
                         <InfoOutlinedIcon
                           sx={{
@@ -256,15 +300,13 @@ const Settings = () => {
                         />
                         <Box sx={{ flexGrow: 1 }} />
                         <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                          {user?.transcriptionRequests} /{' '}
-                          {planLimits.transcriptionRequests}
+                          {user?.usage.spaces} / {planLimits.spaces}
                         </Typography>
                       </Box>
                       <LinearProgress
                         variant="determinate"
                         value={
-                          (user?.transcriptionRequests ||
-                            0 / planLimits.transcriptionRequests) * 100
+                          (user?.usage.spaces || 0 / planLimits.spaces) * 100
                         }
                         sx={{
                           height: 8,
@@ -277,9 +319,8 @@ const Settings = () => {
                         variant="caption"
                         sx={{ color: 'rgba(255,255,255,0.7)' }}
                       >
-                        You've used {user?.transcriptionRequests} requests out
-                        of your {planLimits.transcriptionRequests} transcription
-                        requests quota.
+                        You've used {user?.usage.spaces} spaces out of your{' '}
+                        {planLimits.spaces} spaces quota.
                       </Typography>
                     </Grid>
                     <Grid item xs={12} md={6}>
@@ -291,14 +332,14 @@ const Settings = () => {
                         </Typography>
                         <Box sx={{ flexGrow: 1 }} />
                         <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                          {user?.aiAssistantRequests} /{' '}
+                          {user?.usage.aiAssistantRequests} /{' '}
                           {planLimits.aiAssistantRequests}
                         </Typography>
                       </Box>
                       <LinearProgress
                         variant="determinate"
                         value={
-                          (user?.aiAssistantRequests ||
+                          (user?.usage.aiAssistantRequests ||
                             0 / planLimits.aiAssistantRequests) * 100
                         }
                         sx={{
@@ -312,9 +353,43 @@ const Settings = () => {
                         variant="caption"
                         sx={{ color: 'rgba(255,255,255,0.7)' }}
                       >
-                        You've used {user?.aiAssistantRequests} requests out of
-                        your {planLimits.aiAssistantRequests} AI Assistant
-                        requests quota.
+                        You've used {user?.usage.aiAssistantRequests} requests
+                        out of your {planLimits.aiAssistantRequests} AI
+                        Assistant requests quota.
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} md={12}>
+                      <Divider sx={{ mb: 2 }} />
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', mb: 1 }}
+                      >
+                        <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                          Auto DMs
+                        </Typography>
+                        <Box sx={{ flexGrow: 1 }} />
+                        <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                          {user?.usage.autoDms} / {planLimits.autoDms}
+                        </Typography>
+                      </Box>
+                      <LinearProgress
+                        variant="determinate"
+                        value={
+                          (user?.usage.autoDms || 0 / planLimits.autoDms) * 100
+                        }
+                        sx={{
+                          height: 8,
+                          borderRadius: 4,
+                          bgcolor: '#23262f',
+                          '& .MuiLinearProgress-bar': { bgcolor: '#7ee787' },
+                        }}
+                      />
+                      <Typography
+                        variant="caption"
+                        sx={{ color: 'rgba(255,255,255,0.7)' }}
+                      >
+                        You've used {user?.usage.aiAssistantRequests} requests
+                        out of your {planLimits.aiAssistantRequests} AI
+                        Assistant requests quota.
                       </Typography>
                     </Grid>
                   </Grid>

@@ -89,9 +89,12 @@ export function useAuth() {
             projectIds: [],
             defaultProjectId: null,
             currentPlan: 'free',
-            aiAssistantRequests: 0,
-            transcriptionRequests: 0,
-            totalRequests: 0,
+            usage: {
+              aiAssistantRequests: 0,
+              spaces: 0,
+              autoDms: 0,
+              totalRequests: 0,
+            },
             startsAt: Date.now(),
             endsAt: Date.now(),
           };

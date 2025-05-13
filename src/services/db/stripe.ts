@@ -10,6 +10,8 @@ const getPriceIdFromPlan = (plan: string) => {
   switch (plan) {
     case 'pro':
       return import.meta.env.VITE_STRIPE_PRO_PRICE_ID;
+    case 'starter':
+      return import.meta.env.VITE_STRIPE_STARTER_PRICE_ID;
     case 'business':
       return import.meta.env.VITE_STRIPE_BUSINESS_PRICE_ID;
   }
@@ -22,18 +24,21 @@ export const getPlanFromPriceId = (priceId: string) => {
   if (priceId === import.meta.env.VITE_STRIPE_BUSINESS_PRICE_ID) {
     return 'business';
   }
+  if (priceId === import.meta.env.VITE_STRIPE_STARTER_PRICE_ID) {
+    return 'starter';
+  }
   return 'free';
 };
 
 export const createCheckoutSession = async (
   uid: string,
-  plan: 'pro' | 'business'
+  plan: 'pro' | 'business' | 'starter'
 ) => {
   let checkoutSessionData = {
     price: getPriceIdFromPlan(plan), // price ID from products fetch
     success_url: window.location.origin, // can set this to a custom page
     cancel_url: window.location.origin, // can set this to a custom page
-    mode: 'subscription',
+    mode: plan === 'starter' ? 'payment' : 'subscription',
     metadata: {
       uid,
     },

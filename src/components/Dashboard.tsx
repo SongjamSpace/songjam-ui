@@ -55,7 +55,7 @@ import {
   updateProject,
   updateSpaceToProject,
 } from '../services/db/projects.service';
-import { extractSpaceId } from '../utils';
+import { canRequestSpace, extractSpaceId } from '../utils';
 import AddCampaignDialog from './NewCampaign/AddCampaignDialog';
 import {
   Campaign,
@@ -63,6 +63,7 @@ import {
   getNewCampaignsByProjectId,
 } from '../services/db/campaign.service';
 import SyncIcon from '@mui/icons-material/Sync';
+import { updateSpaceRequests } from '../services/db/user.service';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -259,6 +260,7 @@ export default function Dashboard() {
     projectId: string,
     isBroadcast: boolean
   ) => {
+    if (!user) return toast.error('Please login to continue');
     setIsLoading(true);
     const spaceDoc = await getSpace(spaceId);
     if (spaceDoc) {
@@ -277,6 +279,15 @@ export default function Dashboard() {
       });
       return;
     }
+    if (!canRequestSpace(user)) {
+      toast.error('You have reached the limit of spaces for your plan');
+      navigate('/settings');
+      setIsLoading(false);
+      return;
+    }
+    toast.success(`Processing space: ${spaceId}`, {
+      position: 'bottom-right',
+    });
     if (isBroadcast) {
       const space = await getBroadcastFromX(spaceId);
       if (space && space.state === 'Ended') {
@@ -297,18 +308,21 @@ export default function Dashboard() {
       const state = space.metadata.state;
       if (state === 'Ended') {
         const path = await transcribeSpace(spaceId, projectId);
+        await updateSpaceRequests(user?.uid || '');
         navigate(path); // Navigates to /crm/:spaceId
       } else if (state === 'Running') {
         await axios.post(
           `${import.meta.env.VITE_JAM_SERVER_URL}/listen-live-space`,
           { spaceId, projectId }
         );
+        await updateSpaceRequests(user?.uid || '');
         navigate(`/live/${spaceId}`);
       } else if (state === 'NotStarted') {
         await axios.post(
           `${import.meta.env.VITE_JAM_SERVER_URL}/schedule-space`,
           { spaceId, projectId }
         );
+        await updateSpaceRequests(user?.uid || '');
         toast.success('Space is scheduled successfully', {
           duration: 3000,
         });
@@ -431,9 +445,6 @@ export default function Dashboard() {
     // but potentially just add to a list or trigger analysis without navigating immediately.
     // For now, just log and show a message.
     console.log('Adding space:', spaceId);
-    toast.success(`Processing space: ${spaceId}`, {
-      position: 'bottom-right',
-    });
     await analyzeSpace(spaceId, defaultProject.id, isBroadcast);
 
     setSpaceUrl(''); // Clear input after submission

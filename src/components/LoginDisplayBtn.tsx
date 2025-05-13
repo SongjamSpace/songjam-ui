@@ -160,6 +160,14 @@ const LoginDisplayBtn = ({
             Dashboard
           </MenuItem>
           <MenuItem
+            onClick={() => {
+              handleClose();
+              navigate('/settings');
+            }}
+          >
+            Settings
+          </MenuItem>
+          <MenuItem
             onClick={async () => {
               handleClose();
               await handleLogOut();

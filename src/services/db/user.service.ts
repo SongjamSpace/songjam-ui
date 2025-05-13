@@ -28,10 +28,13 @@ export type SongjamUser = {
   projectIds: string[];
   defaultProjectId: string | null;
 
-  currentPlan: 'free' | 'pro' | 'business' | 'enterprise';
-  aiAssistantRequests: number;
-  transcriptionRequests: number;
-  totalRequests: number;
+  currentPlan: 'free' | 'starter' | 'pro' | 'business';
+  usage: {
+    aiAssistantRequests: number;
+    spaces: number;
+    autoDms: number;
+    totalRequests: number;
+  };
   endsAt: number;
   startsAt: number;
 };
@@ -125,9 +128,12 @@ export const getUser = async (
   if (listener) {
     onSnapshot(userRef, (snapshot) => {
       const user = snapshot.data() as SongjamUser;
-      user.aiAssistantRequests = user.aiAssistantRequests || 0;
-      user.transcriptionRequests = user.transcriptionRequests || 0;
-      user.totalRequests = user.totalRequests || 0;
+      user.usage = {
+        aiAssistantRequests: user.usage.aiAssistantRequests || 0,
+        spaces: user.usage.spaces || 0,
+        autoDms: user.usage.autoDms || 0,
+        totalRequests: user.usage.totalRequests || 0,
+      };
       user.currentPlan = user.currentPlan || 'free';
       listener(user);
     });
@@ -138,9 +144,23 @@ export const getUser = async (
     if (!user.currentPlan) {
       await updateDoc(userRef, { currentPlan: 'free' });
     }
-    user.aiAssistantRequests = user.aiAssistantRequests || 0;
-    user.transcriptionRequests = user.transcriptionRequests || 0;
-    user.totalRequests = user.totalRequests || 0;
+    // if usage is not set, set default values in the db
+    if (!user.usage) {
+      await updateDoc(userRef, {
+        usage: {
+          aiAssistantRequests: 0,
+          spaces: 0,
+          autoDms: 0,
+          totalRequests: 0,
+        },
+      });
+    }
+    user.usage = {
+      aiAssistantRequests: user.usage.aiAssistantRequests || 0,
+      spaces: user.usage.spaces || 0,
+      autoDms: user.usage.autoDms || 0,
+      totalRequests: user.usage.totalRequests || 0,
+    };
     user.currentPlan = user.currentPlan || 'free';
     return user;
   }
@@ -187,9 +207,12 @@ export const updateUserPlan = async (
   await updateDoc(userRef, { currentPlan: plan, startsAt, endsAt });
 };
 
-const requestLimit = {
-  free: 5,
-  pro: 20,
-  business: 50,
-  enterprise: 100,
+export const updateSpaceRequests = async (id: string) => {
+  const userRef = doc(db, USER_COLLECTION, id);
+  await updateDoc(userRef, { 'usage.spaces': increment(1) });
+};
+
+export const updateAutoDmsRequests = async (id: string) => {
+  const userRef = doc(db, USER_COLLECTION, id);
+  await updateDoc(userRef, { 'usage.autoDms': increment(1) });
 };

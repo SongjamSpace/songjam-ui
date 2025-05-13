@@ -1,3 +1,5 @@
+import { SongjamUser } from '../services/db/user.service';
+
 export const formatSeconds = (seconds: number) => {
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;
@@ -36,13 +38,28 @@ export const getDynamicToken = () => {
 
 export const getPlanLimits = (plan: string) => {
   switch (plan) {
+    case 'starter':
+      return { spaces: 64, aiAssistantRequests: 100, autoDms: 250 };
     case 'pro':
-      return { transcriptionRequests: 100, aiAssistantRequests: 200 };
+      return { spaces: Infinity, aiAssistantRequests: 200, autoDms: Infinity };
     case 'business':
-      return { transcriptionRequests: 500, aiAssistantRequests: 1000 };
-    case 'enterprise':
-      return { transcriptionRequests: 1000, aiAssistantRequests: 2000 };
+      return { spaces: Infinity, aiAssistantRequests: 2000, autoDms: Infinity };
     default:
-      return { transcriptionRequests: 30, aiAssistantRequests: 50 };
+      return { spaces: 16, aiAssistantRequests: 50, autoDms: 10 };
   }
+};
+
+export const canRequestSpace = (user: SongjamUser) => {
+  const planLimits = getPlanLimits(user.currentPlan);
+  return user.usage.spaces < planLimits.spaces;
+};
+
+export const canRequestAutoDms = (user: SongjamUser) => {
+  const planLimits = getPlanLimits(user.currentPlan);
+  return user.usage.autoDms < planLimits.autoDms;
+};
+
+export const canRequestAiAssistant = (user: SongjamUser) => {
+  const planLimits = getPlanLimits(user.currentPlan);
+  return user.usage.aiAssistantRequests < planLimits.aiAssistantRequests;
 };

@@ -34,6 +34,7 @@ import CampaignPromptCustomizer, {
 } from '../components/NewCampaign/PromptCustomizer';
 import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
+import EventIcon from '@mui/icons-material/Event';
 
 type Props = {};
 
@@ -89,6 +90,10 @@ const CampaignDetails = (props: Props) => {
       } else {
         setIsOwner(false);
         setIsLoading(false);
+        toast.error('Access denied for this email', {
+          duration: 5000,
+          position: 'bottom-right',
+        });
         navigate('/dashboard');
       }
     }
@@ -290,7 +295,6 @@ const CampaignDetails = (props: Props) => {
                 gutterBottom
                 sx={{
                   color: 'white',
-                  mb: 3,
                   background:
                     'linear-gradient(90deg, #60A5FA, #8B5CF6, #EC4899)',
                   WebkitBackgroundClip: 'text',
@@ -301,9 +305,10 @@ const CampaignDetails = (props: Props) => {
                 {campaign.spaceTitle}
               </Typography>
 
-              <Box sx={{ mt: 2 }}>
+              <Box display={'flex'} alignItems={'center'}>
+                <EventIcon fontSize="inherit" sx={{ mr: 0.5 }} />
                 <Typography
-                  variant="subtitle1"
+                  variant="subtitle2"
                   sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
                 >
                   {campaign.scheduledStart
@@ -408,7 +413,16 @@ const CampaignDetails = (props: Props) => {
                               </Typography>
                               <Typography
                                 variant="caption"
-                                sx={{ color: 'rgba(255, 255, 255, 0.6)' }}
+                                sx={{
+                                  color: 'rgba(255, 255, 255, 0.6)',
+                                  maxWidth: '120px',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                }}
+                                component={'a'}
+                                href={`https://x.com/${speaker.twitterScreenName}`}
+                                target="_blank"
                               >
                                 @{speaker.twitterScreenName}
                               </Typography>
@@ -430,7 +444,7 @@ const CampaignDetails = (props: Props) => {
                                 variant="caption"
                                 sx={{
                                   color: 'rgba(255, 255, 255, 0.6)',
-                                  maxWidth: '420px',
+                                  maxWidth: '320px',
                                   overflow: 'hidden',
                                   textOverflow: 'ellipsis',
                                   whiteSpace: 'nowrap',
@@ -444,6 +458,20 @@ const CampaignDetails = (props: Props) => {
                               </Typography>
                             </Box>
                           </Box>
+                          <Button
+                            variant="outlined"
+                            color="info"
+                            size="small"
+                            onClick={() => {
+                              setSelectedSpeakers(
+                                selectedSpeakers.filter(
+                                  (s) => s.userId !== speaker.userId
+                                )
+                              );
+                            }}
+                          >
+                            Remove
+                          </Button>
                         </Box>
                       ))}
                     </Box>
@@ -457,38 +485,22 @@ const CampaignDetails = (props: Props) => {
                   />
                 )}
               </Box>
-              {campaign?.status === 'DRAFT' &&
-                campaign?.campaignType === 'speakers' &&
-                selectedSpaces.length > 0 && (
-                  <LoadingButton
-                    loading={actionLoading}
-                    variant="contained"
-                    color="primary"
-                    fullWidth
-                    onClick={() => {
-                      handleGenerateDMs();
-                    }}
-                    disabled={selectedSpaces.length === 0}
-                    sx={{ mt: 2 }}
-                  >
-                    Generate DMs
-                  </LoadingButton>
-                )}
-              {campaign?.status === 'DRAFT' &&
-                campaign?.campaignType === 'listeners' && (
-                  <LoadingButton
-                    loading={actionLoading}
-                    variant="contained"
-                    color="primary"
-                    fullWidth
-                    onClick={() => {
-                      handleGenerateDMs();
-                    }}
-                    sx={{ mt: 2 }}
-                  >
-                    Generate DMs
-                  </LoadingButton>
-                )}
+              {campaign?.status === 'DRAFT' && (
+                <LoadingButton
+                  loading={actionLoading}
+                  variant="contained"
+                  color="primary"
+                  fullWidth
+                  onClick={handleGenerateDMs}
+                  disabled={
+                    campaign.campaignType === 'speakers' &&
+                    selectedSpaces.length === 0
+                  }
+                  sx={{ mt: 2 }}
+                >
+                  Generate DMs
+                </LoadingButton>
+              )}
             </Paper>
           </Grid>
 

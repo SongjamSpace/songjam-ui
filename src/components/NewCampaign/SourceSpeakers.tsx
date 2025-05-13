@@ -119,7 +119,7 @@ const SourceSpeakers: React.FC<SourceSpeakersProps> = ({
         )}
 
         {/* Space Cards Grid */}
-        <Stack spacing={2}>
+        <Stack spacing={2} sx={{ overflowY: 'auto', maxHeight: '650px' }}>
           {filteredSpaces.map((space) => {
             const isSelected = selectedSpaces.find((s) => s.id === space.id);
             return (
@@ -155,9 +155,7 @@ const SourceSpeakers: React.FC<SourceSpeakersProps> = ({
                     justifyContent="space-between"
                   >
                     <Stack spacing={1}>
-                      <Typography variant="h6">
-                        {space.title} ({space.id})
-                      </Typography>
+                      <Typography variant="h6">{space.title}</Typography>
                       <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                         <Chip
                           size="small"
@@ -222,6 +220,13 @@ const SourceSpeakers: React.FC<SourceSpeakersProps> = ({
                             '&:hover': {
                               bgcolor: 'rgba(255, 255, 255, 0.08)',
                             },
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.open(
+                              `https://x.com/${speaker.twitterScreenName}`,
+                              '_blank'
+                            );
                           }}
                         >
                           <SpaceSpeakerInfo speaker={speaker} />

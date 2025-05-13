@@ -49,7 +49,7 @@ const AddCampaignDialog = ({ space, isNew, onClose }: Props) => {
         createdAt: Date.now(),
         description: formData.description,
         topics: formData.topics,
-        scheduledStart: formData.scheduledStart.getTime(),
+        scheduledStart: space?.scheduledStart || 0,
         hostHandle: formData.hostHandle,
         addedType: 'NEW',
         campaignType: formData.campaignType,

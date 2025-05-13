@@ -346,8 +346,8 @@ export default function App() {
         </div>
         <div className="trust-badges">
           <span>{t('poweredBy')}</span>
+          <div className="badge">Chrome</div>
           <div className="badge">ElizaOS</div>
-          <div className="badge">Ethereum</div>
           <div className="badge">Grok</div>
         </div>
       </section>

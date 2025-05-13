@@ -16,7 +16,7 @@ import { useState } from 'react';
 import LoadingButton from '@mui/lab/LoadingButton';
 
 type Props = {
-  onSubscribe: (plan: 'free' | 'pro' | 'business') => void;
+  onSubscribe: (plan: 'free' | 'starter' | 'pro' | 'business') => void;
   user: SongjamUser | null;
 };
 
@@ -138,6 +138,154 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
               }}
             >
               {t('getStartedButton')}
+            </LoadingButton>
+          )}
+        </Paper>
+
+        {/* Starter Pack */}
+        <Paper
+          elevation={3}
+          sx={{
+            p: 4,
+            flex: 1,
+            maxWidth: { xs: '100%', md: '300px' },
+            background: 'rgba(15, 23, 42, 0.95)',
+            borderRadius: 3,
+            border: '1px solid rgba(96, 165, 250, 0.2)',
+            display: 'flex',
+            flexDirection: 'column',
+            '&:hover': {
+              transform: 'translateY(-8px)',
+              transition: 'all 0.3s ease',
+            },
+          }}
+        >
+          <Typography variant="h5" sx={{ mb: 2, color: 'var(--text-primary)' }}>
+            {t('starterPackTitle')}
+          </Typography>
+          <Box sx={{ mb: 2, position: 'relative', pt: 3 }}>
+            <Typography
+              variant="h6"
+              sx={{
+                color: 'var(--text-secondary)',
+                textDecoration: 'line-through',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                opacity: 0.7,
+                fontSize: '1.1rem',
+              }}
+            >
+              $20
+            </Typography>
+            <Typography
+              variant="h3"
+              sx={{
+                background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                mt: 1,
+              }}
+            >
+              $10
+              <Typography
+                component="span"
+                sx={{
+                  fontSize: '0.8rem',
+                  color: 'var(--text-secondary)',
+                  textDecoration: 'none',
+                }}
+              >
+                {t('perPack')}
+              </Typography>
+            </Typography>
+            <Chip
+              label="50% OFF"
+              size="small"
+              sx={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                bgcolor: '#10b981',
+                color: 'white',
+                fontSize: '0.75rem',
+                height: '20px',
+              }}
+            />
+          </Box>
+          <Typography
+            variant="body2"
+            sx={{
+              mb: 3,
+              color: '#10b981',
+              fontStyle: 'italic',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5,
+            }}
+          >
+            ⏰ Limited offer for May signups
+          </Typography>
+          <Typography
+            variant="body1"
+            sx={{ mb: 3, color: 'var(--text-secondary)' }}
+          >
+            {t('starterPackSubtitle')}
+          </Typography>
+          <Box sx={{ flexGrow: 1 }}>
+            <List sx={{ mb: 3 }}>
+              <ListItem sx={{ px: 0, color: 'var(--text-secondary)' }}>
+                <ListItemIcon sx={{ minWidth: 40, color: '#60a5fa' }}>
+                  <CheckIcon />
+                </ListItemIcon>
+                <ListItemText primary={t('starterPackFeatures.spaces')} />
+              </ListItem>
+              <ListItem sx={{ px: 0, color: 'var(--text-secondary)' }}>
+                <ListItemIcon sx={{ minWidth: 40, color: '#60a5fa' }}>
+                  <CheckIcon />
+                </ListItemIcon>
+                <ListItemText primary={t('starterPackFeatures.autoDMs')} />
+              </ListItem>
+              <ListItem sx={{ px: 0, color: 'var(--text-secondary)' }}>
+                <ListItemIcon sx={{ minWidth: 40, color: '#60a5fa' }}>
+                  <CheckIcon />
+                </ListItemIcon>
+                <ListItemText primary={t('starterPackFeatures.aiRequests')} />
+              </ListItem>
+              <ListItem sx={{ px: 0, color: 'var(--text-secondary)' }}>
+                <ListItemIcon sx={{ minWidth: 40, color: '#60a5fa' }}>
+                  <CheckIcon />
+                </ListItemIcon>
+                <ListItemText primary={t('starterPackFeatures.support')} />
+              </ListItem>
+            </List>
+          </Box>
+          {user?.currentPlan === 'starter' ? (
+            <Chip label={t('currentPlanChip')} />
+          ) : (
+            <LoadingButton
+              loading={loadingBtnId === 'starter'}
+              disabled={!!loadingBtnId}
+              variant="outlined"
+              fullWidth
+              sx={{
+                borderColor: '#60a5fa',
+                color: '#60a5fa',
+                '&:hover': {
+                  borderColor: '#3b82f6',
+                  color: '#3b82f6',
+                  bgcolor: 'rgba(96, 165, 250, 0.1)',
+                },
+              }}
+              onClick={() => {
+                setLoadingBtnId('starter');
+                onSubscribe('starter');
+              }}
+            >
+              {t('buyNowButton')}
             </LoadingButton>
           )}
         </Paper>
@@ -339,21 +487,12 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
               sx={{
                 background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
                 WebkitBackgroundClip: 'text',
+                textAlign: 'center',
                 WebkitTextFillColor: 'transparent',
                 fontWeight: 600,
               }}
             >
-              Growth Plan
-            </Typography>
-            <Typography
-              variant="subtitle1"
-              sx={{
-                color: 'var(--text-secondary)',
-                textAlign: 'center',
-                fontStyle: 'italic',
-              }}
-            >
-              Scale with security
+              Growth Kit
             </Typography>
           </Box>
           <Typography

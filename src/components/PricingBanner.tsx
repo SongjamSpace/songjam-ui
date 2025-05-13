@@ -203,7 +203,7 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
               </Typography>
             </Typography>
             <Chip
-              label="50% OFF"
+              label={t('discountChip')}
               size="small"
               sx={{
                 position: 'absolute',
@@ -213,6 +213,18 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
                 color: 'white',
                 fontSize: '0.75rem',
                 height: '20px',
+                animation: 'pulse 2s infinite',
+                '@keyframes pulse': {
+                  '0%': {
+                    boxShadow: '0 0 0 0 rgba(16, 185, 129, 0.4)',
+                  },
+                  '70%': {
+                    boxShadow: '0 0 0 10px rgba(16, 185, 129, 0)',
+                  },
+                  '100%': {
+                    boxShadow: '0 0 0 0 rgba(16, 185, 129, 0)',
+                  },
+                },
               }}
             />
           </Box>
@@ -225,9 +237,21 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
               display: 'flex',
               alignItems: 'center',
               gap: 0.5,
+              animation: 'glow 2s infinite',
+              '@keyframes glow': {
+                '0%': {
+                  textShadow: '0 0 5px rgba(16, 185, 129, 0.4)',
+                },
+                '50%': {
+                  textShadow: '0 0 20px rgba(16, 185, 129, 0.6)',
+                },
+                '100%': {
+                  textShadow: '0 0 5px rgba(16, 185, 129, 0.4)',
+                },
+              },
             }}
           >
-            ⏰ Limited offer for May
+            {t('limitedOfferText')}
           </Typography>
           <Typography
             variant="body1"
@@ -368,7 +392,7 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
               </Typography>
             </Typography>
             <Chip
-              label="50% OFF"
+              label={t('discountChip')}
               size="small"
               sx={{
                 position: 'absolute',
@@ -378,6 +402,18 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
                 color: 'white',
                 fontSize: '0.75rem',
                 height: '20px',
+                animation: 'pulse 2s infinite',
+                '@keyframes pulse': {
+                  '0%': {
+                    boxShadow: '0 0 0 0 rgba(16, 185, 129, 0.4)',
+                  },
+                  '70%': {
+                    boxShadow: '0 0 0 10px rgba(16, 185, 129, 0)',
+                  },
+                  '100%': {
+                    boxShadow: '0 0 0 0 rgba(16, 185, 129, 0)',
+                  },
+                },
               }}
             />
           </Box>
@@ -390,9 +426,21 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
               display: 'flex',
               alignItems: 'center',
               gap: 0.5,
+              animation: 'glow 2s infinite',
+              '@keyframes glow': {
+                '0%': {
+                  textShadow: '0 0 5px rgba(16, 185, 129, 0.4)',
+                },
+                '50%': {
+                  textShadow: '0 0 20px rgba(16, 185, 129, 0.6)',
+                },
+                '100%': {
+                  textShadow: '0 0 5px rgba(16, 185, 129, 0.4)',
+                },
+              },
             }}
           >
-            ⏰ Limited offer for May
+            {t('limitedOfferText')}
           </Typography>
           <Typography
             variant="body1"

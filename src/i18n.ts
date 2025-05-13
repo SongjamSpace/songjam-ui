@@ -103,6 +103,8 @@ const appTranslationsEN = {
   perMonth: '/month',
   perUserPerMonth: '/user/month',
   perPack: '/pack',
+  discountChip: '50% Discount',
+  limitedOfferText: 'Limited Time Offer',
   freePlanFeatures: {
     spaces: '16 Spaces',
     autoDMs: 'Upto 10 autoDMs',
@@ -382,6 +384,8 @@ const appTranslationsZH = {
   perMonth: '/月',
   perUserPerMonth: '/用户/月',
   perPack: '/包',
+  discountChip: '50% 优惠',
+  limitedOfferText: '限时优惠',
   freePlanFeatures: {
     spaces: '16 个空间',
     autoDMs: '最多 10 条自动私信',

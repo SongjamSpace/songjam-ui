@@ -227,7 +227,7 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
               gap: 0.5,
             }}
           >
-            ⏰ Limited offer for May signups
+            ⏰ Limited offer for May
           </Typography>
           <Typography
             variant="body1"
@@ -392,7 +392,7 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
               gap: 0.5,
             }}
           >
-            ⏰ Limited offer for May signups
+            ⏰ Limited offer for May
           </Typography>
           <Typography
             variant="body1"

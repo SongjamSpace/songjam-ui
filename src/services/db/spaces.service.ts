@@ -254,7 +254,7 @@ export const getSpaces = async () => {
   const colRef = query(
     collection(db, SPACE_COLLECTION),
     orderBy('docCreatedAt', 'desc'),
-    limit(30)
+    limit(100)
   );
   const snapshot = await getDocs(colRef);
   return (

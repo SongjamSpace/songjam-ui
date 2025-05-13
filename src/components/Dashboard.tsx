@@ -62,6 +62,7 @@ import {
   deleteCampaign,
   getNewCampaignsByProjectId,
 } from '../services/db/campaign.service';
+import SyncIcon from '@mui/icons-material/Sync';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -230,18 +231,22 @@ export default function Dashboard() {
   const [isShowNewCampaign, setIsShowNewCampaign] = useState(false);
   // const [scheduledSpaces, loadingScheduled, errorScheduled] = useCollectionData(query(collection(db, 'spaces'), where('state', '==', 'Scheduled')))
   // const [liveSpaces, loadingLive, errorLive] = useCollectionData(query(collection(db, 'spaces'), where('state', '==', 'Running')))
-  const [projectSpaces, setProjectSpaces] = useState<Space[]>([]);
+  // const [projectSpaces, setProjectSpaces] = useState<Space[]>([]);
   const [loadingProjectSpaces, setLoadingProjectSpaces] = useState(false);
   const [newCampaigns, setNewCampaigns] = useState<Campaign[]>([]);
-  const scheduledSpaces =
-    projectSpaces?.filter((space) => space.state === 'NotStarted') ||
-    ([] as Space[]);
-  const liveSpaces =
-    projectSpaces?.filter((space) => space.state === 'Running') ||
-    ([] as Space[]);
-  const completedSpaces =
-    projectSpaces?.filter((space) => space.state === 'Ended') ||
-    ([] as Space[]);
+  const [scheduledSpaces, setScheduledSpaces] = useState<Space[]>([]);
+  const [liveSpaces, setLiveSpaces] = useState<Space[]>([]);
+  const [completedSpaces, setCompletedSpaces] = useState<Space[]>([]);
+  const [isSpaceSyncing, setIsSpaceSyncing] = useState(true);
+  // const scheduledSpaces =
+  //   projectSpaces?.filter((space) => space.state === 'NotStarted') ||
+  //   ([] as Space[]);
+  // const liveSpaces =
+  //   projectSpaces?.filter((space) => space.state === 'Running') ||
+  //   ([] as Space[]);
+  // const completedSpaces =
+  //   projectSpaces?.filter((space) => space.state === 'Ended') ||
+  //   ([] as Space[]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -334,7 +339,23 @@ export default function Dashboard() {
       setLoadingProjectSpaces(true);
       await Promise.all([
         getSpacesByProjectId(projectId, (spaces) => {
-          setProjectSpaces(spaces);
+          if (spaces.length > 0) {
+            const orderedSpaces = spaces.sort(
+              (a, b) => (b.docCreatedAt || 0) - (a.docCreatedAt || 0)
+            );
+            const _scheduledSpaces = orderedSpaces.filter(
+              (space) => space.state === 'NotStarted'
+            );
+            const _liveSpaces = orderedSpaces.filter(
+              (space) => space.state === 'Running'
+            );
+            const _completedSpaces = orderedSpaces.filter(
+              (space) => space.state === 'Ended'
+            );
+            setScheduledSpaces(_scheduledSpaces);
+            setLiveSpaces(_liveSpaces);
+            setCompletedSpaces(_completedSpaces);
+          }
         }),
         getNewCampaignsByProjectId(projectId, (campaigns) => {
           setNewCampaigns(campaigns);
@@ -370,6 +391,31 @@ export default function Dashboard() {
       }
     }
   }, [defaultProject]);
+
+  const updateSpaceStatus = async () => {
+    if (scheduledSpaces.length > 0 || liveSpaces.length > 0) {
+      setIsSpaceSyncing(true);
+      try {
+        await axios.post(
+          `${import.meta.env.VITE_JAM_SERVER_URL}/update-space-status`,
+          {
+            spaceIds: [
+              ...scheduledSpaces.map((space) => space.spaceId),
+              ...liveSpaces.map((space) => space.spaceId),
+            ],
+          }
+        );
+      } catch (error) {
+        console.error('Error updating space status:', error);
+      } finally {
+        setIsSpaceSyncing(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    updateSpaceStatus();
+  }, [scheduledSpaces, liveSpaces]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
@@ -510,7 +556,7 @@ export default function Dashboard() {
                   {/* Speakers/Host Info */}
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <GroupIcon fontSize="inherit" sx={{ mr: 0.5 }} />
-                    Speakers:
+                    Speakers:{' '}
                     {[...space.admins, ...space.speakers]
                       ?.map((speaker) => speaker.displayName)
                       .join(', ') || 'N/A'}
@@ -607,7 +653,7 @@ export default function Dashboard() {
     }
 
     return (
-      <Box sx={{ p: 2 }}>
+      <Box sx={{ p: 2 }} width={'100%'}>
         <List sx={{ p: 0 }}>
           {spaces.map((space) => (
             <ListItemButton
@@ -726,7 +772,7 @@ export default function Dashboard() {
     if (error) {
       return (
         <Typography color="error" sx={{ p: 3, color: '#f44336' }}>
-          Error loading Scheduled spaces: {error.message || 'Unknown error'}
+          Error loading campaigns: {error.message || 'Unknown error'}
         </Typography>
       );
     }
@@ -1149,6 +1195,9 @@ export default function Dashboard() {
                       <Box
                         component="span"
                         sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 0.5,
                           bgcolor: 'rgba(255,255,255,0.1)',
                           borderRadius: '12px',
                           px: 1,
@@ -1157,6 +1206,12 @@ export default function Dashboard() {
                         }}
                       >
                         {scheduledSpaces.length}
+                        {isSpaceSyncing && (
+                          <SyncIcon
+                            fontSize="small"
+                            sx={{ animation: 'spin 4s linear infinite' }}
+                          />
+                        )}
                       </Box>
                     )}
                   </Box>
@@ -1171,6 +1226,9 @@ export default function Dashboard() {
                       <Box
                         component="span"
                         sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 0.5,
                           bgcolor: 'rgba(255,255,255,0.1)',
                           borderRadius: '12px',
                           px: 1,
@@ -1179,6 +1237,12 @@ export default function Dashboard() {
                         }}
                       >
                         {liveSpaces.length}
+                        {isSpaceSyncing && (
+                          <SyncIcon
+                            fontSize="small"
+                            sx={{ animation: 'spin 4s linear infinite' }}
+                          />
+                        )}
                       </Box>
                     )}
                   </Box>

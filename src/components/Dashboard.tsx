@@ -324,6 +324,25 @@ export default function Dashboard() {
           { spaceId, projectId }
         );
         await updateSpaceRequests(user?.uid || '');
+        await createCampaign({
+          addedType: 'NEW',
+          campaignType: 'listeners',
+          ctaType: 'space',
+          ctaTarget: space.metadata.title,
+          spaceId: spaceId,
+          projectId: projectId,
+          userId: user?.uid || '',
+          spaceTitle: space.metadata.title,
+          status: 'DRAFT',
+          createdAt: Date.now(),
+          description: '',
+          topics:
+            (space.metadata as any).topics.map(
+              (t: any) => t?.topic?.name || ''
+            ) || [],
+          scheduledStart: space.metadata.scheduled_start,
+          hostHandle: space.participants.admins[0].twitter_screen_name,
+        });
         navigate(`/live/${spaceId}`);
       } else if (state === 'NotStarted') {
         await axios.post(

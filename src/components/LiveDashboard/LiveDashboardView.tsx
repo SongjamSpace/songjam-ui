@@ -105,7 +105,7 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
   const [previousListeners, setPreviousListeners] = useState<SpaceListener[]>(
     []
   );
-  const [showCampaignButton, setShowCampaignButton] = useState(false);
+  const [campaignExists, setCampaignExists] = useState(false);
   const [isBoosting, setIsBoosting] = useState(false);
   // const [currentUserJoinedAt, setCurrentUserJoinedAt] = useState<number | null>(
   //   null
@@ -150,7 +150,7 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
   const fetchCampaign = async (id: string) => {
     const campaignExists = await checkCampaignExistsBySpaceId(id);
     if (campaignExists) {
-      setShowCampaignButton(true);
+      setCampaignExists(true);
     }
   };
 
@@ -190,7 +190,7 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
               variant="contained"
               color="primary"
               onClick={async () => {
-                if (showCampaignButton) {
+                if (campaignExists) {
                   window.open(`/campaigns/${spaceId}`, '_blank');
                 } else {
                   if (!user || !space?.title) {
@@ -214,18 +214,18 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
                     campaignType: 'listeners',
                     addedType: 'NEW',
                   });
-                  await fetchCampaign(spaceId);
+                  // await fetchCampaign(spaceId);
                   toast.success('Campaign created successfully');
                   setIsBoosting(false);
                   window.open(`/campaigns/${spaceId}`, '_blank');
                 }
               }}
               size="small"
-              endIcon={showCampaignButton ? <OpenInNewIcon /> : null}
+              endIcon={<OpenInNewIcon />}
               disabled={isBoosting}
               loading={isBoosting}
             >
-              {showCampaignButton ? 'View Campaign' : 'Boost Space'}
+              Boost Space
             </LoadingButton>
           </Box>
           <Typography

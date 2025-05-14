@@ -374,6 +374,126 @@ export default function App() {
           </div>
         </div>
       </section>
+      <section
+        className="extension-install"
+        style={{
+          marginBottom: '100px',
+          textAlign: 'center',
+          padding: '4rem 2rem',
+          background:
+            'linear-gradient(135deg, rgba(96, 165, 250, 0.1), rgba(139, 92, 246, 0.1))',
+          borderRadius: '24px',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background:
+              'radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.1) 0%, transparent 70%)',
+            pointerEvents: 'none',
+          }}
+        />
+        <h2
+          style={{
+            fontSize: '2.5rem',
+            marginBottom: '1rem',
+            background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            fontWeight: 'bold',
+          }}
+        >
+          {t('extensionTitle')}
+        </h2>
+        <p
+          style={{
+            fontSize: '1.2rem',
+            color: 'var(--text-secondary)',
+            maxWidth: '600px',
+            margin: '0 auto 2rem',
+            lineHeight: '1.6',
+          }}
+        >
+          {t('extensionText')}
+        </p>
+        <Box sx={{ mt: 4 }}>
+          <Button
+            variant="contained"
+            className="primary"
+            href="https://chromewebstore.google.com/detail/ikhimgpbclohoohnahnejbicegbkaole"
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{
+              fontSize: '1.2rem',
+              padding: '1rem 2.5rem',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
+              boxShadow: '0 4px 14px rgba(96, 165, 250, 0.3)',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: 'translateY(-3px)',
+                boxShadow: '0 8px 20px rgba(96, 165, 250, 0.5)',
+                background: 'linear-gradient(135deg, #3b82f6, #7c3aed)',
+              },
+              '&:active': {
+                transform: 'translateY(-1px)',
+              },
+            }}
+          >
+            {t('installExtensionButton')}
+          </Button>
+        </Box>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '2rem',
+            marginTop: '3rem',
+            flexWrap: 'wrap',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              color: 'var(--text-secondary)',
+            }}
+          >
+            <span style={{ fontSize: '1.5rem' }}>⚡</span>
+            <span>Instant Setup</span>
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              color: 'var(--text-secondary)',
+            }}
+          >
+            <span style={{ fontSize: '1.5rem' }}>🔒</span>
+            <span>Secure & Private</span>
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              color: 'var(--text-secondary)',
+            }}
+          >
+            <span style={{ fontSize: '1.5rem' }}>🚀</span>
+            <span>Free to Use</span>
+          </div>
+        </div>
+      </section>
+
       <PricingBanner
         user={user}
         onSubscribe={async (plan) => {
@@ -391,7 +511,6 @@ export default function App() {
           }
         }}
       />
-
       <section className="honors" style={{ marginTop: '100px' }}>
         <h2>{t('honorsTitle')}</h2>
         <p>{t('honorsText')}</p>

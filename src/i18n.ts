@@ -130,6 +130,10 @@ const appTranslationsEN = {
     encryption: 'AES-256 encryption',
     tls: 'TLS 1.2 min for all connections',
   },
+  extensionTitle: 'Get the Chrome Extension',
+  extensionText:
+    'Install our Chrome extension to access Songjam AutoDMs directly from your browser. Enhance your Twitter Messaging experience with just one click.',
+  installExtensionButton: 'Install Extension',
 };
 
 const crmTranslationsEN = {
@@ -411,6 +415,10 @@ const appTranslationsZH = {
     encryption: 'AES-256 加密',
     tls: '所有连接最低 TLS 1.2',
   },
+  extensionTitle: 'Get the Chrome Extension',
+  extensionText:
+    'Install our Chrome extension to access Songjam AutoDMs directly from your browser. Enhance your Twitter Messaging experience with just one click.',
+  installExtensionButton: 'Install Extension',
 };
 
 const crmTranslationsZH = {

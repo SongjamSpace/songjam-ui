@@ -56,9 +56,10 @@ import {
   updateSpaceToProject,
 } from '../services/db/projects.service';
 import { canRequestSpace, extractSpaceId } from '../utils';
-import AddCampaignDialog from './NewCampaign/AddCampaignDialog';
+// import AddCampaignDialog from './NewCampaign/AddCampaignDialog';
 import {
   Campaign,
+  createCampaign,
   deleteCampaign,
   getNewCampaignsByProjectId,
 } from '../services/db/campaign.service';
@@ -229,7 +230,14 @@ export default function Dashboard() {
   const [processingSpace, setProcessingSpace] = useState<AudioSpace | null>(
     null
   );
-  const [isShowNewCampaign, setIsShowNewCampaign] = useState(false);
+  // const [isShowNewCampaign, setIsShowNewCampaign] = useState(false);
+  // const [campaignSpaceDetails, setCampaignSpaceDetails] = useState<{
+  //   title: string;
+  //   scheduledStart: number;
+  //   topics: string[];
+  //   hostHandle: string;
+  //   id: string;
+  // } | null>(null);
   // const [scheduledSpaces, loadingScheduled, errorScheduled] = useCollectionData(query(collection(db, 'spaces'), where('state', '==', 'Scheduled')))
   // const [liveSpaces, loadingLive, errorLive] = useCollectionData(query(collection(db, 'spaces'), where('state', '==', 'Running')))
   // const [projectSpaces, setProjectSpaces] = useState<Space[]>([]);
@@ -318,14 +326,42 @@ export default function Dashboard() {
         await updateSpaceRequests(user?.uid || '');
         navigate(`/live/${spaceId}`);
       } else if (state === 'NotStarted') {
-        await axios.post(
-          `${import.meta.env.VITE_JAM_SERVER_URL}/schedule-space`,
-          { spaceId, projectId }
-        );
+        // await axios.post(
+        //   `${import.meta.env.VITE_JAM_SERVER_URL}/schedule-space`,
+        //   { spaceId, projectId }
+        // );
         await updateSpaceRequests(user?.uid || '');
+        const campaign = await createCampaign({
+          addedType: 'NEW',
+          campaignType: 'listeners',
+          ctaType: 'space',
+          ctaTarget: space.metadata.title,
+          spaceId: spaceId,
+          projectId: projectId,
+          userId: user?.uid || '',
+          spaceTitle: space.metadata.title,
+          status: 'DRAFT',
+          createdAt: Date.now(),
+          description: '',
+          topics: (space.metadata as any).topics.map(
+            (t: any) => t?.topic?.name || ''
+          ),
+          scheduledStart: space.metadata.scheduled_start,
+          hostHandle: space.participants.admins[0].twitter_screen_name,
+        });
+        navigate(`/campaigns/${campaign.id}`);
+        // setIsShowNewCampaign(true);
+        // setCampaignSpaceDetails({
+        //   title: space.metadata.title,
+        //   scheduledStart: space.metadata.started_at,
+        //   topics: (space.metadata as any).topics.map((t: any) => t.topic.name),
+        //   hostHandle: space.participants.admins[0].twitter_screen_name,
+        //   id: spaceId,
+        // });
         toast.success('Space is scheduled successfully', {
           duration: 3000,
         });
+
         setProcessingSpace(null);
       }
     } else {
@@ -394,15 +430,15 @@ export default function Dashboard() {
     const spaceId = searchParams.get('spaceId');
     const broadcastId = searchParams.get('broadcastId');
     if (defaultProject && (spaceId || broadcastId)) {
-      if (spaceId === 'new') {
-        setIsShowNewCampaign(true);
-      } else {
-        analyzeSpace(
-          spaceId || broadcastId || '',
-          defaultProject.id || '',
-          broadcastId ? true : false
-        );
-      }
+      // if (spaceId === 'new') {
+      //   setIsShowNewCampaign(true);
+      // } else {
+      analyzeSpace(
+        spaceId || broadcastId || '',
+        defaultProject.id || '',
+        broadcastId ? true : false
+      );
+      // }
     }
   }, [defaultProject]);
 
@@ -1126,13 +1162,13 @@ export default function Dashboard() {
                 {t('addSpaceButton', 'Add Space')}
               </LoadingButton>
 
-              <Button
+              {/* <Button
                 onClick={() => setIsShowNewCampaign(true)}
                 sx={{ mx: 'auto', width: '160px', padding: '8px 20px' }}
                 variant="outlined"
               >
                 Create Campaign
-              </Button>
+              </Button> */}
             </Box>
           </Box>
         </Paper>
@@ -1341,9 +1377,12 @@ export default function Dashboard() {
         />
       </Container>
       <Toaster position="bottom-right" reverseOrder={false} />
-      {isShowNewCampaign && (
-        <AddCampaignDialog isNew onClose={() => setIsShowNewCampaign(false)} />
-      )}
+      {/* {isShowNewCampaign && (
+        <AddCampaignDialog
+          onClose={() => setIsShowNewCampaign(false)}
+          space={campaignSpaceDetails}
+        />
+      )} */}
     </Box>
   );
 }

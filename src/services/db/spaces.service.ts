@@ -272,6 +272,7 @@ export type AudioSpace = {
     state: string;
     media_key: string;
     created_at: number;
+    scheduled_start: number;
     started_at: number;
     ended_at: string;
     updated_at: number;

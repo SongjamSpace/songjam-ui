@@ -37,7 +37,6 @@ export interface SpaceFormData {
 }
 
 interface SpaceFormProps {
-  space?: SpaceDoc;
   onSubmit: (formData: SpaceFormData) => void;
   title: string;
   setTitle: (title: string) => void;
@@ -143,7 +142,7 @@ const SpaceForm: React.FC<SpaceFormProps> = ({
         border: '1px solid rgba(255, 255, 255, 0.1)',
       }}
     >
-      <Stack sx={{ mb: 4 }}>
+      {/* <Stack sx={{ mb: 4 }}>
         <Typography gutterBottom sx={{ color: 'white', mb: 2 }}>
           Campaign Type
         </Typography>
@@ -200,7 +199,7 @@ const SpaceForm: React.FC<SpaceFormProps> = ({
             }}
           />
         </RadioGroup>
-      </Stack>
+      </Stack> */}
       <form onSubmit={handleSubmit}>
         {/* {campaignType === 'listeners' && ( */}
         <TextField

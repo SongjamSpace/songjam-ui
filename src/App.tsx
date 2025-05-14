@@ -2,28 +2,11 @@ import { useState, useEffect } from 'react';
 import './App.css';
 import Background from './components/Background';
 import Logo from './components/Logo';
-import {
-  Button,
-  TextField,
-  TextareaAutosize,
-  Dialog,
-  DialogContent,
-  IconButton,
-  Box,
-  Typography,
-  List,
-  ListItemButton,
-  ListItemText,
-  CircularProgress,
-} from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import { Button, TextField, TextareaAutosize, Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { LoadingButton } from '@mui/lab';
 import { submitToAirtable } from './services/airtable.service';
-import { useCollectionData } from 'react-firebase-hooks/firestore';
-import { collection, query, where, limit } from 'firebase/firestore';
-import { db } from './services/firebase.service';
-import { toast } from 'react-hot-toast';
+import { toast, Toaster } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { extractSpaceId } from './utils';
 import PricingBanner from './components/PricingBanner';
@@ -34,20 +17,25 @@ import { useAuthContext } from './contexts/AuthContext';
 export default function App() {
   const { t, i18n } = useTranslation();
   const { user, loading: authLoading } = useAuthContext();
-  const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false);
+  // const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false);
   const [spaceUrl, setSpaceUrl] = useState('');
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [spaces, loading, error] = useCollectionData(
-    query(
-      collection(db, 'spaces'),
-      where('transcriptionProgress', '==', 6),
-      limit(3)
-    )
-  );
+  // const [spaces, loading, error] = useCollectionData(
+  //   query(
+  //     collection(db, 'spaces'),
+  //     where('transcriptionProgress', '==', 6),
+  //     limit(3)
+  //   )
+  // );
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const handleAnalyze = async (url: string) => {
-    if (isLoading || !url.trim()) return navigate('/dashboard?spaceId=new');
+    if (!url || !url.trim())
+      return toast.error('Please enter a space URL', {
+        duration: 3000,
+        position: 'bottom-right',
+      });
+    // return navigate('/dashboard?spaceId=new');
     // Regex to get spaces/id or broadcasts/id
     // example urls: ['https://x.com/i/spaces/1OdKrDYpvzwJX', 'https://x.com/i/broadcasts/1vAGRDzePAPxl']
     // extract the id from the url
@@ -190,7 +178,7 @@ export default function App() {
             </Box>
           </div>
         </div>
-        <div className="cta-buttons">
+        {/* <div className="cta-buttons">
           <Button
             variant="contained"
             className="primary"
@@ -198,13 +186,6 @@ export default function App() {
           >
             {t('tryPreviewButton')}
           </Button>
-          {/* <Button
-            variant="outlined"
-            className="secondary"
-            onClick={() => navigate('/pricing')}
-          >
-            {t('viewPricingButton')}
-          </Button> */}
 
           <Dialog
             open={isPreviewDialogOpen}
@@ -343,7 +324,7 @@ export default function App() {
               </Box>
             </DialogContent>
           </Dialog>
-        </div>
+        </div> */}
         <div className="trust-badges">
           <span>{t('poweredBy')}</span>
           <div className="badge">Chrome</div>
@@ -623,6 +604,7 @@ export default function App() {
         <p>{t('footerText')}</p>
       </footer>
       <LoginDialog open={showAuthDialog && !authLoading} />
+      <Toaster />
     </main>
   );
 }

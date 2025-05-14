@@ -14,6 +14,7 @@ import {
   Avatar,
   Skeleton,
   Button,
+  TextField,
 } from '@mui/material';
 import SourceSpeakers from '../components/NewCampaign/SourceSpeakers';
 import { useAuthContext } from '../contexts/AuthContext';
@@ -62,6 +63,9 @@ const CampaignDetails = (props: Props) => {
     callToAction: 'soft',
   });
   const [listeners, setListeners] = useState<SpaceListener[]>([]);
+  const [description, setDescription] = useState('');
+  const [newTopic, setNewTopic] = useState('');
+  const [savingField, setSavingField] = useState('');
 
   const fetchCampaign = async () => {
     if (id) {
@@ -106,6 +110,13 @@ const CampaignDetails = (props: Props) => {
       setShowAuthDialog(false);
     }
   }, [user, authLoading]);
+
+  useEffect(() => {
+    if (campaign) {
+      setDescription(campaign.description || '');
+      setSelectedTopics(campaign.topics || []);
+    }
+  }, [campaign]);
 
   const handleGenerateDMs = async () => {
     if (!id) {
@@ -197,6 +208,56 @@ const CampaignDetails = (props: Props) => {
       setSelectedSpeakers(selectedSpaces.flatMap((space) => space.speakers));
     }
   }, [selectedSpaces]);
+
+  const handleSaveDescription = async () => {
+    if (!id || !campaign) return;
+    setSavingField('description');
+    try {
+      await updateCampaign(id, {
+        description,
+      });
+      toast.success('Description updated successfully');
+    } catch (error) {
+      toast.error('Failed to update description');
+    }
+    setSavingField('');
+  };
+
+  const handleAddTopic = async () => {
+    if (!id || !campaign || !newTopic.trim()) return;
+    if ((campaign.topics?.length ?? 0) >= 3) {
+      toast.error('Maximum 3 topics allowed');
+      return;
+    }
+    setSavingField('topics');
+    try {
+      const updatedTopics = [...(campaign.topics || []), newTopic.trim()];
+      await updateCampaign(id, {
+        topics: updatedTopics,
+      });
+      setNewTopic('');
+      toast.success('Topic added successfully');
+    } catch (error) {
+      toast.error('Failed to add topic');
+    }
+    setSavingField('');
+  };
+
+  const handleRemoveTopic = async (topicToRemove: string) => {
+    if (!id || !campaign) return;
+    setSavingField('topics');
+    try {
+      const updatedTopics =
+        campaign.topics?.filter((t) => t !== topicToRemove) || [];
+      await updateCampaign(id, {
+        topics: updatedTopics,
+      });
+      toast.success('Topic removed successfully');
+    } catch (error) {
+      toast.error('Failed to remove topic');
+    }
+    setSavingField('');
+  };
 
   // if (isOwner) {
   return (
@@ -317,37 +378,73 @@ const CampaignDetails = (props: Props) => {
                 </Typography>
               </Box>
 
-              {campaign.description && (
-                <Box sx={{ mt: 2 }}>
-                  <Typography
-                    variant="subtitle1"
-                    sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
-                  >
-                    Description
-                  </Typography>
-                  <Typography variant="body1" sx={{ color: 'white' }}>
-                    {campaign.description}
-                  </Typography>
-                </Box>
-              )}
+              <Box sx={{ mt: 2 }}>
+                <TextField
+                  label="Description"
+                  fullWidth
+                  multiline
+                  rows={2}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  sx={{ mb: 1 }}
+                />
+                <LoadingButton
+                  loading={savingField === 'description'}
+                  variant="outlined"
+                  color="primary"
+                  onClick={handleSaveDescription}
+                  disabled={description === campaign?.description}
+                  size="small"
+                >
+                  Save Description
+                </LoadingButton>
+              </Box>
 
-              {campaign.topics && campaign.topics.length > 0 && (
-                <Box sx={{ mt: 2 }}>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                    {campaign.topics.map((item, index) => (
-                      <Chip
-                        key={index}
-                        label={item}
-                        sx={{
-                          bgcolor: 'rgba(255, 255, 255, 0.1)',
-                          color: 'white',
-                          '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.2)' },
-                        }}
-                      />
-                    ))}
-                  </Box>
+              <Box sx={{ mt: 2 }}>
+                <Typography
+                  variant="subtitle2"
+                  sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 1 }}
+                >
+                  Topics ({campaign?.topics?.length || 0}/3)
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+                  <TextField
+                    size="small"
+                    placeholder="Add a topic"
+                    value={newTopic}
+                    onChange={(e) => setNewTopic(e.target.value)}
+                    disabled={(campaign?.topics?.length ?? 0) >= 3}
+                    sx={{ flex: 1 }}
+                  />
+                  <LoadingButton
+                    loading={savingField === 'topics'}
+                    variant="outlined"
+                    color="primary"
+                    onClick={handleAddTopic}
+                    disabled={
+                      !newTopic.trim() || (campaign?.topics?.length ?? 0) >= 3
+                    }
+                    size="small"
+                  >
+                    Add
+                  </LoadingButton>
                 </Box>
-              )}
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  {campaign?.topics?.map((item, index) => (
+                    <Chip
+                      key={index}
+                      label={item}
+                      onDelete={() => handleRemoveTopic(item)}
+                      sx={{
+                        bgcolor: 'rgba(255, 255, 255, 0.1)',
+                        color: 'white',
+                        '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.2)' },
+                      }}
+                    />
+                  ))}
+                </Box>
+              </Box>
+
               <Box sx={{ mt: 2 }}>
                 <Typography
                   variant="subtitle1"

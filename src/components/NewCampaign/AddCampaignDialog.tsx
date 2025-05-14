@@ -5,9 +5,9 @@ import {
   IconButton,
   Box,
 } from '@mui/material';
-import { SpaceDoc } from '../../services/db/spaces.service';
+// import { SpaceDoc } from '../../services/db/spaces.service';
 import SpaceForm, { SpaceFormData } from './SpaceForm';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createCampaign } from '../../services/db/campaign.service';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -15,12 +15,17 @@ import CloseIcon from '@mui/icons-material/Close';
 import { extractSpaceId } from '../../utils';
 
 type Props = {
-  space?: SpaceDoc;
-  isNew: boolean;
+  space: {
+    title: string;
+    scheduledStart: number;
+    topics: string[];
+    hostHandle: string;
+    id: string;
+  } | null;
   onClose: () => void;
 };
 
-const AddCampaignDialog = ({ space, isNew, onClose }: Props) => {
+const AddCampaignDialog = ({ space, onClose }: Props) => {
   const [campaignType, setCampaignType] = useState<'speakers' | 'listeners'>(
     'speakers'
   );
@@ -63,6 +68,15 @@ const AddCampaignDialog = ({ space, isNew, onClose }: Props) => {
       setActionLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (space) {
+      setTitle(space.title);
+      setScheduledStart(new Date(space.scheduledStart));
+      setTopics(space.topics);
+      setHostHandle(space.hostHandle);
+    }
+  }, [space]);
 
   return (
     <Dialog
@@ -107,7 +121,6 @@ const AddCampaignDialog = ({ space, isNew, onClose }: Props) => {
       </DialogTitle>
       <DialogContent sx={{ p: 3 }}>
         <SpaceForm
-          space={space}
           spaceUrl={spaceUrl}
           setSpaceUrl={setSpaceUrl}
           onSubmit={handleSubmit}

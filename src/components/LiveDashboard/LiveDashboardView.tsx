@@ -31,7 +31,8 @@ import { useNavigate } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LoginDialog from '../LoginDialog';
 import {
-  checkCampaignExistsBySpaceId,
+  Campaign,
+  campaignsByProjectSpaceId,
   createCampaign,
 } from '../../services/db/campaign.service';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
@@ -99,13 +100,13 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
   spaceId,
   space,
 }) => {
-  const { user } = useAuthContext();
+  const { user, loading: authLoading } = useAuthContext();
   const theme = useTheme();
   const navigate = useNavigate();
   const [previousListeners, setPreviousListeners] = useState<SpaceListener[]>(
     []
   );
-  const [campaignExists, setCampaignExists] = useState(false);
+  const [userCampaign, setUserCampaign] = useState<Campaign | null>(null);
   const [isBoosting, setIsBoosting] = useState(false);
   // const [currentUserJoinedAt, setCurrentUserJoinedAt] = useState<number | null>(
   //   null
@@ -148,17 +149,26 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
   // }, [listeners, spaceId, loading, error]);
 
   const fetchCampaign = async (id: string) => {
-    const campaignExists = await checkCampaignExistsBySpaceId(id);
-    if (campaignExists) {
-      setCampaignExists(true);
+    if (!user?.defaultProjectId) {
+      toast.error('Please set a default project');
+      return;
     }
+    setIsBoosting(true);
+    const campaignExists = await campaignsByProjectSpaceId(
+      id,
+      user.defaultProjectId
+    );
+    if (campaignExists?.length) {
+      setUserCampaign(campaignExists[0]);
+    }
+    setIsBoosting(false);
   };
 
   useEffect(() => {
-    if (spaceId) {
+    if (spaceId && user) {
       fetchCampaign(spaceId);
     }
-  }, [spaceId]);
+  }, [spaceId, user]);
 
   return (
     <Box
@@ -190,15 +200,15 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
               variant="contained"
               color="primary"
               onClick={async () => {
-                if (campaignExists) {
-                  window.open(`/campaigns/${spaceId}`, '_blank');
+                if (userCampaign) {
+                  window.open(`/campaigns/${userCampaign.id}`, '_blank');
                 } else {
                   if (!user || !space?.title) {
                     toast.error('Please login to boost space');
                     return;
                   }
                   setIsBoosting(true);
-                  await createCampaign({
+                  const campaign = await createCampaign({
                     spaceId,
                     projectId: user?.defaultProjectId || '',
                     userId: user?.uid,
@@ -217,7 +227,7 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
                   // await fetchCampaign(spaceId);
                   toast.success('Campaign created successfully');
                   setIsBoosting(false);
-                  window.open(`/campaigns/${spaceId}`, '_blank');
+                  window.open(`/campaigns/${campaign.id}`, '_blank');
                 }
               }}
               size="small"
@@ -449,7 +459,7 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
       </Box>
 
       {/* Authentication Dialog */}
-      <LoginDialog open={!user} />
+      <LoginDialog open={!user && !authLoading} />
     </Box>
   );
 };

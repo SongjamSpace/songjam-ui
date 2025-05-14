@@ -1094,13 +1094,13 @@ export default function Dashboard() {
             boxShadow: '0 5px 15px rgba(0, 0, 0, 0.2)',
           }}
         >
-          <Typography
+          {/* <Typography
             variant="h6"
             gutterBottom
             sx={{ color: 'var(--text-primary)', mb: 2 }}
           >
             {t('addSpaceTitle', 'Analyze a New Space')}
-          </Typography>
+          </Typography> */}
           <Box
             display="flex"
             gap={2}
@@ -1179,7 +1179,7 @@ export default function Dashboard() {
                   },
                 }}
               >
-                {t('addSpaceButton', 'Add Space')}
+                {t('addSpaceButton', 'Boost Space')}
               </LoadingButton>
 
               {/* <Button

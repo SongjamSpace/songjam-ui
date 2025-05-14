@@ -10,6 +10,7 @@ import {
   getDoc,
   onSnapshot,
   deleteDoc,
+  limit,
 } from 'firebase/firestore';
 import { SpaceListener } from './spaces.service';
 
@@ -84,11 +85,22 @@ export const getCampaigns = async (spaceId: string, projectId: string) => {
   return await getDocs(q);
 };
 
-export const checkCampaignExistsBySpaceId = async (spaceId: string) => {
+export const campaignsByProjectSpaceId = async (
+  spaceId: string,
+  projectId: string
+) => {
   const campaignsRef = collection(db, CAMPAIGN_COLLECTION);
-  const q = query(campaignsRef, where('spaceId', '==', spaceId));
+  const q = query(
+    campaignsRef,
+    where('spaceId', '==', spaceId),
+    where('projectId', '==', projectId),
+    limit(1)
+  );
   const snapshot = await getDocs(q);
-  return snapshot.docs.length > 0;
+  return snapshot.docs.map((doc) => ({
+    ...doc.data(),
+    id: doc.id,
+  })) as Campaign[];
 };
 
 export const getCampaignListeners = async (campaignId: string) => {

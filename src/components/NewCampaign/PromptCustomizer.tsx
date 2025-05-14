@@ -122,89 +122,6 @@ const CampaignPromptCustomizer: React.FC<CampaignPromptCustomizerProps> = ({
         >
           <Stack spacing={3}>
             {/* Message Tone Section */}
-            {/* <Box>
-              <Typography variant="body1" gutterBottom fontWeight="bold">
-                Message Tone
-              </Typography>
-
-              <Box sx={{ mb: 2 }}>
-                <Box
-                  sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
-                >
-                  <Typography sx={{ fontSize: '0.9rem' }}>
-                    Enthusiasm Level
-                  </Typography>
-                  <Tooltip title="Adjust how energetic and passionate the message should be">
-                    <IconButton size="small">
-                      <InfoIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-                <Slider
-                  value={settings.enthusiasm}
-                  onChange={handleSliderChange('enthusiasm')}
-                  valueLabelDisplay="auto"
-                  marks={[
-                    { value: 0, label: 'Low' },
-                    { value: 50, label: 'Medium' },
-                    { value: 100, label: 'High' },
-                  ]}
-                  sx={{ width: '60%', ml: 3 }}
-                />
-              </Box>
-
-              <Box sx={{ mb: 2 }}>
-                <Box
-                  sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
-                >
-                  <Typography sx={{ fontSize: '0.9rem' }}>
-                    Personalization Level
-                  </Typography>
-                  <Tooltip title="How personalized and targeted the message should be">
-                    <IconButton size="small">
-                      <InfoIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-                <Slider
-                  value={settings.personalization}
-                  onChange={handleSliderChange('personalization')}
-                  valueLabelDisplay="auto"
-                  marks={[
-                    { value: 0, label: 'Generic' },
-                    { value: 50, label: 'Balanced' },
-                    { value: 100, label: 'Highly Personalized' },
-                  ]}
-                  sx={{ width: '60%', ml: 3 }}
-                />
-              </Box>
-
-              <Box sx={{ mb: 2 }}>
-                <Box
-                  sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
-                >
-                  <Typography sx={{ fontSize: '0.9rem' }}>
-                    Formality Level
-                  </Typography>
-                  <Tooltip title="How formal or casual the message should be">
-                    <IconButton size="small">
-                      <InfoIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-                <Slider
-                  value={settings.formality}
-                  onChange={handleSliderChange('formality')}
-                  valueLabelDisplay="auto"
-                  marks={[
-                    { value: 0, label: 'Casual' },
-                    { value: 50, label: 'Balanced' },
-                    { value: 100, label: 'Formal' },
-                  ]}
-                  sx={{ width: '60%', ml: 3 }}
-                />
-              </Box>
-            </Box> */}
 
             <FormControl>
               <FormLabel sx={{ color: 'text.secondary', mb: 1 }}>
@@ -236,6 +153,85 @@ const CampaignPromptCustomizer: React.FC<CampaignPromptCustomizerProps> = ({
               </RadioGroup>
             </FormControl>
 
+            <Box>
+              <Box sx={{ mb: 2 }}>
+                <Box
+                  sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
+                >
+                  <Typography sx={{ fontSize: '0.9rem' }}>
+                    🎉Enthusiasm Level
+                  </Typography>
+                  <Tooltip title="Adjust how energetic and passionate the message should be">
+                    <IconButton size="small">
+                      <InfoIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+                <Slider
+                  value={settings.enthusiasm}
+                  onChange={handleSliderChange('enthusiasm')}
+                  valueLabelDisplay="auto"
+                  marks={[
+                    { value: 0, label: 'Low' },
+                    { value: 50, label: 'Medium' },
+                    { value: 100, label: 'High' },
+                  ]}
+                  sx={{ width: '60%', ml: 3 }}
+                />
+              </Box>
+
+              <Box sx={{ mb: 2 }}>
+                <Box
+                  sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
+                >
+                  <Typography sx={{ fontSize: '0.9rem' }}>
+                    👤 Personalization Level
+                  </Typography>
+                  <Tooltip title="How personalized and targeted the message should be">
+                    <IconButton size="small">
+                      <InfoIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+                <Slider
+                  value={settings.personalization}
+                  onChange={handleSliderChange('personalization')}
+                  valueLabelDisplay="auto"
+                  marks={[
+                    { value: 0, label: 'Generic' },
+                    { value: 50, label: 'Balanced' },
+                    { value: 100, label: 'Highly Personalized' },
+                  ]}
+                  sx={{ width: '60%', ml: 3 }}
+                />
+              </Box>
+
+              <Box sx={{ mb: 2 }}>
+                <Box
+                  sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
+                >
+                  <Typography sx={{ fontSize: '0.9rem' }}>
+                    🎩 Formality Level
+                  </Typography>
+                  <Tooltip title="How formal or casual the message should be">
+                    <IconButton size="small">
+                      <InfoIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+                <Slider
+                  value={settings.formality}
+                  onChange={handleSliderChange('formality')}
+                  valueLabelDisplay="auto"
+                  marks={[
+                    { value: 0, label: 'Casual' },
+                    { value: 50, label: 'Balanced' },
+                    { value: 100, label: 'Formal' },
+                  ]}
+                  sx={{ width: '60%', ml: 3 }}
+                />
+              </Box>
+            </Box>
             <Divider />
 
             {/* Message Length */}

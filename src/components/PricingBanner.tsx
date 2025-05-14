@@ -366,13 +366,13 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
               }}
             >
               $50
-            </Typography>
-            <Typography
-              variant="h3"
-              sx={{
-                background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
+          </Typography>
+          <Typography
+            variant="h3"
+            sx={{
+              background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 1,
@@ -541,7 +541,7 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
               }}
             >
               Growth Kit
-            </Typography>
+          </Typography>
           </Box>
           <Typography
             variant="body1"

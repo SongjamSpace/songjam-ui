@@ -13,9 +13,9 @@ const appTranslationsEN = {
   heroTitle2: 'Tech For X Spaces',
   heroSubtitle1:
     'The all-in-one toolkit for effortless growth on Twitter Spaces',
-  heroSubtitle2: 'Get more listeners and bigger speakers through automated DMs',
+  heroSubtitle2: 'Get more listeners and followers through automated DMs',
   spaceInputPlaceholder: 'Paste your X space URL here to try it now',
-  analyzeButton: 'Create Campaign',
+  analyzeButton: 'Boost Space',
   tryPreviewButton: 'Try Preview',
   viewPricingButton: 'View Pricing',
   launchOfferTitle: 'Special Launch Offer - Only $1 USDT!',
@@ -51,7 +51,7 @@ const appTranslationsEN = {
   shareFeatureText: 'Benefit from the high CTR of X DMs to grow your audience',
   shareFeatureDetail: 'Grow your X account while you sleep',
   howItWorksTitle: 'How It Works',
-  step1Title: 'Create Campaign',
+  step1Title: 'Boost Space',
   step1Text: 'Add the details of your X Space',
   step2Title: 'Compose DMs',
   step2Text: 'LLM customized for every X account',
@@ -146,7 +146,7 @@ const crmTranslationsEN = {
   attendeesStat: 'Participants',
   durationStat: 'Duration',
   minStat: 'min',
-  createCampaignButton: 'Create Campaign',
+  createCampaignButton: 'Boost Space',
   transcriptTimelineTitle: 'Transcript Timeline',
   fullTranscriptionTitle: 'Full Transcription & Search',
   downloadRecordingButton: 'Download Recording',
@@ -277,7 +277,7 @@ const spaceAnalysisTranslationsEN = {
 };
 
 const campaignTranslationsEN = {
-  createCampaignTitle: 'Create Campaign',
+  createCampaignTitle: 'Boost Space',
   ctaTypeLabel: 'CTA Type',
   followAccount: 'Follow Account',
   futureSpace: 'Future Space',

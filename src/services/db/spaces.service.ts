@@ -86,6 +86,7 @@ export type Space = {
   speakers: TwitterUser[];
   isLiveListenersSyncing?: boolean;
   liveListenersCount?: number;
+  topics?: string[];
 
   docCreatedAt?: number;
   transcriptionProgress?: TranscriptionProgress;

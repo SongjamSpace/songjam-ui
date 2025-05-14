@@ -62,7 +62,7 @@ export const createScheduledCampaign = async (campaign: Campaign) => {
 
 export const getCampaign = async (
   campaignId: string,
-  listener: (campaign: Campaign) => void
+  listener?: (campaign: Campaign) => void
 ) => {
   const campaignRef = doc(db, CAMPAIGN_COLLECTION, campaignId);
   const campaignDoc = await getDoc(campaignRef);
@@ -82,6 +82,13 @@ export const getCampaigns = async (spaceId: string, projectId: string) => {
     where('projectId', '==', projectId)
   );
   return await getDocs(q);
+};
+
+export const checkCampaignExistsBySpaceId = async (spaceId: string) => {
+  const campaignsRef = collection(db, CAMPAIGN_COLLECTION);
+  const q = query(campaignsRef, where('spaceId', '==', spaceId));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.length > 0;
 };
 
 export const getCampaignListeners = async (campaignId: string) => {

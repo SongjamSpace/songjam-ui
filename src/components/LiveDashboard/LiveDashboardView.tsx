@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Paper, useTheme, IconButton } from '@mui/material';
+import {
+  Box,
+  Typography,
+  Paper,
+  useTheme,
+  IconButton,
+  Chip,
+  Button,
+} from '@mui/material';
 import { Space, SpaceListener } from '../../services/db/spaces.service';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 import { collection, orderBy, query } from 'firebase/firestore';
 import { db } from '../../services/firebase.service';
-import { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import DashboardStats from './DashboardStats';
 import ListenerNotifications from './ListenerNotifications';
 import {
@@ -22,6 +30,12 @@ import { useAuthContext } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LoginDialog from '../LoginDialog';
+import {
+  checkCampaignExistsBySpaceId,
+  createCampaign,
+} from '../../services/db/campaign.service';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { LoadingButton } from '@mui/lab';
 
 interface LiveDashboardViewProps {
   spaceId: string;
@@ -91,6 +105,8 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
   const [previousListeners, setPreviousListeners] = useState<SpaceListener[]>(
     []
   );
+  const [showCampaignButton, setShowCampaignButton] = useState(false);
+  const [isBoosting, setIsBoosting] = useState(false);
   // const [currentUserJoinedAt, setCurrentUserJoinedAt] = useState<number | null>(
   //   null
   // );
@@ -131,6 +147,19 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
   //   console.log('Error:', error);
   // }, [listeners, spaceId, loading, error]);
 
+  const fetchCampaign = async (id: string) => {
+    const campaignExists = await checkCampaignExistsBySpaceId(id);
+    if (campaignExists) {
+      setShowCampaignButton(true);
+    }
+  };
+
+  useEffect(() => {
+    if (spaceId) {
+      fetchCampaign(spaceId);
+    }
+  }, [spaceId]);
+
   return (
     <Box
       sx={{
@@ -153,9 +182,52 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
         }}
       >
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-            Live Space Dashboard
-          </Typography>
+          <Box display={'flex'} alignItems={'center'} gap={4}>
+            <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+              Live Space Dashboard
+            </Typography>
+            <LoadingButton
+              variant="contained"
+              color="primary"
+              onClick={async () => {
+                if (showCampaignButton) {
+                  window.open(`/campaigns/${spaceId}`, '_blank');
+                } else {
+                  if (!user || !space?.title) {
+                    toast.error('Please login to boost space');
+                    return;
+                  }
+                  setIsBoosting(true);
+                  await createCampaign({
+                    spaceId,
+                    projectId: user?.defaultProjectId || '',
+                    userId: user?.uid,
+                    status: 'DRAFT',
+                    createdAt: Date.now(),
+                    ctaType: 'space',
+                    ctaTarget: space?.title,
+                    spaceTitle: space?.title,
+                    hostHandle: space?.admins[0].twitterScreenName,
+                    description: '',
+                    topics: space?.topics || [],
+                    scheduledStart: space?.startedAt,
+                    campaignType: 'listeners',
+                    addedType: 'NEW',
+                  });
+                  await fetchCampaign(spaceId);
+                  toast.success('Campaign created successfully');
+                  setIsBoosting(false);
+                  window.open(`/campaigns/${spaceId}`, '_blank');
+                }
+              }}
+              size="small"
+              endIcon={showCampaignButton ? <OpenInNewIcon /> : null}
+              disabled={isBoosting}
+              loading={isBoosting}
+            >
+              {showCampaignButton ? 'View Campaign' : 'Boost Space'}
+            </LoadingButton>
+          </Box>
           <Typography
             variant="h6"
             sx={{

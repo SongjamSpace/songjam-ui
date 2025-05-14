@@ -343,9 +343,10 @@ export default function Dashboard() {
           status: 'DRAFT',
           createdAt: Date.now(),
           description: '',
-          topics: (space.metadata as any).topics.map(
-            (t: any) => t?.topic?.name || ''
-          ),
+          topics:
+            (space.metadata as any).topics.map(
+              (t: any) => t?.topic?.name || ''
+            ) || [],
           scheduledStart: space.metadata.scheduled_start,
           hostHandle: space.participants.admins[0].twitter_screen_name,
         });

@@ -326,10 +326,10 @@ export default function Dashboard() {
         await updateSpaceRequests(user?.uid || '');
         navigate(`/live/${spaceId}`);
       } else if (state === 'NotStarted') {
-        // await axios.post(
-        //   `${import.meta.env.VITE_JAM_SERVER_URL}/schedule-space`,
-        //   { spaceId, projectId }
-        // );
+        await axios.post(
+          `${import.meta.env.VITE_JAM_SERVER_URL}/schedule-space`,
+          { spaceId, projectId }
+        );
         await updateSpaceRequests(user?.uid || '');
         const campaign = await createCampaign({
           addedType: 'NEW',

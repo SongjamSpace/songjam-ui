@@ -11,20 +11,14 @@ import {
   Grid,
   Paper,
   Chip,
-  Avatar,
   Skeleton,
   Button,
   TextField,
 } from '@mui/material';
-import SourceSpeakers from '../components/NewCampaign/SourceSpeakers';
 import { useAuthContext } from '../contexts/AuthContext';
-import {
-  SpaceDoc,
-  SpaceListener,
-  TwitterUser,
-} from '../services/db/spaces.service';
+
 import axios from 'axios';
-import { extractSpaceId, getDynamicToken } from '../utils';
+import { getDynamicToken } from '../utils';
 import { CampaignListeners } from '../components/SpaceCRM/CampaignManager';
 import { useTranslation } from 'react-i18next';
 import LoginDialog from '../components/LoginDialog';
@@ -36,6 +30,7 @@ import CampaignPromptCustomizer, {
 import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
 import EventIcon from '@mui/icons-material/Event';
+import { createCheckoutSession } from '../services/db/stripe';
 
 type Props = {};
 
@@ -43,10 +38,10 @@ const CampaignDetails = (props: Props) => {
   const { id } = useParams();
   const { t } = useTranslation();
   const [campaign, setCampaign] = useState<CampaignType | null>(null);
-  const [selectedSpaces, setSelectedSpaces] = useState<SpaceDoc[]>([]);
+  // const [selectedSpaces, setSelectedSpaces] = useState<SpaceDoc[]>([]);
   const [isOwner, setIsOwner] = useState(false);
   const { user, loading: authLoading } = useAuthContext();
-  const [selectedSpeakers, setSelectedSpeakers] = useState<TwitterUser[]>([]);
+  // const [selectedSpeakers, setSelectedSpeakers] = useState<TwitterUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const navigate = useNavigate();
@@ -62,7 +57,7 @@ const CampaignDetails = (props: Props) => {
     keyPoints: [],
     callToAction: 'soft',
   });
-  const [listeners, setListeners] = useState<SpaceListener[]>([]);
+  // const [listeners, setListeners] = useState<Listener[]>([]);
   const [description, setDescription] = useState('');
   const [newTopic, setNewTopic] = useState('');
   const [savingField, setSavingField] = useState('');
@@ -118,7 +113,7 @@ const CampaignDetails = (props: Props) => {
     }
   }, [campaign]);
 
-  const handleGenerateDMs = async () => {
+  const handleGenerateDMs = async (noOfDms: number) => {
     if (!id) {
       return;
     }
@@ -126,71 +121,13 @@ const CampaignDetails = (props: Props) => {
     if (!token) {
       return alert('No token found, please login again');
     }
-    console.log('Generate DMs for selected spaces:', selectedSpaces);
-    setActionLoading(true);
-    if (campaign?.campaignType === 'speakers') {
-      await updateCampaign(id, {
-        spaceSpeakerUsernames: selectedSpeakers.map((s) => s.twitterScreenName),
-        selectedSpaceIds: selectedSpaces.map((s) => s.id),
-        totalDms: selectedSpeakers.length,
-      });
-      // contruct an object with the speaker id as the key and the space title as the value
-      const profilesWithSpaceTitlesObj: Record<string, string> = {};
-      selectedSpeakers.forEach((s) => {
-        const space = selectedSpaces.find((space) =>
-          space.speakers.some((sp) => sp.userId === s.userId)
-        );
-        if (space) {
-          profilesWithSpaceTitlesObj[s.userId] = space.title;
-        }
-      });
+    // setActionLoading(true);
+    try {
       await axios.post(
-        `${import.meta.env.VITE_JAM_SERVER_URL}/api/generate-new-campaign-dms`,
+        `${import.meta.env.VITE_JAM_SERVER_URL}/api/generate-listeners-dms`,
         {
           campaignId: id,
-          campaignTitle: campaign?.spaceTitle,
-          campaignDescription: campaign?.description,
-          profiles: selectedSpeakers,
-          profilesWithSpaceTitlesObj,
-          campaignType: campaign?.campaignType,
-          promptSettings,
-          spaceId: campaign?.spaceId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-    } else if (campaign?.campaignType === 'listeners') {
-      // TODO: Implement listener DM generation logic
-      console.log('Generate DMs for selected listeners:', selectedSpaces);
-      if (!listeners.length) {
-        // setListeners(getTestListeners());
-        toast.error('No listeners found');
-        return;
-      }
-      // const listeners = getTestListeners();
-      await updateCampaign(id, {
-        spaceSpeakerUsernames: listeners.map((l) => l.twitterScreenName),
-        selectedSpaceIds: selectedSpaces.map((s) => s.id),
-        totalDms: listeners.length,
-      });
-      // contruct an object with the speaker id as the key and the space title as the value
-      const listenersWithTopicsObj: Record<string, string> = {};
-      listeners.forEach((l) => {
-        listenersWithTopicsObj[l.userId] = selectedTopics.join(', ');
-      });
-      await axios.post(
-        `${import.meta.env.VITE_JAM_SERVER_URL}/api/generate-new-campaign-dms`,
-        {
-          campaignId: id,
-          campaignTitle: campaign?.spaceTitle,
-          campaignDescription: campaign?.description,
-          profiles: listeners.map(({ joinedAt, leftAt, ...rest }) => rest),
-          profilesWithSpaceTitlesObj: listenersWithTopicsObj,
-          campaignType: campaign?.campaignType,
-          spaceId: campaign?.spaceId,
+          noOfDms,
           promptSettings,
         },
         {
@@ -199,15 +136,103 @@ const CampaignDetails = (props: Props) => {
           },
         }
       );
+      toast.success(`${noOfDms} DMs generated successfully`);
+    } catch (e) {
+      console.error(e);
+      toast.error('Failed to generate DMs');
     }
-    setActionLoading(false);
+    // setActionLoading(false);
   };
+  // const handleGenerateDMs = async () => {
+  //   if (!id) {
+  //     return;
+  //   }
+  //   const token = await getDynamicToken();
+  //   if (!token) {
+  //     return alert('No token found, please login again');
+  //   }
+  //   console.log('Generate DMs for selected spaces:', selectedSpaces);
+  //   setActionLoading(true);
+  //   if (campaign?.campaignType === 'speakers') {
+  //     await updateCampaign(id, {
+  //       spaceSpeakerUsernames: selectedSpeakers.map((s) => s.twitterScreenName),
+  //       selectedSpaceIds: selectedSpaces.map((s) => s.id),
+  //       totalDms: selectedSpeakers.length,
+  //     });
+  //     // contruct an object with the speaker id as the key and the space title as the value
+  //     const profilesWithSpaceTitlesObj: Record<string, string> = {};
+  //     selectedSpeakers.forEach((s) => {
+  //       const space = selectedSpaces.find((space) =>
+  //         space.speakers.some((sp) => sp.userId === s.userId)
+  //       );
+  //       if (space) {
+  //         profilesWithSpaceTitlesObj[s.userId] = space.title;
+  //       }
+  //     });
+  //     await axios.post(
+  //       `${import.meta.env.VITE_JAM_SERVER_URL}/api/generate-new-campaign-dms`,
+  //       {
+  //         campaignId: id,
+  //         campaignTitle: campaign?.spaceTitle,
+  //         campaignDescription: campaign?.description,
+  //         profiles: selectedSpeakers,
+  //         profilesWithSpaceTitlesObj,
+  //         campaignType: campaign?.campaignType,
+  //         promptSettings,
+  //         spaceId: campaign?.spaceId,
+  //       },
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       }
+  //     );
+  //   } else if (campaign?.campaignType === 'listeners') {
+  //     // TODO: Implement listener DM generation logic
+  //     console.log('Generate DMs for selected listeners:', selectedSpaces);
+  //     if (!listeners.length) {
+  //       // setListeners(getTestListeners());
+  //       toast.error('No listeners found');
+  //       return;
+  //     }
+  //     // const listeners = getTestListeners();
+  //     await updateCampaign(id, {
+  //       spaceSpeakerUsernames: listeners.map((l) => l.twitterScreenName),
+  //       selectedSpaceIds: selectedSpaces.map((s) => s.id),
+  //       totalDms: listeners.length,
+  //     });
+  //     // contruct an object with the speaker id as the key and the space title as the value
+  //     const listenersWithTopicsObj: Record<string, string> = {};
+  //     listeners.forEach((l) => {
+  //       listenersWithTopicsObj[l.userId] = selectedTopics.join(', ');
+  //     });
+  //     await axios.post(
+  //       `${import.meta.env.VITE_JAM_SERVER_URL}/api/generate-new-campaign-dms`,
+  //       {
+  //         campaignId: id,
+  //         campaignTitle: campaign?.spaceTitle,
+  //         campaignDescription: campaign?.description,
+  //         profiles: listeners,
+  //         profilesWithSpaceTitlesObj: listenersWithTopicsObj,
+  //         campaignType: campaign?.campaignType,
+  //         spaceId: campaign?.spaceId,
+  //         promptSettings,
+  //       },
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       }
+  //     );
+  //   }
+  //   setActionLoading(false);
+  // };
 
-  useEffect(() => {
-    if (selectedSpaces.length > 0 || selectedSpeakers.length) {
-      setSelectedSpeakers(selectedSpaces.flatMap((space) => space.speakers));
-    }
-  }, [selectedSpaces]);
+  // useEffect(() => {
+  //   if (selectedSpaces.length > 0 || selectedSpeakers.length) {
+  //     setSelectedSpeakers(selectedSpaces.flatMap((space) => space.speakers));
+  //   }
+  // }, [selectedSpaces]);
 
   const handleSaveDescription = async () => {
     if (!id || !campaign) return;
@@ -456,7 +481,7 @@ const CampaignDetails = (props: Props) => {
                   {campaign.hostHandle}
                 </Typography>
               </Box>
-              {selectedSpeakers.length > 0 &&
+              {/* {selectedSpeakers.length > 0 &&
                 campaign?.status === 'DRAFT' &&
                 campaign.campaignType === 'speakers' && (
                   <Box sx={{ mt: 2 }}>
@@ -525,18 +550,6 @@ const CampaignDetails = (props: Props) => {
                               </Typography>
                             </Box>
                             <Box display="flex" alignItems="center" gap={1}>
-                              {/* <Typography
-                                variant="caption"
-                                sx={{ color: 'rgba(255, 255, 255, 0.6)' }}
-                              >
-                                {20} followers
-                              </Typography>
-                              <Typography
-                                variant="caption"
-                                sx={{ color: 'rgba(255, 255, 255, 0.6)' }}
-                              >
-                                •
-                              </Typography> */}
                               <Typography
                                 variant="caption"
                                 sx={{
@@ -573,7 +586,7 @@ const CampaignDetails = (props: Props) => {
                       ))}
                     </Box>
                   </Box>
-                )}
+                )} */}
               <Box sx={{ mt: 2 }}>
                 {campaign?.status === 'DRAFT' && (
                   <CampaignPromptCustomizer
@@ -586,16 +599,17 @@ const CampaignDetails = (props: Props) => {
                 <LoadingButton
                   loading={actionLoading}
                   variant="contained"
-                  color="primary"
+                  size="small"
+                  color="info"
                   fullWidth
-                  onClick={handleGenerateDMs}
-                  disabled={
-                    campaign.campaignType === 'speakers' &&
-                    selectedSpaces.length === 0
-                  }
+                  onClick={() => {}}
+                  // disabled={
+                  //   campaign.campaignType === 'speakers' &&
+                  //   selectedSpaces.length === 0
+                  // }
                   sx={{ mt: 2 }}
                 >
-                  Generate DMs
+                  Generate Sample DM
                 </LoadingButton>
               )}
             </Paper>
@@ -607,28 +621,29 @@ const CampaignDetails = (props: Props) => {
             <Grid item xs={12} md={8}>
               <Paper sx={{ height: '100%', p: 2 }}>
                 {campaign.status === 'DRAFT' ? (
-                  campaign.campaignType === 'speakers' ? (
-                    <SourceSpeakers
-                      selectedSpaces={selectedSpaces}
-                      setSelectedSpaces={setSelectedSpaces}
-                      currentPlan={user?.currentPlan}
-                      upgradePlan={() => {}}
-                      user={user}
-                    />
-                  ) : (
-                    <SourceListeners
-                      selectedSpaces={selectedSpaces}
-                      setSelectedSpaces={setSelectedSpaces}
-                      currentPlan={user?.currentPlan}
-                      upgradePlan={() => {}}
-                      user={user}
-                      selectedTopics={selectedTopics}
-                      setSelectedTopics={setSelectedTopics}
-                      listeners={listeners}
-                      setListeners={setListeners}
-                    />
-                  )
+                  // campaign.campaignType === 'speakers' ? (
+                  //   <SourceSpeakers
+                  //     selectedSpaces={selectedSpaces}
+                  //     setSelectedSpaces={setSelectedSpaces}
+                  //     currentPlan={user?.currentPlan}
+                  //     upgradePlan={async () => {
+                  //       createCheckoutSession(user.uid, 'pro');
+                  //     }}
+                  //     user={user}
+                  //   />
+                  // ) : (
+                  <SourceListeners
+                    currentPlan={user?.currentPlan}
+                    upgradePlan={async () => {
+                      createCheckoutSession(user.uid, 'pro');
+                    }}
+                    user={user}
+                    handleGenerateDMs={handleGenerateDMs}
+                    // listeners={listeners}
+                    // setListeners={setListeners}
+                  />
                 ) : (
+                  // )
                   <CampaignListeners
                     campaignId={id}
                     campaign={campaign}

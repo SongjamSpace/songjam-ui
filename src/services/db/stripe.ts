@@ -32,12 +32,13 @@ export const getPlanFromPriceId = (priceId: string) => {
 
 export const createCheckoutSession = async (
   uid: string,
-  plan: 'pro' | 'business' | 'starter'
+  plan: 'pro' | 'business' | 'starter',
+  callbackUrl?: string
 ) => {
   let checkoutSessionData = {
     price: getPriceIdFromPlan(plan), // price ID from products fetch
-    success_url: window.location.origin, // can set this to a custom page
-    cancel_url: window.location.origin, // can set this to a custom page
+    success_url: callbackUrl || window.location.href, // can set this to a custom page
+    cancel_url: callbackUrl || window.location.href, // can set this to a custom page
     mode: plan === 'starter' ? 'payment' : 'subscription',
     metadata: {
       uid,

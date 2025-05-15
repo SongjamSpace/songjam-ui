@@ -109,7 +109,7 @@ const CampaignPromptCustomizer: React.FC<CampaignPromptCustomizerProps> = ({
         id="prompt-customizer-header"
       >
         <Typography
-          variant="h6"
+          variant="body1"
           sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
         >
           ✨ Customize DM Generation

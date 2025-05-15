@@ -281,8 +281,27 @@ export default function Dashboard() {
         if (campaigns.length > 0) {
           navigate(`/campaigns/${campaigns[0].id}`);
         } else {
-          navigate(`/live/${spaceId}`);
+          const campaign = await createCampaign({
+            addedType: 'NEW',
+            campaignType: 'listeners',
+            ctaType: 'space',
+            ctaTarget: spaceDoc.title,
+            spaceId: spaceId,
+            projectId: projectId,
+            userId: user?.uid || '',
+            spaceTitle: spaceDoc.title,
+            status: 'DRAFT',
+            createdAt: Date.now(),
+            description: '',
+            topics: spaceDoc.topics || [],
+            scheduledStart: spaceDoc.scheduledStart || spaceDoc.startedAt || 0,
+            hostHandle: spaceDoc.admins[0].twitterScreenName || '',
+          });
+          navigate(`/campaigns/${campaign.id}`);
         }
+        // else {
+        //   navigate(`/live/${spaceId}`);
+        // }
       } else if (spaceDoc.state === 'Ended') {
         navigate(`/crm/${spaceId}`);
       }
@@ -330,7 +349,7 @@ export default function Dashboard() {
           { spaceId, projectId }
         );
         await updateSpaceRequests(user?.uid || '');
-        await createCampaign({
+        const campaign = await createCampaign({
           addedType: 'NEW',
           campaignType: 'listeners',
           ctaType: 'space',
@@ -350,7 +369,7 @@ export default function Dashboard() {
             space.metadata.scheduled_start || space.metadata.started_at || 0,
           hostHandle: space.participants.admins[0].twitter_screen_name,
         });
-        navigate(`/live/${spaceId}`);
+        navigate(`/campaigns/${campaign.id}`);
       } else if (state === 'NotStarted') {
         await axios.post(
           `${import.meta.env.VITE_JAM_SERVER_URL}/schedule-space`,

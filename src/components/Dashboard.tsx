@@ -275,9 +275,9 @@ export default function Dashboard() {
       if (projectId && !spaceDoc.projectIds?.includes(projectId)) {
         await updateSpaceToProject(spaceId, projectId);
       }
-      if (spaceDoc.state === 'Running') {
+      if (spaceDoc.state === 'Running' || spaceDoc.state === 'NotStarted') {
         navigate(`/live/${spaceId}`);
-      } else {
+      } else if (spaceDoc.state === 'Ended') {
         navigate(`/crm/${spaceId}`);
       }
       // Check if scheduled space is started on time

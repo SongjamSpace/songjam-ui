@@ -220,7 +220,8 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
                     hostHandle: space?.admins[0].twitterScreenName,
                     description: '',
                     topics: space?.topics || [],
-                    scheduledStart: space?.startedAt,
+                    scheduledStart:
+                      space?.scheduledStart || space.startedAt || 0,
                     campaignType: 'listeners',
                     addedType: 'NEW',
                   });

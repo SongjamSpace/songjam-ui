@@ -340,7 +340,8 @@ export default function Dashboard() {
             (space.metadata as any).topics.map(
               (t: any) => t?.topic?.name || ''
             ) || [],
-          scheduledStart: space.metadata.scheduled_start,
+          scheduledStart:
+            space.metadata.scheduled_start || space.metadata.started_at || 0,
           hostHandle: space.participants.admins[0].twitter_screen_name,
         });
         navigate(`/live/${spaceId}`);
@@ -366,7 +367,8 @@ export default function Dashboard() {
             (space.metadata as any).topics.map(
               (t: any) => t?.topic?.name || ''
             ) || [],
-          scheduledStart: space.metadata.scheduled_start,
+          scheduledStart:
+            space.metadata.scheduled_start || space.metadata.started_at || 0,
           hostHandle: space.participants.admins[0].twitter_screen_name,
         });
         navigate(`/campaigns/${campaign.id}`);

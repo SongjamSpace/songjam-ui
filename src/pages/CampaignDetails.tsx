@@ -595,7 +595,7 @@ const CampaignDetails = (props: Props) => {
                   />
                 )}
               </Box>
-              {campaign?.status === 'DRAFT' && (
+              {/* {campaign?.status === 'DRAFT' && (
                 <LoadingButton
                   loading={actionLoading}
                   variant="contained"
@@ -611,7 +611,7 @@ const CampaignDetails = (props: Props) => {
                 >
                   Generate Sample DM
                 </LoadingButton>
-              )}
+              )} */}
             </Paper>
           </Grid>
 

@@ -59,6 +59,7 @@ import { canRequestSpace, extractSpaceId } from '../utils';
 // import AddCampaignDialog from './NewCampaign/AddCampaignDialog';
 import {
   Campaign,
+  campaignsByProjectSpaceId,
   createCampaign,
   deleteCampaign,
   getNewCampaignsByProjectId,
@@ -275,8 +276,13 @@ export default function Dashboard() {
       if (projectId && !spaceDoc.projectIds?.includes(projectId)) {
         await updateSpaceToProject(spaceId, projectId);
       }
-      if (spaceDoc.state === 'Running') {
-        navigate(`/live/${spaceId}`);
+      if (spaceDoc.state === 'Running' || spaceDoc.state === 'NotStarted') {
+        const campaigns = await campaignsByProjectSpaceId(spaceId, projectId);
+        if (campaigns.length > 0) {
+          navigate(`/campaigns/${campaigns[0].id}`);
+        } else {
+          navigate(`/live/${spaceId}`);
+        }
       } else if (spaceDoc.state === 'Ended') {
         navigate(`/crm/${spaceId}`);
       }

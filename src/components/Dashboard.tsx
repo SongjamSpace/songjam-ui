@@ -275,7 +275,7 @@ export default function Dashboard() {
       if (projectId && !spaceDoc.projectIds?.includes(projectId)) {
         await updateSpaceToProject(spaceId, projectId);
       }
-      if (spaceDoc.state === 'Running' || spaceDoc.state === 'NotStarted') {
+      if (spaceDoc.state === 'Running') {
         navigate(`/live/${spaceId}`);
       } else if (spaceDoc.state === 'Ended') {
         navigate(`/crm/${spaceId}`);

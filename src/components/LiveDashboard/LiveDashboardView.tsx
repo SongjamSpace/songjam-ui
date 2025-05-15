@@ -159,7 +159,12 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
       user.defaultProjectId
     );
     if (campaignExists?.length) {
-      setUserCampaign(campaignExists[0]);
+      if (space?.state === 'NotStarted') {
+        navigate(`/campaigns/${campaignExists[0].id}`);
+      } else {
+        toast.error('Campaign is already started');
+        setUserCampaign(campaignExists[0]);
+      }
     }
     setIsBoosting(false);
   };

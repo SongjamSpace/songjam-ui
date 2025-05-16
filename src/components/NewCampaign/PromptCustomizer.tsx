@@ -102,111 +102,109 @@ const CampaignPromptCustomizer: React.FC<CampaignPromptCustomizerProps> = ({
   };
 
   return (
-    <Accordion>
-      <AccordionSummary
-        expandIcon={<ExpandMoreIcon />}
-        aria-controls="prompt-customizer-content"
-        id="prompt-customizer-header"
+    // <Accordion defaultExpanded={true}>
+    //   <AccordionSummary
+    //     expandIcon={<ExpandMoreIcon />}
+    //     aria-controls="prompt-customizer-content"
+    //     id="prompt-customizer-header"
+    //   >
+    <>
+      <Typography
+        variant="h6"
+        sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
       >
-        <Typography
-          variant="body1"
-          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-        >
-          ✨ Customize DM Generation
-        </Typography>
-      </AccordionSummary>
-      <AccordionDetails>
-        <Paper
-          elevation={3}
-          sx={{ p: 3, mb: 3, height: '400px', overflowY: 'auto' }}
-        >
-          <Stack spacing={3}>
-            {/* Message Tone Section */}
+        ✨ Customize DM Generation
+      </Typography>
+      {/* </AccordionSummary>
+      <AccordionDetails> */}
+      <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
+        <Stack spacing={2}>
+          {/* Message Tone Section */}
 
-            <FormControl>
-              <FormLabel sx={{ color: 'text.secondary', mb: 1 }}>
-                🎭 Message Tone
-              </FormLabel>
-              <RadioGroup value={settings.tone} onChange={handleToneChange}>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
-                  <FormControlLabel
-                    value="professional"
-                    control={<Radio />}
-                    label="👔 Professional"
-                  />
-                  <FormControlLabel
-                    value="casual"
-                    control={<Radio />}
-                    label="😊 Casual"
-                  />
-                  {/* <FormControlLabel
+          <FormControl>
+            <FormLabel sx={{ color: 'text.secondary', mb: 1 }}>
+              🎭 Message Tone
+            </FormLabel>
+            <RadioGroup value={settings.tone} onChange={handleToneChange}>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
+                <FormControlLabel
+                  value="professional"
+                  control={<Radio />}
+                  label="👔 Professional"
+                />
+                <FormControlLabel
+                  value="casual"
+                  control={<Radio />}
+                  label="😊 Casual"
+                />
+                {/* <FormControlLabel
                     value="enthusiastic"
                     control={<Radio />}
                     label="🎉 Enthusiastic"
                   /> */}
-                  <FormControlLabel
-                    value="formal"
-                    control={<Radio />}
-                    label="🎩 Formal"
-                  />
-                </Box>
-              </RadioGroup>
-            </FormControl>
-
-            <Box>
-              <Box sx={{ mb: 2 }}>
-                <Box
-                  sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
-                >
-                  <Typography sx={{ fontSize: '0.9rem' }}>
-                    🎉Enthusiasm Level
-                  </Typography>
-                  <Tooltip title="Adjust how energetic and passionate the message should be">
-                    <IconButton size="small">
-                      <InfoIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-                <Slider
-                  value={settings.enthusiasm}
-                  onChange={handleSliderChange('enthusiasm')}
-                  valueLabelDisplay="auto"
-                  marks={[
-                    { value: 0, label: 'Low' },
-                    { value: 50, label: 'Medium' },
-                    { value: 100, label: 'High' },
-                  ]}
-                  sx={{ width: '60%', ml: 3 }}
+                <FormControlLabel
+                  value="formal"
+                  control={<Radio />}
+                  label="🎩 Formal"
                 />
               </Box>
+            </RadioGroup>
+          </FormControl>
 
-              <Box sx={{ mb: 2 }}>
-                <Box
-                  sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
-                >
-                  <Typography sx={{ fontSize: '0.9rem' }}>
-                    👤 Personalization Level
-                  </Typography>
-                  <Tooltip title="How personalized and targeted the message should be">
-                    <IconButton size="small">
-                      <InfoIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-                <Slider
-                  value={settings.personalization}
-                  onChange={handleSliderChange('personalization')}
-                  valueLabelDisplay="auto"
-                  marks={[
-                    { value: 0, label: 'Generic' },
-                    { value: 50, label: 'Balanced' },
-                    { value: 100, label: 'Highly Personalized' },
-                  ]}
-                  sx={{ width: '60%', ml: 3 }}
-                />
+          <Box>
+            <Box sx={{ mb: 2 }}>
+              <Box
+                sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
+              >
+                <Typography sx={{ fontSize: '0.9rem' }}>
+                  🎉Enthusiasm Level
+                </Typography>
+                <Tooltip title="Adjust how energetic and passionate the message should be">
+                  <IconButton size="small">
+                    <InfoIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
               </Box>
+              <Slider
+                value={settings.enthusiasm}
+                onChange={handleSliderChange('enthusiasm')}
+                valueLabelDisplay="auto"
+                marks={[
+                  { value: 0, label: 'Low' },
+                  { value: 50, label: 'Medium' },
+                  { value: 100, label: 'High' },
+                ]}
+                sx={{ width: '60%', ml: 3 }}
+              />
+            </Box>
 
-              {/* <Box sx={{ mb: 2 }}>
+            <Box sx={{ mb: 2 }}>
+              <Box
+                sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
+              >
+                <Typography sx={{ fontSize: '0.9rem' }}>
+                  👤 Personalization Level
+                </Typography>
+                <Tooltip title="How personalized and targeted the message should be">
+                  <IconButton size="small">
+                    <InfoIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+              <Slider
+                value={settings.personalization}
+                onChange={handleSliderChange('personalization')}
+                valueLabelDisplay="auto"
+                marks={[
+                  { value: 0, label: 'Generic' },
+                  { value: 50, label: 'Balanced' },
+                  { value: 100, label: 'Highly Personalized' },
+                ]}
+                sx={{ width: '60%', ml: 3 }}
+              />
+            </Box>
+
+            {/* <Box sx={{ mb: 2 }}>
                 <Box
                   sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
                 >
@@ -231,123 +229,122 @@ const CampaignPromptCustomizer: React.FC<CampaignPromptCustomizerProps> = ({
                   sx={{ width: '60%', ml: 3 }}
                 />
               </Box> */}
-            </Box>
-            <Divider />
+          </Box>
+          <Divider />
 
-            {/* Message Length */}
-            <FormControl component="fieldset">
-              <FormLabel component="legend">📏 Message Length</FormLabel>
-              <RadioGroup
-                row
-                value={settings.length}
-                onChange={handleLengthChange}
-              >
+          {/* Message Length */}
+          <FormControl component="fieldset">
+            <FormLabel component="legend">📏 Message Length</FormLabel>
+            <RadioGroup
+              row
+              value={settings.length}
+              onChange={handleLengthChange}
+            >
+              <FormControlLabel
+                value="concise"
+                control={<Radio />}
+                label="⚡ Concise"
+              />
+              <FormControlLabel
+                value="moderate"
+                control={<Radio />}
+                label="📝 Moderate"
+              />
+              <FormControlLabel
+                value="detailed"
+                control={<Radio />}
+                label="📚 Detailed"
+              />
+            </RadioGroup>
+          </FormControl>
+
+          <Divider />
+
+          {/* Call to Action */}
+          <FormControl>
+            <FormLabel sx={{ mb: 1 }}>🎯 Call to Action</FormLabel>
+            <RadioGroup
+              value={settings.callToAction}
+              onChange={handleCallToActionChange}
+            >
+              <Box sx={{ display: 'flex', gap: 2 }}>
                 <FormControlLabel
-                  value="concise"
+                  value="direct"
                   control={<Radio />}
-                  label="⚡ Concise"
+                  label="💪 Direct"
                 />
                 <FormControlLabel
-                  value="moderate"
+                  value="soft"
                   control={<Radio />}
-                  label="📝 Moderate"
+                  label="🤝 Soft"
                 />
                 <FormControlLabel
-                  value="detailed"
+                  value="none"
                   control={<Radio />}
-                  label="📚 Detailed"
-                />
-              </RadioGroup>
-            </FormControl>
-
-            <Divider />
-
-            {/* Call to Action */}
-            <FormControl>
-              <FormLabel sx={{ color: 'text.secondary', mb: 1 }}>
-                🎯 Call to Action
-              </FormLabel>
-              <RadioGroup
-                value={settings.callToAction}
-                onChange={handleCallToActionChange}
-              >
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                  <FormControlLabel
-                    value="direct"
-                    control={<Radio />}
-                    label="💪 Direct"
-                  />
-                  <FormControlLabel
-                    value="soft"
-                    control={<Radio />}
-                    label="🤝 Soft"
-                  />
-                  <FormControlLabel
-                    value="none"
-                    control={<Radio />}
-                    label="🚫 None"
-                  />
-                </Box>
-              </RadioGroup>
-            </FormControl>
-
-            <Divider />
-
-            {/* Key Points */}
-            <Box>
-              <Typography variant="subtitle1" gutterBottom>
-                📌 Key Points to Include
-              </Typography>
-              <Box sx={{ mb: 2 }}>
-                <Autocomplete
-                  multiple
-                  freeSolo
-                  options={[]}
-                  value={settings.keyPoints}
-                  onChange={(_, newValue) => {
-                    const limitedValue = newValue.slice(0, 3);
-                    onChange({
-                      ...settings,
-                      keyPoints: limitedValue,
-                    });
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      size="small"
-                      disabled={settings.keyPoints.length >= 3}
-                      placeholder={'Add upto 3 key points...'}
-                    />
-                  )}
-                  renderTags={(value, getTagProps) =>
-                    value.map((option, index) => (
-                      <Chip label={option} {...getTagProps({ index })} />
-                    ))
-                  }
+                  label="🚫 None"
                 />
               </Box>
-            </Box>
+            </RadioGroup>
+          </FormControl>
 
-            <Divider />
+          <Divider />
 
-            {/* Custom Instructions */}
-            <Box>
-              <Typography variant="subtitle1" gutterBottom>
-                ✍️ Custom Instructions
-              </Typography>
-              <TextField
-                fullWidth
-                multiline
-                rows={4}
-                value={settings.customInstructions}
-                onChange={handleCustomInstructionsChange}
-                placeholder="Enter any specific instructions or requirements..."
+          {/* Key Points */}
+          <Box>
+            <Typography variant="subtitle1" gutterBottom>
+              📌 Key Points to Include
+            </Typography>
+            <Box sx={{ mb: 1 }}>
+              <Autocomplete
+                multiple
+                freeSolo
+                options={[]}
+                value={settings.keyPoints}
+                onChange={(_, newValue) => {
+                  const limitedValue = newValue.slice(0, 3);
+                  onChange({
+                    ...settings,
+                    keyPoints: limitedValue,
+                  });
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    size="small"
+                    disabled={settings.keyPoints.length >= 3}
+                    placeholder={'Add upto 3 key points...'}
+                  />
+                )}
+                renderTags={(value, getTagProps) =>
+                  value.map((option, index) => (
+                    <Chip label={option} {...getTagProps({ index })} />
+                  ))
+                }
               />
             </Box>
-          </Stack>
-        </Paper>
-      </AccordionDetails>
-    </Accordion>
+          </Box>
+
+          <Divider />
+
+          {/* Custom Instructions */}
+          <Box>
+            <Typography variant="subtitle1" gutterBottom>
+              ✍️ Custom Instructions
+            </Typography>
+            <TextField
+              fullWidth
+              multiline
+              rows={4}
+              value={settings.customInstructions}
+              onChange={handleCustomInstructionsChange}
+              placeholder="Enter any specific instructions or requirements..."
+            />
+          </Box>
+        </Stack>
+      </Paper>
+      {/* </AccordionDetails>
+    </Accordion> */}
+    </>
   );
 };
 

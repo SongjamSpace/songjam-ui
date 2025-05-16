@@ -15,13 +15,16 @@ import { LoadingButton } from '@mui/lab';
 type SourceListenersProps = {
   handleGenerateDMs: (noOfDms: number) => void;
   numListeners: number;
+  selectedTopics: string[];
+  setSelectedTopics: (topics: string[]) => void;
 };
 
 const SourceListeners: React.FC<SourceListenersProps> = ({
   handleGenerateDMs,
   numListeners,
+  selectedTopics,
+  setSelectedTopics,
 }) => {
-  const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredTopics, setFilteredTopics] =
     useState<string[]>(twitterSpaceTopics);
@@ -83,8 +86,15 @@ const SourceListeners: React.FC<SourceListenersProps> = ({
                     selectedTopics.includes(topic) ? 'filled' : 'outlined'
                   }
                   onClick={() => {
-                    if (!selectedTopics.includes(topic)) {
+                    if (
+                      !selectedTopics.includes(topic) &&
+                      selectedTopics.length < 3
+                    ) {
                       setSelectedTopics([...selectedTopics, topic]);
+                    } else if (selectedTopics.includes(topic)) {
+                      setSelectedTopics(
+                        selectedTopics.filter((t) => t !== topic)
+                      );
                     }
                   }}
                   sx={{ width: '100%' }}

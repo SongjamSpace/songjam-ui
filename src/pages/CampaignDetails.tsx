@@ -31,8 +31,8 @@ import CampaignPromptCustomizer, {
 } from '../components/NewCampaign/PromptCustomizer';
 import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
-import EventIcon from '@mui/icons-material/Event';
 import { createCheckoutSession } from '../services/db/stripe';
+import TwitterSpaceCard from '../components/TwitterSpaceCard';
 
 type Props = {};
 
@@ -60,8 +60,8 @@ const CampaignDetails = (props: Props) => {
     callToAction: 'soft',
   });
   // const [listeners, setListeners] = useState<Listener[]>([]);
-  const [description, setDescription] = useState('');
-  const [newTopic, setNewTopic] = useState('');
+  // const [description, setDescription] = useState('');
+  // const [newTopic, setNewTopic] = useState('');
   const [savingField, setSavingField] = useState('');
   const [numListeners, setNumListeners] = useState(10);
 
@@ -115,12 +115,12 @@ const CampaignDetails = (props: Props) => {
     }
   }, [user, authLoading]);
 
-  useEffect(() => {
-    if (campaign) {
-      setDescription(campaign.description || '');
-      setSelectedTopics(campaign.topics || []);
-    }
-  }, [campaign]);
+  // useEffect(() => {
+  //   if (campaign) {
+  //     setDescription(campaign.description || '');
+  //     setSelectedTopics(campaign.topics || []);
+  //   }
+  // }, [campaign]);
 
   const handleGenerateDMs = async (noOfDms: number) => {
     if (!id) {
@@ -254,55 +254,55 @@ const CampaignDetails = (props: Props) => {
   //   }
   // }, [selectedSpaces]);
 
-  const handleSaveDescription = async () => {
-    if (!id || !campaign) return;
-    setSavingField('description');
-    try {
-      await updateCampaign(id, {
-        description,
-      });
-      toast.success('Description updated successfully');
-    } catch (error) {
-      toast.error('Failed to update description');
-    }
-    setSavingField('');
-  };
+  // const handleSaveDescription = async () => {
+  //   if (!id || !campaign) return;
+  //   setSavingField('description');
+  //   try {
+  //     await updateCampaign(id, {
+  //       description,
+  //     });
+  //     toast.success('Description updated successfully');
+  //   } catch (error) {
+  //     toast.error('Failed to update description');
+  //   }
+  //   setSavingField('');
+  // };
 
-  const handleAddTopic = async () => {
-    if (!id || !campaign || !newTopic.trim()) return;
-    if ((campaign.topics?.length ?? 0) >= 3) {
-      toast.error('Maximum 3 topics allowed');
-      return;
-    }
-    setSavingField('topics');
-    try {
-      const updatedTopics = [...(campaign.topics || []), newTopic.trim()];
-      await updateCampaign(id, {
-        topics: updatedTopics,
-      });
-      setNewTopic('');
-      toast.success('Topic added successfully');
-    } catch (error) {
-      toast.error('Failed to add topic');
-    }
-    setSavingField('');
-  };
+  // const handleAddTopic = async () => {
+  //   if (!id || !campaign || !newTopic.trim()) return;
+  //   if ((campaign.topics?.length ?? 0) >= 3) {
+  //     toast.error('Maximum 3 topics allowed');
+  //     return;
+  //   }
+  //   setSavingField('topics');
+  //   try {
+  //     const updatedTopics = [...(campaign.topics || []), newTopic.trim()];
+  //     await updateCampaign(id, {
+  //       topics: updatedTopics,
+  //     });
+  //     setNewTopic('');
+  //     toast.success('Topic added successfully');
+  //   } catch (error) {
+  //     toast.error('Failed to add topic');
+  //   }
+  //   setSavingField('');
+  // };
 
-  const handleRemoveTopic = async (topicToRemove: string) => {
-    if (!id || !campaign) return;
-    setSavingField('topics');
-    try {
-      const updatedTopics =
-        campaign.topics?.filter((t) => t !== topicToRemove) || [];
-      await updateCampaign(id, {
-        topics: updatedTopics,
-      });
-      toast.success('Topic removed successfully');
-    } catch (error) {
-      toast.error('Failed to remove topic');
-    }
-    setSavingField('');
-  };
+  // const handleRemoveTopic = async (topicToRemove: string) => {
+  //   if (!id || !campaign) return;
+  //   setSavingField('topics');
+  //   try {
+  //     const updatedTopics =
+  //       campaign.topics?.filter((t) => t !== topicToRemove) || [];
+  //     await updateCampaign(id, {
+  //       topics: updatedTopics,
+  //     });
+  //     toast.success('Topic removed successfully');
+  //   } catch (error) {
+  //     toast.error('Failed to remove topic');
+  //   }
+  //   setSavingField('');
+  // };
 
   const handleGenerateSampleDM = async () => {
     if (!id || !campaign) return;
@@ -427,7 +427,8 @@ const CampaignDetails = (props: Props) => {
                 bgcolor: 'rgba(255, 255, 255, 0.05)',
               }}
             >
-              <Typography
+              <TwitterSpaceCard campaign={campaign} />
+              {/* <Typography
                 variant="h6"
                 gutterBottom
                 sx={{
@@ -440,9 +441,9 @@ const CampaignDetails = (props: Props) => {
                 }}
               >
                 {campaign.spaceTitle}
-              </Typography>
+              </Typography> */}
 
-              <Box display={'flex'} alignItems={'center'}>
+              {/* <Box display={'flex'} alignItems={'center'}>
                 <EventIcon fontSize="inherit" sx={{ mr: 0.5 }} />
                 <Typography
                   variant="subtitle2"
@@ -452,9 +453,9 @@ const CampaignDetails = (props: Props) => {
                     ? new Date(campaign.scheduledStart).toLocaleString()
                     : 'Not yet scheduled'}
                 </Typography>
-              </Box>
+              </Box> */}
 
-              <Box sx={{ mt: 2 }}>
+              {/* <Box sx={{ mt: 2 }}>
                 <TextField
                   label="Description"
                   fullWidth
@@ -474,9 +475,9 @@ const CampaignDetails = (props: Props) => {
                 >
                   Save Description
                 </LoadingButton>
-              </Box>
+              </Box> */}
 
-              <Box sx={{ mt: 2 }}>
+              {/* <Box sx={{ mt: 2 }}>
                 <Typography
                   variant="subtitle2"
                   sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 1 }}
@@ -519,9 +520,9 @@ const CampaignDetails = (props: Props) => {
                     />
                   ))}
                 </Box>
-              </Box>
+              </Box> */}
 
-              <Box sx={{ mt: 2 }}>
+              {/* <Box sx={{ mt: 2 }}>
                 <Typography
                   variant="subtitle1"
                   sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
@@ -531,7 +532,7 @@ const CampaignDetails = (props: Props) => {
                 <Typography variant="body1" sx={{ color: 'white' }}>
                   {campaign.hostHandle}
                 </Typography>
-              </Box>
+              </Box> */}
               {/* {selectedSpeakers.length > 0 &&
                 campaign?.status === 'DRAFT' &&
                 campaign.campaignType === 'speakers' && (
@@ -639,12 +640,10 @@ const CampaignDetails = (props: Props) => {
                   </Box>
                 )} */}
               <Box sx={{ mt: 2 }}>
-                {campaign?.status === 'DRAFT' && (
-                  <CampaignPromptCustomizer
-                    settings={promptSettings}
-                    onChange={setPromptSettings}
-                  />
-                )}
+                <CampaignPromptCustomizer
+                  settings={promptSettings}
+                  onChange={setPromptSettings}
+                />
               </Box>
               {campaign?.status === 'DRAFT' && (
                 <Stack>
@@ -804,6 +803,8 @@ const CampaignDetails = (props: Props) => {
                   <SourceListeners
                     handleGenerateDMs={handleGenerateDMs}
                     numListeners={numListeners}
+                    selectedTopics={selectedTopics}
+                    setSelectedTopics={setSelectedTopics}
                   />
                 ) : (
                   // )

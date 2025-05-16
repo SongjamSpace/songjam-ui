@@ -33,6 +33,7 @@ import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
 import { createCheckoutSession } from '../services/db/stripe';
 import TwitterSpaceCard from '../components/TwitterSpaceCard';
+import LaunchIcon from '@mui/icons-material/Launch';
 
 type Props = {};
 
@@ -399,14 +400,27 @@ const CampaignDetails = (props: Props) => {
             }}
           />
         )}
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => navigate('/dashboard')}
-          sx={{ ml: 'auto' }}
-        >
-          Dashboard
-        </Button>
+        <Box ml="auto" display="flex" gap={2}>
+          {campaign?.spaceId && (
+            <Button
+              variant="text"
+              color="primary"
+              href={`https://songjam.space/live/${campaign.spaceId}`}
+              target="_blank"
+              endIcon={<LaunchIcon sx={{ fontSize: 18 }} />}
+            >
+              Live
+            </Button>
+          )}
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate('/dashboard')}
+            sx={{ ml: 'auto' }}
+          >
+            Dashboard
+          </Button>
+        </Box>
       </Box>
       {isLoading && (
         <Grid container justifyContent={'center'}>

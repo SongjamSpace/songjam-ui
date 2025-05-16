@@ -307,9 +307,9 @@ export default function Dashboard() {
       }
       // Check if scheduled space is started on time
       setIsLoading(false);
-      toast.success('Space already exists', {
-        duration: 3000,
-      });
+      // toast.success('Space already exists', {
+      //   duration: 3000,
+      // });
       return;
     }
     if (!canRequestSpace(user)) {

@@ -25,11 +25,11 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useTranslation } from 'react-i18next';
 
 export interface PromptSettings {
-  tone: 'professional' | 'casual' | 'enthusiastic' | 'formal';
+  tone: 'professional' | 'casual' | 'formal';
   length: 'concise' | 'moderate' | 'detailed';
   enthusiasm: number; // 0-100
   personalization: number; // 0-100
-  formality: number; // 0-100
+  //   formality: number; // 0-100
   customInstructions: string;
   keyPoints: string[];
   callToAction: 'direct' | 'soft' | 'none';
@@ -139,11 +139,11 @@ const CampaignPromptCustomizer: React.FC<CampaignPromptCustomizerProps> = ({
                     control={<Radio />}
                     label="😊 Casual"
                   />
-                  <FormControlLabel
+                  {/* <FormControlLabel
                     value="enthusiastic"
                     control={<Radio />}
                     label="🎉 Enthusiastic"
-                  />
+                  /> */}
                   <FormControlLabel
                     value="formal"
                     control={<Radio />}
@@ -206,7 +206,7 @@ const CampaignPromptCustomizer: React.FC<CampaignPromptCustomizerProps> = ({
                 />
               </Box>
 
-              <Box sx={{ mb: 2 }}>
+              {/* <Box sx={{ mb: 2 }}>
                 <Box
                   sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
                 >
@@ -230,7 +230,7 @@ const CampaignPromptCustomizer: React.FC<CampaignPromptCustomizerProps> = ({
                   ]}
                   sx={{ width: '60%', ml: 3 }}
                 />
-              </Box>
+              </Box> */}
             </Box>
             <Divider />
 

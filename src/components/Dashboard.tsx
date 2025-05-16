@@ -247,7 +247,7 @@ export default function Dashboard() {
   const [scheduledSpaces, setScheduledSpaces] = useState<Space[]>([]);
   const [liveSpaces, setLiveSpaces] = useState<Space[]>([]);
   const [completedSpaces, setCompletedSpaces] = useState<Space[]>([]);
-  const [isSpaceSyncing, setIsSpaceSyncing] = useState(true);
+  const [isSpaceSyncing, setIsSpaceSyncing] = useState(false);
   // const scheduledSpaces =
   //   projectSpaces?.filter((space) => space.state === 'NotStarted') ||
   //   ([] as Space[]);
@@ -491,22 +491,22 @@ export default function Dashboard() {
 
   const updateSpaceStatus = async () => {
     if (scheduledSpaces.length > 0 || liveSpaces.length > 0) {
-      setIsSpaceSyncing(true);
-      try {
-        await axios.post(
-          `${import.meta.env.VITE_JAM_SERVER_URL}/update-space-status`,
-          {
-            spaceIds: [
-              ...scheduledSpaces.map((space) => space.spaceId),
-              ...liveSpaces.map((space) => space.spaceId),
-            ],
-          }
-        );
-      } catch (error) {
-        console.error('Error updating space status:', error);
-      } finally {
-        setIsSpaceSyncing(false);
-      }
+      // setIsSpaceSyncing(true);
+      // try {
+      //   await axios.post(
+      //     `${import.meta.env.VITE_JAM_SERVER_URL}/update-space-status`,
+      //     {
+      //       spaceIds: [
+      //         ...scheduledSpaces.map((space) => space.spaceId),
+      //         ...liveSpaces.map((space) => space.spaceId),
+      //       ],
+      //     }
+      //   );
+      // } catch (error) {
+      //   console.error('Error updating space status:', error);
+      // } finally {
+      //   setIsSpaceSyncing(false);
+      // }
     }
   };
 
@@ -955,24 +955,31 @@ export default function Dashboard() {
                   </Box>
                 }
               />
-
-              <Button
-                onClick={(e) => {
-                  if (!campaign.id) {
-                    return;
-                  }
-                  e.stopPropagation();
-                  if (
-                    confirm('Are you sure you want to delete this campaign?')
-                  ) {
-                    deleteCampaign(campaign.id);
-                  }
-                }}
-                variant="outlined"
-                size="small"
-              >
-                Delete
-              </Button>
+              <Box display={'flex'} gap={2} alignItems={'center'}>
+                <Chip
+                  label={campaign.status}
+                  size="small"
+                  variant="outlined"
+                  color={campaign.status === 'READY' ? 'success' : 'info'}
+                />
+                <Button
+                  onClick={(e) => {
+                    if (!campaign.id) {
+                      return;
+                    }
+                    e.stopPropagation();
+                    if (
+                      confirm('Are you sure you want to delete this campaign?')
+                    ) {
+                      deleteCampaign(campaign.id);
+                    }
+                  }}
+                  variant="outlined"
+                  size="small"
+                >
+                  Delete
+                </Button>
+              </Box>
               {/* <Button
                 variant="outlined"
                 size="small"

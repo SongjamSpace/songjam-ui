@@ -14,11 +14,13 @@ import {
   Skeleton,
   Button,
   TextField,
+  Stack,
+  Autocomplete,
 } from '@mui/material';
 import { useAuthContext } from '../contexts/AuthContext';
 
 import axios from 'axios';
-import { getDynamicToken } from '../utils';
+import { getDynamicToken, getPlanLimits } from '../utils';
 import { CampaignListeners } from '../components/SpaceCRM/CampaignManager';
 import { useTranslation } from 'react-i18next';
 import LoginDialog from '../components/LoginDialog';
@@ -52,7 +54,7 @@ const CampaignDetails = (props: Props) => {
     length: 'moderate',
     enthusiasm: 50,
     personalization: 75,
-    formality: 50,
+    // formality: 50,
     customInstructions: '',
     keyPoints: [],
     callToAction: 'soft',
@@ -61,6 +63,13 @@ const CampaignDetails = (props: Props) => {
   const [description, setDescription] = useState('');
   const [newTopic, setNewTopic] = useState('');
   const [savingField, setSavingField] = useState('');
+  const [numListeners, setNumListeners] = useState(10);
+
+  const planLimits = getPlanLimits(user?.currentPlan || 'free');
+  const maxDms = planLimits.autoDms;
+  const [isUpgrading, setIsUpgrading] = useState(false);
+  const [isSampleDMsGenerating, setIsSampleDMsGenerating] = useState(false);
+  const [sampleDm, setSampleDm] = useState('');
 
   const fetchCampaign = async () => {
     if (id) {
@@ -117,11 +126,21 @@ const CampaignDetails = (props: Props) => {
     if (!id) {
       return;
     }
+    if ((user?.usage.autoDms || 0) + noOfDms > maxDms) {
+      toast.error(
+        `Please upgrade your plan to generate more than ${maxDms} DMs`,
+        {
+          duration: 5000,
+          position: 'bottom-right',
+        }
+      );
+      return;
+    }
     const token = await getDynamicToken();
     if (!token) {
       return alert('No token found, please login again');
     }
-    // setActionLoading(true);
+    setActionLoading(true);
     try {
       await axios.post(
         `${import.meta.env.VITE_JAM_SERVER_URL}/api/generate-listeners-dms`,
@@ -140,8 +159,9 @@ const CampaignDetails = (props: Props) => {
     } catch (e) {
       console.error(e);
       toast.error('Failed to generate DMs');
+    } finally {
+      setActionLoading(false);
     }
-    // setActionLoading(false);
   };
   // const handleGenerateDMs = async () => {
   //   if (!id) {
@@ -282,6 +302,37 @@ const CampaignDetails = (props: Props) => {
       toast.error('Failed to remove topic');
     }
     setSavingField('');
+  };
+
+  const handleGenerateSampleDM = async () => {
+    if (!id || !campaign) return;
+    setIsSampleDMsGenerating(true);
+    try {
+      const token = await getDynamicToken();
+      if (!token) {
+        return alert('No token found, please login again');
+      }
+      const response = await axios.post(
+        `${import.meta.env.VITE_JAM_SERVER_URL}/api/generate-sample-dm`,
+        {
+          campaignTitle: campaign.spaceTitle,
+          campaignDescription: campaign.description,
+          promptSettings,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setSampleDm(response.data.result);
+      toast.success('Sample DM generated successfully');
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to generate sample DM');
+    } finally {
+      setIsSampleDMsGenerating(false);
+    }
   };
 
   // if (isOwner) {
@@ -595,23 +646,48 @@ const CampaignDetails = (props: Props) => {
                   />
                 )}
               </Box>
-              {/* {campaign?.status === 'DRAFT' && (
-                <LoadingButton
-                  loading={actionLoading}
-                  variant="contained"
-                  size="small"
-                  color="info"
-                  fullWidth
-                  onClick={() => {}}
-                  // disabled={
-                  //   campaign.campaignType === 'speakers' &&
-                  //   selectedSpaces.length === 0
-                  // }
-                  sx={{ mt: 2 }}
-                >
-                  Generate Sample DM
-                </LoadingButton>
-              )} */}
+              {campaign?.status === 'DRAFT' && (
+                <Stack>
+                  {sampleDm && (
+                    <Box
+                      sx={{
+                        backgroundColor: '#15202b',
+                        borderRadius: '16px',
+                        p: 2,
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        maxWidth: '500px',
+                      }}
+                    >
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          color: 'rgba(255, 255, 255, 0.9)',
+                          fontSize: '15px',
+                          lineHeight: 1.5,
+                          whiteSpace: 'pre-wrap',
+                        }}
+                      >
+                        {sampleDm}
+                      </Typography>
+                    </Box>
+                  )}
+                  <LoadingButton
+                    loading={isSampleDMsGenerating}
+                    variant="contained"
+                    size="small"
+                    color="info"
+                    fullWidth
+                    onClick={handleGenerateSampleDM}
+                    // disabled={
+                    //   campaign.campaignType === 'speakers' &&
+                    //   selectedSpaces.length === 0
+                    // }
+                    sx={{ mt: 2 }}
+                  >
+                    Generate Sample DM
+                  </LoadingButton>
+                </Stack>
+              )}
             </Paper>
           </Grid>
 
@@ -620,6 +696,99 @@ const CampaignDetails = (props: Props) => {
           {campaign && id && user && (
             <Grid item xs={12} md={8}>
               <Paper sx={{ height: '100%', p: 2 }}>
+                <Box
+                  display={'flex'}
+                  alignItems={'center'}
+                  gap={2}
+                  // justifyContent={'space-between'}
+                >
+                  <Typography variant="h6">Source Listeners</Typography>
+                  <Box display={'flex'} alignItems={'center'} gap={1}>
+                    <Chip
+                      size="small"
+                      label={`PLAN: ${user?.currentPlan?.toUpperCase()}`}
+                    />
+                    <Chip
+                      size="small"
+                      label={`Available: ${user?.usage.autoDms}/${maxDms} DMs`}
+                    />
+                  </Box>
+                </Box>
+
+                {/* Selected Topics Section */}
+                {/* {selectedTopics.length > 0 && ( */}
+                <Box
+                  display={'flex'}
+                  gap={2}
+                  justifyContent={'space-between'}
+                  alignItems={'center'}
+                  mb={2}
+                >
+                  <Box display={'flex'} gap={1} flexWrap={'wrap'}>
+                    {selectedTopics.map((topic) => (
+                      <Chip
+                        key={topic}
+                        label={topic}
+                        variant="filled"
+                        onDelete={() => {
+                          setSelectedTopics(
+                            selectedTopics.filter((t) => t !== topic)
+                          );
+                        }}
+                      />
+                    ))}
+                  </Box>
+
+                  {/* Pick a number of listeners you want to target */}
+                  <Box
+                    display="flex"
+                    flexDirection={'column'}
+                    gap={1}
+                    alignItems="center"
+                  >
+                    <Autocomplete
+                      disablePortal
+                      options={[10, 100, 250, 500, 1000]}
+                      sx={{ width: 250 }}
+                      size="small"
+                      freeSolo
+                      value={numListeners}
+                      onChange={(event, newValue) => {
+                        if (typeof newValue === 'number') {
+                          setNumListeners(newValue);
+                        }
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Number of AutoDMs"
+                          type="number"
+                        />
+                      )}
+                    />
+                    {(user?.currentPlan === 'free' ||
+                      user?.currentPlan === 'starter') && (
+                      <Typography variant="body2" sx={{ ml: 'auto' }}>
+                        <span
+                          onClick={async () => {
+                            setIsUpgrading(true);
+                            await createCheckoutSession(user.uid, 'pro');
+                            setIsUpgrading(false);
+                          }}
+                          style={{
+                            cursor: 'pointer',
+                            color: 'rgba(255,255,255,0.8)',
+                            textDecoration: 'underline',
+                          }}
+                        >
+                          {isUpgrading
+                            ? 'loading...'
+                            : `Upgrade to PRO for unlimited auto DMs`}
+                        </span>
+                      </Typography>
+                    )}
+                  </Box>
+                </Box>
                 {campaign.status === 'DRAFT' ? (
                   // campaign.campaignType === 'speakers' ? (
                   //   <SourceSpeakers
@@ -633,22 +802,42 @@ const CampaignDetails = (props: Props) => {
                   //   />
                   // ) : (
                   <SourceListeners
-                    currentPlan={user?.currentPlan}
-                    upgradePlan={async () => {
-                      createCheckoutSession(user.uid, 'pro');
-                    }}
-                    user={user}
                     handleGenerateDMs={handleGenerateDMs}
-                    // listeners={listeners}
-                    // setListeners={setListeners}
+                    numListeners={numListeners}
                   />
                 ) : (
                   // )
-                  <CampaignListeners
-                    campaignId={id}
-                    campaign={campaign}
-                    t={t}
-                  />
+                  <Stack position={'relative'}>
+                    <Box sx={{ overflowY: 'auto', maxHeight: '75vh' }}>
+                      <CampaignListeners
+                        campaignId={id}
+                        campaign={campaign}
+                        t={t}
+                      />
+                    </Box>
+                    {campaign.status !== 'GENERATING' && (
+                      <Box
+                        display={'flex'}
+                        justifyContent={'center'}
+                        position={'absolute'}
+                        bottom={0}
+                        width={'100%'}
+                      >
+                        <LoadingButton
+                          loading={actionLoading}
+                          variant="contained"
+                          color="primary"
+                          fullWidth
+                          onClick={() => {
+                            handleGenerateDMs(numListeners);
+                          }}
+                          disabled={isUpgrading}
+                        >
+                          Generate DMs
+                        </LoadingButton>
+                      </Box>
+                    )}
+                  </Stack>
                 )}
               </Paper>
             </Grid>

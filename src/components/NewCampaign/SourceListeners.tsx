@@ -1,53 +1,30 @@
-import React, { useState, useEffect, Dispatch, SetStateAction } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Grid,
   Typography,
   Chip,
   Stack,
-  Card,
-  CardContent,
-  Avatar,
   TextField,
   InputAdornment,
-  Autocomplete,
 } from '@mui/material';
-import {
-  LocationOn as LocationIcon,
-  Verified as VerifiedIcon,
-  Search as SearchIcon,
-} from '@mui/icons-material';
-import { SongjamUser } from '../../services/db/user.service';
-import { Listener } from '../../services/db/listeners.service';
+import { Search as SearchIcon } from '@mui/icons-material';
 import { twitterSpaceTopics } from './TwitterSpaceTopics';
-import { getPlanLimits } from '../../utils';
 import { LoadingButton } from '@mui/lab';
 
 type SourceListenersProps = {
-  currentPlan: string;
-  upgradePlan: () => void;
-  user: SongjamUser;
-  // listeners: Listener[];
-  // setListeners: Dispatch<SetStateAction<Listener[]>>;
   handleGenerateDMs: (noOfDms: number) => void;
+  numListeners: number;
 };
 
 const SourceListeners: React.FC<SourceListenersProps> = ({
-  currentPlan,
-  upgradePlan,
-  user,
   handleGenerateDMs,
-  // listeners,
-  // setListeners,
+  numListeners,
 }) => {
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredTopics, setFilteredTopics] =
     useState<string[]>(twitterSpaceTopics);
-  const [numListeners, setNumListeners] = useState(10);
-
-  const planLimits = getPlanLimits(currentPlan);
-  const maxDms = planLimits.autoDms;
   const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
@@ -64,89 +41,6 @@ const SourceListeners: React.FC<SourceListenersProps> = ({
   return (
     <Box sx={{ p: 2 }}>
       <Stack spacing={2}>
-        <Box
-          display={'flex'}
-          alignItems={'center'}
-          gap={2}
-          // justifyContent={'space-between'}
-        >
-          <Typography variant="h6">Source Listeners</Typography>
-          <Box display={'flex'} alignItems={'center'} gap={1}>
-            <Chip size="small" label={`PLAN: ${currentPlan.toUpperCase()}`} />
-            <Chip
-              size="small"
-              label={`Available: ${user?.usage.autoDms}/${maxDms} DMs`}
-            />
-          </Box>
-        </Box>
-
-        {/* Selected Topics Section */}
-        {/* {selectedTopics.length > 0 && ( */}
-        <Box
-          display={'flex'}
-          gap={2}
-          justifyContent={'space-between'}
-          alignItems={'center'}
-        >
-          <Box display={'flex'} gap={1} flexWrap={'wrap'}>
-            {selectedTopics.map((topic) => (
-              <Chip
-                key={topic}
-                label={topic}
-                variant="filled"
-                onDelete={() => {
-                  setSelectedTopics(selectedTopics.filter((t) => t !== topic));
-                }}
-              />
-            ))}
-          </Box>
-
-          {/* Pick a number of listeners you want to target */}
-          <Box
-            display="flex"
-            flexDirection={'column'}
-            gap={1}
-            alignItems="center"
-          >
-            <Autocomplete
-              disablePortal
-              options={[10, 100, 250, 500, 1000]}
-              sx={{ width: 250 }}
-              size="small"
-              freeSolo
-              value={numListeners}
-              onChange={(event, newValue) => {
-                if (typeof newValue === 'number') {
-                  setNumListeners(newValue);
-                }
-              }}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Number of AutoDMs"
-                  type="number"
-                />
-              )}
-            />
-            {(currentPlan === 'free' || currentPlan === 'starter') && (
-              <Typography variant="body2" sx={{ ml: 'auto' }}>
-                <span
-                  onClick={upgradePlan}
-                  style={{
-                    cursor: 'pointer',
-                    color: 'rgba(255,255,255,0.8)',
-                    textDecoration: 'underline',
-                  }}
-                >
-                  Upgrade to {currentPlan === 'free' ? 'PRO' : 'BUSINESS'}
-                </span>{' '}
-                for unlimited auto DMs
-              </Typography>
-            )}
-          </Box>
-        </Box>
-        {/* )} */}
-
         {/* Search Input */}
         <TextField
           fullWidth

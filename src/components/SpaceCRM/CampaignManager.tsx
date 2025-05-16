@@ -30,7 +30,7 @@ import {
 } from '../../services/db/spaces.service';
 import { AI_MODELS } from '../../services/ai.service';
 import { LoadingButton } from '@mui/lab';
-import LocationOnRoundedIcon from '@mui/icons-material/LocationOnRounded';
+import LocationOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import VerifiedRoundedIcon from '@mui/icons-material/VerifiedRounded';
 import EditIcon from '@mui/icons-material/Edit';
 import {
@@ -44,7 +44,6 @@ import { collection } from 'firebase/firestore';
 import { db } from '../../services/firebase.service';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
-import SaveIcon from '@mui/icons-material/Save';
 
 const CampaignManager: React.FC<{
   spaceId: string;
@@ -386,7 +385,7 @@ const ListenerCardContent = ({ listener }: { listener: SpaceListener }) => {
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
         <Avatar sx={{ mr: 2 }} src={listener.avatarUrl} />
         <Box>
-          <Typography variant="h6">{listener.displayName}</Typography>
+          <Typography variant="body1">{listener.displayName}</Typography>
           <Box display="flex" alignItems="center" gap={1}>
             <Typography variant="body2" color="text.secondary">
               @{listener.twitterScreenName}
@@ -395,6 +394,15 @@ const ListenerCardContent = ({ listener }: { listener: SpaceListener }) => {
               <VerifiedRoundedIcon
                 sx={{ color: '#1c9bef', fontSize: '20px' }}
               />
+            )}
+            {listener.location && (
+              <Box display="flex" alignItems="center" sx={{ ml: 'auto' }}>
+                <Typography variant="body2" color="text.secondary">
+                  •
+                </Typography>
+                <LocationOutlinedIcon sx={{ ml: 1 }} fontSize="small" />
+                <Typography variant="body2">{listener.location}</Typography>
+              </Box>
             )}
           </Box>
         </Box>
@@ -405,29 +413,29 @@ const ListenerCardContent = ({ listener }: { listener: SpaceListener }) => {
           {listener.biography}
         </Typography>
       )}
-      {listener.location && (
-        <Box display="flex" alignItems="center" sx={{ mb: 2 }}>
-          <LocationOnRoundedIcon sx={{ mr: 1 }} />
-          <Typography variant="body2">{listener.location}</Typography>
-        </Box>
-      )}
 
-      <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-        {listener.joinedAt && (
-          <Chip
-            icon={<AccessTimeIcon />}
-            label={`Joined: ${format(listener.joinedAt, 'h:mm a')}`}
-            size="small"
-          />
-        )}
-        {listener.leftAt && (
-          <Chip
-            icon={<AccessTimeIcon />}
-            label={`Left: ${format(listener.leftAt || new Date(), 'h:mm a')}`}
-            size="small"
-          />
-        )}
-      </Box>
+      {listener.joinedAt ||
+        (listener.leftAt && (
+          <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+            {listener.joinedAt && (
+              <Chip
+                icon={<AccessTimeIcon />}
+                label={`Joined: ${format(listener.joinedAt, 'h:mm a')}`}
+                size="small"
+              />
+            )}
+            {listener.leftAt && (
+              <Chip
+                icon={<AccessTimeIcon />}
+                label={`Left: ${format(
+                  listener.leftAt || new Date(),
+                  'h:mm a'
+                )}`}
+                size="small"
+              />
+            )}
+          </Box>
+        ))}
     </>
   );
 };
@@ -489,13 +497,13 @@ export const CampaignListeners = ({
               >
                 <CardContent sx={{ flexGrow: 1 }}>
                   <ListenerCardContent listener={listener} />
-                  <Box sx={{ mt: 2 }}>
+                  <Box>
                     <Box
                       sx={{
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        mb: 1,
+                        // mb: 1,
                       }}
                     >
                       <Typography variant="body2" color="text.secondary">
@@ -585,20 +593,20 @@ export const CampaignListeners = ({
                         // />
                       )}
                     </Box>
-                    <Paper
-                      variant="outlined"
+                    <Box
+                      // variant="outlined"
                       sx={{
                         p: 2,
-                        bgcolor:
-                          listener.messageStatus === 'FAILED'
-                            ? 'rgba(239, 68, 68, 0.1)'
-                            : 'rgba(0,0,0,0.2)',
-                        borderColor:
-                          listener.messageStatus === 'FAILED'
-                            ? 'rgba(239, 68, 68, 0.3)'
-                            : 'rgba(255, 255, 255, 0.1)',
+                        // bgcolor:
+                        //   listener.messageStatus === 'FAILED'
+                        //     ? 'rgba(239, 68, 68, 0.1)'
+                        //     : 'rgba(0,0,0,0.2)',
+                        // borderColor:
+                        //   listener.messageStatus === 'FAILED'
+                        //     ? 'rgba(239, 68, 68, 0.3)'
+                        //     : 'rgba(255, 255, 255, 0.1)',
                         position: 'relative',
-                        transition: 'background-color 0.3s ease',
+                        // transition: 'background-color 0.3s ease',
                         minHeight: '80px',
                         display: 'flex',
                         alignItems: 'center',
@@ -608,7 +616,7 @@ export const CampaignListeners = ({
                         <TextField
                           fullWidth
                           multiline
-                          rows={4}
+                          // rows={4}
                           value={editMessage.messageContent}
                           onChange={(e) =>
                             setEditMessage({
@@ -620,12 +628,26 @@ export const CampaignListeners = ({
                       ) : (
                         <Typography
                           variant="body1"
-                          sx={{ flexGrow: 1, whiteSpace: 'pre-wrap' }}
+                          sx={{
+                            flexGrow: 1,
+                            whiteSpace: 'pre-wrap',
+                            backgroundColor: 'rgba(29, 155, 240, 0.1)',
+                            color: 'white',
+                            padding: '12px 16px',
+                            borderRadius: '20px',
+                            borderTopLeftRadius: '4px',
+                            maxWidth: '100%',
+                            // marginLeft: 'auto',
+                            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+                            fontSize: '0.95rem',
+                            lineHeight: 1.4,
+                            wordBreak: 'break-word',
+                          }}
                         >
                           {listener.messageContent}
                         </Typography>
                       )}
-                    </Paper>
+                    </Box>
                   </Box>
                 </CardContent>
               </Card>

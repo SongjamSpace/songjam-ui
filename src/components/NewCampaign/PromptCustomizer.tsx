@@ -15,13 +15,10 @@ import {
   Tooltip,
   IconButton,
   Divider,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   Autocomplete,
+  Button,
 } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useTranslation } from 'react-i18next';
 
 export interface PromptSettings {
@@ -109,12 +106,23 @@ const CampaignPromptCustomizer: React.FC<CampaignPromptCustomizerProps> = ({
     //     id="prompt-customizer-header"
     //   >
     <>
-      <Typography
-        variant="h6"
-        sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
-      >
-        ✨ Customize DM Generation
-      </Typography>
+      <Box display="flex" justifyContent="space-between" alignItems="center">
+        <Typography
+          variant="h6"
+          sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
+        >
+          ✨ Customize DM Generation
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          href="https://chromewebstore.google.com/detail/songjam/ikhimgpbclohoohnahnejbicegbkaole"
+          target="_blank"
+          size="small"
+        >
+          Install Extension
+        </Button>
+      </Box>
       {/* </AccordionSummary>
       <AccordionDetails> */}
       <Paper elevation={3} sx={{ p: 3, mb: 3 }}>

@@ -55,7 +55,6 @@ const CampaignDetails = (props: Props) => {
     length: 'moderate',
     enthusiasm: 50,
     personalization: 75,
-    // formality: 50,
     customInstructions: '',
     keyPoints: [],
     callToAction: 'soft',
@@ -159,7 +158,7 @@ const CampaignDetails = (props: Props) => {
       toast.success(`${noOfDms} DMs generated successfully`);
     } catch (e) {
       console.error(e);
-      toast.error('Failed to generate DMs');
+      // toast.error('Failed to generate DMs');
     } finally {
       setActionLoading(false);
     }

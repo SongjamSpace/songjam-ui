@@ -35,16 +35,3 @@ export type Listener = {
   lastSharedMs: number;
   userByProjectId: string[];
 };
-
-export const getListenersByTopics = async (topics: string[]) => {
-  const db = getFirestore();
-  const q = query(
-    collection(db, 'listeners'),
-    where('topics', 'in', topics),
-    orderBy('randomSeed', 'asc')
-  );
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => ({
-    ...doc.data(),
-  })) as Listener[];
-};

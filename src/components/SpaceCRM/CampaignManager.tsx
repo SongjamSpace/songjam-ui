@@ -40,7 +40,7 @@ import {
 } from '../../services/db/campaign.service';
 import { TFunction } from 'i18next';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
-import { collection } from 'firebase/firestore';
+import { collection, query, limit } from 'firebase/firestore';
 import { db } from '../../services/firebase.service';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
@@ -449,7 +449,7 @@ export const CampaignListeners = ({
   t: TFunction<'translation', undefined>;
 }) => {
   const [messages, loading, error] = useCollectionData(
-    collection(db, 'campaigns', campaignId, 'messages')
+    query(collection(db, 'campaigns', campaignId, 'messages'), limit(500))
   );
   const [editMessage, setEditMessage] = useState<CampaignListener | null>(null);
   if (loading) {

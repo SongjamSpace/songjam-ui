@@ -699,7 +699,7 @@ export default function App() {
             <span>{t('github')}</span>
           </a>
           <a
-            href="https://x.com/SongjamSpace"
+            href="https://x.com/intent/follow?screen_name=SongjamSpace"
             target="_blank"
             rel="noopener noreferrer"
             className="social-link"

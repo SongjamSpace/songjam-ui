@@ -1,6 +1,8 @@
-import { Box, Paper, Typography, Chip } from '@mui/material';
-import React from 'react';
-import { Campaign } from '../services/db/campaign.service';
+import { Box, Paper, Typography, Chip, TextField, Button } from '@mui/material';
+import React, { useState } from 'react';
+import { Campaign, updateCampaign } from '../services/db/campaign.service';
+import { LoadingButton } from '@mui/lab';
+import { toast } from 'react-hot-toast';
 
 interface TwitterSpaceCardProps {
   campaign: Campaign;
@@ -20,6 +22,96 @@ function formatDateTime(timestamp?: number) {
 }
 
 const TwitterSpaceCard: React.FC<TwitterSpaceCardProps> = ({ campaign }) => {
+  const [spaceTitle, setSpaceTitle] = useState(campaign.spaceTitle || '');
+  const [scheduledStart, setScheduledStart] = useState(
+    campaign.scheduledStart || ''
+  );
+  const [topics, setTopics] = useState(campaign.topics?.join(', ') || '');
+  const [isEditing, setIsEditing] = useState(
+    !campaign.spaceTitle || !campaign.scheduledStart || !campaign.topics?.length
+  );
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (!campaign.id) return;
+    setIsSaving(true);
+    const topicsArray = topics
+      .split(',')
+      .map((topic) => topic.trim())
+      .filter(Boolean);
+    const scheduledStartTimestamp = scheduledStart
+      ? new Date(scheduledStart).getTime()
+      : 0;
+
+    // if (scheduledStartTimestamp === 0) {
+    //   toast.error('Please select a valid scheduled start time');
+    //   setIsSaving(false);
+    //   return;
+    // }
+
+    await updateCampaign(campaign.id, {
+      spaceTitle,
+      scheduledStart: scheduledStartTimestamp,
+      topics: topicsArray,
+    });
+    setIsEditing(false);
+    setIsSaving(false);
+  };
+
+  if (isEditing) {
+    return (
+      <Paper
+        elevation={4}
+        sx={{
+          borderRadius: 3,
+          p: 2,
+          width: '100%',
+          color: 'white',
+          minWidth: 250,
+        }}
+      >
+        <Box>
+          <TextField
+            fullWidth
+            label="Space Title"
+            value={spaceTitle}
+            onChange={(e) => setSpaceTitle(e.target.value)}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Scheduled Start"
+            type="datetime-local"
+            value={scheduledStart}
+            onChange={(e) => setScheduledStart(e.target.value)}
+            sx={{ mb: 2 }}
+            InputLabelProps={{
+              shrink: true,
+            }}
+          />
+          <TextField
+            fullWidth
+            label="Topics (comma-separated)"
+            value={topics}
+            onChange={(e) => setTopics(e.target.value)}
+            sx={{ mb: 2 }}
+          />
+          <LoadingButton
+            loading={isSaving}
+            variant="contained"
+            onClick={handleSave}
+            sx={{
+              background: 'linear-gradient(90deg, #60A5FA, #8B5CF6, #EC4899)',
+              color: 'white',
+            }}
+          >
+            Save
+          </LoadingButton>
+        </Box>
+      </Paper>
+    );
+  }
+
   return (
     <Paper
       elevation={4}

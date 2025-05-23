@@ -271,6 +271,7 @@ export default function Dashboard() {
   ) => {
     if (!user) return toast.error('Please login to continue');
     setIsLoading(true);
+
     const spaceDoc = await getSpace(spaceId);
     if (spaceDoc) {
       if (projectId && !spaceDoc.projectIds?.includes(projectId)) {
@@ -332,97 +333,117 @@ export default function Dashboard() {
       setIsLoading(false);
       return;
     }
-    const space = await getRawSpaceFromX(spaceId);
-    if (
-      space &&
-      ['Ended', 'Running', 'NotStarted'].includes(space.metadata.state)
-    ) {
-      setProcessingSpace(space);
-      const state = space.metadata.state;
-      if (state === 'Ended') {
-        const path = await transcribeSpace(spaceId, projectId);
-        await updateSpaceRequests(user?.uid || '');
-        navigate(path); // Navigates to /crm/:spaceId
-      } else if (state === 'Running') {
-        await axios.post(
-          `${import.meta.env.VITE_JAM_SERVER_URL}/listen-live-space`,
-          { spaceId, projectId }
-        );
-        await updateSpaceRequests(user?.uid || '');
-        const campaign = await createCampaign({
-          addedType: 'NEW',
-          campaignType: 'listeners',
-          ctaType: 'space',
-          ctaTarget: space.metadata.title,
-          spaceId: spaceId,
-          projectId: projectId,
-          userId: user?.uid || '',
-          spaceTitle: space.metadata.title,
-          status: 'DRAFT',
-          createdAt: Date.now(),
-          description: '',
-          topics:
-            (space.metadata as any).topics.map(
-              (t: any) => t?.topic?.name || ''
-            ) || [],
-          scheduledStart:
-            space.metadata.scheduled_start || space.metadata.started_at || 0,
-          hostHandle: space.participants.admins[0].twitter_screen_name,
-        });
-        navigate(`/campaigns/${campaign.id}`);
-      } else if (state === 'NotStarted') {
-        await axios.post(
-          `${import.meta.env.VITE_JAM_SERVER_URL}/schedule-space`,
-          { spaceId, projectId }
-        );
-        await updateSpaceRequests(user?.uid || '');
-        const campaign = await createCampaign({
-          addedType: 'NEW',
-          campaignType: 'listeners',
-          ctaType: 'space',
-          ctaTarget: space.metadata.title,
-          spaceId: spaceId,
-          projectId: projectId,
-          userId: user?.uid || '',
-          spaceTitle: space.metadata.title,
-          status: 'DRAFT',
-          createdAt: Date.now(),
-          description: '',
-          topics:
-            (space.metadata as any).topics.map(
-              (t: any) => t?.topic?.name || ''
-            ) || [],
-          scheduledStart:
-            space.metadata.scheduled_start || space.metadata.started_at || 0,
-          hostHandle: space.participants.admins[0].twitter_screen_name,
-        });
-        navigate(`/campaigns/${campaign.id}`);
-        // setIsShowNewCampaign(true);
-        // setCampaignSpaceDetails({
-        //   title: space.metadata.title,
-        //   scheduledStart: space.metadata.started_at,
-        //   topics: (space.metadata as any).topics.map((t: any) => t.topic.name),
-        //   hostHandle: space.participants.admins[0].twitter_screen_name,
-        //   id: spaceId,
-        // });
-        toast.success('Space is scheduled successfully', {
-          duration: 3000,
-        });
+    try {
+      const space = await getRawSpaceFromX(spaceId);
+      if (
+        space &&
+        ['Ended', 'Running', 'NotStarted'].includes(space.metadata.state)
+      ) {
+        setProcessingSpace(space);
+        const state = space.metadata.state;
+        if (state === 'Ended') {
+          const path = await transcribeSpace(spaceId, projectId);
+          await updateSpaceRequests(user?.uid || '');
+          navigate(path); // Navigates to /crm/:spaceId
+        } else if (state === 'Running') {
+          await axios.post(
+            `${import.meta.env.VITE_JAM_SERVER_URL}/listen-live-space`,
+            { spaceId, projectId }
+          );
+          await updateSpaceRequests(user?.uid || '');
+          const campaign = await createCampaign({
+            addedType: 'NEW',
+            campaignType: 'listeners',
+            ctaType: 'space',
+            ctaTarget: space.metadata.title,
+            spaceId: spaceId,
+            projectId: projectId,
+            userId: user?.uid || '',
+            spaceTitle: space.metadata.title,
+            status: 'DRAFT',
+            createdAt: Date.now(),
+            description: '',
+            topics:
+              (space.metadata as any).topics.map(
+                (t: any) => t?.topic?.name || ''
+              ) || [],
+            scheduledStart:
+              space.metadata.scheduled_start || space.metadata.started_at || 0,
+            hostHandle: space.participants.admins[0].twitter_screen_name,
+          });
+          navigate(`/campaigns/${campaign.id}`);
+        } else if (state === 'NotStarted') {
+          await axios.post(
+            `${import.meta.env.VITE_JAM_SERVER_URL}/schedule-space`,
+            { spaceId, projectId }
+          );
+          await updateSpaceRequests(user?.uid || '');
+          const campaign = await createCampaign({
+            addedType: 'NEW',
+            campaignType: 'listeners',
+            ctaType: 'space',
+            ctaTarget: space.metadata.title,
+            spaceId: spaceId,
+            projectId: projectId,
+            userId: user?.uid || '',
+            spaceTitle: space.metadata.title,
+            status: 'DRAFT',
+            createdAt: Date.now(),
+            description: '',
+            topics:
+              (space.metadata as any).topics.map(
+                (t: any) => t?.topic?.name || ''
+              ) || [],
+            scheduledStart:
+              space.metadata.scheduled_start || space.metadata.started_at || 0,
+            hostHandle: space.participants.admins[0].twitter_screen_name,
+          });
+          navigate(`/campaigns/${campaign.id}`);
+          // setIsShowNewCampaign(true);
+          // setCampaignSpaceDetails({
+          //   title: space.metadata.title,
+          //   scheduledStart: space.metadata.started_at,
+          //   topics: (space.metadata as any).topics.map((t: any) => t.topic.name),
+          //   hostHandle: space.participants.admins[0].twitter_screen_name,
+          //   id: spaceId,
+          // });
+          toast.success('Space is scheduled successfully', {
+            duration: 3000,
+          });
 
-        setProcessingSpace(null);
+          setProcessingSpace(null);
+        }
+      } else {
+        const msg = space
+          ? `Space is not in a valid state: ${space.metadata.state}`
+          : 'Space not found';
+        toast.error(msg, {
+          duration: 3000,
+          position: 'bottom-right',
+          style: {
+            background: '#333',
+            color: '#fff',
+          },
+        });
       }
-    } else {
-      const msg = space
-        ? `Space is not in a valid state: ${space.metadata.state}`
-        : 'Space not found';
-      toast.error(msg, {
-        duration: 3000,
-        position: 'bottom-right',
-        style: {
-          background: '#333',
-          color: '#fff',
-        },
+    } catch (error) {
+      const campaign = await createCampaign({
+        addedType: 'NEW',
+        campaignType: 'listeners',
+        ctaType: 'space',
+        ctaTarget: '',
+        spaceId: spaceId,
+        projectId: projectId,
+        userId: user?.uid || '',
+        spaceTitle: '',
+        status: 'DRAFT',
+        createdAt: Date.now(),
+        description: '',
+        topics: [],
+        scheduledStart: 0,
+        hostHandle: '',
       });
+      navigate(`/campaigns/${campaign.id}`);
     }
     setIsLoading(false);
   };

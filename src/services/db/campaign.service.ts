@@ -69,10 +69,10 @@ export const getCampaign = async (
   const campaignDoc = await getDoc(campaignRef);
   if (listener) {
     onSnapshot(campaignRef, (snapshot) => {
-      listener(snapshot.data() as Campaign);
+      listener({ ...snapshot.data(), id: campaignId } as Campaign);
     });
   }
-  return campaignDoc.data() as Campaign;
+  return { ...campaignDoc.data(), id: campaignId } as Campaign;
 };
 
 export const getCampaigns = async (spaceId: string, projectId: string) => {

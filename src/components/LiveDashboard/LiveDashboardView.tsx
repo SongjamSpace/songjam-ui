@@ -419,6 +419,13 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
                         }
                         fill={theme.palette.error.main}
                         shape={<CustomScatterShape />}
+                        onClick={(e) => {
+                          const payload = e.payload;
+                          window.open(
+                            `https://x.com/${payload.twitterScreenName}`,
+                            '_blank'
+                          );
+                        }}
                       />
                     </>
                   ) : (

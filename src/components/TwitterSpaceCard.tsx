@@ -28,7 +28,7 @@ const TwitterSpaceCard: React.FC<TwitterSpaceCardProps> = ({ campaign }) => {
   );
   const [topics, setTopics] = useState(campaign.topics?.join(', ') || '');
   const [isEditing, setIsEditing] = useState(
-    !campaign.spaceTitle || !campaign.scheduledStart || !campaign.topics?.length
+    !campaign.spaceTitle || !campaign.scheduledStart
   );
   const [isSaving, setIsSaving] = useState(false);
 

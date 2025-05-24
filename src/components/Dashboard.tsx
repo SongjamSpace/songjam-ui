@@ -319,42 +319,42 @@ export default function Dashboard() {
       setIsLoading(false);
       return;
     }
-    toast.success(`Processing space: ${spaceId}`, {
+    toast.success(`Processing ${isBroadcast ? 'live' : 'space'}: ${spaceId}`, {
       position: 'bottom-right',
     });
-    if (isBroadcast) {
-      const space = await getBroadcastFromX(spaceId);
-      if (space && space.state === 'Ended') {
-        const path = await transcribeSpace(spaceId, projectId, true);
-        navigate(path);
-      } else if (space) {
-        const campaign = await createCampaign({
-          addedType: 'NEW',
-          campaignType: 'listeners',
-          ctaType: 'live',
-          ctaTarget: '',
-          spaceId: spaceId,
-          projectId: projectId,
-          userId: user?.uid || '',
-          spaceTitle: space.title,
-          status: 'DRAFT',
-          createdAt: Date.now(),
-          description: '',
-          topics: [],
-          scheduledStart: space.scheduledStart || 0,
-          hostHandle: space.broadcastInfo?.twitterUsername || '',
-          isBroadcast: true,
-        });
-        navigate(`/campaigns/${campaign.id}`);
-
-        // toast.error('Broadcast is not finished');
-      } else {
-        toast.error('Invalid Broadcast');
-      }
-      setIsLoading(false);
-      return;
-    }
     try {
+      if (isBroadcast) {
+        const space = await getBroadcastFromX(spaceId);
+        if (space && space.state === 'Ended') {
+          const path = await transcribeSpace(spaceId, projectId, true);
+          navigate(path);
+        } else if (space) {
+          const campaign = await createCampaign({
+            addedType: 'NEW',
+            campaignType: 'listeners',
+            ctaType: 'live',
+            ctaTarget: '',
+            spaceId: spaceId,
+            projectId: projectId,
+            userId: user?.uid || '',
+            spaceTitle: space.title,
+            status: 'DRAFT',
+            createdAt: Date.now(),
+            description: '',
+            topics: [],
+            scheduledStart: space.scheduledStart || 0,
+            hostHandle: space.broadcastInfo?.twitterUsername || '',
+            isBroadcast: true,
+          });
+          navigate(`/campaigns/${campaign.id}`);
+
+          // toast.error('Broadcast is not finished');
+        } else {
+          toast.error('Invalid Broadcast');
+        }
+        setIsLoading(false);
+        return;
+      }
       const space = await getRawSpaceFromX(spaceId);
       if (
         space &&
@@ -463,6 +463,7 @@ export default function Dashboard() {
         topics: [],
         scheduledStart: 0,
         hostHandle: '',
+        isBroadcast: isBroadcast,
       });
       navigate(`/campaigns/${campaign.id}`);
     }

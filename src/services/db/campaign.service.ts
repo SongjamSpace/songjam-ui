@@ -16,7 +16,7 @@ import { SpaceListener } from './spaces.service';
 
 export type Campaign = {
   id?: string;
-  ctaType: 'follow' | 'space';
+  ctaType: 'follow' | 'space' | 'live';
   ctaTarget: string;
   spaceId: string;
   spaceTitle: string;
@@ -36,6 +36,7 @@ export type Campaign = {
   hostHandle?: string;
   spaceUrl?: string;
   campaignType?: 'speakers' | 'listeners';
+  isBroadcast?: boolean;
 };
 
 export type CampaignListener = SpaceListener & {

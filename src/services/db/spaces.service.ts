@@ -98,6 +98,7 @@ export type Space = {
   isBroadcast?: boolean;
   viewCountGraph?: number[];
   broadcastInfo: {
+    twitterUsername: string;
     viewCountGraph: number[];
   };
 };

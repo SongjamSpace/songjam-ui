@@ -69,9 +69,19 @@ const ListenerNotifications: React.FC<ListenerNotificationsProps> = ({
         flexDirection: 'column',
       }}
     >
-      <Typography variant="h6" sx={{ mb: 2 }}>
-        Recently Joined
-      </Typography>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 2,
+        }}
+      >
+        <Typography variant="h6">Recently Joined</Typography>
+        <Typography variant="body2" color="text.secondary">
+          {listeners.length} listeners
+        </Typography>
+      </Box>
 
       <Box
         sx={{

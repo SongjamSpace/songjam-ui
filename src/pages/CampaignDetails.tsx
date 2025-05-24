@@ -400,7 +400,7 @@ const CampaignDetails = (props: Props) => {
           />
         )}
         <Box ml="auto" display="flex" gap={2}>
-          {campaign?.spaceId && (
+          {campaign?.spaceId && !campaign.isBroadcast && (
             <Button
               variant="text"
               color="primary"

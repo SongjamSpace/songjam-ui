@@ -327,8 +327,29 @@ export default function Dashboard() {
       if (space && space.state === 'Ended') {
         const path = await transcribeSpace(spaceId, projectId, true);
         navigate(path);
+      } else if (space) {
+        const campaign = await createCampaign({
+          addedType: 'NEW',
+          campaignType: 'listeners',
+          ctaType: 'live',
+          ctaTarget: '',
+          spaceId: spaceId,
+          projectId: projectId,
+          userId: user?.uid || '',
+          spaceTitle: space.title,
+          status: 'DRAFT',
+          createdAt: Date.now(),
+          description: '',
+          topics: [],
+          scheduledStart: space.scheduledStart || 0,
+          hostHandle: space.broadcastInfo?.twitterUsername || '',
+          isBroadcast: true,
+        });
+        navigate(`/campaigns/${campaign.id}`);
+
+        // toast.error('Broadcast is not finished');
       } else {
-        toast.error('Broadcast is not finished');
+        toast.error('Invalid Broadcast');
       }
       setIsLoading(false);
       return;

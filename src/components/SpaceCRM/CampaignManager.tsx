@@ -449,7 +449,7 @@ export const CampaignListeners = ({
   t: TFunction<'translation', undefined>;
 }) => {
   const [messages, loading, error] = useCollectionData(
-    query(collection(db, 'campaigns', campaignId, 'messages'), limit(500))
+    collection(db, 'campaigns', campaignId, 'messages')
   );
   const [editMessage, setEditMessage] = useState<CampaignListener | null>(null);
   if (loading) {

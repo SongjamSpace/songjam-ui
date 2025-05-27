@@ -65,6 +65,7 @@ import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
 import CampaignList from './components/SpaceCRM/CampaignList';
 import ViewersChart from './components/LiveDashboard/ViewersChart';
+import { transcribePy } from './services/transcription.service';
 
 type CRMTab =
   | 'dashboard'
@@ -110,6 +111,7 @@ const SpaceCRM: React.FC = () => {
   // const [isSpaceOwner, setIsSpaceOwner] = useState(false);
   const [lastVisible, setLastVisible] = useState<any>(null);
   const [segments, setSegments] = useState<Segment[]>([]);
+  const [isTranscribing, setIsTranscribing] = useState(false);
 
   // useEffect(() => {
   //   if (user && space) {
@@ -465,17 +467,48 @@ const SpaceCRM: React.FC = () => {
                     },
                   }}
                 />
-                {space.transcriptionProgress !==
-                  TranscriptionProgress.ENDED && (
-                  <Chip
-                    icon={<CircularProgress size={14} />}
-                    label={space.userHelperMessage}
-                    variant="filled"
+                {space.transcriptionStatus === 'NOT_STARTED' ||
+                space.transcriptionStatus === 'FAILED' ? (
+                  <LoadingButton
+                    loading={isTranscribing}
+                    variant="contained"
                     size="small"
+                    startIcon={<AutorenewIcon />}
+                    onClick={async () => {
+                      if (!user) {
+                        setShowAuthDialog(true);
+                        return;
+                      }
+                      const projectId =
+                        user.defaultProjectId || user.projectIds[0] || '';
+                      if (spaceId && projectId) {
+                        setIsTranscribing(true);
+                        await transcribePy(space.hlsUrl, spaceId);
+                      }
+                    }}
                     sx={{
                       ml: 2,
+                      background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+                      '&:hover': {
+                        background: 'linear-gradient(90deg, #3b82f6, #7c3aed)',
+                      },
                     }}
-                  />
+                  >
+                    Transcribe {space.isBroadcast ? 'Live' : 'Space'}
+                  </LoadingButton>
+                ) : (
+                  space.transcriptionProgress !==
+                    TranscriptionProgress.ENDED && (
+                    <Chip
+                      icon={<CircularProgress size={14} />}
+                      label={space.userHelperMessage}
+                      variant="filled"
+                      size="small"
+                      sx={{
+                        ml: 2,
+                      }}
+                    />
+                  )
                 )}
               </>
             ) : (

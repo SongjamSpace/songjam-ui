@@ -30,3 +30,13 @@ export const transcribeSpace = async (
     throw new Error('Failed to analyze the space. Please try again later.');
   }
 };
+
+export const transcribePy = async (hlsUrl: string, spaceId: string) => {
+  const formData = new FormData();
+  formData.append('hls_url', hlsUrl);
+  formData.append('space_id', spaceId);
+  await axios.post(
+    `${import.meta.env.VITE_JAM_PY_SERVER_URL}/transcribe`,
+    formData
+  );
+};

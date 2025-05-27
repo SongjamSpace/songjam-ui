@@ -44,6 +44,7 @@ import Logo from './components/Logo';
 import AlgoliaSearchTranscription from './components/AlgoliaSearchTranscription';
 import TwitterLogin from './components/TwitterLogin';
 import { useAuthContext } from './contexts/AuthContext';
+import { transcribePy } from './services/transcription.service';
 
 type ToastState = {
   open: boolean;
@@ -179,13 +180,7 @@ const SpaceDetails: React.FC = () => {
     if (!!user?.spaceCredits) {
       await unlockFreeSpace();
       if (space && space.transcriptionStatus !== 'ENDED') {
-        const formData = new FormData();
-        formData.append('hls_url', space.hlsUrl);
-        formData.append('space_id', spaceId);
-        await axios.post(
-          `${import.meta.env.VITE_JAM_PY_SERVER_URL}/transcribe`,
-          formData
-        );
+        await transcribePy(space.hlsUrl, spaceId);
         setToast({
           open: true,
           message: 'Transcription process started',

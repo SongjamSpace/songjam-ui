@@ -399,19 +399,34 @@ const ListenerCardContent = ({ listener }: { listener: SpaceListener }) => {
                 <Typography variant="body2" color="text.secondary">
                   •
                 </Typography>
-                <LocationOutlinedIcon sx={{ ml: 1 }} fontSize="small" />
-                <Typography variant="body2">{listener.location}</Typography>
+                <LocationOutlinedIcon
+                  sx={{ ml: 1, color: 'text.secondary' }}
+                  fontSize="small"
+                />
+                <Typography variant="body2" color={'text.secondary'}>
+                  {listener.location}
+                </Typography>
               </Box>
             )}
           </Box>
         </Box>
       </Box>
 
-      {listener.biography && (
-        <Typography variant="body2" sx={{ mb: 2 }}>
-          {listener.biography}
-        </Typography>
-      )}
+      {/* {listener.biography && ( */}
+      <Typography
+        variant="body2"
+        sx={{
+          mb: 2,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          maxWidth: '100%',
+        }}
+        title={listener.biography}
+      >
+        {listener.biography || '-'}
+      </Typography>
+      {/* )} */}
 
       {listener.joinedAt ||
         (listener.leftAt && (
@@ -448,21 +463,55 @@ export const CampaignListeners = ({
   t: TFunction<'translation', undefined>;
 }) => {
   const [messages, setMessages] = useState<CampaignListener[]>([]);
+  const [visibleMessages, setVisibleMessages] = useState<CampaignListener[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [editMessage, setEditMessage] = useState<CampaignListener | null>(null);
+  const [page, setPage] = useState(1);
+  const messagesPerPage = 50;
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const unsubscribe = subscribeToCampaignMessages(
       campaignId,
       (newMessages, lastMessage) => {
         setMessages(newMessages);
+        setVisibleMessages(newMessages.slice(0, messagesPerPage));
         setLoading(false);
       }
     );
 
     return () => unsubscribe();
   }, [campaignId]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!containerRef.current) return;
+
+      const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+
+      if (isNearBottom && visibleMessages.length < messages.length) {
+        const nextPage = page + 1;
+        const nextMessages = messages.slice(0, nextPage * messagesPerPage);
+        setVisibleMessages(nextMessages);
+        setPage(nextPage);
+      }
+    };
+
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, [messages, visibleMessages.length, page]);
 
   if (loading) {
     return (
@@ -550,133 +599,155 @@ export const CampaignListeners = ({
             </Typography>
           </Box>
         )}
-      <Grid container spacing={2}>
-        {messages.map((listener, index) => {
-          const isLastMessage = index === 0;
+      <Box
+        ref={containerRef}
+        sx={{
+          maxHeight: 'calc(100vh - 300px)',
+          overflowY: 'auto',
+          '&::-webkit-scrollbar': {
+            width: '8px',
+          },
+          '&::-webkit-scrollbar-track': {
+            background: 'rgba(255, 255, 255, 0.1)',
+            borderRadius: '4px',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: 'rgba(255, 255, 255, 0.2)',
+            borderRadius: '4px',
+            '&:hover': {
+              background: 'rgba(255, 255, 255, 0.3)',
+            },
+          },
+        }}
+      >
+        <Grid container spacing={2}>
+          {visibleMessages.map((listener, index) => {
+            const isLastMessage = index === 0;
 
-          return (
-            <Grid item xs={12} md={6} key={listener.userId} gap={1}>
-              <Card
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  height: '100%',
-                  background: 'rgba(255, 255, 255, 0.02)',
-                  border: '1px solid rgba(255, 255, 255, 0.05)',
-                }}
-              >
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <ListenerCardContent listener={listener} />
-                  <Box>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <Typography variant="body2" color="text.secondary">
-                        {t('generatedDmLabel', 'Generated DM')}
-                      </Typography>
-                      {listener.messageStatus === 'READY' ? (
-                        <Box display={'flex'} gap={1}>
-                          {editMessage?.userId === listener.userId && (
-                            <IconButton
-                              size="small"
-                              onClick={() => {
-                                setEditMessage(null);
-                              }}
-                            >
-                              <CloseIcon fontSize="inherit" />
-                            </IconButton>
-                          )}
-                          {editMessage?.userId === listener.userId ? (
-                            <IconButton
-                              size="small"
-                              onClick={async () => {
-                                setEditMessage(null);
-                                await updateCampaignListenerMessage(
-                                  campaignId,
-                                  listener.userId,
-                                  editMessage.messageContent
-                                );
-                              }}
-                            >
-                              <CheckIcon fontSize="inherit" />
-                            </IconButton>
-                          ) : (
-                            <IconButton
-                              size="small"
-                              onClick={() => {
-                                setEditMessage(listener);
-                              }}
-                            >
-                              <EditIcon fontSize="inherit" />
-                            </IconButton>
-                          )}
-                        </Box>
-                      ) : (
-                        <Chip
-                          label={listener.messageStatus}
-                          size="small"
-                          color={
-                            listener.messageStatus === 'FAILED'
-                              ? 'error'
-                              : 'default'
-                          }
-                        />
-                      )}
-                    </Box>
-                    <Box
-                      sx={{
-                        p: 2,
-                        position: 'relative',
-                        minHeight: '80px',
-                        display: 'flex',
-                        alignItems: 'center',
-                      }}
-                    >
-                      {editMessage?.userId === listener.userId ? (
-                        <TextField
-                          fullWidth
-                          multiline
-                          value={editMessage.messageContent}
-                          onChange={(e) =>
-                            setEditMessage({
-                              ...editMessage,
-                              messageContent: e.target.value,
-                            })
-                          }
-                        />
-                      ) : (
-                        <Typography
-                          variant="body1"
-                          sx={{
-                            flexGrow: 1,
-                            whiteSpace: 'pre-wrap',
-                            backgroundColor: 'rgba(29, 155, 240, 0.1)',
-                            color: 'white',
-                            padding: '12px 16px',
-                            borderRadius: '20px',
-                            borderTopLeftRadius: '4px',
-                            maxWidth: '100%',
-                            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
-                            fontSize: '0.95rem',
-                            lineHeight: 1.4,
-                            wordBreak: 'break-word',
-                          }}
-                        >
-                          {listener.messageContent}
+            return (
+              <Grid item xs={12} md={6} key={listener.userId} gap={1}>
+                <Card
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: '100%',
+                    background: 'rgba(255, 255, 255, 0.02)',
+                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                  }}
+                >
+                  <CardContent sx={{ flexGrow: 1 }}>
+                    <ListenerCardContent listener={listener} />
+                    <Box>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Typography variant="body2" color="text.secondary">
+                          {t('generatedDmLabel', 'Generated DM')}
                         </Typography>
-                      )}
+                        {listener.messageStatus === 'READY' ? (
+                          <Box display={'flex'} gap={1}>
+                            {editMessage?.userId === listener.userId && (
+                              <IconButton
+                                size="small"
+                                onClick={() => {
+                                  setEditMessage(null);
+                                }}
+                              >
+                                <CloseIcon fontSize="inherit" />
+                              </IconButton>
+                            )}
+                            {editMessage?.userId === listener.userId ? (
+                              <IconButton
+                                size="small"
+                                onClick={async () => {
+                                  setEditMessage(null);
+                                  await updateCampaignListenerMessage(
+                                    campaignId,
+                                    listener.userId,
+                                    editMessage.messageContent
+                                  );
+                                }}
+                              >
+                                <CheckIcon fontSize="inherit" />
+                              </IconButton>
+                            ) : (
+                              <IconButton
+                                size="small"
+                                onClick={() => {
+                                  setEditMessage(listener);
+                                }}
+                              >
+                                <EditIcon fontSize="inherit" />
+                              </IconButton>
+                            )}
+                          </Box>
+                        ) : (
+                          <Chip
+                            label={listener.messageStatus}
+                            size="small"
+                            color={
+                              listener.messageStatus === 'FAILED'
+                                ? 'error'
+                                : 'default'
+                            }
+                          />
+                        )}
+                      </Box>
+                      <Box
+                        sx={{
+                          p: 2,
+                          position: 'relative',
+                          minHeight: '80px',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        {editMessage?.userId === listener.userId ? (
+                          <TextField
+                            fullWidth
+                            multiline
+                            value={editMessage.messageContent}
+                            onChange={(e) =>
+                              setEditMessage({
+                                ...editMessage,
+                                messageContent: e.target.value,
+                              })
+                            }
+                          />
+                        ) : (
+                          <Typography
+                            variant="body1"
+                            sx={{
+                              flexGrow: 1,
+                              whiteSpace: 'pre-wrap',
+                              backgroundColor: 'rgba(29, 155, 240, 0.1)',
+                              color: 'white',
+                              padding: '12px 16px',
+                              borderRadius: '20px',
+                              borderTopLeftRadius: '4px',
+                              maxWidth: '100%',
+                              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+                              fontSize: '0.95rem',
+                              lineHeight: 1.4,
+                              wordBreak: 'break-word',
+                            }}
+                          >
+                            {listener.messageContent}
+                          </Typography>
+                        )}
+                      </Box>
                     </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          );
-        })}
-      </Grid>
+                  </CardContent>
+                </Card>
+              </Grid>
+            );
+          })}
+        </Grid>
+      </Box>
     </Box>
   );
 };

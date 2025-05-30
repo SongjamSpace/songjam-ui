@@ -879,9 +879,8 @@ const CampaignDetails = (props: Props) => {
                       <Box
                         display={'flex'}
                         justifyContent={'center'}
-                        position={'absolute'}
-                        bottom={0}
                         width={'100%'}
+                        my={2}
                       >
                         <LoadingButton
                           loading={actionLoading}

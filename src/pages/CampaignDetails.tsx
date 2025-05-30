@@ -796,7 +796,6 @@ const CampaignDetails = (props: Props) => {
                           onClick={async () => {
                             setIsUpgrading(true);
                             await createCheckoutSession(user.uid, 'pro');
-                            setIsUpgrading(false);
                           }}
                           style={{
                             cursor: 'pointer',

@@ -11,6 +11,7 @@ import {
   onSnapshot,
   deleteDoc,
   limit,
+  orderBy,
 } from 'firebase/firestore';
 import { SpaceListener } from './spaces.service';
 
@@ -126,8 +127,7 @@ export const updateCampaign = async (
 export const updateCampaignListenerMessage = async (
   campaignId: string,
   listenerId: string,
-  message: string,
-  customLabel?: string
+  message: string
 ) => {
   const campaignRef = doc(
     db,
@@ -139,7 +139,6 @@ export const updateCampaignListenerMessage = async (
   await updateDoc(campaignRef, {
     messageContent: message,
     messageUpdatedAt: Date.now(),
-    customLabel: customLabel,
   });
 };
 
@@ -173,4 +172,39 @@ export const getNewCampaignsByProjectId = async (
 export const deleteCampaign = async (campaignId: string) => {
   const campaignRef = doc(db, CAMPAIGN_COLLECTION, campaignId);
   await deleteDoc(campaignRef);
+};
+
+export const subscribeToCampaignMessages = (
+  campaignId: string,
+  onUpdate: (
+    messages: CampaignListener[],
+    lastMessage?: CampaignListener
+  ) => void
+) => {
+  const messagesRef = collection(
+    db,
+    CAMPAIGN_COLLECTION,
+    campaignId,
+    CAMPAIGN_MESSAGES_SUBCOLLECTION
+  );
+
+  // Create a query to order messages by timestamp
+  const q = query(messagesRef, orderBy('messageCreatedAt', 'desc'));
+
+  return onSnapshot(q, (snapshot) => {
+    const messages = snapshot.docs.map((doc) => ({
+      ...doc.data(),
+      id: doc.id,
+    })) as unknown as CampaignListener[];
+
+    // Get the last message for streaming effect
+    const lastMessage = messages[0];
+
+    // Sort messages by timestamp (newest first)
+    const sortedMessages = messages.sort(
+      (a, b) => (b.messageCreatedAt || 0) - (a.messageCreatedAt || 0)
+    );
+
+    onUpdate(sortedMessages, lastMessage);
+  });
 };

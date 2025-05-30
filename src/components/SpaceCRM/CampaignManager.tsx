@@ -18,6 +18,7 @@ import {
   TextField,
   Stack,
   Button,
+  Skeleton,
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import ArrowBack from '@mui/icons-material/ArrowBack';
@@ -37,11 +38,9 @@ import {
   Campaign,
   CampaignListener,
   updateCampaignListenerMessage,
+  subscribeToCampaignMessages,
 } from '../../services/db/campaign.service';
 import { TFunction } from 'i18next';
-import { useCollectionData } from 'react-firebase-hooks/firestore';
-import { collection, query, limit } from 'firebase/firestore';
-import { db } from '../../services/firebase.service';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -448,27 +447,96 @@ export const CampaignListeners = ({
   campaign: Campaign;
   t: TFunction<'translation', undefined>;
 }) => {
-  const [messages, loading, error] = useCollectionData(
-    collection(db, 'campaigns', campaignId, 'messages')
-  );
+  const [messages, setMessages] = useState<CampaignListener[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
   const [editMessage, setEditMessage] = useState<CampaignListener | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToCampaignMessages(
+      campaignId,
+      (newMessages, lastMessage) => {
+        setMessages(newMessages);
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [campaignId]);
+
   if (loading) {
     return (
-      <Box>
-        <LinearProgress />
+      <Box my={2}>
+        <Grid container spacing={2}>
+          {[1, 2, 3, 4].map((index) => (
+            <Grid item xs={12} md={6} key={index}>
+              <Card
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '100%',
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                }}
+              >
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <Skeleton
+                      variant="circular"
+                      width={40}
+                      height={40}
+                      sx={{ mr: 2 }}
+                    />
+                    <Box sx={{ width: '100%' }}>
+                      <Skeleton variant="text" width="60%" height={24} />
+                      <Skeleton variant="text" width="40%" height={20} />
+                    </Box>
+                  </Box>
+                  <Skeleton
+                    variant="text"
+                    width="100%"
+                    height={60}
+                    sx={{ mb: 2 }}
+                  />
+                  <Box>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        mb: 2,
+                      }}
+                    >
+                      <Skeleton variant="text" width="30%" height={20} />
+                      <Skeleton variant="rectangular" width={80} height={24} />
+                    </Box>
+                    <Skeleton
+                      variant="rectangular"
+                      width="100%"
+                      height={80}
+                      sx={{ borderRadius: 2 }}
+                    />
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
       </Box>
     );
   }
+
   if (error) {
     return <Alert severity="error">Error: {error.message}</Alert>;
   }
+
   return (
     <Box>
       {campaign?.status !== 'DRAFT' &&
         campaign.totalDms &&
         messages &&
         messages.length > 0 && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, my: 2 }}>
             <Typography variant="body2" color="text.secondary">
               {campaign.status}
             </Typography>
@@ -483,7 +551,9 @@ export const CampaignListeners = ({
           </Box>
         )}
       <Grid container spacing={2}>
-        {(messages as CampaignListener[]).map((listener) => {
+        {messages.map((listener, index) => {
+          const isLastMessage = index === 0;
+
           return (
             <Grid item xs={12} md={6} key={listener.userId} gap={1}>
               <Card
@@ -503,7 +573,6 @@ export const CampaignListeners = ({
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        // mb: 1,
                       }}
                     >
                       <Typography variant="body2" color="text.secondary">
@@ -525,7 +594,6 @@ export const CampaignListeners = ({
                             <IconButton
                               size="small"
                               onClick={async () => {
-                                // Update the message
                                 setEditMessage(null);
                                 await updateCampaignListenerMessage(
                                   campaignId,
@@ -557,56 +625,12 @@ export const CampaignListeners = ({
                               : 'default'
                           }
                         />
-                        // <TextField
-                        //   size="small"
-                        //   value={
-                        //     editMessage?.userId === listener.userId
-                        //       ? editMessage.customLabel
-                        //       : listener.customLabel
-                        //   }
-                        //   onChange={(e) => {
-                        //     setEditMessage({
-                        //       ...listener,
-                        //       customLabel: e.target.value,
-                        //     });
-                        //   }}
-                        //   sx={{ width: '180px' }}
-                        //   placeholder="Custom label"
-                        //   InputProps={{
-                        //     endAdornment: (
-                        //       <IconButton
-                        //         size="small"
-                        //         onClick={async () => {
-                        //           setEditMessage(null);
-                        //           await updateCampaignListenerMessage(
-                        //             campaignId,
-                        //             listener.userId,
-                        //             listener.messageContent,
-                        //             editMessage?.customLabel
-                        //           );
-                        //         }}
-                        //       >
-                        //         <SaveIcon fontSize="inherit" />
-                        //       </IconButton>
-                        //     ),
-                        //   }}
-                        // />
                       )}
                     </Box>
                     <Box
-                      // variant="outlined"
                       sx={{
                         p: 2,
-                        // bgcolor:
-                        //   listener.messageStatus === 'FAILED'
-                        //     ? 'rgba(239, 68, 68, 0.1)'
-                        //     : 'rgba(0,0,0,0.2)',
-                        // borderColor:
-                        //   listener.messageStatus === 'FAILED'
-                        //     ? 'rgba(239, 68, 68, 0.3)'
-                        //     : 'rgba(255, 255, 255, 0.1)',
                         position: 'relative',
-                        // transition: 'background-color 0.3s ease',
                         minHeight: '80px',
                         display: 'flex',
                         alignItems: 'center',
@@ -616,7 +640,6 @@ export const CampaignListeners = ({
                         <TextField
                           fullWidth
                           multiline
-                          // rows={4}
                           value={editMessage.messageContent}
                           onChange={(e) =>
                             setEditMessage({
@@ -637,7 +660,6 @@ export const CampaignListeners = ({
                             borderRadius: '20px',
                             borderTopLeftRadius: '4px',
                             maxWidth: '100%',
-                            // marginLeft: 'auto',
                             boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
                             fontSize: '0.95rem',
                             lineHeight: 1.4,

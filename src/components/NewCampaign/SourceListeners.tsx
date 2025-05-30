@@ -71,7 +71,7 @@ const SourceListeners: React.FC<SourceListenersProps> = ({
         {/* {searchQuery && ( */}
         <Box>
           <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            Pick up to 3 topics:
+            Pick upto 3 topics:
           </Typography>
           <Grid
             container
@@ -85,6 +85,7 @@ const SourceListeners: React.FC<SourceListenersProps> = ({
                   variant={
                     selectedTopics.includes(topic) ? 'filled' : 'outlined'
                   }
+                  color={selectedTopics.includes(topic) ? 'info' : 'default'}
                   onClick={() => {
                     if (
                       !selectedTopics.includes(topic) &&

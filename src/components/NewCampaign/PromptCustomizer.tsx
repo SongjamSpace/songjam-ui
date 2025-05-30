@@ -20,10 +20,11 @@ import {
 } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
 import { useTranslation } from 'react-i18next';
+import OpenInNew from '@mui/icons-material/OpenInNew';
 
 export interface PromptSettings {
   tone: 'professional' | 'casual' | 'formal';
-  length: 'micro' | 'concise' | 'moderate' | 'detailed';
+  length: 'micro' | 'moderate' | 'detailed';
   enthusiasm: number; // 0-100
   personalization: number; // 0-100
   //   formality: number; // 0-100
@@ -106,21 +107,27 @@ const CampaignPromptCustomizer: React.FC<CampaignPromptCustomizerProps> = ({
     //     id="prompt-customizer-header"
     //   >
     <>
-      <Box display="flex" justifyContent="space-between" alignItems="center">
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        sx={{ mb: 1 }}
+      >
         <Typography
           variant="h6"
-          sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
+          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
         >
           ✨ Customize DM Generation
         </Typography>
         <Button
-          variant="contained"
-          color="primary"
+          component="a"
+          variant="text"
           href="https://chromewebstore.google.com/detail/songjam/ikhimgpbclohoohnahnejbicegbkaole"
           target="_blank"
           size="small"
+          sx={{ textDecoration: 'underline' }}
         >
-          Install Extension
+          Install Extension <OpenInNew sx={{ ml: 0.2, fontSize: '0.9rem' }} />
         </Button>
       </Box>
       {/* </AccordionSummary>
@@ -130,9 +137,7 @@ const CampaignPromptCustomizer: React.FC<CampaignPromptCustomizerProps> = ({
           {/* Message Tone Section */}
 
           <FormControl>
-            <FormLabel sx={{ color: 'text.secondary', mb: 1 }}>
-              🎭 Message Tone
-            </FormLabel>
+            <FormLabel sx={{ mb: 1 }}>🎭 Message Tone</FormLabel>
             <RadioGroup value={settings.tone} onChange={handleToneChange}>
               <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
                 <FormControlLabel
@@ -252,11 +257,6 @@ const CampaignPromptCustomizer: React.FC<CampaignPromptCustomizerProps> = ({
                 value="micro"
                 control={<Radio />}
                 label="🌟 Micro"
-              />
-              <FormControlLabel
-                value="concise"
-                control={<Radio />}
-                label="⚡ Concise"
               />
               <FormControlLabel
                 value="moderate"

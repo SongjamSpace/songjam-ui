@@ -18,9 +18,10 @@ import LoadingButton from '@mui/lab/LoadingButton';
 type Props = {
   onSubscribe: (plan: 'free' | 'starter' | 'pro' | 'business') => void;
   user: SongjamUser | null;
+  hideFreePlan?: boolean;
 };
 
-const PricingBanner = ({ onSubscribe, user }: Props) => {
+const PricingBanner = ({ onSubscribe, user, hideFreePlan }: Props) => {
   const [loadingBtnId, setLoadingBtnId] = useState<string | null>(null);
   return (
     <section className="pricing">
@@ -50,98 +51,101 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
           px: 3,
         }}
       >
-        {/* Free Plan */}
-        <Paper
-          elevation={3}
-          sx={{
-            p: 4,
-            flex: 1,
-            maxWidth: { xs: '100%', md: '300px' },
-            background: 'rgba(15, 23, 42, 0.95)',
-            borderRadius: 3,
-            border: '1px solid rgba(96, 165, 250, 0.2)',
-            display: 'flex',
-            flexDirection: 'column',
-            '&:hover': {
-              transform: 'translateY(-8px)',
-              transition: 'all 0.3s ease',
-            },
-          }}
-        >
-          <Typography variant="h5" sx={{ mb: 2, color: 'var(--text-primary)' }}>
-            {t('freePlanTitle')}
-          </Typography>
-          <Typography
-            variant="h3"
+        {!hideFreePlan && (
+          <Paper
+            elevation={3}
             sx={{
-              mb: 2,
-              background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+              p: 4,
+              flex: 1,
+              maxWidth: { xs: '100%', md: '300px' },
+              background: 'rgba(15, 23, 42, 0.95)',
+              borderRadius: 3,
+              border: '1px solid rgba(96, 165, 250, 0.2)',
+              display: 'flex',
+              flexDirection: 'column',
+              '&:hover': {
+                transform: 'translateY(-8px)',
+                transition: 'all 0.3s ease',
+              },
             }}
           >
-            $0
-          </Typography>
-          <Typography
-            variant="body1"
-            sx={{ mb: 3, color: 'var(--text-secondary)' }}
-          >
-            {t('freePlanSubtitle')}
-          </Typography>
-          <Box sx={{ flexGrow: 1 }}>
-            <List sx={{ mb: 3 }}>
-              <ListItem sx={{ px: 0, color: 'var(--text-secondary)' }}>
-                <ListItemIcon sx={{ minWidth: 40, color: '#60a5fa' }}>
-                  <CheckIcon />
-                </ListItemIcon>
-                <ListItemText primary={t('freePlanFeatures.spaces')} />
-              </ListItem>
-              <ListItem sx={{ px: 0, color: 'var(--text-secondary)' }}>
-                <ListItemIcon sx={{ minWidth: 40, color: '#60a5fa' }}>
-                  <CheckIcon />
-                </ListItemIcon>
-                <ListItemText primary={t('freePlanFeatures.autoDMs')} />
-              </ListItem>
-              <ListItem sx={{ px: 0, color: 'var(--text-secondary)' }}>
-                <ListItemIcon sx={{ minWidth: 40, color: '#60a5fa' }}>
-                  <CheckIcon />
-                </ListItemIcon>
-                <ListItemText primary={t('freePlanFeatures.aiRequests')} />
-              </ListItem>
-              <ListItem sx={{ px: 0, color: 'var(--text-secondary)' }}>
-                <ListItemIcon sx={{ minWidth: 40, color: '#60a5fa' }}>
-                  <CheckIcon />
-                </ListItemIcon>
-                <ListItemText primary={t('freePlanFeatures.support')} />
-              </ListItem>
-            </List>
-          </Box>
-          {user?.currentPlan === 'free' ? (
-            <Chip label={t('currentPlanChip')} />
-          ) : (
-            <LoadingButton
-              loading={loadingBtnId === 'free'}
-              disabled={!!loadingBtnId}
-              variant="outlined"
-              fullWidth
+            <Typography
+              variant="h5"
+              sx={{ mb: 2, color: 'var(--text-primary)' }}
+            >
+              {t('freePlanTitle')}
+            </Typography>
+            <Typography
+              variant="h3"
               sx={{
-                borderColor: 'var(--text-secondary)',
-                color: 'var(--text-secondary)',
-                '&:hover': {
-                  borderColor: 'white',
-                  color: 'white',
-                },
-              }}
-              onClick={() => {
-                setLoadingBtnId('free');
-                onSubscribe('free');
+                mb: 2,
+                background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
               }}
             >
-              {t('getStartedButton')}
-            </LoadingButton>
-          )}
-        </Paper>
-
+              $0
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{ mb: 3, color: 'var(--text-secondary)' }}
+            >
+              {t('freePlanSubtitle')}
+            </Typography>
+            <Box sx={{ flexGrow: 1 }}>
+              <List sx={{ mb: 3 }}>
+                <ListItem sx={{ px: 0, color: 'var(--text-secondary)' }}>
+                  <ListItemIcon sx={{ minWidth: 40, color: '#60a5fa' }}>
+                    <CheckIcon />
+                  </ListItemIcon>
+                  <ListItemText primary={t('freePlanFeatures.spaces')} />
+                </ListItem>
+                <ListItem sx={{ px: 0, color: 'var(--text-secondary)' }}>
+                  <ListItemIcon sx={{ minWidth: 40, color: '#60a5fa' }}>
+                    <CheckIcon />
+                  </ListItemIcon>
+                  <ListItemText primary={t('freePlanFeatures.autoDMs')} />
+                </ListItem>
+                <ListItem sx={{ px: 0, color: 'var(--text-secondary)' }}>
+                  <ListItemIcon sx={{ minWidth: 40, color: '#60a5fa' }}>
+                    <CheckIcon />
+                  </ListItemIcon>
+                  <ListItemText primary={t('freePlanFeatures.aiRequests')} />
+                </ListItem>
+                <ListItem sx={{ px: 0, color: 'var(--text-secondary)' }}>
+                  <ListItemIcon sx={{ minWidth: 40, color: '#60a5fa' }}>
+                    <CheckIcon />
+                  </ListItemIcon>
+                  <ListItemText primary={t('freePlanFeatures.support')} />
+                </ListItem>
+              </List>
+            </Box>
+            {user?.currentPlan === 'free' ? (
+              <Chip label={t('currentPlanChip')} />
+            ) : (
+              <LoadingButton
+                loading={loadingBtnId === 'free'}
+                disabled={!!loadingBtnId}
+                variant="outlined"
+                fullWidth
+                sx={{
+                  borderColor: 'var(--text-secondary)',
+                  color: 'var(--text-secondary)',
+                  '&:hover': {
+                    borderColor: 'white',
+                    color: 'white',
+                  },
+                }}
+                onClick={() => {
+                  setLoadingBtnId('free');
+                  onSubscribe('free');
+                }}
+              >
+                {t('getStartedButton')}
+              </LoadingButton>
+            )}
+          </Paper>
+        )}
         {/* Starter Pack */}
         <Paper
           elevation={3}
@@ -366,13 +370,13 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
               }}
             >
               $50
-          </Typography>
-          <Typography
-            variant="h3"
-            sx={{
-              background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+            </Typography>
+            <Typography
+              variant="h3"
+              sx={{
+                background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 1,
@@ -541,7 +545,7 @@ const PricingBanner = ({ onSubscribe, user }: Props) => {
               }}
             >
               Growth Kit
-          </Typography>
+            </Typography>
           </Box>
           <Typography
             variant="body1"

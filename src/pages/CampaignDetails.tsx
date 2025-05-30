@@ -16,6 +16,11 @@ import {
   TextField,
   Stack,
   Autocomplete,
+  CircularProgress,
+  Dialog,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from '@mui/material';
 import { useAuthContext } from '../contexts/AuthContext';
 
@@ -34,6 +39,7 @@ import { Toaster } from 'react-hot-toast';
 import { createCheckoutSession } from '../services/db/stripe';
 import TwitterSpaceCard from '../components/TwitterSpaceCard';
 import LaunchIcon from '@mui/icons-material/Launch';
+import PricingBanner from '../components/PricingBanner';
 
 type Props = {};
 
@@ -62,7 +68,7 @@ const CampaignDetails = (props: Props) => {
   // const [listeners, setListeners] = useState<Listener[]>([]);
   // const [description, setDescription] = useState('');
   // const [newTopic, setNewTopic] = useState('');
-  const [savingField, setSavingField] = useState('');
+  // const [savingField, setSavingField] = useState('');
   const [numListeners, setNumListeners] = useState(10);
 
   const planLimits = getPlanLimits(user?.currentPlan || 'free');
@@ -70,6 +76,7 @@ const CampaignDetails = (props: Props) => {
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [isSampleDMsGenerating, setIsSampleDMsGenerating] = useState(false);
   const [sampleDm, setSampleDm] = useState('');
+  const [showPriceDialog, setShowPriceDialog] = useState(false);
 
   const fetchCampaign = async () => {
     if (id) {
@@ -134,13 +141,11 @@ const CampaignDetails = (props: Props) => {
       return;
     }
     if ((user?.usage.autoDms || 0) + noOfDms > maxDms) {
-      toast.error(
-        `Please upgrade your plan to generate more than ${maxDms} DMs`,
-        {
-          duration: 5000,
-          position: 'bottom-right',
-        }
-      );
+      setShowPriceDialog(true);
+      toast.error(`Please upgrade your plan to generate more DMs`, {
+        duration: 5000,
+        position: 'bottom-right',
+      });
       return;
     }
     const token = await getDynamicToken();
@@ -413,13 +418,13 @@ const CampaignDetails = (props: Props) => {
         <Box ml="auto" display="flex" gap={2}>
           {campaign?.spaceId && !campaign.isBroadcast && (
             <Button
-              variant="text"
+              variant="outlined"
               color="primary"
               href={`https://songjam.space/live/${campaign.spaceId}`}
               target="_blank"
-              endIcon={<LaunchIcon sx={{ fontSize: 18 }} />}
+              // endIcon={}
             >
-              Live
+              Live Analytics <LaunchIcon sx={{ ml: 0.5, fontSize: '0.9rem' }} />
             </Button>
           )}
           <Button
@@ -723,31 +728,36 @@ const CampaignDetails = (props: Props) => {
                   display={'flex'}
                   alignItems={'center'}
                   gap={2}
-                  // justifyContent={'space-between'}
+                  justifyContent={'space-between'}
                 >
-                  <Typography variant="h6">Source Listeners</Typography>
                   <Box display={'flex'} alignItems={'center'} gap={1}>
-                    <Chip
-                      size="small"
-                      label={`PLAN: ${user?.currentPlan?.toUpperCase()}`}
-                    />
-                    <Chip
-                      size="small"
-                      label={`Available: ${user?.usage.autoDms}/${maxDms} DMs`}
-                    />
+                    <Typography variant="h6">Source Listeners</Typography>
+                    <Box display={'flex'} alignItems={'center'} gap={1}>
+                      <Chip
+                        size="small"
+                        label={`PLAN: ${user?.currentPlan?.toUpperCase()}`}
+                      />
+                      {(user?.currentPlan === 'free' ||
+                        user?.currentPlan === 'starter') && (
+                        <Chip
+                          size="small"
+                          label={`Available: ${user?.usage.autoDms}/${maxDms} DMs`}
+                        />
+                      )}
+                    </Box>
                   </Box>
-                </Box>
+                  {/* </Box> */}
 
-                {/* Selected Topics Section */}
-                {/* {selectedTopics.length > 0 && ( */}
-                <Box
+                  {/* Selected Topics Section */}
+                  {/* {selectedTopics.length > 0 && ( */}
+                  {/* <Box
                   display={'flex'}
                   gap={2}
                   justifyContent={'space-between'}
                   alignItems={'center'}
                   mb={2}
-                >
-                  <Box display={'flex'} gap={1} flexWrap={'wrap'}>
+                > */}
+                  {/* <Box display={'flex'} gap={1} flexWrap={'wrap'}>
                     {selectedTopics.map((topic) => (
                       <Chip
                         key={topic}
@@ -760,7 +770,7 @@ const CampaignDetails = (props: Props) => {
                         }}
                       />
                     ))}
-                  </Box>
+                  </Box> */}
 
                   {/* Pick a number of listeners you want to target */}
                   <Box
@@ -771,14 +781,23 @@ const CampaignDetails = (props: Props) => {
                   >
                     <Autocomplete
                       disablePortal
-                      options={[10, 100, 250, 500, 1000]}
+                      options={[10, 100, 250, 500, 1000].map(String)}
                       sx={{ width: 250 }}
                       size="small"
                       freeSolo
-                      value={numListeners}
+                      value={String(numListeners)}
                       onChange={(event, newValue) => {
-                        if (typeof newValue === 'number') {
-                          setNumListeners(newValue);
+                        if (typeof newValue === 'string') {
+                          const parsedValue = parseInt(newValue);
+                          if (!isNaN(parsedValue)) {
+                            setNumListeners(Math.min(parsedValue, 1000));
+                          }
+                        }
+                      }}
+                      onInputChange={(event, newInputValue) => {
+                        const parsedValue = parseInt(newInputValue);
+                        if (!isNaN(parsedValue)) {
+                          setNumListeners(Math.min(parsedValue, 1000));
                         }
                       }}
                       renderInput={(params) => (
@@ -786,31 +805,48 @@ const CampaignDetails = (props: Props) => {
                           {...params}
                           label="Number of AutoDMs"
                           type="number"
+                          inputProps={{
+                            ...params.inputProps,
+                            max: 1000,
+                            min: 1,
+                          }}
                         />
                       )}
                     />
-                    {(user?.currentPlan === 'free' ||
-                      user?.currentPlan === 'starter') && (
-                      <Typography variant="body2" sx={{ ml: 'auto' }}>
-                        <span
-                          onClick={async () => {
-                            setIsUpgrading(true);
-                            await createCheckoutSession(user.uid, 'pro');
-                          }}
-                          style={{
-                            cursor: 'pointer',
-                            color: 'rgba(255,255,255,0.8)',
-                            textDecoration: 'underline',
-                          }}
-                        >
-                          {isUpgrading
-                            ? 'loading...'
-                            : `Upgrade to PRO for unlimited auto DMs`}
-                        </span>
-                      </Typography>
-                    )}
                   </Box>
                 </Box>
+                {(user?.currentPlan === 'free' ||
+                  user?.currentPlan === 'starter') && (
+                  <Box
+                    display={'flex'}
+                    alignItems={'center'}
+                    gap={1}
+                    justifyContent={'end'}
+                    mt={1}
+                  >
+                    <Typography variant="body2">
+                      <span
+                        onClick={async () => {
+                          if (isUpgrading) return;
+                          setIsUpgrading(true);
+                          await createCheckoutSession(user.uid, 'pro');
+                        }}
+                        style={{
+                          cursor: 'pointer',
+                          color: 'rgba(255,255,255,0.8)',
+                          textDecoration: 'underline',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        {isUpgrading && (
+                          <CircularProgress size={16} sx={{ mr: 1 }} />
+                        )}
+                        Upgrade to PRO for unlimited autoDMs
+                      </span>
+                    </Typography>
+                  </Box>
+                )}
                 {campaign.status === 'DRAFT' ? (
                   // campaign.campaignType === 'speakers' ? (
                   //   <SourceSpeakers
@@ -870,6 +906,35 @@ const CampaignDetails = (props: Props) => {
       )}
       <LoginDialog open={showAuthDialog && !authLoading} />
       <Toaster />
+      <Dialog
+        open={showPriceDialog}
+        onClose={() => setShowPriceDialog(false)}
+        // fullWidth
+        maxWidth="lg"
+        PaperProps={{
+          sx: {
+            width: '100%',
+            maxWidth: '1200px',
+            margin: '16px',
+          },
+        }}
+      >
+        <DialogContent>
+          <Paper sx={{ p: 4 }}>
+            <PricingBanner
+              hideFreePlan
+              onSubscribe={async (plan) => {
+                if (isUpgrading || plan === 'free') return;
+                if (!user) return toast.error('Please login to upgrade');
+                setIsUpgrading(true);
+                await createCheckoutSession(user?.uid, plan);
+                setShowPriceDialog(false);
+              }}
+              user={user}
+            />
+          </Paper>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
   // } else {

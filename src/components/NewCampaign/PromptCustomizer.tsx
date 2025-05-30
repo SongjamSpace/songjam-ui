@@ -23,7 +23,7 @@ import { useTranslation } from 'react-i18next';
 
 export interface PromptSettings {
   tone: 'professional' | 'casual' | 'formal';
-  length: 'concise' | 'moderate' | 'detailed';
+  length: 'micro' | 'concise' | 'moderate' | 'detailed';
   enthusiasm: number; // 0-100
   personalization: number; // 0-100
   //   formality: number; // 0-100
@@ -248,6 +248,11 @@ const CampaignPromptCustomizer: React.FC<CampaignPromptCustomizerProps> = ({
               value={settings.length}
               onChange={handleLengthChange}
             >
+              <FormControlLabel
+                value="micro"
+                control={<Radio />}
+                label="🌟 Micro"
+              />
               <FormControlLabel
                 value="concise"
                 control={<Radio />}

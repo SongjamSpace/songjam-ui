@@ -367,10 +367,14 @@ export default function Dashboard() {
           await updateSpaceRequests(user?.uid || '');
           navigate(path); // Navigates to /crm/:spaceId
         } else if (state === 'Running') {
-          await axios.post(
-            `${import.meta.env.VITE_JAM_SERVER_URL}/listen-live-space`,
-            { spaceId, projectId }
-          );
+          try {
+            await axios.post(
+              `${import.meta.env.VITE_JAM_SERVER_URL}/listen-live-space`,
+              { spaceId, projectId }
+            );
+          } catch (error) {
+            console.warn('Error listening to live space:', error);
+          }
           await updateSpaceRequests(user?.uid || '');
           const campaign = await createCampaign({
             addedType: 'NEW',
@@ -385,7 +389,7 @@ export default function Dashboard() {
             createdAt: Date.now(),
             description: '',
             topics:
-              (space.metadata as any).topics.map(
+              (space.metadata as any).topics?.map(
                 (t: any) => t?.topic?.name || ''
               ) || [],
             scheduledStart:
@@ -412,7 +416,7 @@ export default function Dashboard() {
             createdAt: Date.now(),
             description: '',
             topics:
-              (space.metadata as any).topics.map(
+              (space.metadata as any).topics?.map(
                 (t: any) => t?.topic?.name || ''
               ) || [],
             scheduledStart:
@@ -463,7 +467,7 @@ export default function Dashboard() {
         topics: [],
         scheduledStart: 0,
         hostHandle: '',
-        isBroadcast: isBroadcast,
+        isBroadcast,
       });
       navigate(`/campaigns/${campaign.id}`);
     }

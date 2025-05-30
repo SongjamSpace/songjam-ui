@@ -126,6 +126,13 @@ const CampaignDetails = (props: Props) => {
     if (!id) {
       return;
     }
+    if (!campaign?.spaceTitle) {
+      toast.error('Please add a space title', {
+        duration: 5000,
+        position: 'bottom-right',
+      });
+      return;
+    }
     if ((user?.usage.autoDms || 0) + noOfDms > maxDms) {
       toast.error(
         `Please upgrade your plan to generate more than ${maxDms} DMs`,
@@ -306,6 +313,10 @@ const CampaignDetails = (props: Props) => {
 
   const handleGenerateSampleDM = async () => {
     if (!id || !campaign) return;
+    if (!campaign.spaceTitle) {
+      toast.error('Please add a space title');
+      return;
+    }
     setIsSampleDMsGenerating(true);
     try {
       const token = await getDynamicToken();

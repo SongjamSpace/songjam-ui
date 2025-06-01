@@ -1,6 +1,6 @@
 import { collection, query, where } from 'firebase/firestore';
 import { addDoc, getDocs, onSnapshot } from 'firebase/firestore';
-import { db } from '../firebase.service';
+import { db, logFirebaseEvent } from '../firebase.service';
 
 const CUSTOMER_COLLECTION = 'customers';
 const SUBSCRIPTIONS_COLLECTION = 'subscriptions';
@@ -51,6 +51,12 @@ export const createCheckoutSession = async (
     'checkout_sessions'
   );
   const checkoutSessionRef = await addDoc(customerRef, checkoutSessionData);
+  logFirebaseEvent('purchase', {
+    plan,
+    uid,
+    callbackUrl,
+    checkoutSessionId: checkoutSessionRef.id,
+  });
   // The Stripe extension creates a payment link for us
   onSnapshot(checkoutSessionRef, (snap) => {
     const { error, url } = snap.data() as {

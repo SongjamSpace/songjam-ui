@@ -6,7 +6,7 @@ import {
   updateUserPlan,
 } from '../services/db/user.service';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
-import { auth } from '../services/firebase.service';
+import { auth, logFirebaseEvent } from '../services/firebase.service';
 import { signInWithCustomToken } from 'firebase/auth';
 import axios from 'axios';
 import { getDynamicToken } from '../utils';
@@ -50,6 +50,13 @@ export function useAuth() {
           setUser(user);
         });
         if (userDoc) {
+          logFirebaseEvent('login', {
+            uid: dynamicUser.userId,
+            email: dynamicUser.email?.split('@')[0] || '',
+            email_domain: dynamicUser.email?.split('@')[1] || '',
+            displayName: userDoc.displayName || '',
+            username: userDoc.username || '',
+          });
           // TODO: Remove after webhook is setup
           // if (!userDoc.currentPlan) {
           //   const activeSubscription = await getActiveSubscription(
@@ -98,6 +105,13 @@ export function useAuth() {
             startsAt: Date.now(),
             endsAt: Date.now(),
           };
+          logFirebaseEvent('sign_up', {
+            uid: dynamicUser.userId,
+            email: dynamicUser.email?.split('@')[0] || '',
+            email_domain: dynamicUser.email?.split('@')[1] || '',
+            displayName: newUser.displayName || '',
+            username: newUser.username || '',
+          });
           await createUser(dynamicUser.userId, newUser);
           setUser(newUser);
         }

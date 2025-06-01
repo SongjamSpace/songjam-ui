@@ -40,6 +40,7 @@ import { createCheckoutSession } from '../services/db/stripe';
 import TwitterSpaceCard from '../components/TwitterSpaceCard';
 import LaunchIcon from '@mui/icons-material/Launch';
 import PricingBanner from '../components/PricingBanner';
+import { logFirebaseEvent } from '../services/firebase.service';
 
 type Props = {};
 
@@ -142,6 +143,13 @@ const CampaignDetails = (props: Props) => {
     }
     if ((user?.usage.autoDms || 0) + noOfDms > maxDms) {
       setShowPriceDialog(true);
+      logFirebaseEvent('dm_limit_reached', {
+        uid: user?.uid || '',
+        username: user?.username || '',
+        plan: user?.currentPlan || '',
+        spaceId: campaign?.spaceId || '',
+        projectId: campaign?.projectId || '',
+      });
       toast.error(`Please upgrade your plan to generate more DMs`, {
         duration: 5000,
         position: 'bottom-right',

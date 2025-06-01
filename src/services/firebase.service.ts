@@ -4,6 +4,7 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { getAuth } from 'firebase/auth';
+import { getAnalytics, logEvent } from 'firebase/analytics';
 // import { getStripePayments } from "@invertase/firestore-stripe-payments";
 // import { getAnalytics } from "firebase/analytics";
 // TODO: Add SDKs for Firebase products that you want to use
@@ -22,7 +23,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-// const analytics = getAnalytics(app);
+const analytics = getAnalytics(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
@@ -34,11 +35,20 @@ const storage = getStorage(app);
 //   content_type: "spotifyArtistId",
 //   content_id: spotifyArtistId,
 // });
-// const logFirebaseEvent = (
-//   type: "login" | "purchase" | "select_content" | "share",
-//   additionalParams: any
-// ) => {
-//   logEvent(analytics, type as any, additionalParams);
-// };
 
-export { app, db, storage, auth };
+const logFirebaseEvent = (
+  type:
+    | 'login'
+    | 'purchase'
+    | 'select_content'
+    | 'sign_up'
+    | 'space_limit_reached'
+    | 'analyze_broadcast'
+    | 'analyze_space'
+    | 'dm_limit_reached',
+  additionalParams: any
+) => {
+  logEvent(analytics, type as any, additionalParams);
+};
+
+export { app, db, storage, auth, logFirebaseEvent };

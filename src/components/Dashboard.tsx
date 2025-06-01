@@ -66,6 +66,7 @@ import {
 } from '../services/db/campaign.service';
 import SyncIcon from '@mui/icons-material/Sync';
 import { updateSpaceRequests } from '../services/db/user.service';
+import { logFirebaseEvent } from '../services/firebase.service';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -314,6 +315,11 @@ export default function Dashboard() {
       return;
     }
     if (!canRequestSpace(user)) {
+      logFirebaseEvent('space_limit_reached', {
+        uid: user?.uid || '',
+        username: user?.username || '',
+        plan: user?.currentPlan || '',
+      });
       toast.error('You have reached the limit of spaces for your plan');
       navigate('/settings');
       setIsLoading(false);
@@ -324,6 +330,13 @@ export default function Dashboard() {
     });
     try {
       if (isBroadcast) {
+        logFirebaseEvent('analyze_broadcast', {
+          uid: user?.uid || '',
+          username: user?.username || '',
+          plan: user?.currentPlan || '',
+          spaceId,
+          projectId,
+        });
         const space = await getBroadcastFromX(spaceId);
         if (space && space.state === 'Ended') {
           const path = await transcribeSpace(spaceId, projectId, true);
@@ -355,6 +368,13 @@ export default function Dashboard() {
         setIsLoading(false);
         return;
       }
+      logFirebaseEvent('analyze_space', {
+        uid: user?.uid || '',
+        username: user?.username || '',
+        plan: user?.currentPlan || '',
+        spaceId,
+        projectId,
+      });
       const space = await getRawSpaceFromX(spaceId);
       if (
         space &&

@@ -363,14 +363,16 @@ const CampaignManager: React.FC<{
             </Button>
           </Stack>
         )}
-        {campaign.status !== 'DRAFT' && campaign.id && (
-          <CampaignListeners
-            campaignId={campaign.id}
-            campaign={campaign}
-            t={t}
-            // totalListeners={listeners.length}
-          />
-        )}
+        <Box width={'100%'}>
+          {campaign.status !== 'DRAFT' && campaign.id && (
+            <CampaignListeners
+              campaignId={campaign.id}
+              campaign={campaign}
+              t={t}
+              // totalListeners={listeners.length}
+            />
+          )}
+        </Box>
       </Grid>
     </Box>
   );
@@ -428,28 +430,24 @@ const ListenerCardContent = ({ listener }: { listener: SpaceListener }) => {
       </Typography>
       {/* )} */}
 
-      {listener.joinedAt ||
-        (listener.leftAt && (
-          <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-            {listener.joinedAt && (
-              <Chip
-                icon={<AccessTimeIcon />}
-                label={`Joined: ${format(listener.joinedAt, 'h:mm a')}`}
-                size="small"
-              />
-            )}
-            {listener.leftAt && (
-              <Chip
-                icon={<AccessTimeIcon />}
-                label={`Left: ${format(
-                  listener.leftAt || new Date(),
-                  'h:mm a'
-                )}`}
-                size="small"
-              />
-            )}
-          </Box>
-        ))}
+      {(!!listener.joinedAt || !!listener.leftAt) && (
+        <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+          {listener.joinedAt && (
+            <Chip
+              icon={<AccessTimeIcon />}
+              label={`Joined: ${format(listener.joinedAt, 'h:mm a')}`}
+              size="small"
+            />
+          )}
+          {listener.leftAt && (
+            <Chip
+              icon={<AccessTimeIcon />}
+              label={`Left: ${format(listener.leftAt || new Date(), 'h:mm a')}`}
+              size="small"
+            />
+          )}
+        </Box>
+      )}
     </>
   );
 };

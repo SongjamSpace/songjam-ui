@@ -3,7 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
   Campaign as CampaignType,
   getCampaign,
-  updateCampaign,
 } from '../services/db/campaign.service';
 import {
   Box,
@@ -19,8 +18,6 @@ import {
   CircularProgress,
   Dialog,
   DialogContent,
-  DialogContentText,
-  DialogTitle,
 } from '@mui/material';
 import { useAuthContext } from '../contexts/AuthContext';
 
@@ -41,6 +38,7 @@ import TwitterSpaceCard from '../components/TwitterSpaceCard';
 import LaunchIcon from '@mui/icons-material/Launch';
 import PricingBanner from '../components/PricingBanner';
 import { logFirebaseEvent } from '../services/firebase.service';
+import CTACampaignSection from '../components/NewCampaign/CTACampaignSection';
 
 type Props = {};
 
@@ -130,7 +128,7 @@ const CampaignDetails = (props: Props) => {
   //   }
   // }, [campaign]);
 
-  const handleGenerateDMs = async (noOfDms: number) => {
+  const handleGenerateDMs = async (noOfDms: number, targetAccount?: string) => {
     if (!id) {
       return;
     }
@@ -141,40 +139,59 @@ const CampaignDetails = (props: Props) => {
       });
       return;
     }
-    if ((user?.usage.autoDms || 0) + noOfDms > maxDms) {
-      setShowPriceDialog(true);
-      logFirebaseEvent('dm_limit_reached', {
-        uid: user?.uid || '',
-        username: user?.username || '',
-        plan: user?.currentPlan || '',
-        spaceId: campaign?.spaceId || '',
-        projectId: campaign?.projectId || '',
-      });
-      toast.error(`Please upgrade your plan to generate more DMs`, {
-        duration: 5000,
-        position: 'bottom-right',
-      });
-      return;
-    }
+    // if ((user?.usage.autoDms || 0) + noOfDms > maxDms) {
+    //   setShowPriceDialog(true);
+    //   logFirebaseEvent('dm_limit_reached', {
+    //     uid: user?.uid || '',
+    //     username: user?.username || '',
+    //     plan: user?.currentPlan || '',
+    //     spaceId: campaign?.spaceId || '',
+    //     projectId: campaign?.projectId || '',
+    //   });
+    //   toast.error(`Please upgrade your plan to generate more DMs`, {
+    //     duration: 5000,
+    //     position: 'bottom-right',
+    //   });
+    //   return;
+    // }
     const token = await getDynamicToken();
     if (!token) {
       return alert('No token found, please login again');
     }
     setActionLoading(true);
     try {
-      await axios.post(
-        `${import.meta.env.VITE_JAM_SERVER_URL}/api/generate-listeners-dms`,
-        {
-          campaignId: id,
-          noOfDms,
-          promptSettings,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
+      if (campaign?.ctaType === 'follow' && targetAccount) {
+        await axios.post(
+          `${import.meta.env.VITE_JAM_SERVER_URL}/api/generate-follow-invites`,
+          {
+            campaignId: id,
+            noOfDms,
+            targetAccount,
+            promptSettings,
+            lang: 'en',
+            spaceId: campaign?.spaceId,
           },
-        }
-      );
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+      } else {
+        await axios.post(
+          `${import.meta.env.VITE_JAM_SERVER_URL}/api/generate-listeners-dms`,
+          {
+            campaignId: id,
+            noOfDms,
+            promptSettings,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+      }
       toast.success(`${noOfDms} DMs generated successfully`);
     } catch (e) {
       console.error(e);
@@ -342,6 +359,7 @@ const CampaignDetails = (props: Props) => {
           campaignTitle: campaign.spaceTitle,
           campaignDescription: campaign.description,
           promptSettings,
+          ctaType: campaign.ctaType,
         },
         {
           headers: {
@@ -729,7 +747,7 @@ const CampaignDetails = (props: Props) => {
 
           {/* Right Column - Selected Spaces & Speakers */}
 
-          {campaign && id && user && (
+          {campaign && campaign.ctaType === 'space' && id && user && (
             <Grid item xs={12} md={8}>
               <Paper sx={{ height: '100%', p: 2 }}>
                 <Box
@@ -873,6 +891,183 @@ const CampaignDetails = (props: Props) => {
                     selectedTopics={selectedTopics}
                     setSelectedTopics={setSelectedTopics}
                   />
+                ) : (
+                  // )
+                  <Stack position={'relative'}>
+                    <Box sx={{ overflowY: 'auto', maxHeight: '75vh' }}>
+                      <CampaignListeners
+                        campaignId={id}
+                        campaign={campaign}
+                        t={t}
+                      />
+                    </Box>
+                    {campaign.status !== 'GENERATING' && (
+                      <Box
+                        display={'flex'}
+                        justifyContent={'center'}
+                        width={'100%'}
+                        my={2}
+                      >
+                        <LoadingButton
+                          loading={actionLoading}
+                          variant="contained"
+                          color="primary"
+                          fullWidth
+                          onClick={() => {
+                            handleGenerateDMs(numListeners);
+                          }}
+                          disabled={isUpgrading}
+                        >
+                          Generate DMs
+                        </LoadingButton>
+                      </Box>
+                    )}
+                  </Stack>
+                )}
+              </Paper>
+            </Grid>
+          )}
+          {campaign && campaign.ctaType === 'follow' && id && user && (
+            <Grid item xs={12} md={8}>
+              <Paper sx={{ height: '100%', p: 2 }}>
+                <Box
+                  display={'flex'}
+                  alignItems={'center'}
+                  gap={2}
+                  justifyContent={'space-between'}
+                >
+                  <Box display={'flex'} alignItems={'center'} gap={1}>
+                    <Typography variant="h6">
+                      Reach Out to the Space Listeners
+                    </Typography>
+                    <Box display={'flex'} alignItems={'center'} gap={1}>
+                      <Chip
+                        size="small"
+                        label={`PLAN: ${user?.currentPlan?.toUpperCase()}`}
+                      />
+                      {(user?.currentPlan === 'free' ||
+                        user?.currentPlan === 'starter') && (
+                        <Chip
+                          size="small"
+                          label={`Available: ${user?.usage.autoDms}/${maxDms} DMs`}
+                        />
+                      )}
+                    </Box>
+                  </Box>
+                  {/* </Box> */}
+
+                  {/* Selected Topics Section */}
+                  {/* {selectedTopics.length > 0 && ( */}
+                  {/* <Box
+                  display={'flex'}
+                  gap={2}
+                  justifyContent={'space-between'}
+                  alignItems={'center'}
+                  mb={2}
+                > */}
+                  {/* <Box display={'flex'} gap={1} flexWrap={'wrap'}>
+                    {selectedTopics.map((topic) => (
+                      <Chip
+                        key={topic}
+                        label={topic}
+                        variant="filled"
+                        onDelete={() => {
+                          setSelectedTopics(
+                            selectedTopics.filter((t) => t !== topic)
+                          );
+                        }}
+                      />
+                    ))}
+                  </Box> */}
+
+                  {/* Pick a number of listeners you want to target */}
+                  <Box
+                    display="flex"
+                    flexDirection={'column'}
+                    gap={1}
+                    alignItems="center"
+                  >
+                    <Autocomplete
+                      disablePortal
+                      options={[10, 100, 250, 500, 1000].map(String)}
+                      sx={{ width: 250 }}
+                      size="small"
+                      freeSolo
+                      value={String(numListeners)}
+                      onChange={(event, newValue) => {
+                        if (typeof newValue === 'string') {
+                          const parsedValue = parseInt(newValue);
+                          if (!isNaN(parsedValue)) {
+                            setNumListeners(Math.min(parsedValue, 1000));
+                          }
+                        }
+                      }}
+                      onInputChange={(event, newInputValue) => {
+                        const parsedValue = parseInt(newInputValue);
+                        if (!isNaN(parsedValue)) {
+                          setNumListeners(Math.min(parsedValue, 1000));
+                        }
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Number of AutoDMs"
+                          type="number"
+                          inputProps={{
+                            ...params.inputProps,
+                            max: 1000,
+                            min: 1,
+                          }}
+                        />
+                      )}
+                    />
+                  </Box>
+                </Box>
+                {(user?.currentPlan === 'free' ||
+                  user?.currentPlan === 'starter') && (
+                  <Box
+                    display={'flex'}
+                    alignItems={'center'}
+                    gap={1}
+                    justifyContent={'end'}
+                    mt={1}
+                  >
+                    <Typography variant="body2">
+                      <span
+                        onClick={async () => {
+                          if (isUpgrading) return;
+                          setIsUpgrading(true);
+                          await createCheckoutSession(user.uid, 'pro');
+                        }}
+                        style={{
+                          cursor: 'pointer',
+                          color: 'rgba(255,255,255,0.8)',
+                          textDecoration: 'underline',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        {isUpgrading && (
+                          <CircularProgress size={16} sx={{ mr: 1 }} />
+                        )}
+                        Upgrade to PRO for unlimited autoDMs
+                      </span>
+                    </Typography>
+                  </Box>
+                )}
+                {campaign.status === 'DRAFT' ? (
+                  <Stack>
+                    <CTACampaignSection
+                      campaign={campaign}
+                      id={id}
+                      actionLoading={actionLoading}
+                      handleGenerateDMs={(targetAccount) =>
+                        handleGenerateDMs(numListeners, targetAccount)
+                      }
+                      numListeners={numListeners}
+                      isUpgrading={isUpgrading}
+                    />
+                  </Stack>
                 ) : (
                   // )
                   <Stack position={'relative'}>

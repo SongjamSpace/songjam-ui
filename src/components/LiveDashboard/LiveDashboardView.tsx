@@ -106,7 +106,7 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
   const [previousListeners, setPreviousListeners] = useState<SpaceListener[]>(
     []
   );
-  const [userCampaign, setUserCampaign] = useState<Campaign | null>(null);
+  const [userCampaigns, setUserCampaigns] = useState<Campaign[]>([]);
   const [isBoosting, setIsBoosting] = useState(false);
   // const [currentUserJoinedAt, setCurrentUserJoinedAt] = useState<number | null>(
   //   null
@@ -159,7 +159,7 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
       user.defaultProjectId
     );
     if (campaignExists?.length) {
-      setUserCampaign(campaignExists[0]);
+      setUserCampaigns(campaignExists);
     }
     setIsBoosting(false);
   };
@@ -196,48 +196,98 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
             <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
               Live Space Dashboard
             </Typography>
-            <LoadingButton
-              variant="contained"
-              color="primary"
-              onClick={async () => {
-                if (userCampaign) {
-                  window.open(`/campaigns/${userCampaign.id}`, '_blank');
-                } else {
-                  if (!user || !space?.title) {
-                    toast.error('Please login to boost space');
-                    return;
+            <Box display={'flex'} alignItems={'center'} gap={2}>
+              <LoadingButton
+                variant="contained"
+                color="primary"
+                onClick={async () => {
+                  const spaceCampaign = userCampaigns.find(
+                    (c) => c.ctaType === 'space'
+                  );
+                  if (spaceCampaign) {
+                    window.open(`/campaigns/${spaceCampaign.id}`, '_blank');
+                  } else {
+                    if (!user || !space?.title) {
+                      toast.error('Please login to boost space');
+                      return;
+                    }
+                    setIsBoosting(true);
+                    const campaign = await createCampaign({
+                      spaceId,
+                      projectId: user?.defaultProjectId || '',
+                      userId: user?.uid,
+                      status: 'DRAFT',
+                      createdAt: Date.now(),
+                      ctaType: 'space',
+                      ctaTarget: space?.title,
+                      spaceTitle: space?.title,
+                      hostHandle: space?.admins[0].twitterScreenName,
+                      description: '',
+                      topics: space?.topics || [],
+                      scheduledStart:
+                        space?.scheduledStart || space.startedAt || 0,
+                      campaignType: 'listeners',
+                      addedType: 'NEW',
+                    });
+                    // await fetchCampaign(spaceId);
+                    toast.success('Campaign created successfully');
+                    setIsBoosting(false);
+                    window.open(`/campaigns/${campaign.id}`, '_blank');
                   }
-                  setIsBoosting(true);
-                  const campaign = await createCampaign({
-                    spaceId,
-                    projectId: user?.defaultProjectId || '',
-                    userId: user?.uid,
-                    status: 'DRAFT',
-                    createdAt: Date.now(),
-                    ctaType: 'space',
-                    ctaTarget: space?.title,
-                    spaceTitle: space?.title,
-                    hostHandle: space?.admins[0].twitterScreenName,
-                    description: '',
-                    topics: space?.topics || [],
-                    scheduledStart:
-                      space?.scheduledStart || space.startedAt || 0,
-                    campaignType: 'listeners',
-                    addedType: 'NEW',
-                  });
-                  // await fetchCampaign(spaceId);
-                  toast.success('Campaign created successfully');
-                  setIsBoosting(false);
-                  window.open(`/campaigns/${campaign.id}`, '_blank');
-                }
-              }}
-              size="small"
-              endIcon={<OpenInNewIcon />}
-              disabled={isBoosting}
-              loading={isBoosting}
-            >
-              Boost Space
-            </LoadingButton>
+                }}
+                size="small"
+                endIcon={<OpenInNewIcon />}
+                disabled={isBoosting}
+                loading={isBoosting}
+              >
+                Boost Space
+              </LoadingButton>
+              <LoadingButton
+                variant="outlined"
+                color="primary"
+                onClick={async () => {
+                  const followCampaign = userCampaigns.find(
+                    (c) => c.ctaType === 'follow'
+                  );
+                  if (followCampaign) {
+                    window.open(`/campaigns/${followCampaign.id}`, '_blank');
+                  } else {
+                    if (!user || !space?.title) {
+                      toast.error('Please login to boost space');
+                      return;
+                    }
+                    setIsBoosting(true);
+                    const campaign = await createCampaign({
+                      spaceId,
+                      projectId: user?.defaultProjectId || '',
+                      userId: user?.uid,
+                      status: 'DRAFT',
+                      createdAt: Date.now(),
+                      ctaType: 'follow',
+                      ctaTarget: '',
+                      spaceTitle: space?.title,
+                      hostHandle: space?.admins[0].twitterScreenName,
+                      description: '',
+                      topics: space?.topics || [],
+                      scheduledStart:
+                        space?.scheduledStart || space.startedAt || 0,
+                      campaignType: 'listeners',
+                      addedType: 'NEW',
+                    });
+                    // await fetchCampaign(spaceId);
+                    toast.success('Campaign created successfully');
+                    setIsBoosting(false);
+                    window.open(`/campaigns/${campaign.id}`, '_blank');
+                  }
+                }}
+                size="small"
+                endIcon={<OpenInNewIcon />}
+                disabled={isBoosting}
+                loading={isBoosting}
+              >
+                Boost Followers
+              </LoadingButton>
+            </Box>
           </Box>
           <Typography
             variant="h6"

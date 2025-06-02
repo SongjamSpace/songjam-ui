@@ -250,7 +250,6 @@ const CampaignList = ({ spaceId, space }: Props) => {
     return (
       <CampaignManager
         spaceId={spaceId}
-        space={space}
         campaign={selectedCampaign}
         handleGenerateMessages={handleGenerateMessages}
         handleBack={() => setSelectedCampaign(null)}

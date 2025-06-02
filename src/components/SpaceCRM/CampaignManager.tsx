@@ -46,7 +46,6 @@ import CloseIcon from '@mui/icons-material/Close';
 
 const CampaignManager: React.FC<{
   spaceId: string;
-  space: any;
   campaign: Campaign;
   handleGenerateMessages: (noOfListeners: number) => void;
   handleBack: () => void;

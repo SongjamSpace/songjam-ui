@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import './App.css';
 import Background from './components/Background';
 import Logo from './components/Logo';
-import { Button, TextField, TextareaAutosize, Box } from '@mui/material';
+import { Button, TextField, TextareaAutosize, Box, Stack } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { LoadingButton } from '@mui/lab';
 import { submitToAirtable } from './services/airtable.service';
@@ -29,7 +29,10 @@ export default function App() {
   //   )
   // );
   const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const handleAnalyze = async (url: string) => {
+  const handleAnalyze = async (
+    url: string,
+    boostFollowers: boolean = false
+  ) => {
     if (!url || !url.trim())
       return toast.error('Please enter a space URL', {
         duration: 3000,
@@ -50,7 +53,7 @@ export default function App() {
     const isBroadcast = url.includes('broadcasts');
     const navigateUrl = isBroadcast
       ? `/dashboard?broadcastId=${spaceId}`
-      : `/dashboard?spaceId=${spaceId}`;
+      : `/dashboard?spaceId=${spaceId}&boostFollowers=${boostFollowers}`;
     navigate(navigateUrl);
     // setIsLoading(true);
     // const res = await axios.get(
@@ -159,23 +162,43 @@ export default function App() {
               <br></br>
               {t('heroSubtitle2')}
             </p>
-            <Box className="space-input" display="flex" gap={2}>
+            <Stack gap={2}>
               <TextField
                 fullWidth
                 placeholder={t('spaceInputPlaceholder')}
                 onChange={(e) => setSpaceUrl(e.target.value)}
                 variant="outlined"
               />
-              <LoadingButton
-                loading={isLoading}
-                variant="contained"
-                className="primary"
-                onClick={() => handleAnalyze(spaceUrl)}
-                sx={{ whiteSpace: 'nowrap' }}
-              >
-                {t('analyzeButton')}
-              </LoadingButton>
-            </Box>
+
+              <Box display="flex" gap={2} justifyContent="center">
+                <LoadingButton
+                  loading={isLoading}
+                  variant="contained"
+                  className="primary"
+                  onClick={() => handleAnalyze(spaceUrl)}
+                  sx={{
+                    whiteSpace: 'nowrap',
+                    px: 4,
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {t('analyzeButton')}
+                </LoadingButton>
+                <LoadingButton
+                  loading={isLoading}
+                  variant="outlined"
+                  className="info"
+                  onClick={() => handleAnalyze(spaceUrl)}
+                  sx={{
+                    whiteSpace: 'nowrap',
+                    px: 3,
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {t('inviteToFollow', 'Boost Followers')}
+                </LoadingButton>
+              </Box>
+            </Stack>
           </div>
         </div>
         {/* <div className="cta-buttons">

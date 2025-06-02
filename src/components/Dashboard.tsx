@@ -268,7 +268,8 @@ export default function Dashboard() {
   const analyzeSpace = async (
     spaceId: string,
     projectId: string,
-    isBroadcast: boolean
+    isBroadcast: boolean,
+    boostFollowers: boolean
   ) => {
     if (!user) return toast.error('Please login to continue');
     setIsLoading(true);
@@ -399,8 +400,8 @@ export default function Dashboard() {
           const campaign = await createCampaign({
             addedType: 'NEW',
             campaignType: 'listeners',
-            ctaType: 'space',
-            ctaTarget: space.metadata.title,
+            ctaType: boostFollowers ? 'follow' : 'space',
+            ctaTarget: boostFollowers ? '' : space.metadata.title,
             spaceId: spaceId,
             projectId: projectId,
             userId: user?.uid || '',
@@ -543,6 +544,7 @@ export default function Dashboard() {
     const searchParams = new URLSearchParams(window.location.search);
     const spaceId = searchParams.get('spaceId');
     const broadcastId = searchParams.get('broadcastId');
+    const boostFollowers = searchParams.get('boostFollowers') === 'true';
     if (defaultProject && (spaceId || broadcastId)) {
       // if (spaceId === 'new') {
       //   setIsShowNewCampaign(true);
@@ -550,7 +552,8 @@ export default function Dashboard() {
       analyzeSpace(
         spaceId || broadcastId || '',
         defaultProject.id || '',
-        broadcastId ? true : false
+        broadcastId ? true : false,
+        boostFollowers
       );
       // }
     }
@@ -595,7 +598,7 @@ export default function Dashboard() {
     // but potentially just add to a list or trigger analysis without navigating immediately.
     // For now, just log and show a message.
     console.log('Adding space:', spaceId);
-    await analyzeSpace(spaceId, defaultProject.id, isBroadcast);
+    await analyzeSpace(spaceId, defaultProject.id, isBroadcast, false);
 
     setSpaceUrl(''); // Clear input after submission
     setIsLoading(false);

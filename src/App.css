@@ -15,8 +15,7 @@
 
 body {
   margin: 0;
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 body {
@@ -176,33 +175,6 @@ nav {
   animation: subtitleFloat 3s ease-in-out infinite;
 }
 
-.space-input {
-  margin-bottom: 3rem;
-}
-
-.space-input p {
-  color: var(--text-secondary);
-  font-size: 1rem;
-  margin-bottom: 0.5rem;
-}
-
-.space-input input {
-  width: 100%;
-  max-width: 450px;
-  padding: 1rem 1.2rem;
-  border-radius: 8px;
-  background: var(--bg-secondary);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-primary);
-  font-size: 1rem;
-  transition: border-color 0.3s ease;
-}
-
-.space-input input:focus {
-  outline: none;
-  border-color: var(--gradient-middle);
-}
-
 @keyframes titleFloat {
   0%,
   100% {
@@ -242,9 +214,7 @@ button.primary {
   border-radius: 6px;
   font-weight: 500;
   cursor: pointer;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   position: relative;
   overflow: hidden;
 }
@@ -300,9 +270,7 @@ button.secondary {
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   transform-style: preserve-3d;
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   position: relative;
   overflow: hidden;
 }

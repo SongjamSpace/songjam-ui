@@ -144,6 +144,16 @@ export const getSpace = async (
   return null;
 };
 
+export const subscribeToSpace = (
+  spaceId: string,
+  onUpdate: (space: Space) => void
+) => {
+  const docRef = doc(db, 'spaces', spaceId);
+  return onSnapshot(docRef, (doc) => {
+    onUpdate(doc.data() as Space);
+  });
+};
+
 export const getSummary = async (spaceId: string) => {
   const docRef = doc(
     db,

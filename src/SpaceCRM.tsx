@@ -44,7 +44,7 @@ import { useTranslation } from 'react-i18next';
 import AudiencePanel from './components/SpaceCRM/AudiencePanel';
 import ContentStudio from './components/SpaceCRM/ContentStudio';
 import {
-  getSpace,
+  subscribeToSpace,
   Segment,
   Space,
   TranscriptionProgress,
@@ -66,6 +66,7 @@ import { Toaster } from 'react-hot-toast';
 import CampaignList from './components/SpaceCRM/CampaignList';
 import ViewersChart from './components/LiveDashboard/ViewersChart';
 import { transcribePy } from './services/transcription.service';
+import axios from 'axios';
 
 type CRMTab =
   | 'dashboard'
@@ -112,6 +113,7 @@ const SpaceCRM: React.FC = () => {
   const [lastVisible, setLastVisible] = useState<any>(null);
   const [segments, setSegments] = useState<Segment[]>([]);
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const hasUpdatedSpaceStatus = useRef(false);
 
   // useEffect(() => {
   //   if (user && space) {
@@ -131,22 +133,32 @@ const SpaceCRM: React.FC = () => {
   useEffect(() => {
     if (!spaceId) return;
 
-    const fetchSpace = async () => {
-      const space = await getSpace(spaceId, (space) => {
-        setSpace(space);
-      });
+    const unsubscribe = subscribeToSpace(spaceId, (space) => {
       if (space) {
         setActiveTab(space.isBroadcast ? 'listenerRetention' : 'audience');
         setSpace(space);
+        if (space.state !== 'ENDED' && !hasUpdatedSpaceStatus.current) {
+          hasUpdatedSpaceStatus.current = true;
+          try {
+            axios.post(
+              `${import.meta.env.VITE_JAM_SERVER_URL}/update-space-status`,
+              {
+                spaceIds: [spaceId],
+              }
+            );
+          } catch (error) {
+            console.error('Error updating space status:', error);
+          }
+        }
       } else {
         toast.error('Space not found');
         setTimeout(() => {
           navigate('/dashboard');
         }, 500);
       }
-    };
+    });
 
-    fetchSpace();
+    return () => unsubscribe();
   }, [spaceId]);
 
   // Update the useEffect for auto-scrolling
@@ -192,6 +204,14 @@ const SpaceCRM: React.FC = () => {
   }, [user]);
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: CRMTab) => {
+    // const isPro = user?.currentPlan === 'pro';
+    // if (
+    //   (newValue === 'listenerRetention' || newValue === 'campaigns') &&
+    //   !isPro
+    // ) {
+    //   toast.error('Please upgrade to PRO to access this feature');
+    //   return;
+    // }
     setActiveTab(newValue);
   };
 
@@ -467,7 +487,8 @@ const SpaceCRM: React.FC = () => {
                     },
                   }}
                 />
-                {space.transcriptionStatus === 'NOT_STARTED' ||
+                {!space.transcriptionStatus ||
+                space.transcriptionStatus === 'NOT_STARTED' ||
                 space.transcriptionStatus === 'FAILED' ? (
                   <LoadingButton
                     loading={isTranscribing}
@@ -626,23 +647,36 @@ const SpaceCRM: React.FC = () => {
                         sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
                       >
                         {t('contentTab')}
-                        {(space?.transcriptionProgress || 0) !==
-                          TranscriptionProgress.ENDED && (
+                        {!space?.transcriptionProgress ? (
                           <Chip
                             size="small"
-                            label={
-                              (space?.transcriptionProgress || 0) <=
-                              TranscriptionProgress.SUMMARIZING
-                                ? t('queuedChip')
-                                : t('analyzingChip')
-                            }
                             sx={{
                               height: 16,
                               fontSize: '0.6rem',
                               background:
                                 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
                             }}
+                            label={t('Pending', 'Pending')}
                           />
+                        ) : (
+                          space.transcriptionProgress !==
+                            TranscriptionProgress.ENDED && (
+                            <Chip
+                              size="small"
+                              label={
+                                space.transcriptionProgress <=
+                                TranscriptionProgress.SUMMARIZING
+                                  ? t('queuedChip')
+                                  : t('analyzingChip')
+                              }
+                              sx={{
+                                height: 16,
+                                fontSize: '0.6rem',
+                                background:
+                                  'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+                              }}
+                            />
+                          )
                         )}
                       </Box>
                     }
@@ -659,23 +693,36 @@ const SpaceCRM: React.FC = () => {
                         sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
                       >
                         {t('timelineTab')}
-                        {(space?.transcriptionProgress || 0) <=
-                          TranscriptionProgress.TRANSCRIBING && (
+                        {!space?.transcriptionProgress ? (
                           <Chip
                             size="small"
-                            label={
-                              (space?.transcriptionProgress || 0) <=
-                              TranscriptionProgress.DOWNLOADING_AUDIO
-                                ? t('queuedChip')
-                                : t('analyzingChip')
-                            }
                             sx={{
                               height: 16,
                               fontSize: '0.6rem',
                               background:
                                 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
                             }}
+                            label={t('Pending', 'Pending')}
                           />
+                        ) : (
+                          space.transcriptionProgress <=
+                            TranscriptionProgress.TRANSCRIBING && (
+                            <Chip
+                              size="small"
+                              label={
+                                space.transcriptionProgress <=
+                                TranscriptionProgress.DOWNLOADING_AUDIO
+                                  ? t('queuedChip')
+                                  : t('analyzingChip')
+                              }
+                              sx={{
+                                height: 16,
+                                fontSize: '0.6rem',
+                                background:
+                                  'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+                              }}
+                            />
+                          )
                         )}
                       </Box>
                     }
@@ -692,23 +739,36 @@ const SpaceCRM: React.FC = () => {
                         sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
                       >
                         {t('transcriptionTab')}
-                        {(space?.transcriptionProgress || 0) <=
-                          TranscriptionProgress.TRANSCRIBING && (
+                        {!space?.transcriptionProgress ? (
                           <Chip
                             size="small"
-                            label={
-                              (space?.transcriptionProgress || 0) <=
-                              TranscriptionProgress.DOWNLOADING_AUDIO
-                                ? t('queuedChip')
-                                : t('analyzingChip')
-                            }
                             sx={{
                               height: 16,
                               fontSize: '0.6rem',
                               background:
                                 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
                             }}
+                            label={t('Pending', 'Pending')}
                           />
+                        ) : (
+                          space.transcriptionProgress <=
+                            TranscriptionProgress.TRANSCRIBING && (
+                            <Chip
+                              size="small"
+                              label={
+                                space.transcriptionProgress <=
+                                TranscriptionProgress.DOWNLOADING_AUDIO
+                                  ? t('queuedChip')
+                                  : t('analyzingChip')
+                              }
+                              sx={{
+                                height: 16,
+                                fontSize: '0.6rem',
+                                background:
+                                  'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+                              }}
+                            />
+                          )
                         )}
                       </Box>
                     }

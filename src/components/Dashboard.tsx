@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Tabs,
@@ -249,15 +249,7 @@ export default function Dashboard() {
   const [liveSpaces, setLiveSpaces] = useState<Space[]>([]);
   const [completedSpaces, setCompletedSpaces] = useState<Space[]>([]);
   const [isSpaceSyncing, setIsSpaceSyncing] = useState(false);
-  // const scheduledSpaces =
-  //   projectSpaces?.filter((space) => space.state === 'NotStarted') ||
-  //   ([] as Space[]);
-  // const liveSpaces =
-  //   projectSpaces?.filter((space) => space.state === 'Running') ||
-  //   ([] as Space[]);
-  // const completedSpaces =
-  //   projectSpaces?.filter((space) => space.state === 'Ended') ||
-  //   ([] as Space[]);
+  const hasUpdatedSpaceStatus = useRef(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -569,23 +561,25 @@ export default function Dashboard() {
   }, [defaultProject]);
 
   const updateSpaceStatus = async () => {
+    if (isSpaceSyncing || hasUpdatedSpaceStatus.current) return;
     if (scheduledSpaces.length > 0 || liveSpaces.length > 0) {
-      // setIsSpaceSyncing(true);
-      // try {
-      //   await axios.post(
-      //     `${import.meta.env.VITE_JAM_SERVER_URL}/update-space-status`,
-      //     {
-      //       spaceIds: [
-      //         ...scheduledSpaces.map((space) => space.spaceId),
-      //         ...liveSpaces.map((space) => space.spaceId),
-      //       ],
-      //     }
-      //   );
-      // } catch (error) {
-      //   console.error('Error updating space status:', error);
-      // } finally {
-      //   setIsSpaceSyncing(false);
-      // }
+      setIsSpaceSyncing(true);
+      try {
+        hasUpdatedSpaceStatus.current = true;
+        await axios.post(
+          `${import.meta.env.VITE_JAM_SERVER_URL}/update-space-status`,
+          {
+            spaceIds: [
+              ...scheduledSpaces.map((space) => space.spaceId),
+              ...liveSpaces.map((space) => space.spaceId),
+            ],
+          }
+        );
+      } catch (error) {
+        console.error('Error updating space status:', error);
+      } finally {
+        setIsSpaceSyncing(false);
+      }
     }
   };
 
@@ -999,8 +993,8 @@ export default function Dashboard() {
                     }}
                   >
                     {campaign.ctaType === 'follow'
-                      ? 'Boost Followers'
-                      : 'Boost Space'}
+                      ? `Boost Followers | ${campaign.spaceTitle}`
+                      : `Boost Space`}
                   </Box>
                 }
               />

@@ -196,9 +196,17 @@ const CampaignDetails = (props: Props) => {
         );
       }
       toast.success(`${noOfDms} DMs generated successfully`);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      // toast.error('Failed to generate DMs');
+
+      if (
+        e.response?.status === 404 &&
+        e.response?.data?.code === 'NO_NEW_LISTENERS'
+      ) {
+        toast.error('No new listeners found');
+      } else {
+        toast.error('Failed to generate DMs');
+      }
     } finally {
       setActionLoading(false);
     }
@@ -771,6 +779,11 @@ const CampaignDetails = (props: Props) => {
                         <Chip
                           size="small"
                           label={`Available: ${user?.usage.autoDms}/${maxDms} DMs`}
+                          color={
+                            user?.usage.autoDms + numListeners >= maxDms
+                              ? 'error'
+                              : 'default'
+                          }
                         />
                       )}
                     </Box>
@@ -956,7 +969,7 @@ const CampaignDetails = (props: Props) => {
                           color={
                             user?.usage.autoDms + numListeners >= maxDms
                               ? 'error'
-                              : 'success'
+                              : 'default'
                           }
                         />
                       )}

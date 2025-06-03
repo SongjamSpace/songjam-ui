@@ -273,7 +273,6 @@ export default function Dashboard() {
   ) => {
     if (!user) return toast.error('Please login to continue');
     setIsLoading(true);
-
     const spaceDoc = await getSpace(spaceId);
     if (spaceDoc) {
       if (projectId && !spaceDoc.projectIds?.includes(projectId)) {
@@ -287,8 +286,8 @@ export default function Dashboard() {
           const campaign = await createCampaign({
             addedType: 'NEW',
             campaignType: 'listeners',
-            ctaType: 'space',
-            ctaTarget: spaceDoc.title,
+            ctaType: boostFollowers ? 'follow' : 'space',
+            ctaTarget: boostFollowers ? '' : spaceDoc.title,
             spaceId: spaceId,
             projectId: projectId,
             userId: user?.uid || '',
@@ -331,6 +330,10 @@ export default function Dashboard() {
     });
     try {
       if (isBroadcast) {
+        if (boostFollowers) {
+          toast.error('Boost Followers is not available for Live Broadcasts');
+          return;
+        }
         logFirebaseEvent('analyze_broadcast', {
           uid: user?.uid || '',
           username: user?.username || '',
@@ -419,6 +422,12 @@ export default function Dashboard() {
           });
           navigate(`/campaigns/${campaign.id}`);
         } else if (state === 'NotStarted') {
+          if (boostFollowers) {
+            toast.error(
+              'Boost Followers is not available for Scheduled Spaces'
+            );
+            return;
+          }
           await axios.post(
             `${import.meta.env.VITE_JAM_SERVER_URL}/schedule-space`,
             { spaceId, projectId }
@@ -588,7 +597,7 @@ export default function Dashboard() {
     setValue(newValue);
   };
 
-  const handleAddSpace = async () => {
+  const handleAddSpace = async (boostFollowers: boolean = false) => {
     const spaceId = extractSpaceId(spaceUrl);
     if (isLoading || !spaceId || !defaultProject) return;
     setIsLoading(true);
@@ -598,7 +607,7 @@ export default function Dashboard() {
     // but potentially just add to a list or trigger analysis without navigating immediately.
     // For now, just log and show a message.
     console.log('Adding space:', spaceId);
-    await analyzeSpace(spaceId, defaultProject.id, isBroadcast, false);
+    await analyzeSpace(spaceId, defaultProject.id, isBroadcast, boostFollowers);
 
     setSpaceUrl(''); // Clear input after submission
     setIsLoading(false);
@@ -989,39 +998,9 @@ export default function Dashboard() {
                       gap: 0.5,
                     }}
                   >
-                    {/* <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 0.5,
-                      }}
-                    >
-                      <EventIcon fontSize="inherit" sx={{ mr: 0.5 }} />
-                      Scheduled Start:{' '}
-                      {new Date(
-                        campaign.scheduledStart || 0
-                      ).toLocaleTimeString([], {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                        hour: 'numeric',
-                        minute: '2-digit',
-                        hour12: true,
-                      })}
-                    </Box> */}
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 0.5,
-                      }}
-                    >
-                      <GroupIcon fontSize="inherit" sx={{ mr: 0.5 }} />
-                      Speakers:{' '}
-                      {campaign.spaceSpeakerUsernames
-                        ?.map((speaker) => speaker)
-                        .join(', ') || 'N/A'}
-                    </Box>
+                    {campaign.ctaType === 'follow'
+                      ? 'Boost Followers'
+                      : 'Boost Space'}
                   </Box>
                 }
               />
@@ -1209,11 +1188,11 @@ export default function Dashboard() {
             display="flex"
             gap={2}
             alignItems="center"
+            flexDirection={'column'}
             // justifyContent={'space-between'}
             width={'100%'}
           >
             <TextField
-              fullWidth
               placeholder={t(
                 'spaceInputPlaceholderDashboard',
                 'Paste X Space URL (Live, Scheduled, or Recorded)'
@@ -1224,6 +1203,7 @@ export default function Dashboard() {
               size="small"
               disabled={!user || isLoading}
               sx={{
+                width: '70%',
                 '& .MuiOutlinedInput-root': {
                   color: 'var(--text-primary)',
                   bgcolor: 'rgba(255, 255, 255, 0.05)',
@@ -1263,9 +1243,9 @@ export default function Dashboard() {
             />
             <Box display={'flex'} gap={2} alignItems={'center'}>
               <LoadingButton
-                loading={isLoading}
+                loading={isLoading && !!user}
                 variant="contained"
-                onClick={handleAddSpace}
+                onClick={() => handleAddSpace(false)}
                 disabled={!user || isLoading}
                 sx={{
                   whiteSpace: 'nowrap',
@@ -1281,9 +1261,25 @@ export default function Dashboard() {
                     bgcolor: 'rgba(96, 165, 250, 0.5)',
                     color: 'rgba(255, 255, 255, 0.7)',
                   },
+                  textTransform: 'uppercase',
                 }}
               >
                 {t('addSpaceButton', 'Boost Space')}
+              </LoadingButton>
+              <LoadingButton
+                loading={isLoading && !!user}
+                disabled={!user || isLoading}
+                variant="outlined"
+                className="info"
+                onClick={() => handleAddSpace(true)}
+                sx={{
+                  padding: '8px 20px',
+                  // whiteSpace: 'nowrap',
+                  // px: 3,
+                  textTransform: 'uppercase',
+                }}
+              >
+                {t('inviteToFollow', 'Boost Followers')}
               </LoadingButton>
 
               {/* <Button

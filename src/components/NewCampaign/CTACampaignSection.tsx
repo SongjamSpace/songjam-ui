@@ -65,7 +65,8 @@ const CTACampaignSection = ({
                 value={followAccountEmail}
                 onChange={(e) => {
                   if (id) {
-                    setFollowAccountEmail(e.target.value);
+                    // Remove @ from the beginning of the string
+                    setFollowAccountEmail(e.target.value.replace('@', ''));
                   }
                 }}
                 sx={{

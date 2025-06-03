@@ -79,14 +79,17 @@ const CampaignDetails = (props: Props) => {
 
   const fetchCampaign = async () => {
     if (id) {
-      const campaign = await getCampaign(id, (campaign) => {
-        setCampaign(campaign);
+      await getCampaign(id, (campaign) => {
+        if (campaign) {
+          setCampaign(campaign);
+        } else {
+          toast.error('Campaign not found', {
+            duration: 5000,
+            position: 'bottom-right',
+          });
+          navigate('/dashboard');
+        }
       });
-      if (campaign) {
-        setCampaign(campaign);
-      } else {
-        navigate('/dashboard');
-      }
     }
   };
 
@@ -139,21 +142,21 @@ const CampaignDetails = (props: Props) => {
       });
       return;
     }
-    // if ((user?.usage.autoDms || 0) + noOfDms > maxDms) {
-    //   setShowPriceDialog(true);
-    //   logFirebaseEvent('dm_limit_reached', {
-    //     uid: user?.uid || '',
-    //     username: user?.username || '',
-    //     plan: user?.currentPlan || '',
-    //     spaceId: campaign?.spaceId || '',
-    //     projectId: campaign?.projectId || '',
-    //   });
-    //   toast.error(`Please upgrade your plan to generate more DMs`, {
-    //     duration: 5000,
-    //     position: 'bottom-right',
-    //   });
-    //   return;
-    // }
+    if ((user?.usage.autoDms || 0) + noOfDms > maxDms) {
+      setShowPriceDialog(true);
+      logFirebaseEvent('dm_limit_reached', {
+        uid: user?.uid || '',
+        username: user?.username || '',
+        plan: user?.currentPlan || '',
+        spaceId: campaign?.spaceId || '',
+        projectId: campaign?.projectId || '',
+      });
+      toast.error(`Please upgrade your plan to generate more DMs`, {
+        duration: 5000,
+        position: 'bottom-right',
+      });
+      return;
+    }
     const token = await getDynamicToken();
     if (!token) {
       return alert('No token found, please login again');
@@ -938,7 +941,7 @@ const CampaignDetails = (props: Props) => {
                 >
                   <Box display={'flex'} alignItems={'center'} gap={1}>
                     <Typography variant="h6">
-                      Reach Out to the Space Listeners
+                      Send DMs to Space Listeners
                     </Typography>
                     <Box display={'flex'} alignItems={'center'} gap={1}>
                       <Chip
@@ -950,6 +953,11 @@ const CampaignDetails = (props: Props) => {
                         <Chip
                           size="small"
                           label={`Available: ${user?.usage.autoDms}/${maxDms} DMs`}
+                          color={
+                            user?.usage.autoDms + numListeners >= maxDms
+                              ? 'error'
+                              : 'success'
+                          }
                         />
                       )}
                     </Box>

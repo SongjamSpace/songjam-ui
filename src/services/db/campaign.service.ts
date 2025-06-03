@@ -65,13 +65,18 @@ export const createScheduledCampaign = async (campaign: Campaign) => {
 
 export const getCampaign = async (
   campaignId: string,
-  listener?: (campaign: Campaign) => void
+  listener?: (campaign: Campaign | null) => void
 ) => {
   const campaignRef = doc(db, CAMPAIGN_COLLECTION, campaignId);
   const campaignDoc = await getDoc(campaignRef);
   if (listener) {
     onSnapshot(campaignRef, (snapshot) => {
-      listener({ ...snapshot.data(), id: campaignId } as Campaign);
+      const campaignData = snapshot.data() as Campaign;
+      if (!campaignData) {
+        listener(null);
+      } else {
+        listener({ ...campaignData, id: campaignId } as Campaign);
+      }
     });
   }
   return { ...campaignDoc.data(), id: campaignId } as Campaign;

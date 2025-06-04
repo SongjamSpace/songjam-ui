@@ -19,6 +19,7 @@ import {
   Stack,
   Button,
   Skeleton,
+  CircularProgress,
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import ArrowBack from '@mui/icons-material/ArrowBack';
@@ -39,10 +40,13 @@ import {
   CampaignListener,
   updateCampaignListenerMessage,
   subscribeToCampaignMessages,
+  deleteCampaignMessageDoc,
 } from '../../services/db/campaign.service';
 import { TFunction } from 'i18next';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
+import DeleteIcon from '@mui/icons-material/DeleteOutline';
+import { toast } from 'react-hot-toast';
 
 const CampaignManager: React.FC<{
   spaceId: string;
@@ -81,6 +85,13 @@ const CampaignManager: React.FC<{
       setError(t('errorFetchingListeners')); // Use translation key
     } finally {
       setIsLoadingListeners(false);
+    }
+  };
+  const deleteMessage = async (listenerId: string) => {
+    if (campaign.id) {
+      await deleteCampaignMessageDoc(campaign.id, listenerId);
+    } else {
+      toast.error('Campaign ID not found');
     }
   };
 
@@ -343,7 +354,10 @@ const CampaignManager: React.FC<{
                   }}
                 >
                   <CardContent sx={{ flexGrow: 1 }}>
-                    <ListenerCardContent listener={listener} />
+                    <ListenerCardContent
+                      listener={listener}
+                      deleteMessage={deleteMessage}
+                    />
                   </CardContent>
                 </Card>
               </Grid>
@@ -379,7 +393,14 @@ const CampaignManager: React.FC<{
 
 export default CampaignManager;
 
-const ListenerCardContent = ({ listener }: { listener: SpaceListener }) => {
+const ListenerCardContent = ({
+  listener,
+  deleteMessage,
+}: {
+  listener: SpaceListener;
+  deleteMessage: (listenerId: string) => void;
+}) => {
+  const [isDeleting, setIsDeleting] = useState(false);
   return (
     <>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -411,6 +432,22 @@ const ListenerCardContent = ({ listener }: { listener: SpaceListener }) => {
             )}
           </Box>
         </Box>
+        <IconButton
+          sx={{ ml: 'auto' }}
+          size="small"
+          onClick={async () => {
+            setIsDeleting(true);
+            await deleteMessage(listener.userId);
+            setIsDeleting(false);
+          }}
+          disabled={isDeleting}
+        >
+          {isDeleting ? (
+            <CircularProgress size={20} />
+          ) : (
+            <DeleteIcon fontSize="small" />
+          )}
+        </IconButton>
       </Box>
 
       {/* {listener.biography && ( */}
@@ -469,6 +506,10 @@ export const CampaignListeners = ({
   const [page, setPage] = useState(1);
   const messagesPerPage = 50;
   const containerRef = React.useRef<HTMLDivElement>(null);
+
+  const deleteMessage = async (listenerId: string) => {
+    await deleteCampaignMessageDoc(campaignId, listenerId);
+  };
 
   useEffect(() => {
     const unsubscribe = subscribeToCampaignMessages(
@@ -578,9 +619,15 @@ export const CampaignListeners = ({
 
   return (
     <Box>
+      {(!messages || messages.length === 0) && (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, my: 2 }}>
+          <Typography variant="body2" color="text.secondary">
+            {t('noDmsGenerated', 'No messages to show')}
+          </Typography>
+        </Box>
+      )}
       {campaign?.status !== 'DRAFT' &&
-        campaign.totalDms &&
-        messages &&
+        !!campaign.totalDms &&
         messages.length > 0 && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, my: 2 }}>
             <Typography variant="body2" color="text.secondary">
@@ -633,7 +680,10 @@ export const CampaignListeners = ({
                   }}
                 >
                   <CardContent sx={{ flexGrow: 1 }}>
-                    <ListenerCardContent listener={listener} />
+                    <ListenerCardContent
+                      listener={listener}
+                      deleteMessage={deleteMessage}
+                    />
                     <Box>
                       <Box
                         sx={{

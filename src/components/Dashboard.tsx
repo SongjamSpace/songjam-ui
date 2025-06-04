@@ -317,9 +317,7 @@ export default function Dashboard() {
       setIsLoading(false);
       return;
     }
-    toast.success(`Processing ${isBroadcast ? 'live' : 'space'}: ${spaceId}`, {
-      position: 'bottom-right',
-    });
+    toast.success(`Processing ${isBroadcast ? 'live' : 'space'}: ${spaceId}`);
     try {
       if (isBroadcast) {
         if (boostFollowers) {
@@ -454,9 +452,7 @@ export default function Dashboard() {
           //   hostHandle: space.participants.admins[0].twitter_screen_name,
           //   id: spaceId,
           // });
-          toast.success('Space is scheduled successfully', {
-            duration: 3000,
-          });
+          toast.success('Space is scheduled successfully');
 
           setProcessingSpace(null);
         }
@@ -464,14 +460,7 @@ export default function Dashboard() {
         const msg = space
           ? `Space is not in a valid state: ${space.metadata.state}`
           : 'Space not found';
-        toast.error(msg, {
-          duration: 3000,
-          position: 'bottom-right',
-          style: {
-            background: '#333',
-            color: '#fff',
-          },
-        });
+        toast.error(msg);
       }
     } catch (error) {
       const campaign = await createCampaign({

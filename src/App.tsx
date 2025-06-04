@@ -33,21 +33,14 @@ export default function App() {
     url: string,
     boostFollowers: boolean = false
   ) => {
-    if (!url || !url.trim())
-      return toast.error('Please enter a space URL', {
-        duration: 3000,
-        position: 'bottom-right',
-      });
+    if (!url || !url.trim()) return toast.error('Please enter a space URL');
     // return navigate('/dashboard?spaceId=new');
     // Regex to get spaces/id or broadcasts/id
     // example urls: ['https://x.com/i/spaces/1OdKrDYpvzwJX', 'https://x.com/i/broadcasts/1vAGRDzePAPxl']
     // extract the id from the url
     const spaceId = extractSpaceId(url);
     if (!spaceId) {
-      toast.error('Invalid space URL', {
-        duration: 3000,
-        position: 'bottom-right',
-      });
+      toast.error('Invalid space URL');
       return;
     }
     const isBroadcast = url.includes('broadcasts');
@@ -746,7 +739,7 @@ export default function App() {
         <p>{t('footerText')}</p>
       </footer>
       <LoginDialog open={showAuthDialog && !authLoading} />
-      <Toaster />
+      <Toaster position="bottom-right" />
     </main>
   );
 }

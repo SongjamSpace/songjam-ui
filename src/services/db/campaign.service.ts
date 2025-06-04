@@ -12,6 +12,9 @@ import {
   deleteDoc,
   limit,
   orderBy,
+  increment,
+  writeBatch,
+  startAfter,
 } from 'firebase/firestore';
 import { SpaceListener } from './spaces.service';
 
@@ -38,6 +41,7 @@ export type Campaign = {
   spaceUrl?: string;
   campaignType?: 'speakers' | 'listeners';
   isBroadcast?: boolean;
+  generatedDms?: number;
 };
 
 export type CampaignListener = SpaceListener & {
@@ -212,4 +216,92 @@ export const subscribeToCampaignMessages = (
 
     onUpdate(sortedMessages, lastMessage);
   });
+};
+
+export const deleteCampaignMessageDoc = async (
+  campaignId: string,
+  listenerId: string
+) => {
+  const campaignRef = doc(db, CAMPAIGN_COLLECTION, campaignId);
+  const campaignMessageRef = doc(
+    db,
+    CAMPAIGN_COLLECTION,
+    campaignId,
+    CAMPAIGN_MESSAGES_SUBCOLLECTION,
+    listenerId
+  );
+  // create a Transaction
+  const transaction = writeBatch(db);
+  transaction.update(campaignRef, {
+    totalDms: increment(-1) as unknown as number,
+    generatedDms: increment(-1) as unknown as number,
+  });
+  transaction.delete(campaignMessageRef);
+  await transaction.commit();
+};
+
+export const dropCampaignMessagesSubcollection = async (campaignId: string) => {
+  const campaignRef = doc(db, CAMPAIGN_COLLECTION, campaignId);
+  const messagesRef = collection(
+    db,
+    CAMPAIGN_COLLECTION,
+    campaignId,
+    CAMPAIGN_MESSAGES_SUBCOLLECTION
+  );
+
+  const batchSize = 100;
+  let totalDeleted = 0;
+  let lastDoc = null;
+
+  // Keep fetching and deleting in batches until no more documents
+  while (true) {
+    // Create a query to order messages by timestamp
+    let q = query(
+      messagesRef,
+      where('messageStatus', '==', 'READY'),
+      orderBy('messageCreatedAt', 'desc'),
+      limit(batchSize)
+    );
+
+    // If we have a last document, start after it
+    if (lastDoc) {
+      q = query(
+        messagesRef,
+        where('messageStatus', '==', 'READY'),
+        orderBy('messageCreatedAt', 'desc'),
+        startAfter(lastDoc),
+        limit(batchSize)
+      );
+    }
+
+    const snapshot = await getDocs(q);
+    const docs = snapshot.docs;
+
+    // If no more documents, break the loop
+    if (docs.length === 0) {
+      break;
+    }
+
+    // Update the last document for next iteration
+    lastDoc = docs[docs.length - 1];
+
+    // Create and commit batch for current documents
+    const batch = writeBatch(db);
+    docs.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+    await batch.commit();
+
+    totalDeleted += docs.length;
+  }
+
+  // Update campaign document with total count reduction
+  if (totalDeleted > 0) {
+    const campaignTransaction = writeBatch(db);
+    campaignTransaction.update(campaignRef, {
+      totalDms: increment(-totalDeleted) as unknown as number,
+      generatedDms: increment(-totalDeleted) as unknown as number,
+    });
+    await campaignTransaction.commit();
+  }
 };

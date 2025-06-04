@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   Campaign as CampaignType,
+  dropCampaignMessagesSubcollection,
   getCampaign,
 } from '../services/db/campaign.service';
 import {
@@ -76,6 +77,8 @@ const CampaignDetails = (props: Props) => {
   const [isSampleDMsGenerating, setIsSampleDMsGenerating] = useState(false);
   const [sampleDm, setSampleDm] = useState('');
   const [showPriceDialog, setShowPriceDialog] = useState(false);
+  const [isStopping, setIsStopping] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
 
   const fetchCampaign = async () => {
     if (id) {
@@ -83,10 +86,7 @@ const CampaignDetails = (props: Props) => {
         if (campaign) {
           setCampaign(campaign);
         } else {
-          toast.error('Campaign not found', {
-            duration: 5000,
-            position: 'bottom-right',
-          });
+          toast.error('Campaign not found');
           navigate('/dashboard');
         }
       });
@@ -107,10 +107,7 @@ const CampaignDetails = (props: Props) => {
       } else {
         setIsOwner(false);
         setIsLoading(false);
-        toast.error('Access denied for this email', {
-          duration: 5000,
-          position: 'bottom-right',
-        });
+        toast.error('Access denied for this email');
         navigate('/dashboard');
       }
     }
@@ -136,10 +133,7 @@ const CampaignDetails = (props: Props) => {
       return;
     }
     if (!campaign?.spaceTitle) {
-      toast.error('Please add a space title', {
-        duration: 5000,
-        position: 'bottom-right',
-      });
+      toast.error('Please add a space title');
       return;
     }
     if ((user?.usage.autoDms || 0) + noOfDms > maxDms) {
@@ -151,10 +145,7 @@ const CampaignDetails = (props: Props) => {
         spaceId: campaign?.spaceId || '',
         projectId: campaign?.projectId || '',
       });
-      toast.error(`Please upgrade your plan to generate more DMs`, {
-        duration: 5000,
-        position: 'bottom-right',
-      });
+      toast.error(`Please upgrade your plan to generate more DMs`);
       return;
     }
     const token = await getDynamicToken();
@@ -195,7 +186,7 @@ const CampaignDetails = (props: Props) => {
           }
         );
       }
-      toast.success(`${noOfDms} DMs generated successfully`);
+      // toast.success(`${noOfDms} DMs generated successfully`);
     } catch (e: any) {
       console.error(e);
 
@@ -209,6 +200,34 @@ const CampaignDetails = (props: Props) => {
       }
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const onStopGenerating = async () => {
+    if (!id || !campaign) return;
+    const token = await getDynamicToken();
+    if (!token) {
+      return alert('User not found, please login again');
+    }
+    try {
+      setIsStopping(true);
+      await axios.post(
+        `${import.meta.env.VITE_JAM_SERVER_URL}/api/stop-dm-generation`,
+        {
+          campaignId: id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      toast.success('Request sent successfully');
+    } catch (e: any) {
+      console.error(e);
+      toast.error('Failed to stop DM generation');
+    } finally {
+      setIsStopping(false);
     }
   };
   // const handleGenerateDMs = async () => {
@@ -791,6 +810,16 @@ const CampaignDetails = (props: Props) => {
                         )}
                       </Box>
                     </Box>
+                    {campaign.status === 'GENERATING' && (
+                      <LoadingButton
+                        loading={isStopping}
+                        variant="contained"
+                        color="primary"
+                        onClick={onStopGenerating}
+                      >
+                        Stop Generating
+                      </LoadingButton>
+                    )}
                     {/* </Box> */}
 
                     {/* Selected Topics Section */}
@@ -926,6 +955,7 @@ const CampaignDetails = (props: Props) => {
                           justifyContent={'center'}
                           width={'100%'}
                           my={2}
+                          gap={2}
                         >
                           <LoadingButton
                             loading={actionLoading}
@@ -935,9 +965,28 @@ const CampaignDetails = (props: Props) => {
                             onClick={() => {
                               handleGenerateDMs(numListeners);
                             }}
-                            disabled={isUpgrading}
+                            disabled={isUpgrading || isClearing}
                           >
                             Generate DMs
+                          </LoadingButton>
+                          <LoadingButton
+                            loading={isClearing}
+                            variant="outlined"
+                            color="error"
+                            onClick={async () => {
+                              setIsClearing(true);
+                              if (id) {
+                                await dropCampaignMessagesSubcollection(id);
+                              }
+                              setIsClearing(false);
+                            }}
+                            sx={{
+                              whiteSpace: 'nowrap',
+                              color: 'error.main',
+                            }}
+                            disabled={!campaign.generatedDms}
+                          >
+                            Clear All
                           </LoadingButton>
                         </Box>
                       )}
@@ -1131,7 +1180,7 @@ const CampaignDetails = (props: Props) => {
         </Grid>
       )}
       <LoginDialog open={showAuthDialog && !authLoading} />
-      <Toaster />
+      <Toaster position="bottom-right" />
       <Dialog
         open={showPriceDialog}
         onClose={() => setShowPriceDialog(false)}

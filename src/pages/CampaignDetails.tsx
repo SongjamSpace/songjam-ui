@@ -758,48 +758,51 @@ const CampaignDetails = (props: Props) => {
 
           {/* Right Column - Selected Spaces & Speakers */}
 
-          {campaign && campaign.ctaType === 'space' && id && user && (
-            <Grid item xs={12} md={8}>
-              <Paper sx={{ height: '100%', p: 2 }}>
-                <Box
-                  display={'flex'}
-                  alignItems={'center'}
-                  gap={2}
-                  justifyContent={'space-between'}
-                >
-                  <Box display={'flex'} alignItems={'center'} gap={1}>
-                    <Typography variant="h6">Source Listeners</Typography>
+          {campaign &&
+            ['space', 'live'].includes(campaign.ctaType) &&
+            id &&
+            user && (
+              <Grid item xs={12} md={8}>
+                <Paper sx={{ height: '100%', p: 2 }}>
+                  <Box
+                    display={'flex'}
+                    alignItems={'center'}
+                    gap={2}
+                    justifyContent={'space-between'}
+                  >
                     <Box display={'flex'} alignItems={'center'} gap={1}>
-                      <Chip
-                        size="small"
-                        label={`PLAN: ${user?.currentPlan?.toUpperCase()}`}
-                      />
-                      {(user?.currentPlan === 'free' ||
-                        user?.currentPlan === 'starter') && (
+                      <Typography variant="h6">Source Listeners</Typography>
+                      <Box display={'flex'} alignItems={'center'} gap={1}>
                         <Chip
                           size="small"
-                          label={`Available: ${user?.usage.autoDms}/${maxDms} DMs`}
-                          color={
-                            user?.usage.autoDms + numListeners >= maxDms
-                              ? 'error'
-                              : 'default'
-                          }
+                          label={`PLAN: ${user?.currentPlan?.toUpperCase()}`}
                         />
-                      )}
+                        {(user?.currentPlan === 'free' ||
+                          user?.currentPlan === 'starter') && (
+                          <Chip
+                            size="small"
+                            label={`Available: ${user?.usage.autoDms}/${maxDms} DMs`}
+                            color={
+                              user?.usage.autoDms + numListeners >= maxDms
+                                ? 'error'
+                                : 'default'
+                            }
+                          />
+                        )}
+                      </Box>
                     </Box>
-                  </Box>
-                  {/* </Box> */}
+                    {/* </Box> */}
 
-                  {/* Selected Topics Section */}
-                  {/* {selectedTopics.length > 0 && ( */}
-                  {/* <Box
+                    {/* Selected Topics Section */}
+                    {/* {selectedTopics.length > 0 && ( */}
+                    {/* <Box
                   display={'flex'}
                   gap={2}
                   justifyContent={'space-between'}
                   alignItems={'center'}
                   mb={2}
                 > */}
-                  {/* <Box display={'flex'} gap={1} flexWrap={'wrap'}>
+                    {/* <Box display={'flex'} gap={1} flexWrap={'wrap'}>
                     {selectedTopics.map((topic) => (
                       <Chip
                         key={topic}
@@ -814,135 +817,135 @@ const CampaignDetails = (props: Props) => {
                     ))}
                   </Box> */}
 
-                  {/* Pick a number of listeners you want to target */}
-                  <Box
-                    display="flex"
-                    flexDirection={'column'}
-                    gap={1}
-                    alignItems="center"
-                  >
-                    <Autocomplete
-                      disablePortal
-                      options={[10, 100, 250, 500, 1000].map(String)}
-                      sx={{ width: 250 }}
-                      size="small"
-                      freeSolo
-                      value={String(numListeners)}
-                      onChange={(event, newValue) => {
-                        if (typeof newValue === 'string') {
-                          const parsedValue = parseInt(newValue);
+                    {/* Pick a number of listeners you want to target */}
+                    <Box
+                      display="flex"
+                      flexDirection={'column'}
+                      gap={1}
+                      alignItems="center"
+                    >
+                      <Autocomplete
+                        disablePortal
+                        options={[10, 100, 250, 500, 1000].map(String)}
+                        sx={{ width: 250 }}
+                        size="small"
+                        freeSolo
+                        value={String(numListeners)}
+                        onChange={(event, newValue) => {
+                          if (typeof newValue === 'string') {
+                            const parsedValue = parseInt(newValue);
+                            if (!isNaN(parsedValue)) {
+                              setNumListeners(Math.min(parsedValue, 1000));
+                            }
+                          }
+                        }}
+                        onInputChange={(event, newInputValue) => {
+                          const parsedValue = parseInt(newInputValue);
                           if (!isNaN(parsedValue)) {
                             setNumListeners(Math.min(parsedValue, 1000));
                           }
-                        }
-                      }}
-                      onInputChange={(event, newInputValue) => {
-                        const parsedValue = parseInt(newInputValue);
-                        if (!isNaN(parsedValue)) {
-                          setNumListeners(Math.min(parsedValue, 1000));
-                        }
-                      }}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label="Number of AutoDMs"
-                          type="number"
-                          inputProps={{
-                            ...params.inputProps,
-                            max: 1000,
-                            min: 1,
-                          }}
-                        />
-                      )}
-                    />
-                  </Box>
-                </Box>
-                {(user?.currentPlan === 'free' ||
-                  user?.currentPlan === 'starter') && (
-                  <Box
-                    display={'flex'}
-                    alignItems={'center'}
-                    gap={1}
-                    justifyContent={'end'}
-                    mt={1}
-                  >
-                    <Typography variant="body2">
-                      <span
-                        onClick={async () => {
-                          if (isUpgrading) return;
-                          setIsUpgrading(true);
-                          await createCheckoutSession(user.uid, 'pro');
                         }}
-                        style={{
-                          cursor: 'pointer',
-                          color: 'rgba(255,255,255,0.8)',
-                          textDecoration: 'underline',
-                          display: 'flex',
-                          alignItems: 'center',
-                        }}
-                      >
-                        {isUpgrading && (
-                          <CircularProgress size={16} sx={{ mr: 1 }} />
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Number of AutoDMs"
+                            type="number"
+                            inputProps={{
+                              ...params.inputProps,
+                              max: 1000,
+                              min: 1,
+                            }}
+                          />
                         )}
-                        Upgrade to PRO for unlimited autoDMs
-                      </span>
-                    </Typography>
-                  </Box>
-                )}
-                {campaign.status === 'DRAFT' ? (
-                  // campaign.campaignType === 'speakers' ? (
-                  //   <SourceSpeakers
-                  //     selectedSpaces={selectedSpaces}
-                  //     setSelectedSpaces={setSelectedSpaces}
-                  //     currentPlan={user?.currentPlan}
-                  //     upgradePlan={async () => {
-                  //       createCheckoutSession(user.uid, 'pro');
-                  //     }}
-                  //     user={user}
-                  //   />
-                  // ) : (
-                  <SourceListeners
-                    handleGenerateDMs={handleGenerateDMs}
-                    numListeners={numListeners}
-                    selectedTopics={selectedTopics}
-                    setSelectedTopics={setSelectedTopics}
-                  />
-                ) : (
-                  // )
-                  <Stack position={'relative'}>
-                    <Box sx={{ overflowY: 'auto', maxHeight: '75vh' }}>
-                      <CampaignListeners
-                        campaignId={id}
-                        campaign={campaign}
-                        t={t}
                       />
                     </Box>
-                    {campaign.status !== 'GENERATING' && (
-                      <Box
-                        display={'flex'}
-                        justifyContent={'center'}
-                        width={'100%'}
-                        my={2}
-                      >
-                        <LoadingButton
-                          loading={actionLoading}
-                          variant="contained"
-                          color="primary"
-                          fullWidth
-                          onClick={() => {
-                            handleGenerateDMs(numListeners);
+                  </Box>
+                  {(user?.currentPlan === 'free' ||
+                    user?.currentPlan === 'starter') && (
+                    <Box
+                      display={'flex'}
+                      alignItems={'center'}
+                      gap={1}
+                      justifyContent={'end'}
+                      mt={1}
+                    >
+                      <Typography variant="body2">
+                        <span
+                          onClick={async () => {
+                            if (isUpgrading) return;
+                            setIsUpgrading(true);
+                            await createCheckoutSession(user.uid, 'pro');
                           }}
-                          disabled={isUpgrading}
+                          style={{
+                            cursor: 'pointer',
+                            color: 'rgba(255,255,255,0.8)',
+                            textDecoration: 'underline',
+                            display: 'flex',
+                            alignItems: 'center',
+                          }}
                         >
-                          Generate DMs
-                        </LoadingButton>
+                          {isUpgrading && (
+                            <CircularProgress size={16} sx={{ mr: 1 }} />
+                          )}
+                          Upgrade to PRO for unlimited autoDMs
+                        </span>
+                      </Typography>
+                    </Box>
+                  )}
+                  {campaign.status === 'DRAFT' ? (
+                    // campaign.campaignType === 'speakers' ? (
+                    //   <SourceSpeakers
+                    //     selectedSpaces={selectedSpaces}
+                    //     setSelectedSpaces={setSelectedSpaces}
+                    //     currentPlan={user?.currentPlan}
+                    //     upgradePlan={async () => {
+                    //       createCheckoutSession(user.uid, 'pro');
+                    //     }}
+                    //     user={user}
+                    //   />
+                    // ) : (
+                    <SourceListeners
+                      handleGenerateDMs={handleGenerateDMs}
+                      numListeners={numListeners}
+                      selectedTopics={selectedTopics}
+                      setSelectedTopics={setSelectedTopics}
+                    />
+                  ) : (
+                    // )
+                    <Stack position={'relative'}>
+                      <Box sx={{ overflowY: 'auto', maxHeight: '75vh' }}>
+                        <CampaignListeners
+                          campaignId={id}
+                          campaign={campaign}
+                          t={t}
+                        />
                       </Box>
-                    )}
-                  </Stack>
-                )}
-              </Paper>
-            </Grid>
-          )}
+                      {campaign.status !== 'GENERATING' && (
+                        <Box
+                          display={'flex'}
+                          justifyContent={'center'}
+                          width={'100%'}
+                          my={2}
+                        >
+                          <LoadingButton
+                            loading={actionLoading}
+                            variant="contained"
+                            color="primary"
+                            fullWidth
+                            onClick={() => {
+                              handleGenerateDMs(numListeners);
+                            }}
+                            disabled={isUpgrading}
+                          >
+                            Generate DMs
+                          </LoadingButton>
+                        </Box>
+                      )}
+                    </Stack>
+                  )}
+                </Paper>
+              </Grid>
+            )}
           {campaign && campaign.ctaType === 'follow' && id && user && (
             <Grid item xs={12} md={8}>
               <Paper sx={{ height: '100%', p: 2 }}>

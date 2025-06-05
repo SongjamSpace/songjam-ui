@@ -109,6 +109,24 @@ export default function App() {
                   background: 'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
+                  fontSize: { xs: '2.5rem', md: '4rem' },
+                  fontWeight: 800,
+                  letterSpacing: '-0.02em',
+                  lineHeight: 1.1,
+                  textShadow: '0 0 30px rgba(96, 165, 250, 0.3)',
+                  animation: 'gradient 8s ease infinite',
+                  backgroundSize: '200% 200%',
+                  '@keyframes gradient': {
+                    '0%': {
+                      backgroundPosition: '0% 50%',
+                    },
+                    '50%': {
+                      backgroundPosition: '100% 50%',
+                    },
+                    '100%': {
+                      backgroundPosition: '0% 50%',
+                    },
+                  },
                 }}
               >
                 {t('heroTitle1')}
@@ -122,6 +140,22 @@ export default function App() {
                   mb: 4,
                   color: 'text.secondary',
                   lineHeight: 1.6,
+                  fontSize: { xs: '1.1rem', md: '1.25rem' },
+                  maxWidth: '600px',
+                  mx: 'auto',
+                  opacity: 0.9,
+                  textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                  animation: 'fadeIn 1s ease-out',
+                  '@keyframes fadeIn': {
+                    from: {
+                      opacity: 0,
+                      transform: 'translateY(10px)',
+                    },
+                    to: {
+                      opacity: 0.9,
+                      transform: 'translateY(0)',
+                    },
+                  },
                 }}
               >
                 {t('heroSubtitle1')}
@@ -179,9 +213,25 @@ export default function App() {
                   display: 'flex',
                   gap: 4,
                   justifyContent: 'center',
+                  flexWrap: 'wrap',
                 }}
               >
-                <Box sx={{ textAlign: 'center' }}>
+                <Box 
+                  sx={{ 
+                    textAlign: 'center',
+                    p: 3,
+                    borderRadius: 2,
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: 'translateY(-8px)',
+                      background: 'rgba(255, 255, 255, 0.08)',
+                      boxShadow: '0 8px 32px rgba(96, 165, 250, 0.2)',
+                    },
+                  }}
+                >
                   <Typography
                     variant="h3"
                     sx={{
@@ -189,15 +239,38 @@ export default function App() {
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
                       fontWeight: 700,
+                      mb: 1,
                     }}
                   >
                     DMs
                   </Typography>
-                  <Typography variant="body1" color="text.secondary">
+                  <Typography 
+                    variant="body1" 
+                    color="text.secondary"
+                    sx={{
+                      opacity: 0.9,
+                      maxWidth: '200px',
+                    }}
+                  >
                     {t('automated')}
                   </Typography>
                 </Box>
-                <Box sx={{ textAlign: 'center' }}>
+                <Box 
+                  sx={{ 
+                    textAlign: 'center',
+                    p: 3,
+                    borderRadius: 2,
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: 'translateY(-8px)',
+                      background: 'rgba(255, 255, 255, 0.08)',
+                      boxShadow: '0 8px 32px rgba(96, 165, 250, 0.2)',
+                    },
+                  }}
+                >
                   <Typography
                     variant="h3"
                     sx={{
@@ -205,15 +278,38 @@ export default function App() {
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
                       fontWeight: 700,
+                      mb: 1,
                     }}
                   >
                     X
                   </Typography>
-                  <Typography variant="body1" color="text.secondary">
+                  <Typography 
+                    variant="body1" 
+                    color="text.secondary"
+                    sx={{
+                      opacity: 0.9,
+                      maxWidth: '200px',
+                    }}
+                  >
                     {t('spacesNative')}
                   </Typography>
                 </Box>
-                <Box sx={{ textAlign: 'center' }}>
+                <Box 
+                  sx={{ 
+                    textAlign: 'center',
+                    p: 3,
+                    borderRadius: 2,
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: 'translateY(-8px)',
+                      background: 'rgba(255, 255, 255, 0.08)',
+                      boxShadow: '0 8px 32px rgba(96, 165, 250, 0.2)',
+                    },
+                  }}
+                >
                   <Typography
                     variant="h3"
                     sx={{
@@ -221,11 +317,19 @@ export default function App() {
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
                       fontWeight: 700,
+                      mb: 1,
                     }}
                   >
                     10X
                   </Typography>
-                  <Typography variant="body1" color="text.secondary">
+                  <Typography 
+                    variant="body1" 
+                    color="text.secondary"
+                    sx={{
+                      opacity: 0.9,
+                      maxWidth: '200px',
+                    }}
+                  >
                     {t('engagement')}
                   </Typography>
                 </Box>

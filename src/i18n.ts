@@ -12,7 +12,7 @@ const appTranslationsEN = {
   heroTitle1: 'Number Go Up',
   heroTitle2: 'Tech For X Spaces',
   heroSubtitle1:
-    'The all-in-one toolkit for effortless growth on Twitter Spaces',
+    'The all-in-one toolkit for effortless growth on X Spaces',
   heroSubtitle2: 'Get more listeners and followers through automated DMs',
   spaceInputPlaceholder: 'Paste your X space URL here to try it now',
   analyzeButton: 'Boost Space',

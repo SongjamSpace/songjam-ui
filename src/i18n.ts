@@ -134,6 +134,9 @@ const appTranslationsEN = {
   extensionText:
     'Install our Chrome extension to access Songjam AutoDMs directly from your browser. Enhance your Twitter Messaging experience with just one click.',
   installExtensionButton: 'Install Extension',
+  voiceBiometricsTitle: 'Cryptographically Secure Voice Biometrics',
+  voiceBiometricsText: 'Unlock voice sovereignty with our advanced data retrieval protocol and learn how you can bootstrap the network.',
+  learnMore: 'Learn more →',
 };
 
 const crmTranslationsEN = {
@@ -419,6 +422,9 @@ const appTranslationsZH = {
   extensionText:
     'Install our Chrome extension to access Songjam AutoDMs directly from your browser. Enhance your Twitter Messaging experience with just one click.',
   installExtensionButton: 'Install Extension',
+  voiceBiometricsTitle: '加密安全的语音生物识别',
+  voiceBiometricsText: '通过我的高级数据检索协议解锁语音主权，了解如何引导网络发展。',
+  learnMore: '了解更多 →',
 };
 
 const crmTranslationsZH = {

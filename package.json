@@ -20,6 +20,7 @@
     "@types/lodash": "^4.17.16",
     "@types/react": "^18.2.55",
     "@types/react-dom": "^18.2.19",
+    "@types/react-toastify": "^4.0.2",
     "@vitejs/plugin-react": "^4.2.1",
     "concurrently": "^8.2.2",
     "eslint": "^8.56.0",

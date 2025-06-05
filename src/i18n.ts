@@ -13,7 +13,7 @@ const appTranslationsEN = {
   heroTitle2: 'Tech For X Spaces',
   heroSubtitle1:
     'The all-in-one toolkit for effortless growth on X Spaces',
-  heroSubtitle2: 'Get more listeners and followers through automated DMs',
+  heroSubtitle2: 'Gain more listeners and followers to break through on X',
   spaceInputPlaceholder: 'Paste your X space URL here to try it now',
   analyzeButton: 'Boost Space',
   tryPreviewButton: 'Try Preview',

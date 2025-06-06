@@ -13,15 +13,9 @@ const theme = createTheme({
       light: '#a78bfa',
       dark: '#7c3aed',
     },
-    accent: {
-      main: '#ec4899',
-      light: '#f472b6',
-      dark: '#db2777',
-    },
     background: {
       default: '#0f172a',
       paper: 'rgba(30, 41, 59, 0.7)',
-      elevated: 'rgba(51, 65, 85, 0.7)',
     },
     text: {
       primary: '#f8fafc',

@@ -18,7 +18,8 @@ import { useTranslation } from 'react-i18next';
 const demoMessages = [
   {
     role: 'assistant',
-    content: 'Hey! I\'m Songjam your X Spaces assistant. I can help you analyze Twitter Spaces, generate and send engaging DMs, plus much more. What would you like to know?',
+    content:
+      "Hey! I'm Songjam your X Spaces assistant. I can help you analyze Twitter Spaces, generate and send engaging DMs, plus much more. What would you like to know?",
   },
   {
     role: 'user',
@@ -26,7 +27,8 @@ const demoMessages = [
   },
   {
     role: 'assistant',
-    content: 'Of course! I can help you analyze any Twitter Space. Just share the Space URL, and I\'ll provide insights about:\n\n• Key discussion topics\n• Speaker engagement patterns\n• Sentiment analysis\n• Actionable recommendations\n\nWould you like to try it out?',
+    content:
+      "Of course! I can help you analyze any Twitter Space. Just share the Space URL, and I'll provide insights about:\n\n• Key discussion topics\n• Speaker engagement patterns\n• Sentiment analysis\n• Actionable recommendations\n\nWould you like to try it out?",
   },
 ];
 
@@ -41,7 +43,7 @@ const AIDemoPreview = () => {
     let currentIndex = 0;
     const interval = setInterval(() => {
       if (currentIndex < demoMessages.length) {
-        setMessages(prev => [...prev, demoMessages[currentIndex]]);
+        setMessages((prev) => [...prev, demoMessages[currentIndex]]);
         currentIndex++;
       } else {
         clearInterval(interval);
@@ -53,17 +55,21 @@ const AIDemoPreview = () => {
 
   const handleSend = () => {
     if (!input.trim()) return;
-    
-    setMessages(prev => [...prev, { role: 'user', content: input }]);
+
+    setMessages((prev) => [...prev, { role: 'user', content: input }]);
     setInput('');
     setIsTyping(true);
 
     // Simulate AI response
     setTimeout(() => {
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: 'I can help you with that! Just paste your Space URL and I\'ll analyze it for you.',
-      }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content:
+            "I can help you with that! Just paste your Space URL and I'll analyze it for you.",
+        },
+      ]);
       setIsTyping(false);
     }, 1500);
   };
@@ -114,7 +120,8 @@ const AIDemoPreview = () => {
                   display: 'flex',
                   gap: 1,
                   alignItems: 'flex-start',
-                  alignSelf: message.role === 'user' ? 'flex-end' : 'flex-start',
+                  alignSelf:
+                    message.role === 'user' ? 'flex-end' : 'flex-start',
                   maxWidth: '80%',
                 }}
               >
@@ -136,9 +143,10 @@ const AIDemoPreview = () => {
                   elevation={0}
                   sx={{
                     p: 2,
-                    background: message.role === 'user'
-                      ? 'linear-gradient(135deg, #60a5fa, #8b5cf6)'
-                      : 'rgba(255, 255, 255, 0.05)',
+                    background:
+                      message.role === 'user'
+                        ? 'linear-gradient(135deg, #60a5fa, #8b5cf6)'
+                        : 'rgba(255, 255, 255, 0.05)',
                     borderRadius: 2,
                     border: '1px solid rgba(255, 255, 255, 0.1)',
                   }}
@@ -148,6 +156,7 @@ const AIDemoPreview = () => {
                     sx={{
                       whiteSpace: 'pre-line',
                       color: message.role === 'user' ? 'white' : 'inherit',
+                      textAlign: 'left',
                     }}
                   >
                     {message.content}
@@ -252,7 +261,7 @@ const AIDemoPreview = () => {
           </IconButton>
         </Box>
       </Card>
-      
+
       <Box
         sx={{
           p: 2,
@@ -287,10 +296,10 @@ const AIDemoPreview = () => {
           }}
         />
         <Box>
-          <Typography variant="h6" sx={{ mb: 0.5 }}>
+          <Typography variant="h6" sx={{ mb: 0.5 }} textAlign="left">
             {t('voiceBiometricsTitle')}
           </Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" color="text.secondary" textAlign="left">
             {t('voiceBiometricsText')}{' '}
             <Link
               href="https://www.papermark.com/view/cmbjtiei10001jr04kfyoo91q"
@@ -313,4 +322,4 @@ const AIDemoPreview = () => {
   );
 };
 
-export default AIDemoPreview; 
+export default AIDemoPreview;

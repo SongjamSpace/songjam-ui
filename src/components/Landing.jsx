@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
 import AIDemoPreview from './AIDemoPreview';
+import { useAuthContext } from '../contexts/AuthContext';
 
 function Landing() {
-  const { currentUser } = useAuth();
+  const { user } = useAuthContext();
 
   return (
     <div className="landing-container">
@@ -12,10 +12,11 @@ function Landing() {
           Transform Your Music Marketing with AI
         </h1>
         <p className="hero-subtitle">
-          Create personalized campaigns that connect with your audience on a deeper level
+          Create personalized campaigns that connect with your audience on a
+          deeper level
         </p>
         <div className="cta-buttons">
-          {!currentUser ? (
+          {!user ? (
             <>
               <Link to="/register" className="cta-button primary pulse">
                 Get Started
@@ -38,12 +39,18 @@ function Landing() {
           <h3>Smart Targeting</h3>
           <p>Reach the right audience with AI-powered targeting</p>
         </div>
-        <div className="feature-card glass float" style={{ animationDelay: '0.2s' }}>
+        <div
+          className="feature-card glass float"
+          style={{ animationDelay: '0.2s' }}
+        >
           <div className="feature-icon">🤖</div>
           <h3>AI Assistant</h3>
           <p>Get personalized recommendations and insights</p>
         </div>
-        <div className="feature-card glass float" style={{ animationDelay: '0.4s' }}>
+        <div
+          className="feature-card glass float"
+          style={{ animationDelay: '0.4s' }}
+        >
           <div className="feature-icon">📊</div>
           <h3>Analytics</h3>
           <p>Track and optimize your campaign performance</p>
@@ -61,7 +68,10 @@ function Landing() {
         <h2 className="gradient-text">What Artists Say</h2>
         <div className="testimonials-grid">
           <div className="testimonial-card glass">
-            <p>"This platform has completely transformed how I connect with my fans."</p>
+            <p>
+              "This platform has completely transformed how I connect with my
+              fans."
+            </p>
             <div className="testimonial-author">- Sarah J.</div>
           </div>
           <div className="testimonial-card glass">
@@ -80,7 +90,9 @@ function Landing() {
         <div className="pricing-grid">
           <div className="pricing-card glass">
             <h3>Starter</h3>
-            <div className="price">$29<span>/month</span></div>
+            <div className="price">
+              $29<span>/month</span>
+            </div>
             <ul>
               <li>Basic AI Features</li>
               <li>Up to 1,000 messages</li>
@@ -93,7 +105,9 @@ function Landing() {
           <div className="pricing-card glass pulse">
             <div className="popular-tag">Most Popular</div>
             <h3>Pro</h3>
-            <div className="price">$79<span>/month</span></div>
+            <div className="price">
+              $79<span>/month</span>
+            </div>
             <ul>
               <li>Advanced AI Features</li>
               <li>Up to 5,000 messages</li>
@@ -125,25 +139,43 @@ function Landing() {
           <div className="footer-section">
             <h4>Product</h4>
             <ul>
-              <li><Link to="/features">Features</Link></li>
-              <li><Link to="/pricing">Pricing</Link></li>
-              <li><Link to="/demo">Demo</Link></li>
+              <li>
+                <Link to="/features">Features</Link>
+              </li>
+              <li>
+                <Link to="/pricing">Pricing</Link>
+              </li>
+              <li>
+                <Link to="/demo">Demo</Link>
+              </li>
             </ul>
           </div>
           <div className="footer-section">
             <h4>Company</h4>
             <ul>
-              <li><Link to="/about">About</Link></li>
-              <li><Link to="/blog">Blog</Link></li>
-              <li><Link to="/careers">Careers</Link></li>
+              <li>
+                <Link to="/about">About</Link>
+              </li>
+              <li>
+                <Link to="/blog">Blog</Link>
+              </li>
+              <li>
+                <Link to="/careers">Careers</Link>
+              </li>
             </ul>
           </div>
           <div className="footer-section">
             <h4>Support</h4>
             <ul>
-              <li><Link to="/help">Help Center</Link></li>
-              <li><Link to="/contact">Contact</Link></li>
-              <li><Link to="/privacy">Privacy</Link></li>
+              <li>
+                <Link to="/help">Help Center</Link>
+              </li>
+              <li>
+                <Link to="/contact">Contact</Link>
+              </li>
+              <li>
+                <Link to="/privacy">Privacy</Link>
+              </li>
             </ul>
           </div>
         </div>
@@ -155,4 +187,4 @@ function Landing() {
   );
 }
 
-export default Landing; 
+export default Landing;

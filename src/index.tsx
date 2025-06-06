@@ -13,6 +13,7 @@ import { DynamicContextProvider } from '@dynamic-labs/sdk-react-core';
 import { EthereumWalletConnectors } from '@dynamic-labs/ethereum';
 import Settings from './pages/Settings';
 import CampaignDetails from './pages/CampaignDetails';
+import Dj from './pages/Dj';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
@@ -44,6 +45,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
                 />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/campaigns/:id" element={<CampaignDetails />} />
+                <Route path="/dj" element={<Dj />} />
               </Routes>
             </AuthProvider>
           </ThemeProvider>

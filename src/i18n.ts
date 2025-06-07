@@ -12,8 +12,8 @@ const appTranslationsEN = {
   heroTitle1: 'Number Go Up',
   heroTitle2: 'Tech For X Spaces',
   heroSubtitle1:
-    'The all-in-one toolkit for effortless growth on Twitter Spaces',
-  heroSubtitle2: 'Get more listeners and followers through automated DMs',
+    'The all-in-one toolkit for effortless growth on X Spaces',
+  heroSubtitle2: 'Gain more listeners and followers to break through on X',
   spaceInputPlaceholder: 'Paste your X space URL here to try it now',
   analyzeButton: 'Boost Space',
   tryPreviewButton: 'Try Preview',
@@ -134,6 +134,9 @@ const appTranslationsEN = {
   extensionText:
     'Install our Chrome extension to access Songjam AutoDMs directly from your browser. Enhance your Twitter Messaging experience with just one click.',
   installExtensionButton: 'Install Extension',
+  voiceBiometricsTitle: 'Cryptographically Secure Voice Biometrics',
+  voiceBiometricsText: 'Unlock voice sovereignty with our advanced data retrieval protocol and learn how you can bootstrap the network.',
+  learnMore: 'Learn more →',
 };
 
 const crmTranslationsEN = {
@@ -419,6 +422,9 @@ const appTranslationsZH = {
   extensionText:
     'Install our Chrome extension to access Songjam AutoDMs directly from your browser. Enhance your Twitter Messaging experience with just one click.',
   installExtensionButton: 'Install Extension',
+  voiceBiometricsTitle: '加密安全的语音生物识别',
+  voiceBiometricsText: '通过我的高级数据检索协议解锁语音主权，了解如何引导网络发展。',
+  learnMore: '了解更多 →',
 };
 
 const crmTranslationsZH = {

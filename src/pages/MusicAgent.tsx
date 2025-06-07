@@ -100,7 +100,7 @@ const MusicAgent = () => {
 
     setWsStatus('connecting');
     addLog('Connecting to server...', 'info');
-    const socket = io('http://localhost:8080', {
+    const socket = io(import.meta.env.VITE_JAM_MUSIC_AGENT_URL, {
       transports: ['websocket'],
       reconnection: true,
       reconnectionAttempts: 5,

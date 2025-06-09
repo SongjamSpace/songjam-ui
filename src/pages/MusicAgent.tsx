@@ -120,6 +120,7 @@ const MusicAgent = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isLibraryLoading, setIsLibraryLoading] = useState(false);
+  const activityLogRef = useRef<HTMLDivElement>(null);
 
   // Mock waveform data (in a real app, this would come from audio analysis)
   const waveformData = Array.from(
@@ -445,6 +446,13 @@ const MusicAgent = () => {
     }
   };
 
+  // Add effect to scroll to top when new logs are added
+  useEffect(() => {
+    if (activityLogRef.current) {
+      activityLogRef.current.scrollTop = 0;
+    }
+  }, [logs]);
+
   return (
     <Box
       sx={{
@@ -657,13 +665,70 @@ const MusicAgent = () => {
             </Box>
 
             {/* Main Content Grid */}
-            <Box
-              sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}
-            >
-              {/* Left Column */}
-              <Box>
-                {/* Space URL Input */}
-                <Box sx={{ mb: 4 }}>
+            {/* Left Column */}
+            <Box>
+              {/* Space URL Input */}
+              <Box sx={{ mb: 4 }}>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    mb: 2,
+                    color: '#60a5fa',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
+                  }}
+                >
+                  <Link /> Space URL
+                </Typography>
+                <TextField
+                  fullWidth
+                  value={spaceUrl}
+                  onChange={(e) => setSpaceUrl(e.target.value)}
+                  placeholder="Enter space URL"
+                  variant="outlined"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      color: 'white',
+                      '& fieldset': {
+                        borderColor: 'rgba(96, 165, 250, 0.5)',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: '#60a5fa',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#60a5fa',
+                        boxShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
+                      },
+                    },
+                  }}
+                />
+              </Box>
+
+              {/* Waveform Visualizer */}
+              <Box sx={{ mb: 4 }}>
+                <Paper
+                  sx={{
+                    p: 3,
+                    background: 'rgba(0, 0, 0, 0.2)',
+                    borderRadius: 2,
+                    border: '1px solid rgba(96, 165, 250, 0.1)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background:
+                        'radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.1) 0%, transparent 70%)',
+                      pointerEvents: 'none',
+                    },
+                  }}
+                >
                   <Typography
                     variant="h6"
                     sx={{
@@ -675,414 +740,406 @@ const MusicAgent = () => {
                       textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
                     }}
                   >
-                    <Link /> Space URL
+                    <Equalizer /> Track Visualizer
                   </Typography>
-                  <TextField
-                    fullWidth
-                    value={spaceUrl}
-                    onChange={(e) => setSpaceUrl(e.target.value)}
-                    placeholder="Enter space URL"
-                    variant="outlined"
+                  <Box
                     sx={{
-                      '& .MuiOutlinedInput-root': {
-                        color: 'white',
-                        '& fieldset': {
-                          borderColor: 'rgba(96, 165, 250, 0.5)',
-                        },
-                        '&:hover fieldset': {
-                          borderColor: '#60a5fa',
-                        },
-                        '&.Mui-focused fieldset': {
-                          borderColor: '#60a5fa',
-                          boxShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
-                        },
-                      },
-                    }}
-                  />
-                </Box>
-
-                {/* Waveform Visualizer */}
-                <Box sx={{ mb: 4 }}>
-                  <Paper
-                    sx={{
-                      p: 3,
-                      background: 'rgba(0, 0, 0, 0.2)',
-                      borderRadius: 2,
-                      border: '1px solid rgba(96, 165, 250, 0.1)',
+                      height: 120,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '2px',
+                      mb: 2,
                       position: 'relative',
                       overflow: 'hidden',
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background:
-                          'radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.1) 0%, transparent 70%)',
-                        pointerEvents: 'none',
+                      borderRadius: 1,
+                      background: isDragging
+                        ? 'rgba(96, 165, 250, 0.2)'
+                        : 'rgba(0, 0, 0, 0.2)',
+                      p: 1,
+                      transition: 'all 0.3s ease',
+                      border: isDragging
+                        ? '2px dashed #60a5fa'
+                        : '1px solid rgba(96, 165, 250, 0.1)',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        background: 'rgba(96, 165, 250, 0.1)',
                       },
                     }}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    onClick={() => fileInputRef.current?.click()}
                   >
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        mb: 2,
-                        color: '#60a5fa',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1,
-                        textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
-                      }}
-                    >
-                      <Equalizer /> Track Visualizer
-                    </Typography>
-                    <Box
-                      sx={{
-                        height: 120,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '2px',
-                        mb: 2,
-                        position: 'relative',
-                        overflow: 'hidden',
-                        borderRadius: 1,
-                        background: isDragging
-                          ? 'rgba(96, 165, 250, 0.2)'
-                          : 'rgba(0, 0, 0, 0.2)',
-                        p: 1,
-                        transition: 'all 0.3s ease',
-                        border: isDragging
-                          ? '2px dashed #60a5fa'
-                          : '1px solid rgba(96, 165, 250, 0.1)',
-                        cursor: 'pointer',
-                        '&:hover': {
-                          background: 'rgba(96, 165, 250, 0.1)',
-                        },
-                      }}
-                      onDragOver={handleDragOver}
-                      onDragLeave={handleDragLeave}
-                      onDrop={handleDrop}
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      {!audioUrl ? (
-                        <Box
+                    {!audioUrl ? (
+                      <Box
+                        sx={{
+                          width: '100%',
+                          height: '100%',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          // gap: 2,
+                          color: isDragging
+                            ? 'rgba(96, 165, 250, 0.8)'
+                            : 'rgba(255, 255, 255, 0.3)',
+                          position: 'relative',
+                          '&::before': {
+                            content: '""',
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            width: '60px',
+                            height: '60px',
+                            background:
+                              'radial-gradient(circle at center, rgba(96, 165, 250, 0.1) 0%, transparent 70%)',
+                            animation: `${pulse} 2s infinite ease-in-out`,
+                          },
+                        }}
+                      >
+                        <CloudUpload
                           sx={{
-                            width: '100%',
-                            height: '100%',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            // gap: 2,
+                            fontSize: 40,
                             color: isDragging
                               ? 'rgba(96, 165, 250, 0.8)'
-                              : 'rgba(255, 255, 255, 0.3)',
-                            position: 'relative',
-                            '&::before': {
-                              content: '""',
-                              position: 'absolute',
-                              top: '50%',
-                              left: '50%',
-                              transform: 'translate(-50%, -50%)',
-                              width: '60px',
-                              height: '60px',
-                              background:
-                                'radial-gradient(circle at center, rgba(96, 165, 250, 0.1) 0%, transparent 70%)',
-                              animation: `${pulse} 2s infinite ease-in-out`,
+                              : 'rgba(96, 165, 250, 0.3)',
+                            animation: isDragging
+                              ? 'none'
+                              : `${float} 3s infinite ease-in-out`,
+                          }}
+                        />
+                        <Typography
+                          variant="body1"
+                          sx={{
+                            fontStyle: 'italic',
+                            textAlign: 'center',
+                            maxWidth: '200px',
+                            lineHeight: 1.4,
+                          }}
+                        >
+                          {isDragging
+                            ? 'Drop your track here'
+                            : 'Drop your track here to cue your music'}
+                        </Typography>
+                      </Box>
+                    ) : (
+                      waveformData.map((height, index) => (
+                        <Box
+                          key={index}
+                          sx={{
+                            flex: 1,
+                            height: `${height * 100}%`,
+                            background:
+                              index <
+                              (currentTime / (duration || 1)) *
+                                waveformData.length
+                                ? 'linear-gradient(to top, #60a5fa, #3b82f6)'
+                                : 'rgba(96, 165, 250, 0.2)',
+                            borderRadius: '2px',
+                            transition: 'background 0.3s ease',
+                            minHeight: '4px',
+                          }}
+                        />
+                      ))
+                    )}
+                  </Box>
+
+                  {/* Playback Controls */}
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <IconButton
+                      onClick={() => {
+                        if (audioRef.current) {
+                          audioRef.current.currentTime = Math.max(
+                            0,
+                            currentTime - 10
+                          );
+                        }
+                      }}
+                      disabled={!audioUrl}
+                      sx={{
+                        color: audioUrl
+                          ? '#60a5fa'
+                          : 'rgba(255, 255, 255, 0.3)',
+                        '&:hover': { transform: 'scale(1.1)' },
+                        transition: 'transform 0.2s',
+                      }}
+                    >
+                      <SkipPrevious />
+                    </IconButton>
+
+                    <IconButton
+                      onClick={handlePlayPause}
+                      disabled={!audioUrl}
+                      sx={{
+                        color: audioUrl
+                          ? '#60a5fa'
+                          : 'rgba(255, 255, 255, 0.3)',
+                        '&:hover': { transform: 'scale(1.1)' },
+                        transition: 'transform 0.2s',
+                        width: 48,
+                        height: 48,
+                      }}
+                    >
+                      {isPlaying ? <Stop /> : <PlayArrow />}
+                    </IconButton>
+
+                    <IconButton
+                      onClick={() => {
+                        if (audioRef.current) {
+                          audioRef.current.currentTime = Math.min(
+                            duration,
+                            currentTime + 10
+                          );
+                        }
+                      }}
+                      disabled={!audioUrl}
+                      sx={{
+                        color: audioUrl
+                          ? '#60a5fa'
+                          : 'rgba(255, 255, 255, 0.3)',
+                        '&:hover': { transform: 'scale(1.1)' },
+                        transition: 'transform 0.2s',
+                      }}
+                    >
+                      <SkipNext />
+                    </IconButton>
+
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: audioUrl
+                          ? 'rgba(255, 255, 255, 0.7)'
+                          : 'rgba(255, 255, 255, 0.3)',
+                        minWidth: 45,
+                        textAlign: 'center',
+                      }}
+                    >
+                      {formatTime(currentTime)}
+                    </Typography>
+
+                    <Slider
+                      value={currentTime}
+                      max={duration || 100}
+                      onChange={handleSeek}
+                      disabled={!audioUrl}
+                      sx={{
+                        color: audioUrl
+                          ? '#60a5fa'
+                          : 'rgba(255, 255, 255, 0.3)',
+                        '& .MuiSlider-thumb': {
+                          width: 12,
+                          height: 12,
+                          '&:hover, &.Mui-focusVisible': {
+                            boxShadow: '0 0 0 8px rgba(96, 165, 250, 0.16)',
+                          },
+                        },
+                        '& .MuiSlider-track': {
+                          background: audioUrl
+                            ? 'linear-gradient(90deg, #60a5fa, #3b82f6)'
+                            : 'rgba(255, 255, 255, 0.3)',
+                        },
+                        '& .MuiSlider-rail': {
+                          background: 'rgba(96, 165, 250, 0.2)',
+                        },
+                      }}
+                    />
+
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: audioUrl
+                          ? 'rgba(255, 255, 255, 0.7)'
+                          : 'rgba(255, 255, 255, 0.3)',
+                        minWidth: 45,
+                        textAlign: 'center',
+                      }}
+                    >
+                      {formatTime(duration)}
+                    </Typography>
+                  </Stack>
+                </Paper>
+              </Box>
+
+              {/* Music Uploads */}
+              <Box sx={{ mb: 4 }}>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    mb: 2,
+                    color: '#60a5fa',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
+                  }}
+                >
+                  <CloudUpload /> Your Music Library
+                </Typography>
+                <Paper
+                  sx={{
+                    p: 2,
+                    background: 'rgba(0, 0, 0, 0.2)',
+                    borderRadius: 2,
+                    maxHeight: '300px',
+                    overflow: 'auto',
+                    border: '1px solid rgba(96, 165, 250, 0.1)',
+                    '&::-webkit-scrollbar': {
+                      width: '8px',
+                    },
+                    '&::-webkit-scrollbar-track': {
+                      background: 'rgba(0, 0, 0, 0.1)',
+                      borderRadius: '4px',
+                    },
+                    '&::-webkit-scrollbar-thumb': {
+                      background: 'rgba(96, 165, 250, 0.3)',
+                      borderRadius: '4px',
+                      '&:hover': {
+                        background: 'rgba(96, 165, 250, 0.5)',
+                      },
+                    },
+                  }}
+                >
+                  {isLibraryLoading ? (
+                    <List>
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <ListItemButton
+                          key={i}
+                          sx={{
+                            borderRadius: 1,
+                            mb: 1,
+                            transition: 'all 0.2s',
+                            background: 'rgba(255,255,255,0.05)',
+                          }}
+                          disabled
+                        >
+                          <Radio disabled sx={{ color: '#60a5fa' }} />
+                          <ListItemText
+                            primary={
+                              <Skeleton
+                                variant="text"
+                                width={120}
+                                sx={{ bgcolor: 'rgba(96, 165, 250, 0.1)' }}
+                              />
+                            }
+                          />
+                        </ListItemButton>
+                      ))}
+                    </List>
+                  ) : audioUploads.length === 0 ? (
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: 'rgba(255, 255, 255, 0.5)',
+                        textAlign: 'center',
+                        py: 2,
+                      }}
+                    >
+                      No uploads yet
+                    </Typography>
+                  ) : (
+                    <List>
+                      {audioUploads.map((audioUpload) => (
+                        <ListItemButton
+                          key={audioUpload.audioUrl}
+                          onClick={() =>
+                            handleSelectUpload(audioUpload.audioUrl)
+                          }
+                          selected={audioUpload.audioUrl === audioUrl}
+                          sx={{
+                            borderRadius: 1,
+                            mb: 1,
+                            transition: 'all 0.2s',
+                            '&.Mui-selected': {
+                              background: 'rgba(96, 165, 250, 0.2)',
+                              transform: 'scale(1.02)',
+                              boxShadow: '0 0 10px rgba(96, 165, 250, 0.3)',
+                            },
+                            '&:hover': {
+                              background: 'rgba(96, 165, 250, 0.1)',
+                              transform: 'scale(1.01)',
                             },
                           }}
                         >
-                          <CloudUpload
-                            sx={{
-                              fontSize: 40,
-                              color: isDragging
-                                ? 'rgba(96, 165, 250, 0.8)'
-                                : 'rgba(96, 165, 250, 0.3)',
-                              animation: isDragging
-                                ? 'none'
-                                : `${float} 3s infinite ease-in-out`,
-                            }}
+                          <Radio
+                            checked={audioUpload.audioUrl === audioUrl}
+                            value={audioUpload.audioUrl}
+                            sx={{ color: '#60a5fa' }}
                           />
-                          <Typography
-                            variant="body1"
-                            sx={{
-                              fontStyle: 'italic',
-                              textAlign: 'center',
-                              maxWidth: '200px',
-                              lineHeight: 1.4,
-                            }}
-                          >
-                            {isDragging
-                              ? 'Drop your track here'
-                              : 'Drop your track here to cue your music'}
-                          </Typography>
-                        </Box>
-                      ) : (
-                        waveformData.map((height, index) => (
-                          <Box
-                            key={index}
-                            sx={{
-                              flex: 1,
-                              height: `${height * 100}%`,
-                              background:
-                                index <
-                                (currentTime / (duration || 1)) *
-                                  waveformData.length
-                                  ? 'linear-gradient(to top, #60a5fa, #3b82f6)'
-                                  : 'rgba(96, 165, 250, 0.2)',
-                              borderRadius: '2px',
-                              transition: 'background 0.3s ease',
-                              minHeight: '4px',
-                            }}
+                          <ListItemText
+                            primary={audioUpload.name}
+                            sx={{ color: 'white' }}
                           />
-                        ))
-                      )}
-                    </Box>
+                        </ListItemButton>
+                      ))}
+                    </List>
+                  )}
+                </Paper>
+                <Button
+                  variant="outlined"
+                  startIcon={<CloudUpload />}
+                  onClick={() => fileInputRef.current?.click()}
+                  sx={{
+                    mt: 2,
+                    borderColor: '#60a5fa',
+                    color: '#60a5fa',
+                    '&:hover': {
+                      borderColor: '#3b82f6',
+                      backgroundColor: 'rgba(96, 165, 250, 0.1)',
+                      transform: 'scale(1.02)',
+                    },
+                    transition: 'all 0.2s',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background:
+                        'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
+                      transform: 'translateX(-100%)',
+                      transition: 'transform 0.5s',
+                    },
+                    '&:hover::after': {
+                      transform: 'translateX(100%)',
+                    },
+                  }}
+                  disabled={isLoading}
+                >
+                  Upload New Track
+                </Button>
+                <input
+                  type="file"
+                  hidden
+                  ref={fileInputRef}
+                  accept="audio/mpeg"
+                  onChange={handleFileChange}
+                />
+              </Box>
+            </Box>
 
-                    {/* Playback Controls */}
-                    <Stack direction="row" spacing={2} alignItems="center">
-                      <IconButton
-                        onClick={() => {
-                          if (audioRef.current) {
-                            audioRef.current.currentTime = Math.max(
-                              0,
-                              currentTime - 10
-                            );
-                          }
-                        }}
-                        disabled={!audioUrl}
-                        sx={{
-                          color: audioUrl
-                            ? '#60a5fa'
-                            : 'rgba(255, 255, 255, 0.3)',
-                          '&:hover': { transform: 'scale(1.1)' },
-                          transition: 'transform 0.2s',
-                        }}
-                      >
-                        <SkipPrevious />
-                      </IconButton>
-
-                      <IconButton
-                        onClick={handlePlayPause}
-                        disabled={!audioUrl}
-                        sx={{
-                          color: audioUrl
-                            ? '#60a5fa'
-                            : 'rgba(255, 255, 255, 0.3)',
-                          '&:hover': { transform: 'scale(1.1)' },
-                          transition: 'transform 0.2s',
-                          width: 48,
-                          height: 48,
-                        }}
-                      >
-                        {isPlaying ? <Stop /> : <PlayArrow />}
-                      </IconButton>
-
-                      <IconButton
-                        onClick={() => {
-                          if (audioRef.current) {
-                            audioRef.current.currentTime = Math.min(
-                              duration,
-                              currentTime + 10
-                            );
-                          }
-                        }}
-                        disabled={!audioUrl}
-                        sx={{
-                          color: audioUrl
-                            ? '#60a5fa'
-                            : 'rgba(255, 255, 255, 0.3)',
-                          '&:hover': { transform: 'scale(1.1)' },
-                          transition: 'transform 0.2s',
-                        }}
-                      >
-                        <SkipNext />
-                      </IconButton>
-
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: audioUrl
-                            ? 'rgba(255, 255, 255, 0.7)'
-                            : 'rgba(255, 255, 255, 0.3)',
-                          minWidth: 45,
-                          textAlign: 'center',
-                        }}
-                      >
-                        {formatTime(currentTime)}
-                      </Typography>
-
-                      <Slider
-                        value={currentTime}
-                        max={duration || 100}
-                        onChange={handleSeek}
-                        disabled={!audioUrl}
-                        sx={{
-                          color: audioUrl
-                            ? '#60a5fa'
-                            : 'rgba(255, 255, 255, 0.3)',
-                          '& .MuiSlider-thumb': {
-                            width: 12,
-                            height: 12,
-                            '&:hover, &.Mui-focusVisible': {
-                              boxShadow: '0 0 0 8px rgba(96, 165, 250, 0.16)',
-                            },
-                          },
-                          '& .MuiSlider-track': {
-                            background: audioUrl
-                              ? 'linear-gradient(90deg, #60a5fa, #3b82f6)'
-                              : 'rgba(255, 255, 255, 0.3)',
-                          },
-                          '& .MuiSlider-rail': {
-                            background: 'rgba(96, 165, 250, 0.2)',
-                          },
-                        }}
-                      />
-
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: audioUrl
-                            ? 'rgba(255, 255, 255, 0.7)'
-                            : 'rgba(255, 255, 255, 0.3)',
-                          minWidth: 45,
-                          textAlign: 'center',
-                        }}
-                      >
-                        {formatTime(duration)}
-                      </Typography>
-                    </Stack>
-                  </Paper>
-                </Box>
-
-                {/* Music Uploads */}
-                <Box sx={{ mb: 4 }}>
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      mb: 2,
-                      color: '#60a5fa',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                      textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
-                    }}
-                  >
-                    <CloudUpload /> Your Music Library
-                  </Typography>
-                  <Paper
-                    sx={{
-                      p: 2,
-                      background: 'rgba(0, 0, 0, 0.2)',
-                      borderRadius: 2,
-                      maxHeight: '300px',
-                      overflow: 'auto',
-                      border: '1px solid rgba(96, 165, 250, 0.1)',
-                      '&::-webkit-scrollbar': {
-                        width: '8px',
-                      },
-                      '&::-webkit-scrollbar-track': {
-                        background: 'rgba(0, 0, 0, 0.1)',
-                        borderRadius: '4px',
-                      },
-                      '&::-webkit-scrollbar-thumb': {
-                        background: 'rgba(96, 165, 250, 0.3)',
-                        borderRadius: '4px',
-                        '&:hover': {
-                          background: 'rgba(96, 165, 250, 0.5)',
-                        },
-                      },
-                    }}
-                  >
-                    {isLibraryLoading ? (
-                      <List>
-                        {[1, 2, 3, 4, 5].map((i) => (
-                          <ListItemButton
-                            key={i}
-                            sx={{
-                              borderRadius: 1,
-                              mb: 1,
-                              transition: 'all 0.2s',
-                              background: 'rgba(255,255,255,0.05)',
-                            }}
-                            disabled
-                          >
-                            <Radio disabled sx={{ color: '#60a5fa' }} />
-                            <ListItemText
-                              primary={
-                                <Skeleton
-                                  variant="text"
-                                  width={120}
-                                  sx={{ bgcolor: 'rgba(96, 165, 250, 0.1)' }}
-                                />
-                              }
-                            />
-                          </ListItemButton>
-                        ))}
-                      </List>
-                    ) : audioUploads.length === 0 ? (
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: 'rgba(255, 255, 255, 0.5)',
-                          textAlign: 'center',
-                          py: 2,
-                        }}
-                      >
-                        No uploads yet
-                      </Typography>
-                    ) : (
-                      <List>
-                        {audioUploads.map((audioUpload) => (
-                          <ListItemButton
-                            key={audioUpload.audioUrl}
-                            onClick={() =>
-                              handleSelectUpload(audioUpload.audioUrl)
-                            }
-                            selected={audioUpload.audioUrl === audioUrl}
-                            sx={{
-                              borderRadius: 1,
-                              mb: 1,
-                              transition: 'all 0.2s',
-                              '&.Mui-selected': {
-                                background: 'rgba(96, 165, 250, 0.2)',
-                                transform: 'scale(1.02)',
-                                boxShadow: '0 0 10px rgba(96, 165, 250, 0.3)',
-                              },
-                              '&:hover': {
-                                background: 'rgba(96, 165, 250, 0.1)',
-                                transform: 'scale(1.01)',
-                              },
-                            }}
-                          >
-                            <Radio
-                              checked={audioUpload.audioUrl === audioUrl}
-                              value={audioUpload.audioUrl}
-                              sx={{ color: '#60a5fa' }}
-                            />
-                            <ListItemText
-                              primary={audioUpload.name}
-                              sx={{ color: 'white' }}
-                            />
-                          </ListItemButton>
-                        ))}
-                      </List>
-                    )}
-                  </Paper>
+            {/* Right Column */}
+            <Box>
+              {/* Control Buttons */}
+              <Box sx={{ mb: 4 }}>
+                <Stack direction="row" spacing={2}>
                   <Button
-                    variant="outlined"
-                    startIcon={<CloudUpload />}
-                    onClick={() => fileInputRef.current?.click()}
+                    variant="contained"
+                    fullWidth
+                    onClick={handleJoinSpace}
+                    disabled={
+                      !socketRef.current?.connected || !spaceUrl || !audioUrl
+                    }
                     sx={{
-                      mt: 2,
-                      borderColor: '#60a5fa',
-                      color: '#60a5fa',
+                      background: 'linear-gradient(135deg, #60a5fa, #3b82f6)',
                       '&:hover': {
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(96, 165, 250, 0.1)',
+                        background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
                         transform: 'scale(1.02)',
                       },
+                      height: 56,
                       transition: 'all 0.2s',
                       position: 'relative',
                       overflow: 'hidden',
@@ -1101,141 +1158,35 @@ const MusicAgent = () => {
                       '&:hover::after': {
                         transform: 'translateX(100%)',
                       },
+                      boxShadow: '0 0 20px rgba(96, 165, 250, 0.3)',
                     }}
-                    disabled={isLoading}
                   >
-                    Upload New Track
+                    {isLoading ? (
+                      <CircularProgress size={24} color="inherit" />
+                    ) : isInSpace ? (
+                      'In Space'
+                    ) : (
+                      'Join Space'
+                    )}
                   </Button>
-                  <input
-                    type="file"
-                    hidden
-                    ref={fileInputRef}
-                    accept="audio/mpeg"
-                    onChange={handleFileChange}
-                  />
-                </Box>
-              </Box>
-
-              {/* Right Column */}
-              <Box>
-                {/* Control Buttons */}
-                <Box sx={{ mb: 4 }}>
-                  <Stack direction="row" spacing={2}>
-                    <Button
-                      variant="contained"
-                      fullWidth
-                      onClick={handleJoinSpace}
-                      disabled={
-                        !socketRef.current?.connected || !spaceUrl || !audioUrl
-                      }
-                      sx={{
-                        background: 'linear-gradient(135deg, #60a5fa, #3b82f6)',
-                        '&:hover': {
-                          background:
-                            'linear-gradient(135deg, #3b82f6, #2563eb)',
-                          transform: 'scale(1.02)',
-                        },
-                        height: 56,
-                        transition: 'all 0.2s',
-                        position: 'relative',
-                        overflow: 'hidden',
-                        '&::after': {
-                          content: '""',
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          background:
-                            'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
-                          transform: 'translateX(-100%)',
-                          transition: 'transform 0.5s',
-                        },
-                        '&:hover::after': {
-                          transform: 'translateX(100%)',
-                        },
-                        boxShadow: '0 0 20px rgba(96, 165, 250, 0.3)',
-                      }}
-                    >
-                      {isLoading ? (
-                        <CircularProgress size={24} color="inherit" />
-                      ) : isInSpace ? (
-                        'In Space'
-                      ) : (
-                        'Join Space'
-                      )}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      fullWidth
-                      onClick={handlePlayMusic}
-                      disabled={
-                        !socketRef.current?.connected || !isInSpace || !audioUrl
-                      }
-                      sx={{
-                        background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
-                        '&:hover': {
-                          background:
-                            'linear-gradient(135deg, #7c3aed, #6d28d9)',
-                          transform: 'scale(1.02)',
-                        },
-                        height: 56,
-                        transition: 'all 0.2s',
-                        position: 'relative',
-                        overflow: 'hidden',
-                        '&::after': {
-                          content: '""',
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          background:
-                            'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
-                          transform: 'translateX(-100%)',
-                          transition: 'transform 0.5s',
-                        },
-                        '&:hover::after': {
-                          transform: 'translateX(100%)',
-                        },
-                        boxShadow: '0 0 20px rgba(139, 92, 246, 0.3)',
-                      }}
-                    >
-                      {isLoading ? (
-                        <CircularProgress size={24} color="inherit" />
-                      ) : musicStarted ? (
-                        <Stop />
-                      ) : (
-                        <PlayArrow />
-                      )}
-                    </Button>
-                  </Stack>
-                </Box>
-
-                {/* Emoji Reactions */}
-                <Box sx={{ mb: 4 }}>
-                  <Typography
-                    variant="h6"
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    onClick={handlePlayMusic}
+                    disabled={
+                      !socketRef.current?.connected || !isInSpace || !audioUrl
+                    }
                     sx={{
-                      mb: 2,
-                      color: '#60a5fa',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                      textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
-                    }}
-                  >
-                    <EmojiEmotions /> Reactions
-                  </Typography>
-                  <Paper
-                    sx={{
-                      p: 2,
-                      background: 'rgba(0, 0, 0, 0.2)',
-                      borderRadius: 2,
-                      border: '1px solid rgba(96, 165, 250, 0.1)',
+                      background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
+                        transform: 'scale(1.02)',
+                      },
+                      height: 56,
+                      transition: 'all 0.2s',
                       position: 'relative',
                       overflow: 'hidden',
-                      '&::before': {
+                      '&::after': {
                         content: '""',
                         position: 'absolute',
                         top: 0,
@@ -1243,65 +1194,116 @@ const MusicAgent = () => {
                         right: 0,
                         bottom: 0,
                         background:
-                          'radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.1) 0%, transparent 70%)',
-                        pointerEvents: 'none',
+                          'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
+                        transform: 'translateX(-100%)',
+                        transition: 'transform 0.5s',
                       },
+                      '&:hover::after': {
+                        transform: 'translateX(100%)',
+                      },
+                      boxShadow: '0 0 20px rgba(139, 92, 246, 0.3)',
                     }}
                   >
-                    <Stack
-                      direction="row"
-                      spacing={1}
-                      sx={{
-                        flexWrap: 'wrap',
-                        gap: 1,
-                      }}
-                    >
-                      {emojis.map((emoji) => (
-                        <Zoom key={emoji} in>
-                          <Button
-                            onClick={() => handleEmojiReact(emoji)}
-                            sx={{
-                              fontSize: 24,
-                              minWidth: 48,
-                              height: 48,
-                              background: 'rgba(96, 165, 250, 0.1)',
-                              '&:hover': {
-                                background: 'rgba(96, 165, 250, 0.2)',
-                                transform: 'scale(1.1) rotate(5deg)',
-                              },
-                              transition: 'all 0.2s',
-                              animation: `${pulse} 2s infinite ease-in-out`,
-                              position: 'relative',
-                              overflow: 'hidden',
-                              '&::after': {
-                                content: '""',
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                right: 0,
-                                bottom: 0,
-                                background:
-                                  'radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, transparent 70%)',
-                                opacity: 0,
-                                transition: 'opacity 0.2s',
-                              },
-                              '&:hover::after': {
-                                opacity: 1,
-                              },
-                            }}
-                            disabled={
-                              !socketRef.current?.connected || !isInSpace
-                            }
-                          >
-                            {emoji}
-                          </Button>
-                        </Zoom>
-                      ))}
-                    </Stack>
-                  </Paper>
-                </Box>
+                    {isLoading ? (
+                      <CircularProgress size={24} color="inherit" />
+                    ) : musicStarted ? (
+                      <Stop />
+                    ) : (
+                      <PlayArrow />
+                    )}
+                  </Button>
+                </Stack>
+              </Box>
 
-                {/* Activity Log */}
+              {/* Emoji Reactions */}
+              <Box sx={{ mb: 4 }}>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    mb: 2,
+                    color: '#60a5fa',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
+                  }}
+                >
+                  <EmojiEmotions /> Reactions
+                </Typography>
+                <Paper
+                  sx={{
+                    p: 2,
+                    background: 'rgba(0, 0, 0, 0.2)',
+                    borderRadius: 2,
+                    border: '1px solid rgba(96, 165, 250, 0.1)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background:
+                        'radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.1) 0%, transparent 70%)',
+                      pointerEvents: 'none',
+                    },
+                  }}
+                >
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    sx={{
+                      flexWrap: 'wrap',
+                      gap: 1,
+                    }}
+                  >
+                    {emojis.map((emoji) => (
+                      <Zoom key={emoji} in>
+                        <Button
+                          onClick={() => handleEmojiReact(emoji)}
+                          sx={{
+                            fontSize: 24,
+                            minWidth: 48,
+                            height: 48,
+                            background: 'rgba(96, 165, 250, 0.1)',
+                            '&:hover': {
+                              background: 'rgba(96, 165, 250, 0.2)',
+                              transform: 'scale(1.1) rotate(5deg)',
+                            },
+                            transition: 'all 0.2s',
+                            animation: `${pulse} 2s infinite ease-in-out`,
+                            position: 'relative',
+                            overflow: 'hidden',
+                            '&::after': {
+                              content: '""',
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              background:
+                                'radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, transparent 70%)',
+                              opacity: 0,
+                              transition: 'opacity 0.2s',
+                            },
+                            '&:hover::after': {
+                              opacity: 1,
+                            },
+                          }}
+                          disabled={!socketRef.current?.connected || !isInSpace}
+                        >
+                          {emoji}
+                        </Button>
+                      </Zoom>
+                    ))}
+                  </Stack>
+                </Paper>
+              </Box>
+
+              {/* Activity Log */}
+              <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                 <Box>
                   <Typography
                     variant="h6"
@@ -1314,11 +1316,12 @@ const MusicAgent = () => {
                     Activity Log
                   </Typography>
                   <Paper
+                    ref={activityLogRef}
                     sx={{
                       p: 2,
                       background: 'rgba(0, 0, 0, 0.2)',
                       borderRadius: 2,
-                      maxHeight: '200px',
+                      height: '465px', // Fixed height
                       overflow: 'auto',
                       border: '1px solid rgba(96, 165, 250, 0.1)',
                       '&::-webkit-scrollbar': {
@@ -1350,7 +1353,7 @@ const MusicAgent = () => {
                     }}
                   >
                     <List dense>
-                      {logs.map((log, index) => (
+                      {[...logs].reverse().map((log, index) => (
                         <React.Fragment key={index}>
                           <ListItem>
                             <ListItemText

@@ -45,7 +45,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
                 />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/campaigns/:id" element={<CampaignDetails />} />
-                <Route path="/music-agent" element={<MusicAgent />} />
+                <Route path="/dj" element={<MusicAgent />} />
               </Routes>
             </AuthProvider>
           </ThemeProvider>

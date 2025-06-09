@@ -142,6 +142,11 @@ const MusicAgent = () => {
       connectSocket();
       fetchUserUploads();
     }
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+    };
   }, [user]);
 
   useEffect(() => {
@@ -183,7 +188,24 @@ const MusicAgent = () => {
     setLogs((prev) => [...prev, { timestamp, message, type }]);
   };
 
-  const connectSocket = () => {
+  // Define handlers outside connectSocket
+  const handleConnect = () => {
+    setWsStatus('connected');
+    addLog('Connected to server successfully', 'success');
+  };
+  const handleDisconnect = () => {
+    setWsStatus('disconnected');
+    addLog('Disconnected from server', 'error');
+  };
+  const handleConnectError = () => {
+    setWsStatus('disconnected');
+    addLog('Failed to connect to server', 'error');
+  };
+
+  const connectSocket = (forceDisconnect: boolean = false) => {
+    if (socketRef.current?.connected && !forceDisconnect) {
+      return;
+    }
     if (socketRef.current?.connected) {
       socketRef.current.disconnect();
       setWsStatus('disconnected');
@@ -200,20 +222,14 @@ const MusicAgent = () => {
       reconnectionDelay: 1000,
     });
 
-    socket.on('connect', () => {
-      setWsStatus('connected');
-      addLog('Connected to server successfully', 'success');
-    });
+    // Remove previous listeners before adding new ones
+    socket.off('connect', handleConnect);
+    socket.off('disconnect', handleDisconnect);
+    socket.off('connect_error', handleConnectError);
 
-    socket.on('disconnect', () => {
-      setWsStatus('disconnected');
-      addLog('Disconnected from server', 'error');
-    });
-
-    socket.on('connect_error', () => {
-      setWsStatus('disconnected');
-      addLog('Failed to connect to server', 'error');
-    });
+    socket.on('connect', handleConnect);
+    socket.on('disconnect', handleDisconnect);
+    socket.on('connect_error', handleConnectError);
 
     socketRef.current = socket;
   };
@@ -595,7 +611,7 @@ const MusicAgent = () => {
                   title={wsStatus === 'connected' ? 'Disconnect' : 'Connect'}
                 >
                   <IconButton
-                    onClick={connectSocket}
+                    onClick={() => connectSocket(wsStatus === 'connected')}
                     sx={{
                       color: wsStatus === 'connected' ? '#4caf50' : '#f44336',
                       '&:hover': { transform: 'scale(1.1)' },

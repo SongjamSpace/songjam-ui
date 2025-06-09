@@ -120,6 +120,7 @@ const MusicAgent = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isLibraryLoading, setIsLibraryLoading] = useState(false);
+  const activityLogRef = useRef<HTMLDivElement>(null);
 
   // Mock waveform data (in a real app, this would come from audio analysis)
   const waveformData = Array.from(
@@ -444,6 +445,13 @@ const MusicAgent = () => {
       setIsLoading(false);
     }
   };
+
+  // Add effect to scroll to top when new logs are added
+  useEffect(() => {
+    if (activityLogRef.current) {
+      activityLogRef.current.scrollTop = 0;
+    }
+  }, [logs]);
 
   return (
     <Box
@@ -1302,7 +1310,7 @@ const MusicAgent = () => {
                 </Box>
 
                 {/* Activity Log */}
-                <Box>
+                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                   <Typography
                     variant="h6"
                     sx={{
@@ -1314,11 +1322,12 @@ const MusicAgent = () => {
                     Activity Log
                   </Typography>
                   <Paper
+                    ref={activityLogRef}
                     sx={{
                       p: 2,
                       background: 'rgba(0, 0, 0, 0.2)',
                       borderRadius: 2,
-                      maxHeight: '200px',
+                      height: '465px', // Fixed height
                       overflow: 'auto',
                       border: '1px solid rgba(96, 165, 250, 0.1)',
                       '&::-webkit-scrollbar': {
@@ -1343,14 +1352,13 @@ const MusicAgent = () => {
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        background:
-                          'linear-gradient(to bottom, rgba(96, 165, 250, 0.1) 0%, transparent 100%)',
+                        background: 'linear-gradient(to bottom, rgba(96, 165, 250, 0.1) 0%, transparent 100%)',
                         pointerEvents: 'none',
                       },
                     }}
                   >
                     <List dense>
-                      {logs.map((log, index) => (
+                      {[...logs].reverse().map((log, index) => (
                         <React.Fragment key={index}>
                           <ListItem>
                             <ListItemText
@@ -1365,8 +1373,7 @@ const MusicAgent = () => {
                                         ? '#f44336'
                                         : '#60a5fa',
                                     fontFamily: 'monospace',
-                                    textShadow:
-                                      '0 0 5px rgba(96, 165, 250, 0.3)',
+                                    textShadow: '0 0 5px rgba(96, 165, 250, 0.3)',
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: 1,
@@ -1375,12 +1382,11 @@ const MusicAgent = () => {
                                   <FiberManualRecord
                                     sx={{
                                       fontSize: 8,
-                                      color:
-                                        log.type === 'success'
-                                          ? '#4caf50'
-                                          : log.type === 'error'
-                                          ? '#f44336'
-                                          : '#60a5fa',
+                                      color: log.type === 'success'
+                                        ? '#4caf50'
+                                        : log.type === 'error'
+                                        ? '#f44336'
+                                        : '#60a5fa',
                                       animation: `${pulse} 2s infinite`,
                                     }}
                                   />
@@ -1390,9 +1396,7 @@ const MusicAgent = () => {
                             />
                           </ListItem>
                           {index < logs.length - 1 && (
-                            <Divider
-                              sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
-                            />
+                            <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
                           )}
                         </React.Fragment>
                       ))}

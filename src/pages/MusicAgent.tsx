@@ -22,6 +22,7 @@ import {
   useTheme,
   keyframes,
   Slider,
+  Skeleton,
 } from '@mui/material';
 import {
   CloudUpload,
@@ -118,9 +119,13 @@ const MusicAgent = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isLibraryLoading, setIsLibraryLoading] = useState(false);
 
   // Mock waveform data (in a real app, this would come from audio analysis)
-  const waveformData = Array.from({ length: 50 }, () => Math.random() * 0.5 + 0.1);
+  const waveformData = Array.from(
+    { length: 50 },
+    () => Math.random() * 0.5 + 0.1
+  );
 
   // Show login dialog if not authenticated
   React.useEffect(() => {
@@ -163,8 +168,10 @@ const MusicAgent = () => {
 
   const fetchUserUploads = async () => {
     if (!user) return;
+    setIsLibraryLoading(true);
     const uploads = await getMusicUploadsByUserId(user.uid);
     setAudioUploads(uploads);
+    setIsLibraryLoading(false);
     // setUserUploads(uploads);
   };
 
@@ -403,7 +410,7 @@ const MusicAgent = () => {
   const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    
+
     const file = e.dataTransfer.files[0];
     if (file && file.type === 'audio/mpeg' && user) {
       if (file.size > 20 * 1024 * 1024) {
@@ -439,7 +446,8 @@ const MusicAgent = () => {
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.1) 0%, transparent 50%)',
+          background:
+            'radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.1) 0%, transparent 50%)',
           animation: `${pulse} 4s infinite ease-in-out`,
         },
       }}
@@ -463,7 +471,8 @@ const MusicAgent = () => {
               position: 'absolute',
               width: '2px',
               height: '100%',
-              background: 'linear-gradient(to bottom, transparent, rgba(96, 165, 250, 0.2), transparent)',
+              background:
+                'linear-gradient(to bottom, transparent, rgba(96, 165, 250, 0.2), transparent)',
               left: `${(i + 1) * 20}%`,
               animation: `${wave} ${3 + i}s infinite ease-in-out`,
             }}
@@ -483,7 +492,9 @@ const MusicAgent = () => {
             borderRadius: '50%',
             left: `${Math.random() * 100}%`,
             top: `${Math.random() * 100}%`,
-            animation: `${float} ${5 + Math.random() * 5}s infinite ease-in-out`,
+            animation: `${float} ${
+              5 + Math.random() * 5
+            }s infinite ease-in-out`,
             filter: 'blur(1px)',
           }}
         />
@@ -509,7 +520,8 @@ const MusicAgent = () => {
                 left: 0,
                 right: 0,
                 height: '2px',
-                background: 'linear-gradient(90deg, transparent, #60a5fa, transparent)',
+                background:
+                  'linear-gradient(90deg, transparent, #60a5fa, transparent)',
                 animation: `${glow} 2s infinite`,
               },
               '&::after': {
@@ -519,7 +531,8 @@ const MusicAgent = () => {
                 left: 0,
                 right: 0,
                 bottom: 0,
-                background: 'radial-gradient(circle at 50% 0%, rgba(96, 165, 250, 0.1) 0%, transparent 50%)',
+                background:
+                  'radial-gradient(circle at 50% 0%, rgba(96, 165, 250, 0.1) 0%, transparent 50%)',
                 pointerEvents: 'none',
               },
             }}
@@ -541,12 +554,12 @@ const MusicAgent = () => {
                     animation: `${pulse} 2s infinite ease-in-out`,
                   }}
                 >
-                  <MusicNote 
-                    sx={{ 
-                      fontSize: 40, 
+                  <MusicNote
+                    sx={{
+                      fontSize: 40,
                       color: '#60a5fa',
                       filter: 'drop-shadow(0 0 10px rgba(96, 165, 250, 0.5))',
-                    }} 
+                    }}
                   />
                   {musicStarted && (
                     <GraphicEq
@@ -578,26 +591,34 @@ const MusicAgent = () => {
                 </Typography>
               </Box>
               <Stack direction="row" spacing={2}>
-                <Tooltip title={wsStatus === 'connected' ? 'Disconnect' : 'Connect'}>
+                <Tooltip
+                  title={wsStatus === 'connected' ? 'Disconnect' : 'Connect'}
+                >
                   <IconButton
                     onClick={connectSocket}
                     sx={{
                       color: wsStatus === 'connected' ? '#4caf50' : '#f44336',
                       '&:hover': { transform: 'scale(1.1)' },
                       transition: 'transform 0.2s',
-                      animation: wsStatus === 'connected' ? `${pulse} 2s infinite` : 'none',
+                      animation:
+                        wsStatus === 'connected'
+                          ? `${pulse} 2s infinite`
+                          : 'none',
                       position: 'relative',
-                      '&::after': wsStatus === 'connected' ? {
-                        content: '""',
-                        position: 'absolute',
-                        top: -2,
-                        left: -2,
-                        right: -2,
-                        bottom: -2,
-                        borderRadius: '50%',
-                        border: '2px solid #4caf50',
-                        animation: `${pulse} 2s infinite`,
-                      } : {},
+                      '&::after':
+                        wsStatus === 'connected'
+                          ? {
+                              content: '""',
+                              position: 'absolute',
+                              top: -2,
+                              left: -2,
+                              right: -2,
+                              bottom: -2,
+                              borderRadius: '50%',
+                              border: '2px solid #4caf50',
+                              animation: `${pulse} 2s infinite`,
+                            }
+                          : {},
                     }}
                   >
                     <RadioButtonChecked />
@@ -620,7 +641,9 @@ const MusicAgent = () => {
             </Box>
 
             {/* Main Content Grid */}
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
+            <Box
+              sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}
+            >
               {/* Left Column */}
               <Box>
                 {/* Space URL Input */}
@@ -679,7 +702,8 @@ const MusicAgent = () => {
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        background: 'radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.1) 0%, transparent 70%)',
+                        background:
+                          'radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.1) 0%, transparent 70%)',
                         pointerEvents: 'none',
                       },
                     }}
@@ -707,13 +731,13 @@ const MusicAgent = () => {
                         position: 'relative',
                         overflow: 'hidden',
                         borderRadius: 1,
-                        background: isDragging 
-                          ? 'rgba(96, 165, 250, 0.2)' 
+                        background: isDragging
+                          ? 'rgba(96, 165, 250, 0.2)'
                           : 'rgba(0, 0, 0, 0.2)',
                         p: 1,
                         transition: 'all 0.3s ease',
-                        border: isDragging 
-                          ? '2px dashed #60a5fa' 
+                        border: isDragging
+                          ? '2px dashed #60a5fa'
                           : '1px solid rgba(96, 165, 250, 0.1)',
                         cursor: 'pointer',
                         '&:hover': {
@@ -734,8 +758,10 @@ const MusicAgent = () => {
                             flexDirection: 'column',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            gap: 2,
-                            color: isDragging ? 'rgba(96, 165, 250, 0.8)' : 'rgba(255, 255, 255, 0.3)',
+                            // gap: 2,
+                            color: isDragging
+                              ? 'rgba(96, 165, 250, 0.8)'
+                              : 'rgba(255, 255, 255, 0.3)',
                             position: 'relative',
                             '&::before': {
                               content: '""',
@@ -745,7 +771,8 @@ const MusicAgent = () => {
                               transform: 'translate(-50%, -50%)',
                               width: '60px',
                               height: '60px',
-                              background: 'radial-gradient(circle at center, rgba(96, 165, 250, 0.1) 0%, transparent 70%)',
+                              background:
+                                'radial-gradient(circle at center, rgba(96, 165, 250, 0.1) 0%, transparent 70%)',
                               animation: `${pulse} 2s infinite ease-in-out`,
                             },
                           }}
@@ -753,8 +780,12 @@ const MusicAgent = () => {
                           <CloudUpload
                             sx={{
                               fontSize: 40,
-                              color: isDragging ? 'rgba(96, 165, 250, 0.8)' : 'rgba(96, 165, 250, 0.3)',
-                              animation: isDragging ? 'none' : `${float} 3s infinite ease-in-out`,
+                              color: isDragging
+                                ? 'rgba(96, 165, 250, 0.8)'
+                                : 'rgba(96, 165, 250, 0.3)',
+                              animation: isDragging
+                                ? 'none'
+                                : `${float} 3s infinite ease-in-out`,
                             }}
                           />
                           <Typography
@@ -766,7 +797,9 @@ const MusicAgent = () => {
                               lineHeight: 1.4,
                             }}
                           >
-                            {isDragging ? 'Drop your track here' : 'Drop your track here to cue your music'}
+                            {isDragging
+                              ? 'Drop your track here'
+                              : 'Drop your track here to cue your music'}
                           </Typography>
                         </Box>
                       ) : (
@@ -776,9 +809,12 @@ const MusicAgent = () => {
                             sx={{
                               flex: 1,
                               height: `${height * 100}%`,
-                              background: index < (currentTime / (duration || 1)) * waveformData.length
-                                ? 'linear-gradient(to top, #60a5fa, #3b82f6)'
-                                : 'rgba(96, 165, 250, 0.2)',
+                              background:
+                                index <
+                                (currentTime / (duration || 1)) *
+                                  waveformData.length
+                                  ? 'linear-gradient(to top, #60a5fa, #3b82f6)'
+                                  : 'rgba(96, 165, 250, 0.2)',
                               borderRadius: '2px',
                               transition: 'background 0.3s ease',
                               minHeight: '4px',
@@ -793,12 +829,17 @@ const MusicAgent = () => {
                       <IconButton
                         onClick={() => {
                           if (audioRef.current) {
-                            audioRef.current.currentTime = Math.max(0, currentTime - 10);
+                            audioRef.current.currentTime = Math.max(
+                              0,
+                              currentTime - 10
+                            );
                           }
                         }}
                         disabled={!audioUrl}
                         sx={{
-                          color: audioUrl ? '#60a5fa' : 'rgba(255, 255, 255, 0.3)',
+                          color: audioUrl
+                            ? '#60a5fa'
+                            : 'rgba(255, 255, 255, 0.3)',
                           '&:hover': { transform: 'scale(1.1)' },
                           transition: 'transform 0.2s',
                         }}
@@ -810,7 +851,9 @@ const MusicAgent = () => {
                         onClick={handlePlayPause}
                         disabled={!audioUrl}
                         sx={{
-                          color: audioUrl ? '#60a5fa' : 'rgba(255, 255, 255, 0.3)',
+                          color: audioUrl
+                            ? '#60a5fa'
+                            : 'rgba(255, 255, 255, 0.3)',
                           '&:hover': { transform: 'scale(1.1)' },
                           transition: 'transform 0.2s',
                           width: 48,
@@ -823,12 +866,17 @@ const MusicAgent = () => {
                       <IconButton
                         onClick={() => {
                           if (audioRef.current) {
-                            audioRef.current.currentTime = Math.min(duration, currentTime + 10);
+                            audioRef.current.currentTime = Math.min(
+                              duration,
+                              currentTime + 10
+                            );
                           }
                         }}
                         disabled={!audioUrl}
                         sx={{
-                          color: audioUrl ? '#60a5fa' : 'rgba(255, 255, 255, 0.3)',
+                          color: audioUrl
+                            ? '#60a5fa'
+                            : 'rgba(255, 255, 255, 0.3)',
                           '&:hover': { transform: 'scale(1.1)' },
                           transition: 'transform 0.2s',
                         }}
@@ -839,7 +887,9 @@ const MusicAgent = () => {
                       <Typography
                         variant="body2"
                         sx={{
-                          color: audioUrl ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.3)',
+                          color: audioUrl
+                            ? 'rgba(255, 255, 255, 0.7)'
+                            : 'rgba(255, 255, 255, 0.3)',
                           minWidth: 45,
                           textAlign: 'center',
                         }}
@@ -853,7 +903,9 @@ const MusicAgent = () => {
                         onChange={handleSeek}
                         disabled={!audioUrl}
                         sx={{
-                          color: audioUrl ? '#60a5fa' : 'rgba(255, 255, 255, 0.3)',
+                          color: audioUrl
+                            ? '#60a5fa'
+                            : 'rgba(255, 255, 255, 0.3)',
                           '& .MuiSlider-thumb': {
                             width: 12,
                             height: 12,
@@ -862,7 +914,9 @@ const MusicAgent = () => {
                             },
                           },
                           '& .MuiSlider-track': {
-                            background: audioUrl ? 'linear-gradient(90deg, #60a5fa, #3b82f6)' : 'rgba(255, 255, 255, 0.3)',
+                            background: audioUrl
+                              ? 'linear-gradient(90deg, #60a5fa, #3b82f6)'
+                              : 'rgba(255, 255, 255, 0.3)',
                           },
                           '& .MuiSlider-rail': {
                             background: 'rgba(96, 165, 250, 0.2)',
@@ -873,7 +927,9 @@ const MusicAgent = () => {
                       <Typography
                         variant="body2"
                         sx={{
-                          color: audioUrl ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.3)',
+                          color: audioUrl
+                            ? 'rgba(255, 255, 255, 0.7)'
+                            : 'rgba(255, 255, 255, 0.3)',
                           minWidth: 45,
                           textAlign: 'center',
                         }}
@@ -923,10 +979,40 @@ const MusicAgent = () => {
                       },
                     }}
                   >
-                    {audioUploads.length === 0 ? (
+                    {isLibraryLoading ? (
+                      <List>
+                        {[1, 2, 3, 4, 5].map((i) => (
+                          <ListItemButton
+                            key={i}
+                            sx={{
+                              borderRadius: 1,
+                              mb: 1,
+                              transition: 'all 0.2s',
+                              background: 'rgba(255,255,255,0.05)',
+                            }}
+                            disabled
+                          >
+                            <Radio disabled sx={{ color: '#60a5fa' }} />
+                            <ListItemText
+                              primary={
+                                <Skeleton
+                                  variant="text"
+                                  width={120}
+                                  sx={{ bgcolor: 'rgba(96, 165, 250, 0.1)' }}
+                                />
+                              }
+                            />
+                          </ListItemButton>
+                        ))}
+                      </List>
+                    ) : audioUploads.length === 0 ? (
                       <Typography
                         variant="body2"
-                        sx={{ color: 'rgba(255, 255, 255, 0.5)', textAlign: 'center', py: 2 }}
+                        sx={{
+                          color: 'rgba(255, 255, 255, 0.5)',
+                          textAlign: 'center',
+                          py: 2,
+                        }}
                       >
                         No uploads yet
                       </Typography>
@@ -935,7 +1021,9 @@ const MusicAgent = () => {
                         {audioUploads.map((audioUpload) => (
                           <ListItemButton
                             key={audioUpload.audioUrl}
-                            onClick={() => handleSelectUpload(audioUpload.audioUrl)}
+                            onClick={() =>
+                              handleSelectUpload(audioUpload.audioUrl)
+                            }
                             selected={audioUpload.audioUrl === audioUrl}
                             sx={{
                               borderRadius: 1,
@@ -989,7 +1077,8 @@ const MusicAgent = () => {
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
+                        background:
+                          'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
                         transform: 'translateX(-100%)',
                         transition: 'transform 0.5s',
                       },
@@ -1020,11 +1109,14 @@ const MusicAgent = () => {
                       variant="contained"
                       fullWidth
                       onClick={handleJoinSpace}
-                      disabled={!socketRef.current?.connected || !spaceUrl || !audioUrl}
+                      disabled={
+                        !socketRef.current?.connected || !spaceUrl || !audioUrl
+                      }
                       sx={{
                         background: 'linear-gradient(135deg, #60a5fa, #3b82f6)',
                         '&:hover': {
-                          background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                          background:
+                            'linear-gradient(135deg, #3b82f6, #2563eb)',
                           transform: 'scale(1.02)',
                         },
                         height: 56,
@@ -1038,7 +1130,8 @@ const MusicAgent = () => {
                           left: 0,
                           right: 0,
                           bottom: 0,
-                          background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
+                          background:
+                            'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
                           transform: 'translateX(-100%)',
                           transition: 'transform 0.5s',
                         },
@@ -1060,11 +1153,14 @@ const MusicAgent = () => {
                       variant="contained"
                       fullWidth
                       onClick={handlePlayMusic}
-                      disabled={!socketRef.current?.connected || !isInSpace || !audioUrl}
+                      disabled={
+                        !socketRef.current?.connected || !isInSpace || !audioUrl
+                      }
                       sx={{
                         background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
                         '&:hover': {
-                          background: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
+                          background:
+                            'linear-gradient(135deg, #7c3aed, #6d28d9)',
                           transform: 'scale(1.02)',
                         },
                         height: 56,
@@ -1078,7 +1174,8 @@ const MusicAgent = () => {
                           left: 0,
                           right: 0,
                           bottom: 0,
-                          background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
+                          background:
+                            'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
                           transform: 'translateX(-100%)',
                           transition: 'transform 0.5s',
                         },
@@ -1129,7 +1226,8 @@ const MusicAgent = () => {
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        background: 'radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.1) 0%, transparent 70%)',
+                        background:
+                          'radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.1) 0%, transparent 70%)',
                         pointerEvents: 'none',
                       },
                     }}
@@ -1166,7 +1264,8 @@ const MusicAgent = () => {
                                 left: 0,
                                 right: 0,
                                 bottom: 0,
-                                background: 'radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, transparent 70%)',
+                                background:
+                                  'radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, transparent 70%)',
                                 opacity: 0,
                                 transition: 'opacity 0.2s',
                               },
@@ -1174,7 +1273,9 @@ const MusicAgent = () => {
                                 opacity: 1,
                               },
                             }}
-                            disabled={!socketRef.current?.connected || !isInSpace}
+                            disabled={
+                              !socketRef.current?.connected || !isInSpace
+                            }
                           >
                             {emoji}
                           </Button>
@@ -1226,7 +1327,8 @@ const MusicAgent = () => {
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        background: 'linear-gradient(to bottom, rgba(96, 165, 250, 0.1) 0%, transparent 100%)',
+                        background:
+                          'linear-gradient(to bottom, rgba(96, 165, 250, 0.1) 0%, transparent 100%)',
                         pointerEvents: 'none',
                       },
                     }}
@@ -1247,7 +1349,8 @@ const MusicAgent = () => {
                                         ? '#f44336'
                                         : '#60a5fa',
                                     fontFamily: 'monospace',
-                                    textShadow: '0 0 5px rgba(96, 165, 250, 0.3)',
+                                    textShadow:
+                                      '0 0 5px rgba(96, 165, 250, 0.3)',
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: 1,
@@ -1256,11 +1359,12 @@ const MusicAgent = () => {
                                   <FiberManualRecord
                                     sx={{
                                       fontSize: 8,
-                                      color: log.type === 'success'
-                                        ? '#4caf50'
-                                        : log.type === 'error'
-                                        ? '#f44336'
-                                        : '#60a5fa',
+                                      color:
+                                        log.type === 'success'
+                                          ? '#4caf50'
+                                          : log.type === 'error'
+                                          ? '#f44336'
+                                          : '#60a5fa',
                                       animation: `${pulse} 2s infinite`,
                                     }}
                                   />
@@ -1270,7 +1374,9 @@ const MusicAgent = () => {
                             />
                           </ListItem>
                           {index < logs.length - 1 && (
-                            <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+                            <Divider
+                              sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
+                            />
                           )}
                         </React.Fragment>
                       ))}

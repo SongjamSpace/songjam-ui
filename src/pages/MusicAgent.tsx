@@ -121,6 +121,7 @@ const MusicAgent = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [isLibraryLoading, setIsLibraryLoading] = useState(false);
   const activityLogRef = useRef<HTMLDivElement>(null);
+  const [currentEmoji, setCurrentEmoji] = useState('🎧');
 
   // Add effect to scroll to top when new logs are added
   useEffect(() => {
@@ -390,7 +391,19 @@ const MusicAgent = () => {
         userId: user.uid,
         displayName: user.displayName,
       });
+      setCurrentEmoji(emoji);
       addLog(`Reacted with ${emoji}`, 'success');
+    }
+  };
+  const handleSwitchMute = (mute: boolean) => {
+    if (socketRef.current && socketRef.current.connected && user) {
+      socketRef.current.once(
+        'switched-mute',
+        (response: { isMuted: boolean }) => {
+          setIsMuted(response.isMuted);
+        }
+      );
+      socketRef.current.emit('switch-mute', { isMute: mute });
     }
   };
 
@@ -650,7 +663,9 @@ const MusicAgent = () => {
                 </Tooltip>
                 <Tooltip title={isMuted ? 'Unmute' : 'Mute'}>
                   <IconButton
-                    onClick={() => setIsMuted(!isMuted)}
+                    onClick={() => {
+                      handleSwitchMute(!isMuted);
+                    }}
                     sx={{
                       color: isMuted ? '#f44336' : '#60a5fa',
                       '&:hover': { transform: 'scale(1.1)' },
@@ -1278,6 +1293,10 @@ const MusicAgent = () => {
                                 background: 'rgba(96, 165, 250, 0.2)',
                                 transform: 'scale(1.1) rotate(5deg)',
                               },
+                              border:
+                                currentEmoji === emoji
+                                  ? '2px solid #60a5fa'
+                                  : 'none',
                               transition: 'all 0.2s',
                               animation: `${pulse} 2s infinite ease-in-out`,
                               position: 'relative',

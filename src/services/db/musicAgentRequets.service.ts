@@ -1,4 +1,4 @@
-import { getDocs, collection, query, where, addDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase.service';
 
 const MUSIC_AGENT_COLLECTION = 'musicAgentRequests';
@@ -7,9 +7,9 @@ export type MusicAgentRequest = {
   userId: string;
   audioUrl: string;
   spaceUrl?: string;
-  createdAt: Date;
-  twitterScreenName: string | null;
-  displayName: string | null;
+  startedAt: number;
+  endedAt?: number;
+  email: string;
 };
 
 // export const getMusicUploadsByUserId = async (userId: string) => {
@@ -21,5 +21,5 @@ export type MusicAgentRequest = {
 
 export const createMusicAgentRequest = async (request: MusicAgentRequest) => {
   const musicUploadRef = collection(db, MUSIC_AGENT_COLLECTION);
-  await addDoc(musicUploadRef, request);
+  await addDoc(musicUploadRef, { ...request, docCreatedAt: serverTimestamp() });
 };

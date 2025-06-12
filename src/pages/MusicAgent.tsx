@@ -122,6 +122,7 @@ const MusicAgent = () => {
   const [isLibraryLoading, setIsLibraryLoading] = useState(false);
   const activityLogRef = useRef<HTMLDivElement>(null);
   const [currentEmoji, setCurrentEmoji] = useState('🎧');
+  const [volume, setVolume] = useState(1);
 
   // Add effect to scroll to top when new logs are added
   useEffect(() => {
@@ -281,11 +282,10 @@ const MusicAgent = () => {
     });
     await createMusicAgentRequest({
       userId: user.uid,
-      twitterScreenName: user.username,
-      displayName: user.displayName,
+      email: user.email,
       audioUrl,
       spaceUrl,
-      createdAt: new Date(),
+      startedAt: Date.now(),
     });
   };
 
@@ -379,7 +379,8 @@ const MusicAgent = () => {
       setMusicStarted(false);
       setCurrentTime(0);
     });
-    addLog(`Selected music: ${url}`, 'info');
+    const fileName = url?.split('%2F')?.pop()?.split('?')[0] ?? '';
+    addLog(`Selected music: ${fileName}`, 'info');
   };
 
   // Emoji reactions
@@ -404,6 +405,12 @@ const MusicAgent = () => {
         }
       );
       socketRef.current.emit('switch-mute', { isMute: mute });
+    }
+  };
+  const handleVolumeChange = (event: Event, newValue: number | number[]) => {
+    if (socketRef.current && socketRef.current.connected && user) {
+      setVolume(newValue as number);
+      socketRef.current.emit('change-volume', { volume: newValue as number });
     }
   };
 
@@ -1328,6 +1335,52 @@ const MusicAgent = () => {
                     </Stack>
                   </Paper>
                 </Box>
+                {/* Volumn Slider */}
+                <Box sx={{ mb: 4 }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      mb: 2,
+                      color: '#60a5fa',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
+                    }}
+                  >
+                    <VolumeUp /> Volume
+                  </Typography>
+                  <Paper
+                    sx={{
+                      p: 2,
+                      background: 'rgba(0, 0, 0, 0.2)',
+                      borderRadius: 2,
+                      border: '1px solid rgba(96, 165, 250, 0.1)',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background:
+                          'radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.1) 0%, transparent 70%)',
+                        pointerEvents: 'none',
+                      },
+                    }}
+                  >
+                    <Slider
+                      value={volume}
+                      onChange={handleVolumeChange}
+                      min={0}
+                      max={1}
+                      step={0.1}
+                      // disabled={!socketRef.current?.connected || !isInSpace}
+                    />
+                  </Paper>
+                </Box>
 
                 {/* Activity Log */}
                 <Box>
@@ -1347,7 +1400,7 @@ const MusicAgent = () => {
                       background: 'rgba(0, 0, 0, 0.2)',
                       borderRadius: 2,
                       // maxHeight: '200px',
-                      height: '465px',
+                      height: '365px',
                       overflow: 'auto',
                       border: '1px solid rgba(96, 165, 250, 0.1)',
                       '&::-webkit-scrollbar': {

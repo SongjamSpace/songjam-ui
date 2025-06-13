@@ -21,5 +21,9 @@ export type MusicAgentRequest = {
 
 export const createMusicAgentRequest = async (request: MusicAgentRequest) => {
   const musicUploadRef = collection(db, MUSIC_AGENT_COLLECTION);
-  await addDoc(musicUploadRef, { ...request, docCreatedAt: serverTimestamp() });
+  const doc = await addDoc(musicUploadRef, {
+    ...request,
+    docCreatedAt: serverTimestamp(),
+  });
+  return doc.id;
 };

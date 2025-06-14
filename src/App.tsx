@@ -1016,6 +1016,25 @@ export default function App() {
                   '&:hover': {
                     boxShadow: '0 0 25px rgba(96, 165, 250, 0.4)',
                   },
+                  '& .katex-display': {
+                    overflowX: 'auto',
+                    overflowY: 'hidden',
+                    WebkitOverflowScrolling: 'touch',
+                    '&::-webkit-scrollbar': {
+                      height: '4px',
+                    },
+                    '&::-webkit-scrollbar-track': {
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      borderRadius: '2px',
+                    },
+                    '&::-webkit-scrollbar-thumb': {
+                      background: 'rgba(96, 165, 250, 0.5)',
+                      borderRadius: '2px',
+                    },
+                    '& .katex': {
+                      fontSize: 'clamp(0.8rem, 2vw, 1.2rem)',
+                    },
+                  },
                 }}
               >
                 <BlockMath>
@@ -1052,6 +1071,25 @@ export default function App() {
                   '&:hover': {
                     boxShadow: '0 0 25px rgba(236, 72, 153, 0.4)',
                   },
+                  '& .katex-display': {
+                    overflowX: 'auto',
+                    overflowY: 'hidden',
+                    WebkitOverflowScrolling: 'touch',
+                    '&::-webkit-scrollbar': {
+                      height: '4px',
+                    },
+                    '&::-webkit-scrollbar-track': {
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      borderRadius: '2px',
+                    },
+                    '&::-webkit-scrollbar-thumb': {
+                      background: 'rgba(236, 72, 153, 0.5)',
+                      borderRadius: '2px',
+                    },
+                    '& .katex': {
+                      fontSize: 'clamp(0.8rem, 2vw, 1.2rem)',
+                    },
+                  },
                 }}
               >
                 <BlockMath>
@@ -1087,6 +1125,25 @@ export default function App() {
                   transition: 'all 0.3s ease',
                   '&:hover': {
                     boxShadow: '0 0 25px rgba(236, 72, 153, 0.4)',
+                  },
+                  '& .katex-display': {
+                    overflowX: 'auto',
+                    overflowY: 'hidden',
+                    WebkitOverflowScrolling: 'touch',
+                    '&::-webkit-scrollbar': {
+                      height: '4px',
+                    },
+                    '&::-webkit-scrollbar-track': {
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      borderRadius: '2px',
+                    },
+                    '&::-webkit-scrollbar-thumb': {
+                      background: 'rgba(236, 72, 153, 0.5)',
+                      borderRadius: '2px',
+                    },
+                    '& .katex': {
+                      fontSize: 'clamp(0.8rem, 2vw, 1.2rem)',
+                    },
                   },
                 }}
               >

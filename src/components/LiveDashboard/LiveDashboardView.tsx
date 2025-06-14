@@ -193,10 +193,26 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
       >
         <Box>
           <Box display={'flex'} alignItems={'center'} gap={4}>
-            <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+            <Typography
+              variant="h4"
+              sx={{ fontWeight: 'bold', color: 'white' }}
+            >
               Live Space Dashboard
             </Typography>
             <Box display={'flex'} alignItems={'center'} gap={2}>
+              <LoadingButton
+                variant="contained"
+                color="primary"
+                onClick={async () => {
+                  navigate(`/crm/${spaceId}`);
+                }}
+                size="small"
+                endIcon={<OpenInNewIcon />}
+                disabled={isBoosting}
+                loading={isBoosting}
+              >
+                Go to CRM
+              </LoadingButton>
               <LoadingButton
                 variant="contained"
                 color="primary"

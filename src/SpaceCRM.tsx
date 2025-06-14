@@ -455,7 +455,7 @@ const SpaceCRM: React.FC = () => {
         >
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <IconButton
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate(-1)}
               sx={{
                 mr: 2,
                 background: 'rgba(255, 255, 255, 0.05)',
@@ -498,6 +498,12 @@ const SpaceCRM: React.FC = () => {
                     onClick={async () => {
                       if (!user) {
                         setShowAuthDialog(true);
+                        return;
+                      }
+                      if (space.state !== 'ENDED') {
+                        toast.error(
+                          "Space hasn't ended yet, please come back later for Analysis"
+                        );
                         return;
                       }
                       const projectId =

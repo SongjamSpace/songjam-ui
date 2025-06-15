@@ -10,7 +10,7 @@ import LiveDashboardContainer from './components/LiveDashboard/LiveDashboardCont
 import './i18n';
 import Dashboard from './components/Dashboard';
 import { DynamicContextProvider } from '@dynamic-labs/sdk-react-core';
-import { EthereumWalletConnectors } from '@dynamic-labs/ethereum';
+// import { EthereumWalletConnectors } from '@dynamic-labs/ethereum';
 import Settings from './pages/Settings';
 import CampaignDetails from './pages/CampaignDetails';
 import MusicAgent from './pages/MusicAgent';
@@ -22,7 +22,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
         <DynamicContextProvider
           settings={{
             environmentId: import.meta.env.VITE_DYNAMIC_ENV_ID,
-            walletConnectors: [EthereumWalletConnectors],
+            // walletConnectors: [EthereumWalletConnectors],
           }}
         >
           <ThemeProvider theme={theme}>

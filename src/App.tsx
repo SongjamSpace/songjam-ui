@@ -35,11 +35,25 @@ import LoginDialog from './components/LoginDialog';
 import { createCheckoutSession } from './services/db/stripe';
 import { useAuthContext } from './contexts/AuthContext';
 import AIDemoPreview from './components/AIDemoPreview';
-import { keyframes } from '@mui/system';
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, Text } from 'recharts';
+import { keyframes, width } from '@mui/system';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  Text,
+} from 'recharts';
 import { BlockMath, InlineMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
 import CloseIcon from '@mui/icons-material/Close';
+import {
+  getTwitterMentionsLeaderboard,
+  UserLeaderboardEntry,
+} from './services/db/twitterMentions.service';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
+import { createSpaceSubmission } from './services/db/spaceSubmissions.service';
 
 const electrifyPulse = keyframes`
   0% { text-shadow: 0 0 1px #60a5fa, 0 0 2px #60a5fa, 0 0 3px rgba(236, 72, 153, 0.5); }
@@ -87,8 +101,20 @@ export default function App() {
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [spaceUrlForPoints, setSpaceUrlForPoints] = useState('');
   const [isClaiming, setIsClaiming] = useState(false);
-  const [isXConnected, setIsXConnected] = useState(false);
-  const [xUser, setXUser] = useState<{ screenName: string; avatarUrl: string } | null>(null);
+  const [xUser, setXUser] = useState<{
+    screenName: string;
+    avatarUrl: string;
+  } | null>(null);
+  const [leaderboard, setLeaderboard] = useState<UserLeaderboardEntry[]>([]);
+  const { user: dynamicUser } = useDynamicContext();
+
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      const leaderboard = await getTwitterMentionsLeaderboard();
+      setLeaderboard(leaderboard);
+    };
+    fetchLeaderboard();
+  }, []);
 
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
@@ -123,15 +149,55 @@ export default function App() {
   }, []);
 
   const tokenomicsData = [
-    { name: 'Public Sale', value: 37.5, color: '#FFA726', description: 'Fixed Supply' },
-    { name: 'Liquidity Pool', value: 12.5, color: '#BD85FF', description: 'Fixed Supply' },
-    { name: 'Ecosystem Fund', value: 10, color: '#FF5E8E', description: 'Hackathons, Grants, Bounties. Tokens immediately released at 17 Sep 2025' },
-    { name: 'Early Backers', value: 5, color: '#4FC3F7', description: 'Mentors, Supporters, Investors. Tokens released over 1 year from 17 Sep 2025' },
-    { name: 'Team', value: 15, color: '#FFD700', description: 'Founders, Builders, Creators. Tokens released over 1 year from 17 Sep 2025' },
-    { name: 'Community', value: 20, color: '#00E676', description: 'Yappers, Stakers, Contributors. 25% released at 17 Sep 2025, 75% over 1 year from 17 Sep 2025' },
+    {
+      name: 'Public Sale',
+      value: 37.5,
+      color: '#FFA726',
+      description: 'Fixed Supply',
+    },
+    {
+      name: 'Liquidity Pool',
+      value: 12.5,
+      color: '#BD85FF',
+      description: 'Fixed Supply',
+    },
+    {
+      name: 'Ecosystem Fund',
+      value: 10,
+      color: '#FF5E8E',
+      description:
+        'Hackathons, Grants, Bounties. Tokens immediately released at 17 Sep 2025',
+    },
+    {
+      name: 'Early Backers',
+      value: 5,
+      color: '#4FC3F7',
+      description:
+        'Mentors, Supporters, Investors. Tokens released over 1 year from 17 Sep 2025',
+    },
+    {
+      name: 'Team',
+      value: 15,
+      color: '#FFD700',
+      description:
+        'Founders, Builders, Creators. Tokens released over 1 year from 17 Sep 2025',
+    },
+    {
+      name: 'Community',
+      value: 20,
+      color: '#00E676',
+      description:
+        'Yappers, Stakers, Contributors. 25% released at 17 Sep 2025, 75% over 1 year from 17 Sep 2025',
+    },
   ];
 
-  const renderCustomizedLabel = ({ cx, cy, midAngle, outerRadius, percent }: any) => {
+  const renderCustomizedLabel = ({
+    cx,
+    cy,
+    midAngle,
+    outerRadius,
+    percent,
+  }: any) => {
     const RADIAN = Math.PI / 180;
     const radius = outerRadius + 30; // Position text 30px outside the outer radius
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -186,32 +252,43 @@ export default function App() {
     document.body.className = 'dark';
   }, []);
 
-  const handleConnectX = () => {
-    // In a real app, this would trigger the OAuth flow
-    setIsXConnected(true);
-    setXUser({
-      screenName: 'songjam_user',
-      avatarUrl: `https://unavatar.io/twitter/songjam_`, // Using a dynamic avatar service
-    });
-    toast.success('X Account Connected!');
-  };
-
-  const handleDisconnectX = () => {
-    setIsXConnected(false);
-    setXUser(null);
-    toast('X Account Disconnected.');
-  };
-
   const handleClaimSpacePoints = async () => {
     if (!spaceUrlForPoints.trim()) {
       return toast.error('Please enter a valid Twitter Space URL.');
     }
+    if (!dynamicUser) {
+      setShowAuthDialog(true);
+      return;
+    }
+    const twitterCredentials = dynamicUser.verifiedCredentials.find(
+      (cred) => cred.format === 'oauth'
+    );
+    if (!twitterCredentials) {
+      toast.error('Please connect your Twitter account.');
+      return setShowAuthDialog(true);
+    }
+    const spaceId = extractSpaceId(spaceUrlForPoints);
+    if (!spaceId) {
+      toast.error('Please enter a valid Twitter Space URL.');
+      return;
+    }
     setIsClaiming(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsClaiming(false);
-    toast.success('Space URL submitted for verification!');
-    setSpaceUrlForPoints('');
+    try {
+      await createSpaceSubmission(spaceId, {
+        spaceUrl: spaceUrlForPoints,
+        userId: twitterCredentials.id,
+        twitterId: twitterCredentials.oauthAccountId,
+        username: twitterCredentials.oauthUsername,
+        name: twitterCredentials.publicIdentifier,
+        createdAt: new Date(),
+      });
+      toast.success('Space URL submitted for verification!');
+      setSpaceUrlForPoints('');
+    } catch (error) {
+      toast.error('Failed to submit space URL. Please try again.');
+    } finally {
+      setIsClaiming(false);
+    }
   };
 
   return (
@@ -229,17 +306,27 @@ export default function App() {
       />
 
       <nav>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', position: 'relative' }}>
-        <div className="logo">
-          <Logo />
-          <span>Songjam</span>
-        </div>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            width: '100%',
+            position: 'relative',
+          }}
+        >
+          <div className="logo">
+            <Logo />
+            <span>Songjam</span>
+          </div>
           <Box display="flex" gap={2} alignItems="center">
             <Button
               variant="text"
               color="inherit"
               onClick={() => {
-                const element = document.getElementById('agentic-story-section');
+                const element = document.getElementById(
+                  'agentic-story-section'
+                );
                 if (element) {
                   element.scrollIntoView({ behavior: 'smooth' });
                 }
@@ -272,7 +359,10 @@ export default function App() {
               }}
               variant="text"
               size="small"
-              sx={{ color: 'white', '&:hover': { textDecoration: 'underline' } }}
+              sx={{
+                color: 'white',
+                '&:hover': { textDecoration: 'underline' },
+              }}
             >
               Leaderboard
             </Button>
@@ -285,7 +375,10 @@ export default function App() {
               }}
               variant="text"
               size="small"
-              sx={{ color: 'white', '&:hover': { textDecoration: 'underline' } }}
+              sx={{
+                color: 'white',
+                '&:hover': { textDecoration: 'underline' },
+              }}
             >
               Extension
             </Button>
@@ -298,7 +391,10 @@ export default function App() {
               }}
               variant="text"
               size="small"
-              sx={{ color: 'white', '&:hover': { textDecoration: 'underline' } }}
+              sx={{
+                color: 'white',
+                '&:hover': { textDecoration: 'underline' },
+              }}
             >
               Pricing
             </Button>
@@ -311,7 +407,10 @@ export default function App() {
               }}
               variant="text"
               size="small"
-              sx={{ color: 'white', '&:hover': { textDecoration: 'underline' } }}
+              sx={{
+                color: 'white',
+                '&:hover': { textDecoration: 'underline' },
+              }}
             >
               Honors
             </Button>
@@ -324,21 +423,24 @@ export default function App() {
               }}
               variant="text"
               size="small"
-              sx={{ color: 'white', '&:hover': { textDecoration: 'underline' } }}
+              sx={{
+                color: 'white',
+                '&:hover': { textDecoration: 'underline' },
+              }}
             >
               Contact
             </Button>
             <Button
               onClick={() => navigate('/dashboard')}
-              variant="text"
+              variant="outlined"
               size="small"
-              sx={{ 
-                color: 'white', 
+              sx={{
+                color: 'white',
                 '&:hover': { textDecoration: 'underline' },
                 animation: `${textPulse} 2s infinite ease-in-out`,
               }}
             >
-              Login
+              {user ? 'Dashboard' : 'Login'}
             </Button>
             <Button
               href="https://app.virtuals.io/geneses/4157"
@@ -350,28 +452,29 @@ export default function App() {
                 background: 'linear-gradient(90deg, #00BCD4 0%, #3F51B5 100%)',
                 color: 'white',
                 '&:hover': {
-                  background: 'linear-gradient(90deg, #3F51B5 0%, #00BCD4 100%)',
+                  background:
+                    'linear-gradient(90deg, #3F51B5 0%, #00BCD4 100%)',
                   boxShadow: '0 0 20px rgba(0, 188, 212, 0.8)',
                 },
               }}
             >
               Virtuals Genesis Launch
             </Button>
-          <Button
-            onClick={handleLanguageChange}
-            variant="outlined"
-            size="small"
-            sx={{
-              color: 'var(--text-secondary)',
-              borderColor: 'var(--text-secondary)',
-              '&:hover': {
-                borderColor: 'white',
-                color: 'white',
-              },
-            }}
-          >
-            {t('switchLanguage')}
-          </Button>
+            <Button
+              onClick={handleLanguageChange}
+              variant="outlined"
+              size="small"
+              sx={{
+                color: 'var(--text-secondary)',
+                borderColor: 'var(--text-secondary)',
+                '&:hover': {
+                  borderColor: 'white',
+                  color: 'white',
+                },
+              }}
+            >
+              {t('switchLanguage')}
+            </Button>
           </Box>
         </Box>
       </nav>
@@ -600,21 +703,22 @@ export default function App() {
           backdropFilter: 'blur(10px)',
           borderRadius: '24px',
           border: '1px solid rgba(96, 165, 250, 0.1)',
-          boxShadow: '0 3px 15px rgba(139, 92, 246, 0.1), 0 0 10px rgba(236, 72, 153, 0.08)',
+          boxShadow:
+            '0 3px 15px rgba(139, 92, 246, 0.1), 0 0 10px rgba(236, 72, 153, 0.08)',
           transition: 'all 0.3s ease',
         }}
       >
-                  <Typography
+        <Typography
           variant="h2"
-                    sx={{
+          sx={{
             fontSize: { xs: '2.5rem', md: '3.5rem' },
             marginBottom: '1.5rem',
-            background:
-              'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
+            background: 'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
             fontWeight: 'bold',
-            textShadow: '0 0 15px rgba(236, 72, 153, 0.2), 0 0 8px rgba(139, 92, 246, 0.15)',
+            textShadow:
+              '0 0 15px rgba(236, 72, 153, 0.2), 0 0 8px rgba(139, 92, 246, 0.15)',
             animation: 'gradient 8s ease infinite',
             backgroundSize: '200% 200%',
             '@keyframes gradient': {
@@ -631,7 +735,7 @@ export default function App() {
           }}
         >
           {t('agenticStoryTitle', 'The Future of Engagement')}
-                  </Typography>
+        </Typography>
         <Typography
           variant="body1"
           sx={{
@@ -648,7 +752,7 @@ export default function App() {
             'agenticStoryIntroPart1',
             `Transform your X Spaces experience with AI-powered, verifiable interactions.`
           )}
-                  </Typography>
+        </Typography>
         <Typography
           variant="body1"
           sx={{
@@ -685,24 +789,34 @@ export default function App() {
                 alt="Agentic CRM Flow"
                 style={{ width: '100%', height: 'auto', display: 'block' }}
               />
-                </Box>
+            </Box>
           </Grid>
           <Grid item xs={12} md={6}>
             <Box textAlign="left">
               <Typography
                 variant="h4"
                 sx={{
-                  background: 'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
+                  background:
+                    'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   fontWeight: 'bold',
                   marginBottom: '1rem',
-                  textShadow: '0 0 12px rgba(236, 72, 153, 0.15), 0 0 6px rgba(139, 92, 246, 0.1)',
+                  textShadow:
+                    '0 0 12px rgba(236, 72, 153, 0.15), 0 0 6px rgba(139, 92, 246, 0.1)',
                 }}
               >
                 {t('pillar1Title', 'Supercharge your Growth')}
               </Typography>
-              <Typography variant="body1" sx={{ lineHeight: 1.7, opacity: 0.9, marginBottom: '2rem', color: '#F0F8FF' }}>
+              <Typography
+                variant="body1"
+                sx={{
+                  lineHeight: 1.7,
+                  opacity: 0.9,
+                  marginBottom: '2rem',
+                  color: '#F0F8FF',
+                }}
+              >
                 {t(
                   'pillar1Text',
                   `Participating in X Spaces is the most relatable way to grow on X. But it's not easy. You need to engage with your audience synchronously and asynchronously.`
@@ -712,17 +826,27 @@ export default function App() {
               <Typography
                 variant="h4"
                 sx={{
-                  background: 'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
+                  background:
+                    'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   fontWeight: 'bold',
                   marginBottom: '1rem',
-                  textShadow: '0 0 12px rgba(236, 72, 153, 0.15), 0 0 6px rgba(139, 92, 246, 0.1)',
+                  textShadow:
+                    '0 0 12px rgba(236, 72, 153, 0.15), 0 0 6px rgba(139, 92, 246, 0.1)',
                 }}
               >
                 {t('pillar2Title', 'AI-Powered Personalization')}
               </Typography>
-              <Typography variant="body1" sx={{ lineHeight: 1.7, opacity: 0.9, marginBottom: '2rem', color: '#F0F8FF' }}>
+              <Typography
+                variant="body1"
+                sx={{
+                  lineHeight: 1.7,
+                  opacity: 0.9,
+                  marginBottom: '2rem',
+                  color: '#F0F8FF',
+                }}
+              >
                 {t(
                   'pillar2Text',
                   `Leverage AI to automate your outreach, and to engage in a way that is truly personal and authentic. Save time, and grow your audience while you sleep.`
@@ -732,23 +856,28 @@ export default function App() {
               <Typography
                 variant="h4"
                 sx={{
-                  background: 'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
+                  background:
+                    'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   fontWeight: 'bold',
                   marginBottom: '1rem',
-                  textShadow: '0 0 12px rgba(236, 72, 153, 0.15), 0 0 6px rgba(139, 92, 246, 0.1)',
+                  textShadow:
+                    '0 0 12px rgba(236, 72, 153, 0.15), 0 0 6px rgba(139, 92, 246, 0.1)',
                 }}
               >
                 {t('pillar3Title', 'Verifiable Authenticity')}
               </Typography>
-              <Typography variant="body1" sx={{ lineHeight: 1.7, opacity: 0.9, color: '#F0F8FF' }}>
+              <Typography
+                variant="body1"
+                sx={{ lineHeight: 1.7, opacity: 0.9, color: '#F0F8FF' }}
+              >
                 {t(
                   'pillar3Text',
                   `Secure your interactions with cryptographic voice verification. Ensure every connection is genuine, secure, and truly human.`
                 )}
               </Typography>
-              </Box>
+            </Box>
           </Grid>
         </Grid>
       </Paper>
@@ -785,7 +914,8 @@ export default function App() {
             lineHeight: '1.6',
           }}
         >
-          Understanding the framework behind the $SANG token, designed for sustainable growth and community engagement.
+          Understanding the framework behind the $SANG token, designed for
+          sustainable growth and community engagement.
         </Typography>
 
         <Paper
@@ -804,21 +934,47 @@ export default function App() {
               left: 0,
               right: 0,
               bottom: 0,
-              background: 'radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.1) 0%, transparent 70%)',
+              background:
+                'radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.1) 0%, transparent 70%)',
               pointerEvents: 'none',
             },
           }}
         >
           <Grid container spacing={4} alignItems="center">
             <Grid item xs={12} md={6}>
-              <Box sx={{ width: '100%', height: 550, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <Box
+                sx={{
+                  width: '100%',
+                  height: 550,
+                  position: 'relative',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <defs>
                       {tokenomicsData.map((entry, index) => (
-                        <linearGradient id={`gradient-${index}`} x1="0" y1="0" x2="1" y2="1" key={index}>
-                          <stop offset="0%" stopColor={entry.color} stopOpacity={0.8} />
-                          <stop offset="100%" stopColor={entry.color} stopOpacity={0.5} />
+                        <linearGradient
+                          id={`gradient-${index}`}
+                          x1="0"
+                          y1="0"
+                          x2="1"
+                          y2="1"
+                          key={index}
+                        >
+                          <stop
+                            offset="0%"
+                            stopColor={entry.color}
+                            stopOpacity={0.8}
+                          />
+                          <stop
+                            offset="100%"
+                            stopColor={entry.color}
+                            stopOpacity={0.5}
+                          />
                         </linearGradient>
                       ))}
                     </defs>
@@ -835,7 +991,7 @@ export default function App() {
                       label={renderCustomizedLabel}
                     >
                       {tokenomicsData.map((entry, index) => {
-                        const angle = (index * (360 / tokenomicsData.length));
+                        const angle = index * (360 / tokenomicsData.length);
                         return (
                           <Cell
                             key={`cell-${index}`}
@@ -852,7 +1008,8 @@ export default function App() {
                               e.currentTarget.style.filter = 'brightness(1.2)';
                             }}
                             onMouseLeave={(e) => {
-                              e.currentTarget.style.transform = 'rotate(0deg) scale(1)';
+                              e.currentTarget.style.transform =
+                                'rotate(0deg) scale(1)';
                               e.currentTarget.style.filter = 'brightness(1)';
                             }}
                           />
@@ -898,26 +1055,36 @@ export default function App() {
                   iconSize={14}
                   iconType="circle"
                 />
-                <Box sx={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  width: 320,
-                  height: 320,
-                  borderRadius: '50%',
-                  background: 'radial-gradient(circle at center, rgba(139, 92, 246, 0.1) 0%, transparent 70%)',
-                  pointerEvents: 'none',
-                  animation: `${chartGlowPulse} 4s infinite ease-in-out`,
-                  zIndex: -1,
-                }} />
-            </Box>
-          </Grid>
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: 320,
+                    height: 320,
+                    borderRadius: '50%',
+                    background:
+                      'radial-gradient(circle at center, rgba(139, 92, 246, 0.1) 0%, transparent 70%)',
+                    pointerEvents: 'none',
+                    animation: `${chartGlowPulse} 4s infinite ease-in-out`,
+                    zIndex: -1,
+                  }}
+                />
+              </Box>
+            </Grid>
             <Grid item xs={12} md={6}>
               <Stack spacing={3} sx={{ textAlign: 'left' }}>
                 {tokenomicsData.map((data, index) => (
                   <Box key={index}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 0.5 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'baseline',
+                        mb: 0.5,
+                      }}
+                    >
                       <Typography
                         variant="h6"
                         sx={{
@@ -940,7 +1107,11 @@ export default function App() {
                         {data.value}%
                       </Typography>
                     </Box>
-                    <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.5 }}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ lineHeight: 1.5 }}
+                    >
                       {data.description}
                     </Typography>
                   </Box>
@@ -962,7 +1133,8 @@ export default function App() {
           backdropFilter: 'blur(10px)',
           borderRadius: '20px',
           border: '1px solid rgba(255, 255, 255, 0.1)',
-          boxShadow: '0 3px 15px rgba(139, 92, 246, 0.1), 0 0 10px rgba(236, 72, 153, 0.08)',
+          boxShadow:
+            '0 3px 15px rgba(139, 92, 246, 0.1), 0 0 10px rgba(236, 72, 153, 0.08)',
         }}
       >
         <Grid container spacing={4}>
@@ -972,22 +1144,45 @@ export default function App() {
               <Typography
                 variant="h4"
                 sx={{
-                  background: 'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
+                  background:
+                    'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
-                  textShadow: '0 0 15px rgba(236, 72, 153, 0.2), 0 0 8px rgba(139, 92, 246, 0.15)',
+                  textShadow:
+                    '0 0 15px rgba(236, 72, 153, 0.2), 0 0 8px rgba(139, 92, 246, 0.15)',
                   mb: 2,
                   fontWeight: 'bold',
                 }}
               >
                 How Sing Points Work
               </Typography>
-              <Typography variant="body1" color="#F0F8FF" sx={{ mb: 3, opacity: 0.9, lineHeight: 1.6, textShadow: '0 0 3px rgba(0,0,0,0.1)' }}>
-                Sing points are calculated based on your engagement metrics and when you participated. The earlier you engage, the more Sing points you get! Each interaction tagging{' '}
-                <Link href="https://x.com/songjamspace" target="_blank" rel="noopener" sx={{ color: '#60a5fa', fontWeight: 'bold', '&:hover': { textDecoration: 'underline' } }}>
+              <Typography
+                variant="body1"
+                color="#F0F8FF"
+                sx={{
+                  mb: 3,
+                  opacity: 0.9,
+                  lineHeight: 1.6,
+                  textShadow: '0 0 3px rgba(0,0,0,0.1)',
+                }}
+              >
+                Sing points are calculated based on your engagement metrics and
+                when you participated. The earlier you engage, the more Sing
+                points you get! Each interaction tagging{' '}
+                <Link
+                  href="https://x.com/songjamspace"
+                  target="_blank"
+                  rel="noopener"
+                  sx={{
+                    color: '#60a5fa',
+                    fontWeight: 'bold',
+                    '&:hover': { textDecoration: 'underline' },
+                  }}
+                >
                   @SongjamSpace
-                </Link>
-                {' '}contributes to your score, with a special multiplier for early participation.
+                </Link>{' '}
+                contributes to your score, with a special multiplier for early
+                participation.
               </Typography>
             </Box>
 
@@ -1040,8 +1235,21 @@ export default function App() {
                 <BlockMath>
                   {`S_{\\text{base}} = \\begin{gathered} \\underbrace{((L \\cdot 0.2) + (R \\cdot 0.4) + (RT \\cdot 0.6) + (QT \\cdot 1.0) + (B \\cdot 10))}_{\\text{Engagement Points}} \\\\[1em] + \\underbrace{((SY \\cdot 5 + DJ \\cdot 10) \\cdot N_{\\text{listeners}})}_{\\text{Space Points}} \\end{gathered}`}
                 </BlockMath>
-                <Typography variant="body2" color="#F0F8FF" sx={{ mt: 2, fontSize: '0.9em', opacity: 0.8, textShadow: '0 0 2px rgba(0,0,0,0.3)' }}>
-                  Your base score is a sum of <strong>Engagement Points</strong> from interactions (Likes, Replies, etc.) and <strong>Space Points</strong>, which are awarded for speaking (SY) or DJing and are multiplied by the number of listeners (N<sub>listeners</sub>).
+                <Typography
+                  variant="body2"
+                  color="#F0F8FF"
+                  sx={{
+                    mt: 2,
+                    fontSize: '0.9em',
+                    opacity: 0.8,
+                    textShadow: '0 0 2px rgba(0,0,0,0.3)',
+                  }}
+                >
+                  Your base score is a sum of <strong>Engagement Points</strong>{' '}
+                  from interactions (Likes, Replies, etc.) and{' '}
+                  <strong>Space Points</strong>, which are awarded for speaking
+                  (SY) or DJing and are multiplied by the number of listeners (N
+                  <sub>listeners</sub>).
                 </Typography>
               </Paper>
             </Box>
@@ -1095,8 +1303,18 @@ export default function App() {
                 <BlockMath>
                   {`\\text{earlyMultiplier} = 1 + 99 \\times \\frac{\\max(0, T_{launch} - T_{post})}{604800}`}
                 </BlockMath>
-                <Typography variant="body2" color="#F0F8FF" sx={{ mt: 2, fontSize: '0.9em', opacity: 0.8, textShadow: '0 0 2px rgba(0,0,0,0.3)' }}>
-                  Applies to posts up to 1 week before launch. Maximum multiplier is 100x.
+                <Typography
+                  variant="body2"
+                  color="#F0F8FF"
+                  sx={{
+                    mt: 2,
+                    fontSize: '0.9em',
+                    opacity: 0.8,
+                    textShadow: '0 0 2px rgba(0,0,0,0.3)',
+                  }}
+                >
+                  Applies to posts up to 1 week before launch. Maximum
+                  multiplier is 100x.
                 </Typography>
               </Paper>
             </Box>
@@ -1150,8 +1368,18 @@ export default function App() {
                 <BlockMath>
                   {`S_{\\text{final}} = S_{\\text{base}} \\times \\text{earlyMultiplier} \\times Q_{\\text{filter}}`}
                 </BlockMath>
-                <Typography variant="body2" color="#F0F8FF" sx={{ mt: 2, fontSize: '0.9em', opacity: 0.8, textShadow: '0 0 2px rgba(0,0,0,0.3)' }}>
-                  The base score is adjusted by multipliers for early participation and a semantic quality filter.
+                <Typography
+                  variant="body2"
+                  color="#F0F8FF"
+                  sx={{
+                    mt: 2,
+                    fontSize: '0.9em',
+                    opacity: 0.8,
+                    textShadow: '0 0 2px rgba(0,0,0,0.3)',
+                  }}
+                >
+                  The base score is adjusted by multipliers for early
+                  participation and a semantic quality filter.
                 </Typography>
               </Paper>
             </Box>
@@ -1159,7 +1387,14 @@ export default function App() {
 
           {/* Right Column - Leaderboard */}
           <Grid item xs={12} md={8}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                mb: 4,
+              }}
+            >
               <Typography
                 variant="h4"
                 sx={{
@@ -1179,9 +1414,11 @@ export default function App() {
                   animation: `${innerTextPulse} 2.5s infinite ease-in-out`,
                 }}
               >
-                5% of $SANG Supply Redeemable for Sing Points
+                2% of $SANG Supply Reserved for Sing Points earned before
+                Genesis Launch
               </Typography>
-              {isXConnected && xUser ? (
+              <Box sx={{ width: 100 }}></Box>
+              {/* {isXConnected && xUser ? (
                 <Box
                   sx={{
                     display: 'flex',
@@ -1193,11 +1430,18 @@ export default function App() {
                     background: 'rgba(255, 255, 255, 0.1)',
                   }}
                 >
-                  <Avatar src={xUser.avatarUrl} sx={{ width: 24, height: 24 }} />
+                  <Avatar
+                    src={xUser.avatarUrl}
+                    sx={{ width: 24, height: 24 }}
+                  />
                   <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
                     @{xUser.screenName}
                   </Typography>
-                  <IconButton onClick={handleDisconnectX} size="small" sx={{ color: 'white' }}>
+                  <IconButton
+                    onClick={handleDisconnectX}
+                    size="small"
+                    sx={{ color: 'white' }}
+                  >
                     <CloseIcon fontSize="small" />
                   </IconButton>
                 </Box>
@@ -1217,89 +1461,136 @@ export default function App() {
                 >
                   Connect X
                 </Button>
-              )}
+              )} */}
             </Box>
 
-            <TableContainer component={Paper} sx={{ background: 'rgba(0, 0, 0, 0.3)', borderRadius: '15px', overflow: 'hidden' }}>
-              <Table sx={{ minWidth: 650 }} aria-label="simple table">
+            <TableContainer
+              component={Paper}
+              sx={{
+                background: 'rgba(0, 0, 0, 0.3)',
+                borderRadius: '15px',
+                maxHeight: 860,
+              }}
+            >
+              <Table
+                stickyHeader
+                sx={{ minWidth: 650 }}
+                aria-label="simple table"
+              >
                 <TableHead>
                   <TableRow sx={{ background: 'rgba(96, 165, 250, 0.1)' }}>
-                    <TableCell sx={{ color: '#F0F8FF', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', fontWeight: 'bold' }}>Rank</TableCell>
-                    <TableCell sx={{ color: '#F0F8FF', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', fontWeight: 'bold' }}>Name</TableCell>
-                    <TableCell align="right" sx={{ color: '#F0F8FF', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', fontWeight: 'bold' }}>Sing Points</TableCell>
+                    <TableCell
+                      sx={{
+                        color: '#F0F8FF',
+                        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                        fontWeight: 'bold',
+                      }}
+                    >
+                      Rank
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        color: '#F0F8FF',
+                        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                        fontWeight: 'bold',
+                      }}
+                    >
+                      Name
+                    </TableCell>
+                    <TableCell
+                      align="right"
+                      sx={{
+                        color: '#F0F8FF',
+                        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                        fontWeight: 'bold',
+                      }}
+                    >
+                      Sing Points
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {/* Placeholder rows - will be replaced with real data */}
-                  <TableRow
-                    sx={{
-                      '&:last-child td, &:last-child th': { border: 0 },
-                      '&:hover': {
-                        background: 'rgba(96, 165, 250, 0.05)',
-                        boxShadow: '0 0 15px rgba(96, 165, 250, 0.2)',
-                      },
-                      transition: 'background 0.3s ease, box-shadow 0.3s ease',
-                    }}
-                  >
-                    <TableCell sx={{ color: '#F0F8FF', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                      <Typography variant="body1" sx={{ fontWeight: 'bold', textShadow: '0 0 5px rgba(255,255,255,0.2)' }}>1</Typography>
-                    </TableCell>
-                    <TableCell sx={{ color: '#F0F8FF', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Avatar sx={{ width: 40, height: 40, border: '2px solid #8B5CF6', boxShadow: '0 0 10px #8B5CF6' }}>U1</Avatar>
-                        <Typography variant="body1" sx={{ textShadow: '0 0 5px rgba(255,255,255,0.1)' }}>@user1</Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell align="right" sx={{ color: '#F0F8FF', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                      <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#EC4899', textShadow: '0 0 8px #EC4899' }}>1,234</Typography>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow
-                    sx={{
-                      '&:last-child td, &:last-child th': { border: 0 },
-                      '&:hover': {
-                        background: 'rgba(96, 165, 250, 0.05)',
-                        boxShadow: '0 0 15px rgba(96, 165, 250, 0.2)',
-                      },
-                      transition: 'background 0.3s ease, box-shadow 0.3s ease',
-                    }}
-                  >
-                    <TableCell sx={{ color: '#F0F8FF', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                      <Typography variant="body1" sx={{ fontWeight: 'bold', textShadow: '0 0 5px rgba(255,255,255,0.2)' }}>2</Typography>
-                    </TableCell>
-                    <TableCell sx={{ color: '#F0F8FF', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Avatar sx={{ width: 40, height: 40, border: '2px solid #EC4899', boxShadow: '0 0 10px #EC4899' }}>U2</Avatar>
-                        <Typography variant="body1" sx={{ textShadow: '0 0 5px rgba(255,255,255,0.1)' }}>@user2</Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell align="right" sx={{ color: '#F0F8FF', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                      <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#8B5CF6', textShadow: '0 0 8px #8B5CF6' }}>987</Typography>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow
-                    sx={{
-                      '&:last-child td, &:last-child th': { border: 0 },
-                      '&:hover': {
-                        background: 'rgba(96, 165, 250, 0.05)',
-                        boxShadow: '0 0 15px rgba(96, 165, 250, 0.2)',
-                      },
-                      transition: 'background 0.3s ease, box-shadow 0.3s ease',
-                    }}
-                  >
-                    <TableCell sx={{ color: '#F0F8FF', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                      <Typography variant="body1" sx={{ fontWeight: 'bold', textShadow: '0 0 5px rgba(255,255,255,0.2)' }}>3</Typography>
-                    </TableCell>
-                    <TableCell sx={{ color: '#F0F8FF', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Avatar sx={{ width: 40, height: 40, border: '2px solid #4FC3F7', boxShadow: '0 0 10px #4FC3F7' }}>U3</Avatar>
-                        <Typography variant="body1" sx={{ textShadow: '0 0 5px rgba(255,255,255,0.1)' }}>@user3</Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell align="right" sx={{ color: '#F0F8FF', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                      <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#4FC3F7', textShadow: '0 0 8px #4FC3F7' }}>765</Typography>
-                    </TableCell>
-                  </TableRow>
+                  {leaderboard.map((user, index) => (
+                    <TableRow
+                      key={user.userId}
+                      sx={{
+                        '&:last-child td, &:last-child th': { border: 0 },
+                        '&:hover': {
+                          background: 'rgba(96, 165, 250, 0.05)',
+                          boxShadow: '0 0 15px rgba(96, 165, 250, 0.2)',
+                        },
+                        transition:
+                          'background 0.3s ease, box-shadow 0.3s ease',
+                      }}
+                    >
+                      <TableCell
+                        sx={{
+                          color: '#F0F8FF',
+                          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                        }}
+                      >
+                        <Typography
+                          variant="body1"
+                          sx={{
+                            fontWeight: 'bold',
+                            textShadow: '0 0 5px rgba(255,255,255,0.2)',
+                          }}
+                        >
+                          {index + 1}
+                        </Typography>
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          color: '#F0F8FF',
+                          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 2,
+                          }}
+                        >
+                          <Avatar
+                            sx={{
+                              width: 40,
+                              height: 40,
+                              border: '2px solid #8B5CF6',
+                              boxShadow: '0 0 10px #8B5CF6',
+                            }}
+                            src={`https://unavatar.io/twitter/${user.username}`}
+                          />
+                          <Typography
+                            variant="body1"
+                            sx={{
+                              textShadow: '0 0 5px rgba(255,255,255,0.1)',
+                            }}
+                          >
+                            {user.name}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        sx={{
+                          color: '#F0F8FF',
+                          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                        }}
+                      >
+                        <Typography
+                          variant="body1"
+                          sx={{
+                            fontWeight: 'bold',
+                            color: '#EC4899',
+                            textShadow: '0 0 8px #EC4899',
+                          }}
+                        >
+                          {user.totalPoints.toFixed(2)}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </TableContainer>
@@ -1329,8 +1620,13 @@ export default function App() {
               >
                 Claim Space Points
               </Typography>
-              <Typography variant="body2" color="rgba(255,255,255,0.7)" sx={{ mb: 3 }}>
-                Submit the URL of a recorded Twitter Space where you were a speaker or the DJ to claim your points.
+              <Typography
+                variant="body2"
+                color="rgba(255,255,255,0.7)"
+                sx={{ mb: 3 }}
+              >
+                Submit the URL of a recorded Twitter Space where you were a
+                speaker or the DJ to claim your points.
               </Typography>
               <TextField
                 fullWidth
@@ -1358,10 +1654,12 @@ export default function App() {
               <Typography
                 variant="h5"
                 sx={{
-                  background: 'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
+                  background:
+                    'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
-                  textShadow: '0 0 15px rgba(236, 72, 153, 0.2), 0 0 8px rgba(139, 92, 246, 0.15)',
+                  textShadow:
+                    '0 0 15px rgba(236, 72, 153, 0.2), 0 0 8px rgba(139, 92, 246, 0.15)',
                   mb: 3,
                   fontWeight: 'bold',
                 }}
@@ -1381,22 +1679,42 @@ export default function App() {
                         textAlign: 'center',
                       }}
                     >
-                      <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#EC4899', textShadow: '0 0 8px #EC4899' }}>
+                      <Typography
+                        variant="h4"
+                        sx={{
+                          fontWeight: 'bold',
+                          color: '#EC4899',
+                          textShadow: '0 0 8px #EC4899',
+                        }}
+                      >
                         {String(value).padStart(2, '0')}
                       </Typography>
-                      <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase' }}>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: 'rgba(255,255,255,0.7)',
+                          textTransform: 'uppercase',
+                        }}
+                      >
                         {unit}
                       </Typography>
                     </Paper>
-        </Grid>
+                  </Grid>
                 ))}
               </Grid>
             </Box>
           </Grid>
         </Grid>
         <Box sx={{ mt: 6, px: 4, textAlign: 'center' }}>
-          <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic', opacity: 0.8 }}>
-            Disclaimer: Songjam is constantly monitoring the timeline and spaces for spammy behaviour and may adjust the base points formula or the quality algorithm without notice if it appears the system is being nefariously farmed.
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ fontStyle: 'italic', opacity: 0.8 }}
+          >
+            Disclaimer: Songjam is constantly monitoring the timeline and spaces
+            for spammy behaviour and may adjust the base points formula or the
+            quality algorithm without notice if it appears the system is being
+            nefariously farmed.
           </Typography>
         </Box>
       </Paper>
@@ -1523,24 +1841,28 @@ export default function App() {
       </section>
 
       <Box sx={{ mt: 12 }} id="pricing-section">
-          <PricingBanner
-            user={user}
-            onSubscribe={async (plan) => {
-              if (user?.uid) {
-                if (user.currentPlan === 'business' && plan === 'pro') {
-                  toast.error('You already have a business plan');
-                  return;
-                }
-                if (plan !== 'free') {
-                  await createCheckoutSession(user.uid, plan);
-                }
-              } else {
-                setShowAuthDialog(true);
+        <PricingBanner
+          user={user}
+          onSubscribe={async (plan) => {
+            if (user?.uid) {
+              if (user.currentPlan === 'business' && plan === 'pro') {
+                toast.error('You already have a business plan');
+                return;
               }
-            }}
-          />
-        </Box>
-      <section className="honors" id="honors-section" style={{ marginTop: '100px' }}>
+              if (plan !== 'free') {
+                await createCheckoutSession(user.uid, plan);
+              }
+            } else {
+              setShowAuthDialog(true);
+            }
+          }}
+        />
+      </Box>
+      <section
+        className="honors"
+        id="honors-section"
+        style={{ marginTop: '100px' }}
+      >
         <h2>{t('honorsTitle')}</h2>
         <p>{t('honorsText')}</p>
         <div className="honors-grid">
@@ -1750,7 +2072,7 @@ export default function App() {
       </footer>
       <Toaster position="bottom-right" />
       <LoginDialog
-        open={showAuthDialog}
+        open={showAuthDialog && !authLoading}
         onClose={() => setShowAuthDialog(false)}
       />
     </main>

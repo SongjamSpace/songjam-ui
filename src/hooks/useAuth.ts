@@ -10,10 +10,10 @@ import { auth, logFirebaseEvent } from '../services/firebase.service';
 import { signInWithCustomToken } from 'firebase/auth';
 import axios from 'axios';
 import { getDynamicToken } from '../utils';
-import {
-  getActiveSubscription,
-  getPlanFromPriceId,
-} from '../services/db/stripe';
+// import {
+//   getActiveSubscription,
+//   getPlanFromPriceId,
+// } from '../services/db/stripe';
 export function useAuth() {
   // const [loginMethod, setLoginMethod] = useState<'dynamic' | 'firebase' | null>(
   //   null

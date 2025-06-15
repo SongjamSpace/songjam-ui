@@ -1167,7 +1167,7 @@ export default function App() {
                 }}
               >
                 Sing points are calculated based on your engagement metrics and
-                when you participated. The earlier you engage, the more Sing
+                when you participate. The earlier you engage, the more Sing
                 points you get! Each interaction tagging{' '}
                 <Link
                   href="https://x.com/songjamspace"
@@ -1180,6 +1180,19 @@ export default function App() {
                   }}
                 >
                   @SongjamSpace
+                </Link>{' '}
+                or mentioning{' '}
+                <Link
+                  href="https://x.com/search?q=%24SANG&src=cashtag_click"
+                  target="_blank"
+                  rel="noopener"
+                  sx={{
+                    color: '#60a5fa',
+                    fontWeight: 'bold',
+                    '&:hover': { textDecoration: 'underline' },
+                  }}
+                >
+                  $SANG
                 </Link>{' '}
                 contributes to your score, with a special multiplier for early
                 participation.

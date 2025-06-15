@@ -276,16 +276,18 @@ const MusicAgent = () => {
       setIsLoading(false);
       addLog(`Failed to join space: ${error.message}`, 'error');
     });
-
-    socketRef.current.emit('join-space', {
-      spaceId: spaceUrl.split('/').pop(),
-    });
-    await createMusicAgentRequest({
+    const requestId = await createMusicAgentRequest({
       userId: user.uid,
       email: user.email,
       audioUrl,
       spaceUrl,
       startedAt: Date.now(),
+    });
+    addLog(`Request ID: ${requestId}`, 'info');
+
+    socketRef.current.emit('join-space', {
+      spaceId: spaceUrl.split('/').pop(),
+      requestId,
     });
   };
 

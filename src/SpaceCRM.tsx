@@ -137,7 +137,7 @@ const SpaceCRM: React.FC = () => {
       if (space) {
         setActiveTab(space.isBroadcast ? 'listenerRetention' : 'audience');
         setSpace(space);
-        if (space.state !== 'ENDED' && !hasUpdatedSpaceStatus.current) {
+        if (space.state !== 'Ended' && !hasUpdatedSpaceStatus.current) {
           hasUpdatedSpaceStatus.current = true;
           try {
             axios.post(
@@ -500,7 +500,7 @@ const SpaceCRM: React.FC = () => {
                         setShowAuthDialog(true);
                         return;
                       }
-                      if (space.state !== 'ENDED') {
+                      if (space.state !== 'Ended') {
                         toast.error(
                           "Space hasn't ended yet, please come back later for Analysis"
                         );

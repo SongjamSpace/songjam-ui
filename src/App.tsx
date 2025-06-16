@@ -1260,10 +1260,10 @@ export default function App() {
                   }}
                 >
                   Your base score is a sum of <strong>Engagement Points</strong>{' '}
-                  from interactions (Likes, Replies, etc.) and{' '}
-                  <strong>Space Points</strong>, which are awarded for speaking
-                  (SY) or DJing and are multiplied by the number of listeners (N
-                  <sub>listeners</sub>).
+                  from interactions (Likes, Replies, Bookmarks, Retweets, Quote
+                  Tweets) and <strong>Space Points</strong>, which are awarded
+                  for speaking (SY) or DJing (DJ) and are multiplied by the
+                  number of listeners (N <sub>listeners</sub>).
                 </Typography>
               </Paper>
             </Box>
@@ -1395,20 +1395,49 @@ export default function App() {
                   Your engagement score gets boosted based on the performance of
                   your tweets. Here are the thresholds:
                 </Typography>
-                <Box sx={{ mt: 2 }}>
+                <Box
+                  sx={{
+                    mt: 2,
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    justifyContent: 'center',
+                    gap: 1,
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    color="#F0F8FF"
+                    sx={{ opacity: 0.8, whiteSpace: 'nowrap' }}
+                  >
+                    • Likes: 2.0x (100+), 1.5x (50+)
+                  </Typography>
                   <Typography
                     variant="body2"
                     color="#F0F8FF"
                     sx={{ opacity: 0.8 }}
                   >
-                    • Likes: 2.0x (100+), 1.5x (50+)
-                    <br />
                     • Replies: 2.0x (20+), 1.5x (10+)
-                    <br />
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="#F0F8FF"
+                    sx={{ opacity: 0.8 }}
+                  >
                     • Retweets: 2.0x (30+), 1.5x (15+)
-                    <br />
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="#F0F8FF"
+                    sx={{ opacity: 0.8 }}
+                  >
                     • Quote Tweets: 2.0x (15+), 1.5x (8+)
-                    <br />• Bookmarks: 2.0x (25+), 1.5x (12+)
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="#F0F8FF"
+                    sx={{ opacity: 0.8 }}
+                  >
+                    • Bookmarks: 2.0x (25+), 1.5x (12+)
                   </Typography>
                 </Box>
               </Paper>
@@ -1501,7 +1530,7 @@ export default function App() {
               sx={{
                 background: 'rgba(0, 0, 0, 0.3)',
                 borderRadius: '15px',
-                maxHeight: 860,
+                maxHeight: 1050,
               }}
             >
               <Table

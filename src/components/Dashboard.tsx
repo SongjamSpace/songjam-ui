@@ -263,6 +263,7 @@ export default function Dashboard() {
     isBroadcast: boolean,
     boostFollowers: boolean
   ) => {
+    console.log('Analyzing...');
     if (!user) return toast.error('Please login to continue');
     setIsLoading(true);
     const spaceDoc = await getSpace(spaceId);

@@ -94,76 +94,7 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
   // Detail drawer tab state
   const [detailTab, setDetailTab] = useState<string>('profile');
 
-  // const [enrichedSpeakers, setEnrichedSpeakers] = useState<
-  //   (TwitterUser & { xProfile?: XUserProfile; recentTweets?: XTweet[] })[]
-  // >([]);
   const [isLoadingProfiles, setIsLoadingProfiles] = useState(false);
-
-  // const fetchEnrichedSpeakers = async (speakersToEnrich: User[]) => {
-  //   setIsLoadingProfiles(true);
-  //   // Use a temporary array to build results before setting state
-  //   const newlyEnrichedData: EnrichedUser[] = [];
-  //   for (const speaker of speakersToEnrich) {
-  //     try {
-  //       console.log(
-  //         `Attempting to enrich speaker: ${speaker.twitter_screen_name}`
-  //       );
-  //       const enriched = await enrichSpeakerData(speaker);
-  //       if (enriched) {
-  //         console.log(
-  //           `Successfully enriched speaker: ${speaker.twitter_screen_name}`
-  //         );
-  //         newlyEnrichedData.push(enriched);
-  //       } else {
-  //         console.log(
-  //           `Failed to enrich speaker (enrichSpeakerData returned null): ${speaker.twitter_screen_name}`
-  //         );
-  //         // Push original speaker data if enrichment fails but we still want to show the user
-  //         newlyEnrichedData.push({
-  //           ...speaker,
-  //           xProfile: undefined,
-  //           xTweets: [],
-  //         });
-  //       }
-  //       // Add a longer delay to avoid hitting rate limits too quickly
-  //       await new Promise((resolve) => setTimeout(resolve, 1000)); // 1000ms (1 second) delay
-  //     } catch (error) {
-  //       console.error(
-  //         `Error enriching speaker ${speaker.twitter_screen_name}:`,
-  //         error
-  //       );
-  //       // Push original speaker data if an error occurs during enrichment
-  //       newlyEnrichedData.push({
-  //         ...speaker,
-  //         xProfile: undefined,
-  //         xTweets: [],
-  //       });
-  //     }
-  //   }
-  //   // Set state once after the loop completes for the fetched speaker(s)
-  //   setEnrichedSpeakers((prev) => [...prev, ...newlyEnrichedData]);
-  //   setIsLoadingProfiles(false);
-  //   console.log('Finished enriching speaker(s).');
-  // };
-
-  useEffect(() => {
-    // Only fetch if space has speakers and we haven't already fetched enriched data for this space
-    if (space?.speakers && space.speakers.length > 0) {
-      console.log(
-        `Space data updated, fetching enriched speaker data for the FIRST speaker only...`
-      );
-      // setEnrichedSpeakers([]); // Clear previous before fetching
-      // fetchEnrichedSpeakers(space.speakers.slice(0, 1));
-    } else if (!space?.speakers || space.speakers.length === 0) {
-      console.log(
-        'No speakers in space data or space cleared, clearing enriched speakers.'
-      );
-      // setEnrichedSpeakers([]);
-      setIsLoadingProfiles(false);
-    }
-    // Intentionally excluding fetchEnrichedSpeakers and enrichedSpeakers from deps
-    // to control exactly when fetching occurs (only when space object changes and enrichedSpeakers is empty)
-  }, [space]);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
@@ -226,7 +157,6 @@ const AudiencePanel: React.FC<AudiencePanelProps> = ({
     if (space?.spaceId) {
       const fetchListeners = async () => {
         const listeners = await getSpaceListeners(space.spaceId);
-        console.log(listeners);
         setSpaceListeners(listeners);
       };
       fetchListeners();

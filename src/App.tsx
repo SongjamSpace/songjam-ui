@@ -1425,12 +1425,14 @@ export default function App() {
                   fontWeight: 'bold',
                   color: 'white',
                   animation: `${innerTextPulse} 2.5s infinite ease-in-out`,
+                  mx: 'auto',
+                  textAlign: 'center',
                 }}
               >
                 2% of $SANG Supply Reserved for Sing Points earned before
                 Genesis Launch
               </Typography>
-              <Box sx={{ width: 100 }}></Box>
+              {/* <Box sx={{ width: 100 }}></Box> */}
               {/* {isXConnected && xUser ? (
                 <Box
                   sx={{

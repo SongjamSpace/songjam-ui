@@ -10,6 +10,7 @@ type SpaceSubmission = {
   name?: string;
   twitterId?: string | null;
   createdAt: Date;
+  spacePoints: number;
 };
 
 export const createSpaceSubmission = async (

@@ -281,6 +281,7 @@ export default function App() {
         username: twitterCredentials.oauthUsername,
         name: twitterCredentials.publicIdentifier,
         createdAt: new Date(),
+        spacePoints: 0,
       });
       toast.success('Space URL submitted for verification!');
       setSpaceUrlForPoints('');

@@ -1,4 +1,4 @@
-import { collection, getDocs, limit, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { db } from '../firebase.service';
 
 type UserTweetMention = {
@@ -35,28 +35,33 @@ export const getTwitterMentionsLeaderboard = async (): Promise<
   UserLeaderboardEntry[]
 > => {
   const space = await getDocs(
-    query(collection(db, 'twitterMentions'), where('engagementPoints', '>', 0))
+    query(
+      collection(db, 'singPointsLeaderboard'),
+      where('totalPoints', '>', 0),
+      orderBy('totalPoints', 'desc')
+    )
   );
-  const mentions = space.docs.map((doc) => doc.data() as UserTweetMention);
+  const mentions = space.docs.map((doc) => doc.data() as UserLeaderboardEntry);
+  return mentions;
 
-  const userData: Record<string, UserLeaderboardEntry> = {};
+  // const userData: Record<string, UserLeaderboardEntry> = {};
 
-  const ignoredUsers = ['logeshr24', 'adam_songjam', 'SongjamSpace'];
-  mentions.forEach((mention) => {
-    if (ignoredUsers.includes(mention.username)) {
-      return;
-    }
-    if (userData[mention.id]) {
-      userData[mention.id].totalPoints += mention.engagementPoints;
-    } else {
-      userData[mention.id] = {
-        username: mention.username,
-        userId: mention.id,
-        name: mention.name,
-        totalPoints: mention.engagementPoints,
-      };
-    }
-  });
+  // const ignoredUsers = ['logeshr24', 'adam_songjam', 'SongjamSpace'];
+  // mentions.forEach((mention) => {
+  //   if (ignoredUsers.includes(mention.username)) {
+  //     return;
+  //   }
+  //   if (userData[mention.id]) {
+  //     userData[mention.id].totalPoints += mention.engagementPoints;
+  //   } else {
+  //     userData[mention.id] = {
+  //       username: mention.username,
+  //       userId: mention.id,
+  //       name: mention.name,
+  //       totalPoints: mention.engagementPoints,
+  //     };
+  //   }
+  // });
 
-  return Object.values(userData).sort((a, b) => b.totalPoints - a.totalPoints);
+  // return Object.values(userData).sort((a, b) => b.totalPoints - a.totalPoints);
 };

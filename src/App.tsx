@@ -281,6 +281,7 @@ export default function App() {
         username: twitterCredentials.oauthUsername,
         name: twitterCredentials.publicIdentifier,
         createdAt: new Date(),
+        spacePoints: 0,
       });
       toast.success('Space URL submitted for verification!');
       setSpaceUrlForPoints('');
@@ -1246,7 +1247,7 @@ export default function App() {
                 }}
               >
                 <BlockMath>
-                  {`S_{\\text{base}} = \\begin{gathered} \\underbrace{((L \\cdot 0.2) + (R \\cdot 0.4) + (RT \\cdot 0.6) + (QT \\cdot 1.0) + (B \\cdot 10))}_{\\text{Engagement Points}} \\\\[1em] + \\underbrace{((SY \\cdot 5 + DJ \\cdot 10) \\cdot N_{\\text{listeners}})}_{\\text{Space Points}} \\end{gathered}`}
+                  {`S_{\\text{base}} = \\begin{gathered} \\underbrace{((L \\cdot 0.2) + (R \\cdot 0.4) + (B \\cdot 0.4) + (RT \\cdot 0.6) + (QT \\cdot 1.0))}_{\\text{Engagement Points}} \\\\[1em] + \\underbrace{((SY \\cdot 5 + DJ \\cdot 10) \\cdot N_{\\text{listeners}})}_{\\text{Space Points}} \\end{gathered}`}
                 </BlockMath>
                 <Typography
                   variant="body2"
@@ -1344,7 +1345,7 @@ export default function App() {
                   fontWeight: 'bold',
                 }}
               >
-                Final Score Multipliers
+                Engagement Boosters
               </Typography>
               <Paper
                 sx={{
@@ -1379,7 +1380,7 @@ export default function App() {
                 }}
               >
                 <BlockMath>
-                  {`S_{\\text{final}} = S_{\\text{base}} \\times \\text{earlyMultiplier} \\times Q_{\\text{filter}}`}
+                  {`\\text{Booster} = \\begin{cases} 2.0 & \\text{if } \\text{engagement} \\geq \\text{high threshold} \\\\ 1.5 & \\text{if } \\text{engagement} \\geq \\text{low threshold} \\\\ 1.0 & \\text{otherwise} \\end{cases}`}
                 </BlockMath>
                 <Typography
                   variant="body2"
@@ -1391,9 +1392,25 @@ export default function App() {
                     textShadow: '0 0 2px rgba(0,0,0,0.3)',
                   }}
                 >
-                  The base score is adjusted by multipliers for early
-                  participation and a semantic quality filter.
+                  Your engagement score gets boosted based on the performance of
+                  your tweets. Here are the thresholds:
                 </Typography>
+                <Box sx={{ mt: 2 }}>
+                  <Typography
+                    variant="body2"
+                    color="#F0F8FF"
+                    sx={{ opacity: 0.8 }}
+                  >
+                    • Likes: 2.0x (100+), 1.5x (50+)
+                    <br />
+                    • Replies: 2.0x (20+), 1.5x (10+)
+                    <br />
+                    • Retweets: 2.0x (30+), 1.5x (15+)
+                    <br />
+                    • Quote Tweets: 2.0x (15+), 1.5x (8+)
+                    <br />• Bookmarks: 2.0x (25+), 1.5x (12+)
+                  </Typography>
+                </Box>
               </Paper>
             </Box>
           </Grid>

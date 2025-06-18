@@ -1270,86 +1270,6 @@ export default function App() {
               </Paper>
             </Box>
 
-            <Box sx={{ mb: 4 }}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  mb: 2,
-                  gap: 2,
-                  justifyContent: 'space-between',
-                }}
-              >
-                <Typography
-                  variant="h5"
-                  sx={{
-                    background: 'linear-gradient(45deg, #8B5CF6, #EC4899)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    textShadow: '0 0 8px rgba(236, 72, 153, 0.1)',
-
-                    fontWeight: 'bold',
-                  }}
-                >
-                  Early Multiplier
-                </Typography>
-                <Chip
-                  label="Expired"
-                  color="error"
-                  variant="outlined"
-                  size="small"
-                />
-              </Box>
-              <Paper
-                sx={{
-                  p: 2,
-                  background: 'rgba(236, 72, 153, 0.08)',
-                  border: '1px solid rgba(236, 72, 153, 0.25)',
-                  borderRadius: '12px',
-                  boxShadow: '0 0 15px rgba(236, 72, 153, 0.2)',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    boxShadow: '0 0 25px rgba(236, 72, 153, 0.4)',
-                  },
-                  '& .katex-display': {
-                    overflowX: 'auto',
-                    overflowY: 'hidden',
-                    WebkitOverflowScrolling: 'touch',
-                    '&::-webkit-scrollbar': {
-                      height: '4px',
-                    },
-                    '&::-webkit-scrollbar-track': {
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      borderRadius: '2px',
-                    },
-                    '&::-webkit-scrollbar-thumb': {
-                      background: 'rgba(236, 72, 153, 0.5)',
-                      borderRadius: '2px',
-                    },
-                    '& .katex': {
-                      fontSize: 'clamp(0.8rem, 2vw, 1.2rem)',
-                    },
-                  },
-                }}
-              >
-                <BlockMath>
-                  {`\\text{earlyMultiplier} = 1 + 99 \\times \\frac{\\max(0, T_{genesis} - T_{post})}{604800}`}
-                </BlockMath>
-                <Typography
-                  variant="body2"
-                  color="#F0F8FF"
-                  sx={{
-                    mt: 2,
-                    fontSize: '0.9em',
-                    opacity: 0.8,
-                    textShadow: '0 0 2px rgba(0,0,0,0.3)',
-                  }}
-                >
-                  Applies to posts up to 1 week before genesis. Maximum
-                  multiplier is 100x.
-                </Typography>
-              </Paper>
-            </Box>
 
             <Box sx={{ mb: 4 }}>
               <Typography
@@ -1460,6 +1380,91 @@ export default function App() {
                 </Box>
               </Paper>
             </Box>
+
+            <Box sx={{ mb: 4 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  mb: 2,
+                  gap: 2,
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Typography
+                  variant="h5"
+                  sx={{
+                    background: 'linear-gradient(45deg, #8B5CF6, #EC4899)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    textShadow: '0 0 8px rgba(236, 72, 153, 0.1)',
+
+                    fontWeight: 'bold',
+                  }}
+                >
+                  Early Multiplier
+                </Typography>
+                <Chip
+                  label="Expired"
+                  color="error"
+                  variant="outlined"
+                  size="small"
+                />
+              </Box>
+              <Paper
+                sx={{
+                  p: 2,
+                  background: 'rgba(236, 72, 153, 0.08)',
+                  border: '1px solid rgba(236, 72, 153, 0.25)',
+                  borderRadius: '12px',
+                  boxShadow: '0 0 15px rgba(236, 72, 153, 0.2)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    boxShadow: '0 0 25px rgba(236, 72, 153, 0.4)',
+                  },
+                  '& .katex-display': {
+                    overflowX: 'auto',
+                    overflowY: 'hidden',
+                    WebkitOverflowScrolling: 'touch',
+                    '&::-webkit-scrollbar': {
+                      height: '4px',
+                    },
+                    '&::-webkit-scrollbar-track': {
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      borderRadius: '2px',
+                    },
+                    '&::-webkit-scrollbar-thumb': {
+                      background: 'rgba(236, 72, 153, 0.5)',
+                      borderRadius: '2px',
+                    },
+                    '& .katex': {
+                      fontSize: 'clamp(0.8rem, 2vw, 1.2rem)',
+                    },
+                  },
+                }}
+              >
+                <BlockMath>
+                  {`\\text{earlyMultiplier} = 1 + 99 \\times \\frac{\\max(0, T_{genesis} - T_{post})}{604800}`}
+                </BlockMath>
+                <Typography
+                  variant="body2"
+                  color="#F0F8FF"
+                  sx={{
+                    mt: 2,
+                    fontSize: '0.9em',
+                    opacity: 0.8,
+                    textShadow: '0 0 2px rgba(0,0,0,0.3)',
+                  }}
+                >
+                  Applies to posts up to 1 week before genesis. Maximum
+                  multiplier is 100x.
+                </Typography>
+              </Paper>
+            </Box>
+
+
+
+
           </Grid>
 
           {/* Right Column - Leaderboard */}

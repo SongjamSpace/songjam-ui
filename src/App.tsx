@@ -188,7 +188,7 @@ export default function App() {
       value: 20,
       color: '#00E676',
       description:
-        'Yappers, Stakers, Contributors. 5% released at 19 Jul, 5% at 17 Aug, 90% released at 17 Sep 2025',
+        'Yappers, Stakers, Contributors. 5% released from 19 Jul, 5% from 17 Aug, 90% released from 17 Sep 2025',
     },
   ];
 

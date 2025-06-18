@@ -23,6 +23,7 @@ import {
   Avatar,
   IconButton,
   Link,
+  Chip,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { LoadingButton } from '@mui/lab';
@@ -1247,7 +1248,7 @@ export default function App() {
                 }}
               >
                 <BlockMath>
-                  {`S_{\\text{base}} = \\begin{gathered} \\underbrace{((L \\cdot 0.2) + (R \\cdot 0.4) + (B \\cdot 0.4) + (RT \\cdot 0.6) + (QT \\cdot 1.0))}_{\\text{Engagement Points}} \\\\[1em] + \\underbrace{((SY \\cdot 5 + DJ \\cdot 10) \\cdot N_{\\text{listeners}})}_{\\text{Space Points}} \\end{gathered}`}
+                  {`S_{\text{base}} = \\begin{gathered} \\underbrace{((L \\cdot 0.2) + (R \\cdot 0.4) + (B \\cdot 0.4) + (RT \\cdot 0.6) + (QT \\cdot 1.0))}_{\\text{Engagement Points}} \\\\[1em] + \\underbrace{((SY \\cdot 5 + DJ \\cdot 10) \\cdot N_{\\text{listeners}} \\div S)}_{\\text{Space Points}} \\end{gathered}`}
                 </BlockMath>
                 <Typography
                   variant="body2"
@@ -1263,25 +1264,42 @@ export default function App() {
                   from interactions (Likes, Replies, Bookmarks, Retweets, Quote
                   Tweets) and <strong>Space Points</strong>, which are awarded
                   for speaking (SY) or DJing (DJ) and are multiplied by the
-                  number of listeners (N <sub>listeners</sub>).
+                  number of listeners (N <sub>listeners</sub>), divided by the
+                  number of speakers (S).
                 </Typography>
               </Paper>
             </Box>
 
             <Box sx={{ mb: 4 }}>
-              <Typography
-                variant="h5"
+              <Box
                 sx={{
-                  background: 'linear-gradient(45deg, #8B5CF6, #EC4899)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  textShadow: '0 0 8px rgba(236, 72, 153, 0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
                   mb: 2,
-                  fontWeight: 'bold',
+                  gap: 2,
+                  justifyContent: 'space-between',
                 }}
               >
-                Early Multiplier
-              </Typography>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    background: 'linear-gradient(45deg, #8B5CF6, #EC4899)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    textShadow: '0 0 8px rgba(236, 72, 153, 0.1)',
+
+                    fontWeight: 'bold',
+                  }}
+                >
+                  Early Multiplier
+                </Typography>
+                <Chip
+                  label="Expired"
+                  color="error"
+                  variant="outlined"
+                  size="small"
+                />
+              </Box>
               <Paper
                 sx={{
                   p: 2,
@@ -1315,7 +1333,7 @@ export default function App() {
                 }}
               >
                 <BlockMath>
-                  {`\\text{earlyMultiplier} = 1 + 99 \\times \\frac{\\max(0, T_{launch} - T_{post})}{604800}`}
+                  {`\\text{earlyMultiplier} = 1 + 99 \\times \\frac{\\max(0, T_{genesis} - T_{post})}{604800}`}
                 </BlockMath>
                 <Typography
                   variant="body2"
@@ -1327,7 +1345,7 @@ export default function App() {
                     textShadow: '0 0 2px rgba(0,0,0,0.3)',
                   }}
                 >
-                  Applies to posts up to 1 week before launch. Maximum
+                  Applies to posts up to 1 week before genesis. Maximum
                   multiplier is 100x.
                 </Typography>
               </Paper>

@@ -1493,8 +1493,7 @@ export default function App() {
                   textAlign: 'center',
                 }}
               >
-                2% of $SANG Supply Reserved for Sing Points earned before
-                Genesis Launch
+                2% of $SANG Supply Reserved for Pre-Genesis Yappers, a further 3% Reserved for Genesis Yappers
               </Typography>
               {/* <Box sx={{ width: 100 }}></Box> */}
               {/* {isXConnected && xUser ? (

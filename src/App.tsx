@@ -188,7 +188,7 @@ export default function App() {
       value: 20,
       color: '#00E676',
       description:
-        'Yappers, Stakers, Contributors. 25% released at 17 Sep 2025, 75% over 1 year from 17 Sep 2025',
+        'Yappers, Stakers, Contributors. 5% released at 19 Jul, 5% at 17 Aug, 90% released at 17 Sep 2025',
     },
   ];
 
@@ -1270,7 +1270,6 @@ export default function App() {
               </Paper>
             </Box>
 
-
             <Box sx={{ mb: 4 }}>
               <Typography
                 variant="h5"
@@ -1461,10 +1460,6 @@ export default function App() {
                 </Typography>
               </Paper>
             </Box>
-
-
-
-
           </Grid>
 
           {/* Right Column - Leaderboard */}
@@ -1498,7 +1493,8 @@ export default function App() {
                   textAlign: 'center',
                 }}
               >
-                2% of $SANG Supply Reserved for Pre-Genesis Yappers, a further 3% Reserved for Genesis Yappers
+                2% of $SANG Supply Reserved for Pre-Genesis Yappers, 3% Reserved
+                for Genesis Yappers
               </Typography>
               {/* <Box sx={{ width: 100 }}></Box> */}
               {/* {isXConnected && xUser ? (

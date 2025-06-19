@@ -36,7 +36,7 @@ export const getTwitterMentionsLeaderboard = async (): Promise<
 > => {
   const space = await getDocs(
     query(
-      collection(db, 'singPointsLeaderboard_18_06_2025'),
+      collection(db, 'singPointsLeaderboard_19_06_2025'),
       where('totalPoints', '>', 0),
       orderBy('totalPoints', 'desc')
     )

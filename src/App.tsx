@@ -14,14 +14,6 @@ import {
   useTheme,
   TextareaAutosize,
   Paper,
-  TableContainer,
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-  Avatar,
-  IconButton,
   Link,
   Chip,
 } from '@mui/material';
@@ -36,7 +28,7 @@ import LoginDialog from './components/LoginDialog';
 import { createCheckoutSession } from './services/db/stripe';
 import { useAuthContext } from './contexts/AuthContext';
 import AIDemoPreview from './components/AIDemoPreview';
-import { keyframes, width } from '@mui/system';
+import { keyframes } from '@mui/system';
 import {
   PieChart,
   Pie,
@@ -46,26 +38,16 @@ import {
   ResponsiveContainer,
   Text,
 } from 'recharts';
-import { BlockMath, InlineMath } from 'react-katex';
+import { BlockMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
-import CloseIcon from '@mui/icons-material/Close';
-import {
-  getTwitterMentionsLeaderboard,
-  UserLeaderboardEntry,
-} from './services/db/twitterMentions.service';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { createSpaceSubmission } from './services/db/spaceSubmissions.service';
+import SignPointsLeaderboard from './components/SignPointsLeaderboard';
 
 const electrifyPulse = keyframes`
   0% { text-shadow: 0 0 1px #60a5fa, 0 0 2px #60a5fa, 0 0 3px rgba(236, 72, 153, 0.5); }
   50% { text-shadow: 0 0 2px #60a5fa, 0 0 4px #60a5fa, 0 0 6px rgba(236, 72, 153, 0.8), 0 0 10px rgba(236, 72, 153, 0.4); }
   100% { text-shadow: 0 0 1px #60a5fa, 0 0 2px #60a5fa, 0 0 3px rgba(236, 72, 153, 0.5); }
-`;
-
-const innerTextPulse = keyframes`
-  0% { text-shadow: 0 0 12px #fff; opacity: 0.98; }
-  50% { text-shadow: 0 0 24px #fff; opacity: 1; }
-  100% { text-shadow: 0 0 12px #fff; opacity: 0.98; }
 `;
 
 const chartGlowPulse = keyframes`
@@ -106,16 +88,8 @@ export default function App() {
     screenName: string;
     avatarUrl: string;
   } | null>(null);
-  const [leaderboard, setLeaderboard] = useState<UserLeaderboardEntry[]>([]);
-  const { user: dynamicUser } = useDynamicContext();
 
-  useEffect(() => {
-    const fetchLeaderboard = async () => {
-      const leaderboard = await getTwitterMentionsLeaderboard();
-      setLeaderboard(leaderboard);
-    };
-    fetchLeaderboard();
-  }, []);
+  const { user: dynamicUser } = useDynamicContext();
 
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
@@ -1470,223 +1444,8 @@ export default function App() {
           </Grid>
 
           {/* Right Column - Leaderboard */}
-          <Grid item xs={12} md={8}>
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                mb: 4,
-              }}
-            >
-              <Typography
-                variant="h4"
-                sx={{
-                  background: 'linear-gradient(45deg, #8B5CF6, #EC4899)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  textShadow: '0 0 15px rgba(236, 72, 153, 0.2)',
-                }}
-              >
-                Leaderboard
-              </Typography>
-              <Typography
-                variant="h6"
-                sx={{
-                  fontWeight: 'bold',
-                  color: 'white',
-                  animation: `${innerTextPulse} 2.5s infinite ease-in-out`,
-                  mx: 'auto',
-                  textAlign: 'center',
-                }}
-              >
-                2% of $SANG Supply Reserved for Pre-Genesis Yappers, 3% Reserved
-                for Genesis Yappers
-              </Typography>
-              {/* <Box sx={{ width: 100 }}></Box> */}
-              {/* {isXConnected && xUser ? (
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    padding: '4px 8px',
-                    borderRadius: '20px',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                  }}
-                >
-                  <Avatar
-                    src={xUser.avatarUrl}
-                    sx={{ width: 24, height: 24 }}
-                  />
-                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                    @{xUser.screenName}
-                  </Typography>
-                  <IconButton
-                    onClick={handleDisconnectX}
-                    size="small"
-                    sx={{ color: 'white' }}
-                  >
-                    <CloseIcon fontSize="small" />
-                  </IconButton>
-                </Box>
-              ) : (
-                <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={handleConnectX}
-                  sx={{
-                    color: 'white',
-                    borderColor: 'rgba(255,255,255,0.7)',
-                    '&:hover': {
-                      borderColor: 'white',
-                      background: 'rgba(255,255,255,0.1)',
-                    },
-                  }}
-                >
-                  Connect X
-                </Button>
-              )} */}
-            </Box>
 
-            <TableContainer
-              component={Paper}
-              sx={{
-                background: 'rgba(0, 0, 0, 0.3)',
-                borderRadius: '15px',
-                maxHeight: 1050,
-              }}
-            >
-              <Table
-                stickyHeader
-                sx={{ minWidth: 650 }}
-                aria-label="simple table"
-              >
-                <TableHead>
-                  <TableRow sx={{ background: 'rgba(96, 165, 250, 0.1)' }}>
-                    <TableCell
-                      sx={{
-                        color: '#F0F8FF',
-                        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-                        fontWeight: 'bold',
-                      }}
-                    >
-                      Rank
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        color: '#F0F8FF',
-                        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-                        fontWeight: 'bold',
-                      }}
-                    >
-                      Name
-                    </TableCell>
-                    <TableCell
-                      align="right"
-                      sx={{
-                        color: '#F0F8FF',
-                        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-                        fontWeight: 'bold',
-                      }}
-                    >
-                      Sing Points
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {leaderboard.map((user, index) => (
-                    <TableRow
-                      key={user.userId}
-                      sx={{
-                        '&:last-child td, &:last-child th': { border: 0 },
-                        '&:hover': {
-                          background: 'rgba(96, 165, 250, 0.05)',
-                          boxShadow: '0 0 15px rgba(96, 165, 250, 0.2)',
-                        },
-                        transition:
-                          'background 0.3s ease, box-shadow 0.3s ease',
-                      }}
-                    >
-                      <TableCell
-                        sx={{
-                          color: '#F0F8FF',
-                          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-                        }}
-                      >
-                        <Typography
-                          variant="body1"
-                          sx={{
-                            fontWeight: 'bold',
-                            textShadow: '0 0 5px rgba(255,255,255,0.2)',
-                          }}
-                        >
-                          {index + 1}
-                        </Typography>
-                      </TableCell>
-                      <TableCell
-                        sx={{
-                          color: '#F0F8FF',
-                          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 2,
-                          }}
-                        >
-                          <Avatar
-                            sx={{
-                              width: 40,
-                              height: 40,
-                              border:
-                                user.preGenesisPoints > 0
-                                  ? '2px solid #8B5CF6'
-                                  : '2px solid #EC4899',
-                              boxShadow:
-                                user.preGenesisPoints > 0
-                                  ? '0 0 10px #8B5CF6'
-                                  : '0 0 10px #EC4899',
-                            }}
-                            src={`https://unavatar.io/twitter/${user.username}`}
-                          />
-                          <Typography
-                            variant="body1"
-                            sx={{
-                              textShadow: '0 0 5px rgba(255,255,255,0.1)',
-                            }}
-                          >
-                            {user.name}
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell
-                        align="right"
-                        sx={{
-                          color: '#F0F8FF',
-                          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-                        }}
-                      >
-                        <Typography
-                          variant="body1"
-                          sx={{
-                            fontWeight: 'bold',
-                            color: '#EC4899',
-                            textShadow: '0 0 8px #EC4899',
-                          }}
-                        >
-                          {user.totalPoints.toFixed(2)}
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Grid>
+          <SignPointsLeaderboard />
         </Grid>
         <Grid container spacing={4} sx={{ mt: 4, alignItems: 'center' }}>
           {/* Left side - Claim Space Points */}

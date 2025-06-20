@@ -1,4 +1,12 @@
-import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  limit,
+  startAfter,
+} from 'firebase/firestore';
 import { db } from '../firebase.service';
 
 type UserTweetMention = {
@@ -34,14 +42,17 @@ export type UserLeaderboardEntry = {
   preGenesisPoints: number;
 };
 
-export const getTwitterMentionsLeaderboard = async (): Promise<
-  UserLeaderboardEntry[]
-> => {
+export const getTwitterMentionsLeaderboard = async (
+  leaderboardLimit: number | null,
+  startAfterDoc?: any
+): Promise<UserLeaderboardEntry[]> => {
   const space = await getDocs(
     query(
       collection(db, 'singPointsLeaderboard_19_06_2025'),
       where('totalPoints', '>', 0),
-      orderBy('totalPoints', 'desc')
+      orderBy('totalPoints', 'desc'),
+      ...(startAfterDoc ? [startAfter(startAfterDoc)] : []),
+      ...(leaderboardLimit ? [limit(leaderboardLimit)] : [])
     )
   );
   const mentions = space.docs.map((doc) => doc.data() as UserLeaderboardEntry);

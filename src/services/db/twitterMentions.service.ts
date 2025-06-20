@@ -29,6 +29,9 @@ export type UserLeaderboardEntry = {
   userId: string;
   name: string;
   totalPoints: number;
+
+  postGenesisPoints: number;
+  preGenesisPoints: number;
 };
 
 export const getTwitterMentionsLeaderboard = async (): Promise<

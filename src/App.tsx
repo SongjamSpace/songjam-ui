@@ -126,7 +126,7 @@ export default function App() {
 
   useEffect(() => {
     const calculateTimeLeft = () => {
-      const launchDate = new Date('2025-06-18T12:00:00Z'); // June 18, 2025 @ 12 PM UTC
+      const launchDate = new Date('2025-09-17T12:00:00Z'); // September 17, 2025 @ 12 PM UTC
       const difference = launchDate.getTime() - new Date().getTime();
 
       if (difference > 0) {
@@ -1635,8 +1635,14 @@ export default function App() {
                             sx={{
                               width: 40,
                               height: 40,
-                              border: '2px solid #8B5CF6',
-                              boxShadow: '0 0 10px #8B5CF6',
+                              border:
+                                user.preGenesisPoints > 0
+                                  ? '2px solid #8B5CF6'
+                                  : '2px solid #EC4899',
+                              boxShadow:
+                                user.preGenesisPoints > 0
+                                  ? '0 0 10px #8B5CF6'
+                                  : '0 0 10px #EC4899',
                             }}
                             src={`https://unavatar.io/twitter/${user.username}`}
                           />
@@ -1743,7 +1749,7 @@ export default function App() {
                   fontWeight: 'bold',
                 }}
               >
-                Launch Countdown
+                Genesis Launch
               </Typography>
               <Grid container spacing={2} justifyContent="center">
                 {Object.entries(timeLeft).map(([unit, value]) => (

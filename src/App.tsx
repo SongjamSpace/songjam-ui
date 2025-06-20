@@ -1749,7 +1749,7 @@ export default function App() {
                   fontWeight: 'bold',
                 }}
               >
-                Genesis Launch
+                Genesis Release
               </Typography>
               <Grid container spacing={2} justifyContent="center">
                 {Object.entries(timeLeft).map(([unit, value]) => (

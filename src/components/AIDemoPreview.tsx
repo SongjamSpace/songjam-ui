@@ -32,7 +32,11 @@ const demoMessages = [
   },
 ];
 
-const AIDemoPreview = () => {
+const AIDemoPreview = ({
+  onSpaceUrl,
+}: {
+  onSpaceUrl: (url: string) => void;
+}) => {
   const theme = useTheme();
   const { t } = useTranslation();
   const [messages, setMessages] = useState<typeof demoMessages>([]);
@@ -55,8 +59,16 @@ const AIDemoPreview = () => {
 
   const handleSend = () => {
     if (!input.trim()) return;
+    const regex = /http:\/\/x\.com\/i\/spaces\/[a-zA-Z0-9]+/;
+    const match = input.match(regex);
+    if (match) {
+      console.log('Found:', match[0]);
+      onSpaceUrl(match[0]);
+      return;
+    }
 
-    setMessages((prev) => [...prev, { role: 'user', content: input }]);
+    if (input.includes(''))
+      setMessages((prev) => [...prev, { role: 'user', content: input }]);
     setInput('');
     setIsTyping(true);
 

@@ -11,11 +11,10 @@ const appTranslationsEN = {
   engagement: 'Engagement',
   heroTitle1: 'Number Go Up',
   heroTitle2: 'Tech For X Spaces',
-  heroSubtitle1:
-    'The all-in-one toolkit for effortless growth on X Spaces',
+  heroSubtitle1: 'The all-in-one toolkit for effortless growth on X Spaces',
   heroSubtitle2: 'Gain more listeners and followers to break through on X',
   spaceInputPlaceholder: 'Paste your X space URL here to try it now',
-  analyzeButton: 'Boost Space',
+  analyzeButton: 'Analyze Space',
   tryPreviewButton: 'Try Preview',
   viewPricingButton: 'View Pricing',
   launchOfferTitle: 'Special Launch Offer - Only $1 USDT!',
@@ -135,7 +134,8 @@ const appTranslationsEN = {
     'Install our Chrome extension to access Songjam AutoDMs directly from your browser. Enhance your Twitter Messaging experience with just one click.',
   installExtensionButton: 'Install Extension',
   voiceBiometricsTitle: 'Cryptographically Secure Voice Biometrics',
-  voiceBiometricsText: 'Unlock voice sovereignty with our advanced data retrieval protocol and learn how you can bootstrap the network.',
+  voiceBiometricsText:
+    'Unlock voice sovereignty with our advanced data retrieval protocol and learn how you can bootstrap the network.',
   learnMore: 'Learn more →',
 };
 
@@ -309,16 +309,18 @@ const appTranslationsZH = {
   heroSubtitle1: 'X Spaces 的一体化工具包，轻松实现增长',
   heroSubtitle2: '获得更多听众和关注者，在 X 上取得突破',
   spaceInputPlaceholder: '在此处粘贴您的 X space URL 立即试用',
-  analyzeButton: '提升空间',
+  analyzeButton: '分析空间',
   tryPreviewButton: '试用预览',
   viewPricingButton: '查看定价',
   launchOfferTitle: '🎉 特别启动优惠 - 仅需 1 USDT！🎉',
-  launchOfferText: '仅需 1 USDT 即可完全访问我们的 AI 驱动转录服务。立即零风险试用 - 付款前预览时间线！',
+  launchOfferText:
+    '仅需 1 USDT 即可完全访问我们的 AI 驱动转录服务。立即零风险试用 - 付款前预览时间线！',
   whatYouGetTitle: '✨ 您将获得：',
   getDealFeature1: '1 x 完整 Space 转录',
   getDealFeature2: '1 x AI 驱动摘要',
   getDealFeature3: '包含 3 x Remix 的完整 Thread',
-  spaceInputPlaceholderDialog: '在此处粘贴您的 X space URL (例如 x.com/i/spaces/123...)',
+  spaceInputPlaceholderDialog:
+    '在此处粘贴您的 X space URL (例如 x.com/i/spaces/123...)',
   getDealButton: '立即获取优惠 🚀',
   noCommitment: '无需承诺 - 付款前预览！',
   previewDialogTitle: '🔭 预览已分析的空间 🔭',
@@ -330,7 +332,8 @@ const appTranslationsZH = {
   previewDialogText3: '这只是预览。分析您自己的空间以获取完整见解！',
   poweredBy: '技术支持',
   transcribeFeatureTitle: '创作',
-  transcribeFeatureText: '利用 Claude、Grok 和 Gemini 等顶级 LLM 创建个性化私信',
+  transcribeFeatureText:
+    '利用 Claude、Grok 和 Gemini 等顶级 LLM 创建个性化私信',
   transcribeFeatureDetail: '利用 AI 的力量',
   analyzeFeatureTitle: '自动化',
   analyzeFeatureText: '在几秒钟内触达数百位潜在发言者和听众',
@@ -416,10 +419,12 @@ const appTranslationsZH = {
     tls: '所有连接最低 TLS 1.2',
   },
   extensionTitle: '获取 Chrome 扩展程序',
-  extensionText: '安装我们的 Chrome 扩展程序，直接从浏览器访问 Songjam AutoDMs。一键增强您的 Twitter 消息体验。',
+  extensionText:
+    '安装我们的 Chrome 扩展程序，直接从浏览器访问 Songjam AutoDMs。一键增强您的 Twitter 消息体验。',
   installExtensionButton: '安装扩展程序',
   voiceBiometricsTitle: '加密安全的语音生物识别',
-  voiceBiometricsText: '通过我们的高级数据检索协议解锁语音主权，了解如何引导网络发展。',
+  voiceBiometricsText:
+    '通过我们的高级数据检索协议解锁语音主权，了解如何引导网络发展。',
   learnMore: '了解更多 →',
   Dashboard: '登录',
   About: '关于',

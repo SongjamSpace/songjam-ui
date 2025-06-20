@@ -224,6 +224,7 @@ export default function App() {
 
   const handleAnalyze = async (
     url: string,
+    boostSpace: boolean = false,
     boostFollowers: boolean = false
   ) => {
     if (!url || !url.trim()) return toast.error('Please enter a space URL');
@@ -233,9 +234,13 @@ export default function App() {
       return;
     }
     const isBroadcast = url.includes('broadcasts');
-    const navigateUrl = isBroadcast
+    let navigateUrl = isBroadcast
       ? `/dashboard?broadcastId=${spaceId}`
-      : `/dashboard?spaceId=${spaceId}&boostFollowers=${boostFollowers}`;
+      : `/dashboard?spaceId=${spaceId}`;
+    if (boostSpace) {
+      navigateUrl += '&boostSpace=true';
+    }
+    // &boostFollowers=${boostFollowers}
     navigate(navigateUrl);
   };
 
@@ -565,6 +570,19 @@ export default function App() {
                     loading={isLoading}
                     variant="contained"
                     className="primary"
+                    onClick={() => handleAnalyze(spaceUrl, true)}
+                    sx={{
+                      flex: 1,
+                      py: 1.5,
+                      fontSize: '1.1rem',
+                    }}
+                  >
+                    {t('inviteToFollow', 'Boost Space')}
+                  </LoadingButton>
+                  <LoadingButton
+                    loading={isLoading}
+                    variant="outlined"
+                    className="info"
                     onClick={() => handleAnalyze(spaceUrl)}
                     sx={{
                       flex: 1,
@@ -573,19 +591,6 @@ export default function App() {
                     }}
                   >
                     {t('analyzeButton')}
-                  </LoadingButton>
-                  <LoadingButton
-                    loading={isLoading}
-                    variant="outlined"
-                    className="info"
-                    onClick={() => handleAnalyze(spaceUrl, true)}
-                    sx={{
-                      flex: 1,
-                      py: 1.5,
-                      fontSize: '1.1rem',
-                    }}
-                  >
-                    {t('inviteToFollow', 'Boost Followers')}
                   </LoadingButton>
                 </Box>
               </Stack>
@@ -688,7 +693,9 @@ export default function App() {
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <AIDemoPreview />
+            <AIDemoPreview
+              onSpaceUrl={(spaceUrl) => handleAnalyze(spaceUrl, true)}
+            />
           </Grid>
         </Grid>
       </Container>

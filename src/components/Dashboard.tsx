@@ -261,6 +261,7 @@ export default function Dashboard() {
     spaceId: string,
     projectId: string,
     isBroadcast: boolean,
+    boostSpace: boolean,
     boostFollowers: boolean
   ) => {
     console.log('Analyzing...');
@@ -274,7 +275,8 @@ export default function Dashboard() {
       if (spaceDoc.state === 'Running' || spaceDoc.state === 'NotStarted') {
         const campaigns = await campaignsByProjectSpaceId(spaceId, projectId);
         if (campaigns.length > 0) {
-          navigate(`/campaigns/${campaigns[0].id}`);
+          if (!boostSpace) navigate(`/crm/${spaceId}`);
+          else navigate(`/campaigns/${campaigns[0].id}`);
         } else {
           const campaign = await createCampaign({
             addedType: 'NEW',
@@ -292,7 +294,8 @@ export default function Dashboard() {
             scheduledStart: spaceDoc.scheduledStart || spaceDoc.startedAt || 0,
             hostHandle: spaceDoc.admins[0].twitterScreenName || '',
           });
-          navigate(`/campaigns/${campaign.id}`);
+          if (!boostSpace) navigate(`/crm/${spaceId}`);
+          else navigate(`/campaigns/${campaign.id}`);
         }
         // else {
         //   navigate(`/live/${spaceId}`);
@@ -354,7 +357,8 @@ export default function Dashboard() {
             hostHandle: space.broadcastInfo?.twitterUsername || '',
             isBroadcast: true,
           });
-          navigate(`/campaigns/${campaign.id}`);
+          if (!boostSpace) navigate(`/crm/${spaceId}`);
+          else navigate(`/campaigns/${campaign.id}`);
 
           // toast.error('Broadcast is not finished');
         } else {
@@ -536,6 +540,7 @@ export default function Dashboard() {
     const spaceId = searchParams.get('spaceId');
     const broadcastId = searchParams.get('broadcastId');
     const boostFollowers = searchParams.get('boostFollowers') === 'true';
+    const boostSpace = searchParams.get('boostSpace') === 'true';
     if (defaultProject && (spaceId || broadcastId)) {
       // if (spaceId === 'new') {
       //   setIsShowNewCampaign(true);
@@ -544,6 +549,7 @@ export default function Dashboard() {
         spaceId || broadcastId || '',
         defaultProject.id || '',
         broadcastId ? true : false,
+        boostSpace,
         boostFollowers
       );
       // }
@@ -581,7 +587,10 @@ export default function Dashboard() {
     setValue(newValue);
   };
 
-  const handleAddSpace = async (boostFollowers: boolean = false) => {
+  const handleAddSpace = async (
+    boostSpace: boolean = false,
+    boostFollowers: boolean = false
+  ) => {
     const spaceId = extractSpaceId(spaceUrl);
     if (isLoading || !spaceId || !defaultProject) return;
     setIsLoading(true);
@@ -591,7 +600,13 @@ export default function Dashboard() {
     // but potentially just add to a list or trigger analysis without navigating immediately.
     // For now, just log and show a message.
     console.log('Adding space:', spaceId);
-    await analyzeSpace(spaceId, defaultProject.id, isBroadcast, boostFollowers);
+    await analyzeSpace(
+      spaceId,
+      defaultProject.id,
+      isBroadcast,
+      boostSpace,
+      boostFollowers
+    );
 
     setSpaceUrl(''); // Clear input after submission
     setIsLoading(false);
@@ -1229,7 +1244,7 @@ export default function Dashboard() {
               <LoadingButton
                 loading={isLoading && !!user}
                 variant="contained"
-                onClick={() => handleAddSpace(false)}
+                onClick={() => handleAddSpace(true)}
                 disabled={!user || isLoading}
                 sx={{
                   whiteSpace: 'nowrap',
@@ -1255,7 +1270,7 @@ export default function Dashboard() {
                 disabled={!user || isLoading}
                 variant="outlined"
                 className="info"
-                onClick={() => handleAddSpace(true)}
+                onClick={() => handleAddSpace(false)}
                 sx={{
                   padding: '8px 20px',
                   // whiteSpace: 'nowrap',
@@ -1263,7 +1278,7 @@ export default function Dashboard() {
                   textTransform: 'uppercase',
                 }}
               >
-                {t('inviteToFollow', 'Boost Followers')}
+                {t('analyzeButton')}
               </LoadingButton>
 
               {/* <Button

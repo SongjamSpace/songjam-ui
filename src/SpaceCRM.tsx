@@ -67,6 +67,7 @@ import CampaignList from './components/SpaceCRM/CampaignList';
 import ViewersChart from './components/LiveDashboard/ViewersChart';
 import { transcribePy } from './services/transcription.service';
 import axios from 'axios';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 type CRMTab =
   | 'dashboard'
@@ -455,7 +456,7 @@ const SpaceCRM: React.FC = () => {
         >
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <IconButton
-              onClick={() => navigate(-1)}
+              onClick={() => navigate('/dashboard')}
               sx={{
                 mr: 2,
                 background: 'rgba(255, 255, 255, 0.05)',
@@ -487,9 +488,10 @@ const SpaceCRM: React.FC = () => {
                     },
                   }}
                 />
-                {!space.transcriptionStatus ||
-                space.transcriptionStatus === 'NOT_STARTED' ||
-                space.transcriptionStatus === 'FAILED' ? (
+                {space.state === 'Ended' &&
+                (!space.transcriptionStatus ||
+                  space.transcriptionStatus === 'NOT_STARTED' ||
+                  space.transcriptionStatus === 'FAILED') ? (
                   <LoadingButton
                     loading={isTranscribing}
                     variant="contained"
@@ -527,13 +529,25 @@ const SpaceCRM: React.FC = () => {
                   space.transcriptionProgress !==
                     TranscriptionProgress.ENDED && (
                     <Chip
-                      icon={<CircularProgress size={14} />}
+                      icon={<CircularProgress size={18} />}
                       label={space.userHelperMessage}
                       variant="filled"
-                      size="small"
                       sx={{
                         ml: 2,
                       }}
+                      deleteIcon={
+                        space.state !== 'Ended' ? (
+                          <OpenInNewIcon sx={{ mx: 2, width: 16 }} />
+                        ) : undefined
+                      }
+                      onDelete={
+                        space.state !== 'Ended'
+                          ? () =>
+                              window.open(
+                                `${window.location.origin}/live/${spaceId}`
+                              )
+                          : undefined
+                      }
                     />
                   )
                 )}

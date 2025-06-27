@@ -275,8 +275,10 @@ export default function Dashboard() {
       if (spaceDoc.state === 'Running' || spaceDoc.state === 'NotStarted') {
         const campaigns = await campaignsByProjectSpaceId(spaceId, projectId);
         if (campaigns.length > 0) {
-          if (!boostSpace) navigate(`/crm/${spaceId}`);
-          else navigate(`/campaigns/${campaigns[0].id}`);
+          if (!boostSpace) {
+            if (spaceDoc.state === 'Running') navigate(`/live/${spaceId}`);
+            else navigate(`/crm/${spaceId}`);
+          } else navigate(`/campaigns/${campaigns[0].id}`);
         } else {
           const campaign = await createCampaign({
             addedType: 'NEW',
@@ -294,8 +296,10 @@ export default function Dashboard() {
             scheduledStart: spaceDoc.scheduledStart || spaceDoc.startedAt || 0,
             hostHandle: spaceDoc.admins[0].twitterScreenName || '',
           });
-          if (!boostSpace) navigate(`/crm/${spaceId}`);
-          else navigate(`/campaigns/${campaign.id}`);
+          if (!boostSpace) {
+            if (spaceDoc.state === 'Running') navigate(`/live/${spaceId}`);
+            else navigate(`/crm/${spaceId}`);
+          } else navigate(`/campaigns/${campaign.id}`);
         }
         // else {
         //   navigate(`/live/${spaceId}`);

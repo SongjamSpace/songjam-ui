@@ -498,20 +498,23 @@ const SpaceCRM: React.FC = () => {
                     size="small"
                     startIcon={<AutorenewIcon />}
                     onClick={async () => {
+                      if (isTranscribing) return;
+                      setIsTranscribing(true);
                       if (!user) {
                         setShowAuthDialog(true);
+                        setIsTranscribing(false);
                         return;
                       }
                       if (space.state !== 'Ended') {
                         toast.error(
                           "Space hasn't ended yet, please come back later for Analysis"
                         );
+                        setIsTranscribing(false);
                         return;
                       }
                       const projectId =
                         user.defaultProjectId || user.projectIds[0] || '';
                       if (spaceId && projectId) {
-                        setIsTranscribing(true);
                         await transcribePy(space.hlsUrl, spaceId);
                       }
                     }}

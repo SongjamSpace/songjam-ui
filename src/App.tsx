@@ -424,9 +424,7 @@ export default function App() {
               {user ? 'Dashboard' : 'Login'}
             </Button>
             <Button
-              href="https://app.virtuals.io/geneses/4157"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/leaderboard"
               variant="contained"
               size="small"
               sx={{
@@ -439,7 +437,7 @@ export default function App() {
                 },
               }}
             >
-              Virtuals Genesis Launch
+              Launch a Leaderboard
             </Button>
             <Button
               onClick={handleLanguageChange}
@@ -660,8 +658,8 @@ export default function App() {
               <div className="trust-badges">
                 <span>{t('poweredBy')}</span>
                 <div className="badge">Chrome</div>
-                <div className="badge">ElizaOS</div>
                 <div className="badge">Grok</div>
+                <div className="badge">Virtuals</div>
               </div>
             </Box>
           </Grid>

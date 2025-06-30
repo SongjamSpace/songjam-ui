@@ -14,6 +14,7 @@ import { DynamicContextProvider } from '@dynamic-labs/sdk-react-core';
 import Settings from './pages/Settings';
 import CampaignDetails from './pages/CampaignDetails';
 import MusicAgent from './pages/MusicAgent';
+import Leaderboard from './pages/Leaderboard';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
@@ -46,6 +47,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/campaigns/:id" element={<CampaignDetails />} />
                 <Route path="/dj" element={<MusicAgent />} />
+                <Route path="/leaderboard" element={<Leaderboard />} />
               </Routes>
             </AuthProvider>
           </ThemeProvider>

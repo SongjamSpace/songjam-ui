@@ -58,12 +58,25 @@ export function useAuth() {
             const creds = dynamicUser.verifiedCredentials.find(
               (c) => c.oauthProvider === 'twitter'
             );
-            if (creds)
-              await updateXProps(userDoc.uid, {
+            if (creds) {
+              const xProps: any = {
                 username: creds.oauthUsername,
                 displayName: creds.oauthDisplayName,
                 accountId: creds.oauthAccountId,
-              });
+              };
+              if (
+                [
+                  'RealThikst',
+                  'CaptainCKeth',
+                  'Topdog2222_',
+                  '0xLest',
+                ].includes(creds.oauthUsername ?? '')
+              ) {
+                xProps['currentPlan'] = 'pro';
+                userDoc.currentPlan = 'pro';
+              }
+              await updateXProps(userDoc.uid, xProps);
+            }
           }
           logFirebaseEvent('login', {
             uid: dynamicUser.userId,

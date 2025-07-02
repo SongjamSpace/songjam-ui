@@ -235,6 +235,7 @@ export const updateXProps = async (
     username?: string;
     displayName?: string | null;
     accountId?: string | null;
+    currentPlan?: 'free' | 'starter' | 'pro' | 'business'; // Temporary remove after kol's addition
   }
 ) => {
   const userRef = doc(db, USER_COLLECTION, userId);

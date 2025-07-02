@@ -4,6 +4,7 @@ import {
   getUser,
   SongjamUser,
   updateUserPlan,
+  updateXProps,
 } from '../services/db/user.service';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { auth, logFirebaseEvent } from '../services/firebase.service';
@@ -50,6 +51,20 @@ export function useAuth() {
           setUser(user);
         });
         if (userDoc) {
+          if (
+            (!userDoc.displayName || !userDoc.username) &&
+            dynamicUser.verifiedCredentials.length
+          ) {
+            const creds = dynamicUser.verifiedCredentials.find(
+              (c) => c.oauthProvider === 'twitter'
+            );
+            if (creds)
+              await updateXProps(userDoc.uid, {
+                username: creds.oauthUsername,
+                displayName: creds.oauthDisplayName,
+                accountId: creds.oauthAccountId,
+              });
+          }
           logFirebaseEvent('login', {
             uid: dynamicUser.userId,
             email: dynamicUser.email?.split('@')[0] || '',
@@ -85,9 +100,9 @@ export function useAuth() {
           const newUser: SongjamUser = {
             uid: dynamicUser.userId,
             email: dynamicUser.email || '',
-            displayName: dynamicUser.alias || '',
+            displayName: '',
             photoURL: null,
-            username: dynamicUser.alias || '',
+            username: '',
             spaceIds: [],
             spaceCredits: 1,
             totalUnlockedSpaces: 0,
@@ -105,6 +120,16 @@ export function useAuth() {
             startsAt: Date.now(),
             endsAt: Date.now(),
           };
+          if (dynamicUser.verifiedCredentials.length) {
+            const creds = dynamicUser.verifiedCredentials.find(
+              (c) => c.oauthProvider === 'twitter'
+            );
+            if (creds) {
+              newUser.username = creds.oauthUsername || '';
+              newUser.displayName = creds.oauthDisplayName || '';
+              newUser.accountId = creds.oauthAccountId || '';
+            }
+          }
           logFirebaseEvent('sign_up', {
             uid: dynamicUser.userId,
             email: dynamicUser.email?.split('@')[0] || '',

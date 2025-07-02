@@ -37,6 +37,7 @@ export type SongjamUser = {
   };
   endsAt: number;
   startsAt: number;
+  accountId?: string | null;
 };
 
 type SongjamUserDoc = SongjamUser & {
@@ -140,20 +141,31 @@ export const getUser = async (
   }
   if (userDoc.exists()) {
     const user = userDoc.data() as SongjamUser;
+    const updateProps: Partial<SongjamUser> = {};
     // if currentPlan is not set, set it to free in the db
     if (!user.currentPlan) {
-      await updateDoc(userRef, { currentPlan: 'free' });
+      updateProps['currentPlan'] = 'free';
+      // await updateDoc(userRef, { currentPlan: 'free' });
     }
     // if usage is not set, set default values in the db
     if (!user.usage) {
-      await updateDoc(userRef, {
-        usage: {
-          aiAssistantRequests: 0,
-          spaces: 0,
-          autoDms: 0,
-          totalRequests: 0,
-        },
-      });
+      updateProps['usage'] = {
+        aiAssistantRequests: 0,
+        spaces: 0,
+        autoDms: 0,
+        totalRequests: 0,
+      };
+      // await updateDoc(userRef, {
+      //   usage: {
+      //     aiAssistantRequests: 0,
+      //     spaces: 0,
+      //     autoDms: 0,
+      //     totalRequests: 0,
+      //   },
+      // });
+    }
+    if (Object.keys(updateProps).length) {
+      await updateDoc(userRef, updateProps);
     }
     user.usage = {
       aiAssistantRequests: user.usage.aiAssistantRequests || 0,
@@ -215,4 +227,16 @@ export const updateSpaceRequests = async (id: string) => {
 export const updateAutoDmsRequests = async (id: string) => {
   const userRef = doc(db, USER_COLLECTION, id);
   await updateDoc(userRef, { 'usage.autoDms': increment(1) });
+};
+
+export const updateXProps = async (
+  userId: string,
+  xProps: {
+    username?: string;
+    displayName?: string | null;
+    accountId?: string | null;
+  }
+) => {
+  const userRef = doc(db, USER_COLLECTION, userId);
+  await updateDoc(userRef, xProps);
 };

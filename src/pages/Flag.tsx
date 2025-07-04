@@ -13,6 +13,7 @@ import {
   useSocialAccounts,
 } from '@dynamic-labs/sdk-react-core';
 import { ProviderEnum } from '@dynamic-labs/sdk-api-core';
+import { LoadingButton } from '@mui/lab';
 
 const Flag = () => {
   const { error, isProcessing, signInWithSocialAccount } = useSocialAccounts();
@@ -147,7 +148,11 @@ const Flag = () => {
                 //   maxWidth: 500,
               }}
             >
-              This account has been flagged for agentic review.
+              {slashDoc.slashedUsernames.includes(username)
+                ? `This account has been flagged for agentic review.
+              `
+                : `Review the tweets below and flag this account for
+                botted/farmed/low effort content.`}
             </Typography>
 
             {/* Defend / Slash Buttons */}
@@ -179,7 +184,7 @@ const Flag = () => {
               <Box
                 sx={{ display: 'flex', gap: 2, mt: 2, mb: 4, width: '100%' }}
               >
-                <Button
+                {/* <Button
                   fullWidth
                   variant={defendVote === 'defend' ? 'contained' : 'outlined'}
                   sx={{
@@ -198,7 +203,7 @@ const Flag = () => {
                   onClick={() => handleVote('defend')}
                 >
                   Defend
-                </Button>
+                </Button> */}
                 <Button
                   fullWidth
                   variant={defendVote === 'slash' ? 'contained' : 'outlined'}
@@ -287,7 +292,8 @@ const Flag = () => {
                 >
                   Defend
                 </Button> */}
-                <Button
+                <LoadingButton
+                  loading={loading}
                   fullWidth
                   variant={defendVote === 'slash' ? 'contained' : 'outlined'}
                   sx={{
@@ -308,7 +314,7 @@ const Flag = () => {
                   }}
                 >
                   Flag
-                </Button>
+                </LoadingButton>
               </Box>
             </Box>
           </Box>

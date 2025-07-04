@@ -129,6 +129,9 @@ export const getUser = async (
   if (listener) {
     onSnapshot(userRef, (snapshot) => {
       const user = snapshot.data() as SongjamUser;
+      if (!user) {
+        return;
+      }
       user.usage = {
         aiAssistantRequests: user.usage.aiAssistantRequests || 0,
         spaces: user.usage.spaces || 0,

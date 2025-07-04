@@ -172,7 +172,7 @@ const Flag = () => {
                     transition: 'background 0.2s',
                   }}
                 >
-                  Flaged
+                  Flagged
                 </Button>
               </Box>
             ) : (

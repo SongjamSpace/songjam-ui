@@ -146,7 +146,7 @@ export const updateSlash = async (
     slashCount: increment(vote === 'slash' ? 1 : 0),
     defendCount: increment(vote === 'defend' ? 1 : 0),
     slashedUsernames: arrayUnion(username),
-    defendedUsernames: arrayUnion(username),
+    defendedUsernames: [],
     updatedAt: Date.now(),
   });
   const slash = await getSlash(projectId, userId);

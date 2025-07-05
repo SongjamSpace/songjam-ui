@@ -177,7 +177,7 @@ const Flag = () => {
                     transition: 'background 0.2s',
                   }}
                 >
-                  Flagged
+                  Flagged by You & {slashDoc.slashCount - 1} others
                 </Button>
               </Box>
             ) : (

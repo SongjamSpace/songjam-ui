@@ -8,6 +8,8 @@ import {
   createSlash,
   updateSlash,
   getLeaderBoardUser,
+  getReport,
+  AgentReport,
 } from '../services/db/leaderboard.service';
 import {
   useDynamicContext,
@@ -16,6 +18,8 @@ import {
 import { ProviderEnum } from '@dynamic-labs/sdk-api-core';
 import { LoadingButton } from '@mui/lab';
 import { Toaster, toast } from 'react-hot-toast';
+import AgenticReportComp from './AgenticReportComp';
+import axios from 'axios';
 
 const Flag = () => {
   const { error, isProcessing, signInWithSocialAccount } = useSocialAccounts();
@@ -32,11 +36,14 @@ const Flag = () => {
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [voterUsername, setVoterUsername] = useState<string>('');
   const [voterUserId, setVoterUserId] = useState<string>('');
+  const [reportInfo, setReportInfo] = useState<AgentReport | null>(null);
+  const [reportLoading, setReportLoading] = useState(false);
 
   const fetchSlash = async (projectId: string, userId: string) => {
     const slash = await getSlash(projectId, userId);
     if (slash) {
       setSlashDoc(slash);
+      fetchReport(`${projectId}_${userId}`);
     }
     const tweets = await getTwitterMentions(projectId, userId);
 
@@ -114,6 +121,14 @@ const Flag = () => {
     setFlagUserId(id);
     fetchSlash(projectId, id);
   }, [user]);
+
+  const fetchReport = async (id: string) => {
+    const report = await getReport(id);
+    if (!report) {
+      return;
+    }
+    setReportInfo(report);
+  };
 
   return (
     <Box sx={{ bgcolor: '#f1e3eb', minHeight: '100vh' }}>
@@ -340,6 +355,52 @@ const Flag = () => {
             </Box>
           </Box>
         )}
+        {/* Report Generation */}
+        {slashDoc && slashDoc.slashCount > 0 && !reportInfo && (
+          <Box
+            sx={{
+              mb: 4,
+              // p: 2,
+              textAlign: 'center',
+              maxWidth: 500,
+              mx: 'auto',
+            }}
+          >
+            <LoadingButton
+              loading={reportLoading}
+              variant="outlined"
+              size="small"
+              sx={{
+                color: '#ff007a',
+                borderColor: '#ff007a',
+                fontWeight: 700,
+                fontFamily: 'Chakra Petch, sans-serif',
+                '&:hover': {
+                  bgcolor: '#ff007a',
+                  color: 'white',
+                  borderColor: '#ff007a',
+                },
+                transition: 'all 0.2s',
+              }}
+              onClick={async () => {
+                setReportLoading(true);
+                await axios.post(
+                  `${
+                    import.meta.env.VITE_JAM_SERVER_URL
+                  }/agent/fetch-songjam-report`,
+                  {
+                    projectId: projectId,
+                    userId: flagUserId,
+                  }
+                );
+                await fetchReport(`${projectId}_${flagUserId}`);
+                setReportLoading(false);
+              }}
+            >
+              Send Songjam for Agentic Review
+            </LoadingButton>
+          </Box>
+        )}
         {/* Footer */}
         <Box display={'flex'} justifyContent={'center'}>
           <Typography
@@ -373,7 +434,7 @@ const Flag = () => {
             </a>
           </Typography>
         </Box>
-
+        {reportInfo && <AgenticReportComp reportInfo={reportInfo} />}
         {/* Horizontally scrollable tweets */}
         <Box
           sx={{

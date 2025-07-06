@@ -54,6 +54,10 @@ const Flag = () => {
         redirectUrl: window.location.href,
       });
     }
+    if (flagUserId === voterUserId) {
+      toast.error('Cannot flag yourself');
+      return;
+    }
     if (slashedTweets.length === 0) {
       alert('No tweets found');
       return;

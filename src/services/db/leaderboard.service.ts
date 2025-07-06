@@ -115,11 +115,12 @@ const FLAG_DB_NAME = 'flags';
 
 export const createSlash = async (
   projectId: string,
-  userId: string,
+  flagUserId: string,
   proposer: string,
-  username: string
+  username: string,
+  voterUserId: string
 ): Promise<SlashDoc> => {
-  const slashRef = doc(db, FLAG_DB_NAME, `${projectId}_${userId}`);
+  const slashRef = doc(db, FLAG_DB_NAME, `${projectId}_${flagUserId}`);
   const slashDoc = {
     createdAt: Date.now(),
     defendCount: 0,
@@ -127,9 +128,10 @@ export const createSlash = async (
     proposer,
     username,
     slashedUsernames: [proposer],
+    slashedUserIds: arrayUnion(voterUserId),
     defendedUsernames: [],
     updatedAt: 0,
-    userId,
+    userId: flagUserId,
   } as SlashDoc;
   await setDoc(slashRef, slashDoc);
   return slashDoc;
@@ -139,13 +141,15 @@ export const updateSlash = async (
   projectId: string,
   userId: string,
   username: string,
-  vote: 'defend' | 'slash'
+  vote: 'defend' | 'slash',
+  voterUserId: string
 ) => {
   const slashRef = doc(db, FLAG_DB_NAME, `${projectId}_${userId}`);
   await updateDoc(slashRef, {
     slashCount: increment(vote === 'slash' ? 1 : 0),
     defendCount: increment(vote === 'defend' ? 1 : 0),
     slashedUsernames: arrayUnion(username),
+    slashedUserIds: arrayUnion(voterUserId),
     defendedUsernames: [],
     updatedAt: Date.now(),
   });

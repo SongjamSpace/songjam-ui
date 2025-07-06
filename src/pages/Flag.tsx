@@ -7,6 +7,7 @@ import {
   SlashDoc,
   createSlash,
   updateSlash,
+  getLeaderBoardUser,
 } from '../services/db/leaderboard.service';
 import {
   useDynamicContext,
@@ -14,6 +15,7 @@ import {
 } from '@dynamic-labs/sdk-react-core';
 import { ProviderEnum } from '@dynamic-labs/sdk-api-core';
 import { LoadingButton } from '@mui/lab';
+import { Toaster, toast } from 'react-hot-toast';
 
 const Flag = () => {
   const { error, isProcessing, signInWithSocialAccount } = useSocialAccounts();
@@ -22,13 +24,14 @@ const Flag = () => {
 
   //   const [reportInfo, setReportInfo] = useState<AgentReport | null>(null);
   const [projectId, setProjectId] = useState<string>('evaonlinexyz');
-  const [userId, setUserId] = useState<string>('');
+  const [flagUserId, setFlagUserId] = useState<string>('');
   const [slashDoc, setSlashDoc] = useState<SlashDoc | null>(null);
   const [loading, setLoading] = useState(true);
   const [defendVote, setDefendVote] = useState<'defend' | 'slash' | null>(null);
   const [slashedTweets, setSlashedTweets] = useState<UserTweetMention[]>([]);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
-  const [username, setUsername] = useState<string>('');
+  const [voterUsername, setVoterUsername] = useState<string>('');
+  const [voterUserId, setVoterUserId] = useState<string>('');
 
   const fetchSlash = async (projectId: string, userId: string) => {
     const slash = await getSlash(projectId, userId);
@@ -45,7 +48,7 @@ const Flag = () => {
     if (loading || isButtonDisabled) {
       return;
     }
-    if (!username) {
+    if (!voterUsername) {
       //   Trigger Login
       return await signInWithSocialAccount(ProviderEnum.Twitter, {
         redirectUrl: window.location.href,
@@ -55,17 +58,31 @@ const Flag = () => {
       alert('No tweets found');
       return;
     }
-    if (userId) {
+    if (flagUserId) {
+      // Check if the voter is in the leaderboard
+      const leaderboardUser = await getLeaderBoardUser(projectId, voterUserId);
+      if (!leaderboardUser) {
+        // alert('Cannot flag. You are not on the leaderboard');
+        toast.error('Cannot flag. You are not on the leaderboard');
+        return;
+      }
       setIsButtonDisabled(true);
       if (slashDoc) {
-        const slash = await updateSlash(projectId, userId, username, vote);
+        const slash = await updateSlash(
+          projectId,
+          flagUserId,
+          voterUsername,
+          vote,
+          voterUserId
+        );
         setSlashDoc(slash);
       } else {
         const slash = await createSlash(
           projectId,
-          userId,
-          username,
-          slashedTweets[0]?.username
+          flagUserId,
+          voterUsername,
+          slashedTweets[0]?.username || '',
+          voterUserId
         );
         setSlashDoc(slash);
       }
@@ -75,11 +92,11 @@ const Flag = () => {
 
   useEffect(() => {
     if (user) {
-      setUsername(
-        user.verifiedCredentials.find(
-          (cred) => cred.oauthProvider === 'twitter'
-        )?.oauthUsername || ''
+      const twitterCredential = user.verifiedCredentials.find(
+        (cred) => cred.oauthProvider === 'twitter'
       );
+      setVoterUsername(twitterCredential?.oauthUsername || '');
+      setVoterUserId(twitterCredential?.oauthAccountId || '');
     }
   }, [user]);
 
@@ -90,7 +107,7 @@ const Flag = () => {
       alert('No userId provided');
       return;
     }
-    setUserId(id);
+    setFlagUserId(id);
     fetchSlash(projectId, id);
   }, [user]);
 
@@ -148,7 +165,7 @@ const Flag = () => {
                 //   maxWidth: 500,
               }}
             >
-              {slashDoc.slashedUsernames.includes(username)
+              {slashDoc.slashedUsernames.includes(voterUsername)
                 ? `This account has been flagged for agentic review.
               `
                 : `Review the tweets below and flag this account for
@@ -156,7 +173,7 @@ const Flag = () => {
             </Typography>
 
             {/* Defend / Slash Buttons */}
-            {slashDoc.slashedUsernames.includes(username) ? (
+            {slashDoc.slashedUsernames.includes(voterUsername) ? (
               <Box
                 sx={{ display: 'flex', gap: 2, mt: 2, mb: 4, width: '100%' }}
               >
@@ -384,7 +401,7 @@ const Flag = () => {
           ))}
         </Box>
       </Container>
-      {/* <LoginDialog open={showAuthDialog && !authLoading} /> */}
+      <Toaster position="bottom-right" />
     </Box>
   );
 };

@@ -15,6 +15,7 @@ import Settings from './pages/Settings';
 import CampaignDetails from './pages/CampaignDetails';
 import MusicAgent from './pages/MusicAgent';
 import Leaderboard from './pages/Leaderboard';
+import Landing from './components/Landing.jsx';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
@@ -29,15 +30,8 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
           <ThemeProvider theme={theme}>
             <AuthProvider>
               <Routes>
-                <Route path="/" element={<App />} />
-                {/* <Route
-                path="/:spaceId"
-                element={
-                  <AuthProvider>
-                    <SpaceDetails />
-                  </AuthProvider>
-                }
-              /> */}
+                <Route path="/" element={<Leaderboard />} />
+                <Route path="/spaces-crm" element={<App />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/crm/:spaceId" element={<SpaceCRM />} />
                 <Route

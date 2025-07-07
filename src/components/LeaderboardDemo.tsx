@@ -211,6 +211,9 @@ const LeaderboardDemo: React.FC = () => {
         p: 4,
         position: 'relative',
         overflow: 'hidden',
+        width: { xs: '100%', sm: 500, md: 500 },
+        minWidth: 340,
+        maxWidth: 520,
         '&::before': {
           content: '""',
           position: 'absolute',
@@ -239,7 +242,7 @@ const LeaderboardDemo: React.FC = () => {
           }}
         >
           <AutoAwesome sx={{ fontSize: 32 }} />
-          Live Leaderboard Demo
+          Live Leaderboard
         </Typography>
         <Chip
           label="Real-time Updates"
@@ -333,6 +336,8 @@ const LeaderboardDemo: React.FC = () => {
                   borderBottom: '1px solid rgba(96, 165, 250, 0.3)',
                   fontWeight: 700,
                   fontSize: '0.9rem',
+                  minWidth: 90,
+                  width: 110,
                 }}
               >
                 Status
@@ -340,7 +345,7 @@ const LeaderboardDemo: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {demoData.map((user, index) => (
+            {demoData.slice(0, 3).map((user, index) => (
               <TableRow
                 key={user.id}
                 sx={{

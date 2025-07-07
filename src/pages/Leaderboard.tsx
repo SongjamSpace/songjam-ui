@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -36,6 +36,8 @@ import Background from '../components/Background';
 import Logo from '../components/Logo';
 import LeaderboardDemo from '../components/LeaderboardDemo';
 import { keyframes } from '@mui/system';
+import { useAuthContext } from '../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 const electrifyPulse = keyframes`
   0% { text-shadow: 0 0 1px #60a5fa, 0 0 2px #60a5fa, 0 0 3px rgba(236, 72, 153, 0.5); }
@@ -55,9 +57,23 @@ const textPulse = keyframes`
   100% { opacity: 0.7; }
 `;
 
+const testimonialGlow = keyframes`
+  0% { filter: blur(8px) brightness(1.1); opacity: 0.85; }
+  50% { filter: blur(16px) brightness(1.4); opacity: 1; }
+  100% { filter: blur(8px) brightness(1.1); opacity: 0.85; }
+`;
+
 const Leaderboard: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuthContext();
+  const { t } = useTranslation();
   const [selectedPlan, setSelectedPlan] = useState<'starter' | 'pro' | 'enterprise'>('pro');
+  const [testimonialIndex, setTestimonialIndex] = useState(0);
+  const [testimonialFade, setTestimonialFade] = useState(true);
+
+  const handleLanguageChange = async () => {
+    // Language change logic if needed
+  };
 
   const features = [
     {
@@ -140,17 +156,17 @@ const Leaderboard: React.FC = () => {
 
   const testimonials = [
     {
-      name: 'Sarah Chen',
-      role: 'Community Manager',
-      company: 'TechCorp',
-      content: 'The leaderboard feature has increased our community engagement by 300%. Our users love the competitive aspect!',
+      name: 'Starlordy',
+      role: 'CEO',
+      company: 'ONI Force',
+      content: 'The Songjam leaderboard was a hit during our $EVA campaign, helping us open at a $2.2M Market Cap completely organically.',
       avatar: 'SC',
     },
     {
       name: 'Mike Rodriguez',
       role: 'Product Manager',
       company: 'GameStudio',
-      content: 'Easy to implement and highly customizable. The analytics help us understand user behavior better.',
+      content: 'The Songjam team have quickly shipped an Ethos style slashing method where you flag for low effort content. I LOVE THIS.',
       avatar: 'MR',
     },
     {
@@ -161,6 +177,33 @@ const Leaderboard: React.FC = () => {
       avatar: 'EW',
     },
   ];
+
+  const handlePrevTestimonial = () => {
+    setTestimonialFade(false);
+    setTimeout(() => {
+      setTestimonialIndex((testimonialIndex + testimonials.length - 1) % testimonials.length);
+      setTestimonialFade(true);
+    }, 250);
+  };
+  const handleNextTestimonial = () => {
+    setTestimonialFade(false);
+    setTimeout(() => {
+      setTestimonialIndex((testimonialIndex + 1) % testimonials.length);
+      setTestimonialFade(true);
+    }, 250);
+  };
+
+  // Auto-cycle testimonials every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTestimonialFade(false);
+      setTimeout(() => {
+        setTestimonialIndex((prev) => (prev + 1) % testimonials.length);
+        setTestimonialFade(true);
+      }, 250);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [testimonials.length]);
 
   return (
     <main className="landing">
@@ -183,142 +226,372 @@ const Leaderboard: React.FC = () => {
           </div>
           <Box display="flex" gap={2} alignItems="center">
             <Button
+              variant="text"
+              color="inherit"
+              onClick={() => {
+                const element = document.getElementById(
+                  'agentic-story-section'
+                );
+                if (element) {
+                  element.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+            >
+              About
+            </Button>
+            <Button
+              onClick={() => {
+                const element = document.getElementById('tokenomics-section');
+                if (element) {
+                  element.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+              variant="text"
+              size="small"
+              sx={{
+                color: 'white',
+                '&:hover': { textDecoration: 'underline' },
+              }}
+            >
+              Tokenomics
+            </Button>
+            <Button
+              onClick={() => {
+                const element = document.getElementById('leaderboard-section');
+                if (element) {
+                  element.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+              variant="text"
+              size="small"
+              sx={{
+                color: 'white',
+                '&:hover': { textDecoration: 'underline' },
+              }}
+            >
+              Leaderboard
+            </Button>
+            <Button
+              onClick={() => {
+                const element = document.getElementById('extension-section');
+                if (element) {
+                  element.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+              variant="text"
+              size="small"
+              sx={{
+                color: 'white',
+                '&:hover': { textDecoration: 'underline' },
+              }}
+            >
+              Extension
+            </Button>
+            <Button
+              onClick={() => {
+                const element = document.getElementById('pricing-section');
+                if (element) {
+                  element.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+              variant="text"
+              size="small"
+              sx={{
+                color: 'white',
+                '&:hover': { textDecoration: 'underline' },
+              }}
+            >
+              Pricing
+            </Button>
+            <Button
+              onClick={() => {
+                const element = document.getElementById('honors-section');
+                if (element) {
+                  element.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+              variant="text"
+              size="small"
+              sx={{
+                color: 'white',
+                '&:hover': { textDecoration: 'underline' },
+              }}
+            >
+              Honors
+            </Button>
+            <Button
+              onClick={() => {
+                const element = document.getElementById('contact-section');
+                if (element) {
+                  element.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+              variant="text"
+              size="small"
+              sx={{
+                color: 'white',
+                '&:hover': { textDecoration: 'underline' },
+              }}
+            >
+              Contact
+            </Button>
+            <Button
+              onClick={() => navigate('/dashboard')}
               variant="outlined"
               size="small"
               sx={{
                 color: 'white',
-                borderColor: 'rgba(255, 255, 255, 0.5)',
+                '&:hover': { textDecoration: 'underline' },
+                animation: `${textPulse} 2s infinite ease-in-out`,
+              }}
+            >
+              {user ? 'Dashboard' : 'Login'}
+            </Button>
+            <Button
+              onClick={() => navigate('/spaces-crm')}
+              variant="contained"
+              size="small"
+              sx={{
+                background: 'linear-gradient(90deg, #00BCD4 0%, #3F51B5 100%)',
+                color: 'white',
                 '&:hover': {
-                  borderColor: 'white',
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  background:
+                    'linear-gradient(90deg, #3F51B5 0%, #00BCD4 100%)',
+                  boxShadow: '0 0 20px rgba(0, 188, 212, 0.8)',
                 },
               }}
-              onClick={() => navigate('/')}
             >
-              Back to Home
+              X Spaces CRM
             </Button>
           </Box>
         </Box>
       </nav>
 
       <Container maxWidth="lg" sx={{ py: 8, position: 'relative', zIndex: 1 }}>
-        {/* Hero Section */}
-        <Box textAlign="center" mb={8}>
-          <Typography
-            variant="h1"
+        {/* Mind-blowing Hero Section with Demo */}
+        <Box
+          sx={{
+            position: 'relative',
+            minHeight: { xs: 420, md: 480 },
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            mb: 10,
+            pt: { xs: 2, md: 4 },
+            pb: { xs: 2, md: 4 },
+            overflow: 'visible',
+          }}
+        >
+          <Grid container spacing={{ xs: 4, md: 2 }} alignItems="flex-start" justifyContent="center">
+            <Grid item xs={12} md={6} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', height: '100%' }}>
+              {/* Massive Animated Headline */}
+              <Typography
+                variant="h1"
+                sx={{
+                  mb: 2,
+                  fontSize: { xs: '3rem', md: '5.5rem' },
+                  fontWeight: 900,
+                  letterSpacing: '-0.04em',
+                  lineHeight: 1.05,
+                  background: 'linear-gradient(120deg, #60a5fa, #8b5cf6 40%, #ec4899 80%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  textShadow:
+                    '0 2px 20px #60a5fa99, 0 4px 40px #8b5cf699, 0 8px 80px #ec489999, 0 1px 0 #fff',
+                  animation: 'gradient 8s ease-in-out infinite, titleFloat 3s ease-in-out infinite',
+                  backgroundSize: '200% 200%',
+                  zIndex: 2,
+                  position: 'relative',
+                  filter: 'drop-shadow(0 0 32px #60a5fa88)',
+                }}
+              >
+                Who $SANG?
+              </Typography>
+              {/* Subtitle with shimmer */}
+              <Typography
+                variant="h5"
+                sx={{
+                  mb: 3,
+                  color: 'var(--text-secondary)',
+                  fontSize: { xs: '1.2rem', md: '1.6rem' },
+                  maxWidth: '700px',
+                  mx: 'auto',
+                  position: 'relative',
+                  zIndex: 2,
+                  background: 'linear-gradient(90deg, #fff, #60a5fa, #fff)',
+                  backgroundSize: '200% 100%',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  animation: 'shimmer 3s linear infinite',
+                  fontWeight: 500,
+                  textShadow: '0 2px 8px #0008',
+                  textAlign: 'center',
+                }}
+              >
+                The fairest and most transparent leaderboards in Web3. Powered by AI, public weights and community driven reputation systems.
+              </Typography>
+              {/* Neon-glow CTA Button */}
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center" sx={{ zIndex: 2, mt: 1 }}>
+                <Button
+                  variant="contained"
+                  size="large"
+                  className="primary"
+                  sx={{
+                    px: 6,
+                    py: 2,
+                    fontSize: '1.3rem',
+                    background: 'linear-gradient(90deg, #60a5fa, #8b5cf6, #ec4899)',
+                    color: 'white',
+                    borderRadius: '40px',
+                    boxShadow: '0 0 32px #60a5fa88, 0 0 64px #ec489988',
+                    textTransform: 'uppercase',
+                    fontWeight: 800,
+                    letterSpacing: '0.08em',
+                    animation: 'pulseGlow 2s infinite',
+                    transition: 'transform 0.2s',
+                    '&:hover': {
+                      background: 'linear-gradient(90deg, #ec4899, #8b5cf6, #60a5fa)',
+                      transform: 'scale(1.06) rotate(-1deg)',
+                      boxShadow: '0 0 64px #ec4899cc, 0 0 128px #60a5facc',
+                    },
+                  }}
+                  onClick={() => navigate('/spaces-crm')}
+                >
+                  Launch Now
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="large"
+                  sx={{
+                    color: 'var(--text-secondary)',
+                    borderColor: 'var(--text-secondary)',
+                    px: 6,
+                    py: 2,
+                    fontSize: '1.2rem',
+                    borderRadius: '40px',
+                    fontWeight: 700,
+                    letterSpacing: '0.08em',
+                    background: 'rgba(255,255,255,0.03)',
+                    '&:hover': {
+                      borderColor: 'white',
+                      color: 'white',
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    },
+                  }}
+                >
+                  Contact Us
+                </Button>
+              </Stack>
+              {/* Testimonial Carousel */}
+              <Box sx={{ mt: 4, mb: 2, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <Card
+                  sx={{
+                    maxWidth: 420,
+                    minHeight: 240,
+                    p: 4,
+                    background: 'rgba(30,41,59,0.92)',
+                    border: '1.5px solid rgba(96,165,250,0.25)',
+                    boxShadow: '0 4px 32px #60a5fa33',
+                    borderRadius: 5,
+                    textAlign: 'center',
+                    position: 'relative',
+                    opacity: testimonialFade ? 1 : 0,
+                    transition: 'opacity 0.4s cubic-bezier(.4,0,.2,1)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Box sx={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 2 }}>
+                    {/* Glowing animated ring */}
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        width: 120,
+                        height: 120,
+                        borderRadius: '50%',
+                        zIndex: 1,
+                        background: 'conic-gradient(from 0deg, #60a5fa, #8b5cf6, #ec4899, #60a5fa)',
+                        filter: 'blur(8px)',
+                        animation: 'testimonialGlow 3s linear infinite',
+                      }}
+                    />
+                    {/* White border ring */}
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        width: 104,
+                        height: 104,
+                        borderRadius: '50%',
+                        border: '4px solid #fff',
+                        zIndex: 2,
+                      }}
+                    />
+                    <Avatar
+                      sx={{
+                        bgcolor: 'var(--accent)',
+                        width: 96,
+                        height: 96,
+                        fontSize: 44,
+                        zIndex: 3,
+                        boxShadow: '0 0 0 8px #60a5fa33, 0 0 48px #8b5cf6aa',
+                        position: 'relative',
+                      }}
+                    >
+                      {testimonials[testimonialIndex].avatar}
+                    </Avatar>
+                  </Box>
+                  <Typography variant="h6" sx={{ color: 'var(--text-primary)', fontWeight: 700, mt: 1, mb: 0.5 }}>
+                    {testimonials[testimonialIndex].name}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'var(--text-secondary)', mb: 2 }}>
+                    {testimonials[testimonialIndex].role} at {testimonials[testimonialIndex].company}
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: 'var(--text-primary)', fontStyle: 'italic', mb: 2, fontSize: '1.15rem', lineHeight: 1.5 }}>
+                    "{testimonials[testimonialIndex].content}"
+                  </Typography>
+                </Card>
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={6} sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'flex-start', height: '100%' }}>
+              <Box sx={{ width: '100%', maxWidth: 480, mx: 'auto', mt: { xs: 4, md: 0 } }}>
+                <LeaderboardDemo />
+              </Box>
+            </Grid>
+          </Grid>
+          {/* Scroll Down Indicator */}
+          <Box
             sx={{
-              mb: 3,
-              background: 'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              fontSize: { xs: '2.5rem', md: '4rem' },
-              fontWeight: 800,
-              letterSpacing: '-0.02em',
-              lineHeight: 1.1,
-              textShadow: '0 0 30px rgba(96, 165, 250, 0.3)',
-              animation: 'gradient 8s ease infinite',
-              backgroundSize: '200% 200%',
-              '@keyframes gradient': {
-                '0%': {
-                  backgroundPosition: '0% 50%',
-                },
-                '50%': {
-                  backgroundPosition: '100% 50%',
-                },
-                '100%': {
-                  backgroundPosition: '0% 50%',
-                },
-              },
+              position: 'absolute',
+              bottom: -40,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 2,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              opacity: 0.7,
             }}
           >
-            Launch a Leaderboard
-          </Typography>
-          <Typography
-            variant="h5"
-            sx={{
-              mb: 4,
-              color: 'var(--text-secondary)',
-              lineHeight: 1.6,
-              fontSize: { xs: '1.1rem', md: '1.25rem' },
-              maxWidth: '800px',
-              mx: 'auto',
-              opacity: 0.9,
-              textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-              animation: 'fadeIn 1s ease-out',
-              '@keyframes fadeIn': {
-                from: {
-                  opacity: 0,
-                  transform: 'translateY(10px)',
-                },
-                to: {
-                  opacity: 0.9,
-                  transform: 'translateY(0)',
-                },
-              },
-            }}
-          >
-            Transform your community engagement with powerful, customizable leaderboards. 
-            Drive participation, foster competition, and reward your most active members.
-          </Typography>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
-            <Button
-              variant="contained"
-              size="large"
-              className="primary"
+            <Box
               sx={{
-                px: 4,
-                py: 1.5,
-                fontSize: '1.1rem',
-                background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
-                color: 'white',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #8b5cf6, #60a5fa)',
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 25px rgba(96, 165, 250, 0.4)',
-                },
+                width: 32,
+                height: 32,
+                borderRadius: '50%',
+                border: '2px solid #60a5fa',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mb: 1,
+                animation: 'bounce 2s infinite',
               }}
             >
-              Start Building
-            </Button>
-            <Button
-              variant="outlined"
-              size="large"
-              sx={{
-                color: 'var(--text-secondary)',
-                borderColor: 'var(--text-secondary)',
-                px: 4,
-                py: 1.5,
-                fontSize: '1.1rem',
-                '&:hover': {
-                  borderColor: 'white',
-                  color: 'white',
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                },
-              }}
-            >
-              View Demo
-            </Button>
-          </Stack>
-        </Box>
-
-        {/* Live Demo Section */}
-        <Box mb={8}>
-          <Typography
-            variant="h2"
-            textAlign="center"
-            sx={{
-              mb: 6,
-              color: 'var(--text-primary)',
-              fontWeight: 700,
-              background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
-            See It In Action
-          </Typography>
-          <Box sx={{ maxWidth: 1000, mx: 'auto' }}>
-            <LeaderboardDemo />
+              <ArrowForward sx={{ transform: 'rotate(90deg)', color: '#60a5fa', fontSize: 24 }} />
+            </Box>
+            <Typography variant="caption" sx={{ color: '#60a5fa', fontWeight: 700 }}>
+              Scroll
+            </Typography>
           </Box>
         </Box>
 
@@ -516,16 +789,45 @@ const Leaderboard: React.FC = () => {
                 >
                   <CardContent sx={{ p: 3 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <Avatar
-                        sx={{
-                          bgcolor: 'var(--accent)',
-                          mr: 2,
-                          width: 48,
-                          height: 48,
-                        }}
-                      >
-                        {testimonial.avatar}
-                      </Avatar>
+                      <Box sx={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', mr: 2 }}>
+                        {/* Glowing animated ring */}
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            width: 120,
+                            height: 120,
+                            borderRadius: '50%',
+                            zIndex: 1,
+                            background: 'conic-gradient(from 0deg, #60a5fa, #8b5cf6, #ec4899, #60a5fa)',
+                            filter: 'blur(8px)',
+                            animation: 'testimonialGlow 3s linear infinite',
+                          }}
+                        />
+                        {/* White border ring */}
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            width: 104,
+                            height: 104,
+                            borderRadius: '50%',
+                            border: '4px solid #fff',
+                            zIndex: 2,
+                          }}
+                        />
+                        <Avatar
+                          sx={{
+                            bgcolor: 'var(--accent)',
+                            width: 96,
+                            height: 96,
+                            fontSize: 44,
+                            zIndex: 3,
+                            boxShadow: '0 0 0 8px #60a5fa33, 0 0 48px #8b5cf6aa',
+                            position: 'relative',
+                          }}
+                        >
+                          {testimonial.avatar}
+                        </Avatar>
+                      </Box>
                       <Box>
                         <Typography variant="h6" sx={{ color: 'var(--text-primary)', fontWeight: 600 }}>
                           {testimonial.name}

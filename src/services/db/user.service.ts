@@ -82,7 +82,7 @@ export const createUser = async (id: string, user: SongjamUser) => {
   // );
   const batch = writeBatch(db);
   const projectRef = doc(projectsColRef);
-  const domain = user.email.split('@')[1];
+  const domain = user.email?.split('@')?.[1] || '';
   batch.set(projectRef, {
     createdUserId: id,
     createdEmail: user.email,

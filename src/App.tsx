@@ -232,6 +232,20 @@ export default function App() {
     document.body.className = 'dark';
   }, []);
 
+  // Auto-scroll to sections based on URL hash
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash === '#tokenomics') {
+      const element = document.getElementById('tokenomics-section');
+      if (element) {
+        // Small delay to ensure the component is fully rendered
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    }
+  }, []);
+
   const handleClaimSpacePoints = async () => {
     if (!spaceUrlForPoints.trim()) {
       return toast.error('Please enter a valid Twitter Space URL.');

@@ -159,13 +159,13 @@ const Leaderboard: React.FC = () => {
       name: 'Starlordy',
       role: 'CEO',
       company: 'ONI Force',
-      content: 'The Songjam leaderboard was a hit during our $EVA campaign, helping us open at a $2.2M Market Cap completely organically.',
+      content: 'Songam, was the main partner on our $EVA launch, they did not only provide the leaderboard, but were extremely available and on it all day, every day',
       avatar: 'SC',
     },
     {
-      name: 'Mike Rodriguez',
-      role: 'Product Manager',
-      company: 'GameStudio',
+      name: 'Big.Wil',
+      role: 'Host',
+      company: 'Virtuals Weekly!',
       content: 'The Songjam team have quickly shipped an Ethos style slashing method where you flag for low effort content. I LOVE THIS.',
       avatar: 'MR',
     },
@@ -429,7 +429,7 @@ const Leaderboard: React.FC = () => {
                   textAlign: 'center',
                 }}
               >
-                The fairest and most transparent leaderboards in Web3. Powered by AI, public weights and community driven reputation systems.
+                Reward the top voices in your community through the fairest and most transparent leaderboards in Web3.
               </Typography>
               {/* Neon-glow CTA Button */}
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center" sx={{ zIndex: 2, mt: 1 }}>

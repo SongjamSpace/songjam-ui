@@ -18,6 +18,8 @@ import {
   ListItemText,
   Avatar,
   Badge,
+  TextField,
+  TextareaAutosize,
 } from '@mui/material';
 import {
   TrendingUp,
@@ -38,6 +40,18 @@ import LeaderboardDemo from '../components/LeaderboardDemo';
 import { keyframes } from '@mui/system';
 import { useAuthContext } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  Text as RechartsText,
+} from 'recharts';
+import { BlockMath } from 'react-katex';
+import 'katex/dist/katex.min.css';
+import SignPointsLeaderboard from '../components/SignPointsLeaderboard';
 
 const electrifyPulse = keyframes`
   0% { text-shadow: 0 0 1px #60a5fa, 0 0 2px #60a5fa, 0 0 3px rgba(236, 72, 153, 0.5); }
@@ -63,6 +77,79 @@ const testimonialGlow = keyframes`
   100% { filter: blur(8px) brightness(1.1); opacity: 0.85; }
 `;
 
+const tokenomicsData = [
+  {
+    name: 'Public Sale',
+    value: 37.5,
+    color: '#FFA726',
+    description: 'Fixed Supply',
+  },
+  {
+    name: 'Liquidity Pool',
+    value: 12.5,
+    color: '#BD85FF',
+    description: 'Fixed Supply',
+  },
+  {
+    name: 'Ecosystem Fund',
+    value: 10,
+    color: '#FF5E8E',
+    description:
+      'Hackathons, Grants, Bounties. Tokens immediately released at 17 Sep 2025',
+  },
+  {
+    name: 'Early Backers',
+    value: 5,
+    color: '#4FC3F7',
+    description:
+      'Mentors, Supporters, Investors. Tokens released over 1 year from 17 Sep 2025',
+  },
+  {
+    name: 'Team',
+    value: 15,
+    color: '#FFD700',
+    description:
+      'Founders, Builders, Creators. Tokens released over 1 year from 17 Sep 2025',
+  },
+  {
+    name: 'Community',
+    value: 20,
+    color: '#00E676',
+    description:
+      'Yappers, Stakers, Contributors. 5% released from 19 Jul, 5% from 17 Aug, 90% released from 17 Sep 2025',
+  },
+];
+
+const renderCustomizedLabel = ({
+  cx,
+  cy,
+  midAngle,
+  outerRadius,
+  percent,
+}: any) => {
+  const RADIAN = Math.PI / 180;
+  const radius = outerRadius + 30; // Position text 30px outside the outer radius
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+  return (
+    <RechartsText
+      x={x}
+      y={y}
+      fill="white"
+      textAnchor={x > cx ? 'start' : 'end'}
+      dominantBaseline="central"
+      style={{
+        fontSize: '0.9rem',
+        fontWeight: 'bold',
+        textShadow: '0 0 3px rgba(0,0,0,0.7)',
+      }}
+    >
+      {`${(percent * 100).toFixed(1)}%`}
+    </RechartsText>
+  );
+};
+
 const Leaderboard: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuthContext();
@@ -70,6 +157,29 @@ const Leaderboard: React.FC = () => {
   const [selectedPlan, setSelectedPlan] = useState<'starter' | 'pro' | 'enterprise'>('pro');
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [testimonialFade, setTestimonialFade] = useState(true);
+  const [spaceUrlForPoints, setSpaceUrlForPoints] = useState('');
+  const [isClaiming, setIsClaiming] = useState(false);
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const launchDate = new Date('2025-09-17T12:00:00Z');
+      const difference = launchDate.getTime() - new Date().getTime();
+      if (difference > 0) {
+        return {
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60),
+        };
+      }
+      return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+    };
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTimeLeft());
+    }, 1000);
+    setTimeLeft(calculateTimeLeft());
+    return () => clearInterval(timer);
+  }, []);
 
   const handleLanguageChange = async () => {
     // Language change logic if needed
@@ -160,21 +270,24 @@ const Leaderboard: React.FC = () => {
       role: 'CEO',
       company: 'ONI Force',
       content: 'Songam, was the main partner on our $EVA launch, they did not only provide the leaderboard, but were extremely available and on it all day, every day',
-      avatar: 'SC',
+      avatar: '/logos/starlordy.png',
+      tweetUrl: 'https://x.com/i/spaces/1kvJpyepDPbxE',
     },
     {
       name: 'Big.Wil',
       role: 'Host',
       company: 'Virtuals Weekly!',
       content: 'The Songjam team have quickly shipped an Ethos style slashing method where you flag for low effort content. I LOVE THIS.',
-      avatar: 'MR',
+      avatar: '/logos/bigwil.png',
+      tweetUrl: 'https://x.com/bigwil2k3/status/1941633549096059164',
     },
     {
-      name: 'Emily Watson',
-      role: 'Marketing Director',
-      company: 'StartupXYZ',
-      content: 'Perfect for our gamification strategy. The real-time updates keep users engaged and coming back.',
-      avatar: 'EW',
+      name: 'Crypto Von Doom',
+      role: 'Co-Host',
+      company: 'FYI',
+      content: 'Design is flawless and they even break down the points equation on the left side of the page. Smart and leaves no ambiguity.',
+      avatar: '/logos/vondoom.png',
+      tweetUrl: 'https://x.com/CryptoVonDoom/status/1940927605013668295',
     },
   ];
 
@@ -206,7 +319,7 @@ const Leaderboard: React.FC = () => {
   }, [testimonials.length]);
 
   return (
-    <main className="landing">
+    <main className="landing" style={{ paddingBottom: 0, marginBottom: 0 }}>
       <Background />
       
       {/* Header */}
@@ -225,20 +338,6 @@ const Leaderboard: React.FC = () => {
             <span>Songjam</span>
           </div>
           <Box display="flex" gap={2} alignItems="center">
-            <Button
-              variant="text"
-              color="inherit"
-              onClick={() => {
-                const element = document.getElementById(
-                  'agentic-story-section'
-                );
-                if (element) {
-                  element.scrollIntoView({ behavior: 'smooth' });
-                }
-              }}
-            >
-              About
-            </Button>
             <Button
               onClick={() => {
                 const element = document.getElementById('tokenomics-section');
@@ -270,38 +369,6 @@ const Leaderboard: React.FC = () => {
               }}
             >
               Leaderboard
-            </Button>
-            <Button
-              onClick={() => {
-                const element = document.getElementById('extension-section');
-                if (element) {
-                  element.scrollIntoView({ behavior: 'smooth' });
-                }
-              }}
-              variant="text"
-              size="small"
-              sx={{
-                color: 'white',
-                '&:hover': { textDecoration: 'underline' },
-              }}
-            >
-              Extension
-            </Button>
-            <Button
-              onClick={() => {
-                const element = document.getElementById('pricing-section');
-                if (element) {
-                  element.scrollIntoView({ behavior: 'smooth' });
-                }
-              }}
-              variant="text"
-              size="small"
-              sx={{
-                color: 'white',
-                '&:hover': { textDecoration: 'underline' },
-              }}
-            >
-              Pricing
             </Button>
             <Button
               onClick={() => {
@@ -345,7 +412,7 @@ const Leaderboard: React.FC = () => {
                 animation: `${textPulse} 2s infinite ease-in-out`,
               }}
             >
-              {user ? 'Dashboard' : 'Login'}
+              {user ? 'Dashboard' : 'CRM Login'}
             </Button>
             <Button
               onClick={() => navigate('/spaces-crm')}
@@ -361,25 +428,25 @@ const Leaderboard: React.FC = () => {
                 },
               }}
             >
-              X Spaces CRM
+              Boost & Analyze X Spaces
             </Button>
           </Box>
         </Box>
       </nav>
 
-      <Container maxWidth="lg" sx={{ py: 8, position: 'relative', zIndex: 1 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 8 }, position: 'relative', zIndex: 1, pb: 0 }}>
         {/* Mind-blowing Hero Section with Demo */}
         <Box
           sx={{
             position: 'relative',
-            minHeight: { xs: 420, md: 480 },
+            minHeight: { xs: 320, sm: 380, md: 420 },
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            mb: 10,
-            pt: { xs: 2, md: 4 },
-            pb: { xs: 2, md: 4 },
+            mb: { xs: 6, md: 10 },
+            pt: { xs: 0, md: 0 },
+            pb: { xs: 1, md: 4 },
             overflow: 'visible',
           }}
         >
@@ -390,7 +457,7 @@ const Leaderboard: React.FC = () => {
                 variant="h1"
                 sx={{
                   mb: 2,
-                  fontSize: { xs: '3rem', md: '5.5rem' },
+                  fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.5rem', lg: '5.5rem' },
                   fontWeight: 900,
                   letterSpacing: '-0.04em',
                   lineHeight: 1.05,
@@ -414,7 +481,7 @@ const Leaderboard: React.FC = () => {
                 sx={{
                   mb: 3,
                   color: 'var(--text-secondary)',
-                  fontSize: { xs: '1.2rem', md: '1.6rem' },
+                  fontSize: { xs: '1rem', sm: '1.2rem', md: '1.4rem', lg: '1.6rem' },
                   maxWidth: '700px',
                   mx: 'auto',
                   position: 'relative',
@@ -433,6 +500,12 @@ const Leaderboard: React.FC = () => {
               </Typography>
               {/* Neon-glow CTA Button */}
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center" sx={{ zIndex: 2, mt: 1 }}>
+                <a
+                  href="https://docs.google.com/forms/d/1j3-2ZTkio3KvnK5bv6ac6ZcaJXXUKyguof4uIxXbQHE"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ textDecoration: 'none' }}
+                >
                 <Button
                   variant="contained"
                   size="large"
@@ -456,10 +529,16 @@ const Leaderboard: React.FC = () => {
                       boxShadow: '0 0 64px #ec4899cc, 0 0 128px #60a5facc',
                     },
                   }}
-                  onClick={() => navigate('/spaces-crm')}
                 >
                   Launch Now
                 </Button>
+                </a>
+                <a
+                  href="https://t.me/adamsongjam"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ textDecoration: 'none' }}
+                >
                 <Button
                   variant="outlined"
                   size="large"
@@ -482,14 +561,15 @@ const Leaderboard: React.FC = () => {
                 >
                   Contact Us
                 </Button>
+                </a>
               </Stack>
               {/* Testimonial Carousel */}
-              <Box sx={{ mt: 4, mb: 2, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Box sx={{ mt: { xs: 2, md: 4 }, mb: 2, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <Card
                   sx={{
-                    maxWidth: 420,
-                    minHeight: 240,
-                    p: 4,
+                    maxWidth: { xs: 350, sm: 420 },
+                    minHeight: { xs: 200, sm: 240 },
+                    p: { xs: 2, sm: 4 },
                     background: 'rgba(30,41,59,0.92)',
                     border: '1.5px solid rgba(96,165,250,0.25)',
                     boxShadow: '0 4px 32px #60a5fa33',
@@ -538,8 +618,9 @@ const Leaderboard: React.FC = () => {
                         boxShadow: '0 0 0 8px #60a5fa33, 0 0 48px #8b5cf6aa',
                         position: 'relative',
                       }}
+                      src={testimonials[testimonialIndex].avatar}
                     >
-                      {testimonials[testimonialIndex].avatar}
+                      {!testimonials[testimonialIndex].avatar && testimonials[testimonialIndex].name[0]}
                     </Avatar>
                   </Box>
                   <Typography variant="h6" sx={{ color: 'var(--text-primary)', fontWeight: 700, mt: 1, mb: 0.5 }}>
@@ -549,7 +630,18 @@ const Leaderboard: React.FC = () => {
                     {testimonials[testimonialIndex].role} at {testimonials[testimonialIndex].company}
                   </Typography>
                   <Typography variant="body1" sx={{ color: 'var(--text-primary)', fontStyle: 'italic', mb: 2, fontSize: '1.15rem', lineHeight: 1.5 }}>
+                    {testimonials[testimonialIndex].tweetUrl ? (
+                      <a
+                        href={testimonials[testimonialIndex].tweetUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
+                      >
                     "{testimonials[testimonialIndex].content}"
+                      </a>
+                    ) : (
+                      `"${testimonials[testimonialIndex].content}"`
+                    )}
                   </Typography>
                 </Card>
               </Box>
@@ -595,344 +687,894 @@ const Leaderboard: React.FC = () => {
           </Box>
         </Box>
 
-        {/* Features Section */}
-        <Box mb={8}>
-          <Typography
-            variant="h2"
-            textAlign="center"
-            sx={{
-              mb: 6,
-              color: 'var(--text-primary)',
-              fontWeight: 700,
-              background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
+        {/* Tokenomics Section (full content from App.tsx) */}
+        <Box
+          className="tokenomics"
+          id="tokenomics-section"
+          sx={{
+            mt: { xs: 6, md: 10 },
+            textAlign: 'center',
+            py: { xs: 4, md: 8 },
+            position: 'relative',
+            overflow: 'hidden',
+            maxWidth: '1400px',
+            mx: 'auto',
+          }}
+        >
+          <h2
+            style={{
+              fontSize: '2.5rem',
+              marginBottom: '1rem',
+              background: 'linear-gradient(135deg, #8b5cf6, #ec4899)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
+              fontWeight: 'bold',
             }}
           >
-            Powerful Features
+            Tokenomics
+          </h2>
+          <Typography
+            variant="body1"
+            sx={{
+              fontSize: '1.2rem',
+              color: 'var(--text-secondary)',
+              maxWidth: '900px',
+              margin: '0 auto 3rem',
+              lineHeight: '1.6',
+            }}
+          >
+            Understanding the framework behind the $SANG token, designed for sustainable growth and community engagement.
           </Typography>
-          <Grid container spacing={4}>
-            {features.map((feature, index) => (
-              <Grid item xs={12} md={6} lg={4} key={index}>
-                <Card
+          <Paper
                   sx={{
-                    height: '100%',
-                    background: 'rgba(30, 41, 59, 0.8)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(96, 165, 250, 0.2)',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      transform: 'translateY(-8px)',
-                      border: '1px solid rgba(96, 165, 250, 0.5)',
-                      boxShadow: '0 8px 32px rgba(96, 165, 250, 0.2)',
-                      animation: `${panelBorderGlow} 2s infinite`,
+              p: 3,
+              background: 'rgba(0, 0, 0, 0.2)',
+              borderRadius: 2,
+              border: '1px solid rgba(96, 165, 250, 0.1)',
+              position: 'relative',
+              overflow: 'hidden',
+              animation: `${panelBorderGlow} 4s infinite ease-in-out`,
+              maxWidth: '1300px',
+              margin: '0 auto',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background:
+                  'radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.1) 0%, transparent 70%)',
+                pointerEvents: 'none',
                     },
                   }}
                 >
-                  <CardContent sx={{ textAlign: 'center', p: 3 }}>
-                    <Box sx={{ mb: 2 }}>{feature.icon}</Box>
-                    <Typography variant="h6" sx={{ color: 'var(--text-primary)', mb: 1, fontWeight: 600 }}>
-                      {feature.title}
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
-                      {feature.description}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-
-        {/* Pricing Section */}
-        <Box mb={8}>
-          <Typography
-            variant="h2"
-            textAlign="center"
-            sx={{
-              mb: 6,
-              color: 'var(--text-primary)',
-              fontWeight: 700,
-              background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
-            Choose Your Plan
-          </Typography>
-          <Grid container spacing={4} justifyContent="center">
-            {plans.map((plan, index) => (
-              <Grid item xs={12} md={4} key={index}>
-                <Card
+            <Grid container spacing={4} alignItems="center">
+              <Grid item xs={12} md={6} lg={7}>
+                <Box
                   sx={{
-                    height: '100%',
-                    background: plan.popular 
-                      ? 'linear-gradient(135deg, rgba(96, 165, 250, 0.1), rgba(139, 92, 246, 0.1))'
-                      : 'rgba(30, 41, 59, 0.8)',
-                    backdropFilter: 'blur(10px)',
-                    border: plan.popular 
-                      ? '2px solid rgba(96, 165, 250, 0.5)'
-                      : '1px solid rgba(96, 165, 250, 0.2)',
+                    width: '100%',
+                    height: 550,
                     position: 'relative',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      transform: 'translateY(-8px)',
-                      boxShadow: '0 8px 32px rgba(96, 165, 250, 0.2)',
-                    },
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                   }}
                 >
-                  {plan.popular && (
-                    <Chip
-                      label="Most Popular"
-                      color="primary"
-                      sx={{
-                        position: 'absolute',
-                        top: -12,
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        zIndex: 1,
-                        background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
-                      }}
-                    />
-                  )}
-                  <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                    <Typography variant="h4" sx={{ color: 'var(--text-primary)', mb: 1, fontWeight: 700 }}>
-                      {plan.name}
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <defs>
+                        {tokenomicsData.map((entry, index) => (
+                          <linearGradient
+                            id={`gradient-${index}`}
+                            x1="0"
+                            y1="0"
+                            x2="1"
+                            y2="1"
+                            key={index}
+                          >
+                            <stop
+                              offset="0%"
+                              stopColor={entry.color}
+                              stopOpacity={0.8}
+                            />
+                            <stop
+                              offset="100%"
+                              stopColor={entry.color}
+                              stopOpacity={0.5}
+                            />
+                          </linearGradient>
+                        ))}
+                      </defs>
+                      <Pie
+                        data={tokenomicsData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={150}
+                        paddingAngle={5}
+                        dataKey="value"
+                        isAnimationActive={false}
+                        labelLine={{ stroke: 'rgba(255, 255, 255, 0.4)' }}
+                        label={renderCustomizedLabel}
+                      >
+                        {tokenomicsData.map((entry, index) => {
+                          const angle = index * (360 / tokenomicsData.length);
+                          return (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={`url(#gradient-${index})`}
+                              stroke="rgba(255, 255, 255, 0.1)"
+                              strokeWidth={1}
+                              style={{
+                                transition: 'all 0.3s ease-out',
+                                cursor: 'pointer',
+                                transformOrigin: 'center',
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = `rotate(${angle}deg) scale(1.05) rotate(-${angle}deg)`;
+                                e.currentTarget.style.filter = 'brightness(1.2)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'rotate(0deg) scale(1)';
+                                e.currentTarget.style.filter = 'brightness(1)';
+                              }}
+                            />
+                          );
+                        })}
+                      </Pie>
+                      <RechartsText
+                        x="50%"
+                        y="50%"
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        style={{
+                          fill: 'white',
+                          fontSize: '24px',
+                          fontWeight: 'bold',
+                          textShadow: '0 0 10px rgba(255,255,255,0.8)',
+                        }}
+                      >
+                        Tokenomics
+                      </RechartsText>
+                      <Tooltip
+                        contentStyle={{
+                          background: 'rgba(0, 0, 0, 0.7)',
+                          border: '1px solid rgba(96, 165, 250, 0.3)',
+                          borderRadius: '8px',
+                          color: 'white',
+                          boxShadow: '0 0 15px rgba(96, 165, 250, 0.3)',
+                        }}
+                        itemStyle={{ color: 'white' }}
+                        formatter={(value: any, name: any) => [name]}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <Legend
+                    wrapperStyle={{
+                      paddingTop: '20px',
+                      color: 'var(--text-secondary)',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      flexWrap: 'wrap',
+                      gap: '10px',
+                    }}
+                    iconSize={14}
+                    iconType="circle"
+                  />
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      width: 320,
+                      height: 320,
+                      borderRadius: '50%',
+                      background:
+                        'radial-gradient(circle at center, rgba(139, 92, 246, 0.1) 0%, transparent 70%)',
+                      pointerEvents: 'none',
+                      animation: `${panelBorderGlow} 4s infinite ease-in-out`,
+                      zIndex: -1,
+                    }}
+                  />
+                </Box>
+              </Grid>
+              <Grid item xs={12} md={6} lg={5}>
+                <Stack spacing={3} sx={{ textAlign: 'left' }}>
+                  {tokenomicsData.map((data, index) => (
+                    <Box key={index}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'baseline',
+                          mb: 0.5,
+                        }}
+                      >
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            color: data.color,
+                            fontWeight: 'bold',
+                            textShadow: '0 0 8px rgba(0,0,0,0.4)',
+                          }}
+                        >
+                          {data.name}
                     </Typography>
-                    <Box sx={{ mb: 3 }}>
-                      <Typography variant="h3" sx={{ color: 'var(--text-primary)', fontWeight: 800 }}>
-                        {plan.price}
-                      </Typography>
-                      <Typography variant="body1" sx={{ color: 'var(--text-secondary)' }}>
-                        {plan.period}
+                        <Typography
+                          variant="body1"
+                          sx={{
+                            color: 'rgba(255, 255, 255, 0.6)',
+                            fontWeight: 'bold',
+                            fontSize: '1rem',
+                            marginRight: '66px',
+                          }}
+                        >
+                          {data.value}%
+                    </Typography>
+                      </Box>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ lineHeight: 1.5 }}
+                      >
+                        {data.description}
                       </Typography>
                     </Box>
-                    <List sx={{ textAlign: 'left', mb: 3 }}>
-                      {plan.features.map((feature, featureIndex) => (
-                        <ListItem key={featureIndex} sx={{ px: 0 }}>
-                          <ListItemIcon sx={{ minWidth: 36 }}>
-                            <CheckCircle sx={{ color: 'var(--accent)', fontSize: 20 }} />
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={feature}
+                  ))}
+                </Stack>
+          </Grid>
+            </Grid>
+          </Paper>
+        </Box>
+
+        {/* Leaderboard Section (full content from App.tsx) */}
+        <Box
+          className="leaderboard"
+          id="leaderboard-section"
+          sx={{
+            mt: { xs: 6, md: 10 },
+            p: { xs: 2, sm: 3, md: 4 },
+            background: 'rgba(0, 0, 0, 0.7)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            boxShadow:
+              '0 3px 15px rgba(139, 92, 246, 0.1), 0 0 10px rgba(236, 72, 153, 0.08)',
+            width: '100vw',
+            marginLeft: 'calc(-50vw + 50%)',
+            marginRight: 'calc(-50vw + 50%)',
+          }}
+        >
+          <Grid container spacing={4}>
+            {/* Left Column - Explanation */}
+            <Grid item xs={12} md={4} sx={{ minHeight: '600px' }}>
+              <Box sx={{ mb: 4 }}>
+          <Typography
+                  variant="h4"
+            sx={{
+                    background:
+                      'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+                    textShadow:
+                      '0 0 15px rgba(236, 72, 153, 0.2), 0 0 8px rgba(139, 92, 246, 0.15)',
+                    mb: 2,
+                    fontWeight: 'bold',
+            }}
+          >
+                  How Sing Points Work
+          </Typography>
+                <Typography
+                  variant="body1"
+                  color="#F0F8FF"
+                  sx={{
+                    mb: 3,
+                    opacity: 0.9,
+                    lineHeight: 1.6,
+                    textShadow: '0 0 3px rgba(0,0,0,0.1)',
+                  }}
+                >
+                  Sing points are calculated based on your engagement metrics and when you participate. The earlier you engage, the more Sing points you get! Each interaction tagging{' '}
+                  <a
+                    href="https://x.com/songjamspace"
+                    target="_blank"
+                    rel="noopener"
+                    style={{ color: '#60a5fa', fontWeight: 'bold', textDecoration: 'none' }}
+                  >
+                    @SongjamSpace
+                  </a>{' '}
+                  or mentioning{' '}
+                  <a
+                    href="https://x.com/search?q=%24SANG&src=cashtag_click"
+                    target="_blank"
+                    rel="noopener"
+                    style={{ color: '#60a5fa', fontWeight: 'bold', textDecoration: 'none' }}
+                  >
+                    $SANG
+                  </a>{' '}
+                  contributes to your score, with a special multiplier for early participation.
+                      </Typography>
+                    </Box>
+              <Box sx={{ mb: 4 }}>
+                <Typography
+                  variant="h5"
                             sx={{
-                              '& .MuiListItemText-primary': {
-                                color: 'var(--text-primary)',
-                                fontSize: '0.9rem',
-                              },
-                            }}
-                          />
-                        </ListItem>
-                      ))}
-                    </List>
-                  </CardContent>
-                  <CardActions sx={{ p: 3, pt: 0 }}>
-                    <Button
-                      fullWidth
-                      variant={plan.popular ? 'contained' : 'outlined'}
-                      size="large"
-                      className={plan.popular ? 'primary' : ''}
+                    background: 'linear-gradient(45deg, #60A5FA, #3B82F6)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    textShadow: '0 0 8px rgba(96, 165, 250, 0.1)',
+                    mb: 2,
+                    fontWeight: 'bold',
+                  }}
+                >
+                  Base Sing Points Formula
+                </Typography>
+                <Paper
                       sx={{
-                        background: plan.popular 
-                          ? 'linear-gradient(135deg, #60a5fa, #8b5cf6)'
-                          : 'transparent',
-                        color: 'white',
-                        borderColor: 'rgba(96, 165, 250, 0.5)',
+                    p: 2,
+                    background: 'rgba(96, 165, 250, 0.08)',
+                    border: '1px solid rgba(96, 165, 250, 0.25)',
+                    borderRadius: '12px',
+                    boxShadow: '0 0 15px rgba(96, 165, 250, 0.2)',
+                    transition: 'all 0.3s ease',
                         '&:hover': {
-                          background: plan.popular 
-                            ? 'linear-gradient(135deg, #8b5cf6, #60a5fa)'
-                            : 'rgba(96, 165, 250, 0.1)',
-                          borderColor: 'var(--accent)',
+                      boxShadow: '0 0 25px rgba(96, 165, 250, 0.4)',
+                    },
+                    '& .katex-display': {
+                      overflowX: 'auto',
+                      overflowY: 'hidden',
+                      WebkitOverflowScrolling: 'touch',
+                      '&::-webkit-scrollbar': {
+                        height: '4px',
+                      },
+                      '&::-webkit-scrollbar-track': {
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        borderRadius: '2px',
+                      },
+                      '&::-webkit-scrollbar-thumb': {
+                        background: 'rgba(96, 165, 250, 0.5)',
+                        borderRadius: '2px',
+                      },
+                      '& .katex': {
+                        fontSize: 'clamp(0.8rem, 2vw, 1.2rem)',
+                      },
                         },
                       }}
                     >
-                      Get Started
-                    </Button>
-                  </CardActions>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
+                  <BlockMath>
+                    {`S_{\\text{base}} = \\begin{gathered} \\underbrace{((L \\cdot 0.2) + (R \\cdot 0.4) + (B \\cdot 0.4) + (RT \\cdot 0.6) + (QT \\cdot 1.0))}_{\\text{Engagement Points}} \\\\[1em] + \\underbrace{((SY \\cdot 5 + DJ \\cdot 10) \\cdot N_{\\text{listeners}} \\div S)}_{\\text{Space Points}} \\end{gathered}`}
+                  </BlockMath>
+                  <Typography
+                    variant="body2"
+                    color="#F0F8FF"
+                    sx={{
+                      mt: 2,
+                      fontSize: '0.9em',
+                      opacity: 0.8,
+                      textShadow: '0 0 2px rgba(0,0,0,0.3)',
+                    }}
+                  >
+                    Your base score is a sum of <strong>Engagement Points</strong> from interactions (Likes, Replies, Bookmarks, Retweets, Quote Tweets) and <strong>Space Points</strong>, which are awarded for speaking (SY) or DJing (DJ) and are multiplied by the number of listeners (N <sub>listeners</sub>), divided by the number of speakers (S).
+                  </Typography>
+                </Paper>
         </Box>
-
-        {/* Testimonials Section */}
-        <Box mb={8}>
+              <Box sx={{ mb: 4 }}>
           <Typography
-            variant="h2"
-            textAlign="center"
+                  variant="h5"
             sx={{
-              mb: 6,
-              color: 'var(--text-primary)',
-              fontWeight: 700,
-              background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
+                    background: 'linear-gradient(45deg, #EC4899, #F472B6)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
+                    textShadow: '0 0 8px rgba(236, 72, 153, 0.1)',
+                    mb: 2,
+                    fontWeight: 'bold',
             }}
           >
-            What Our Customers Say
+                  Engagement Boosters
           </Typography>
-          <Grid container spacing={4}>
-            {testimonials.map((testimonial, index) => (
-              <Grid item xs={12} md={4} key={index}>
-                <Card
+                <Paper
                   sx={{
-                    height: '100%',
-                    background: 'rgba(30, 41, 59, 0.8)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(96, 165, 250, 0.2)',
+                    p: 2,
+                    background: 'rgba(236, 72, 153, 0.08)',
+                    border: '1px solid rgba(236, 72, 153, 0.25)',
+                    borderRadius: '12px',
+                    boxShadow: '0 0 15px rgba(236, 72, 153, 0.2)',
                     transition: 'all 0.3s ease',
                     '&:hover': {
-                      transform: 'translateY(-4px)',
-                      border: '1px solid rgba(96, 165, 250, 0.4)',
+                      boxShadow: '0 0 25px rgba(236, 72, 153, 0.4)',
+                    },
+                    '& .katex-display': {
+                      overflowX: 'auto',
+                      overflowY: 'hidden',
+                      WebkitOverflowScrolling: 'touch',
+                      '&::-webkit-scrollbar': {
+                        height: '4px',
+                      },
+                      '&::-webkit-scrollbar-track': {
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        borderRadius: '2px',
+                      },
+                      '&::-webkit-scrollbar-thumb': {
+                        background: 'rgba(236, 72, 153, 0.5)',
+                        borderRadius: '2px',
+                      },
+                      '& .katex': {
+                        fontSize: 'clamp(0.8rem, 2vw, 1.2rem)',
+                      },
                     },
                   }}
                 >
-                  <CardContent sx={{ p: 3 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <Box sx={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', mr: 2 }}>
-                        {/* Glowing animated ring */}
+                  <BlockMath>
+                    {`\\text{Booster} = \\begin{cases} 2.0 & \\text{if } \\text{engagement} \\geq \\text{high threshold} \\\\ 1.5 & \\text{if } \\text{engagement} \\geq \\text{low threshold} \\\\ 1.0 & \\text{otherwise} \\end{cases}`}
+                  </BlockMath>
+                  <Typography
+                    variant="body2"
+                    color="#F0F8FF"
+                    sx={{
+                      mt: 2,
+                      fontSize: '0.9em',
+                      opacity: 0.8,
+                      textShadow: '0 0 2px rgba(0,0,0,0.3)',
+                    }}
+                  >
+                    Your engagement score gets boosted based on the performance of your tweets. Here are the thresholds:
+                  </Typography>
                         <Box
                           sx={{
-                            position: 'absolute',
-                            width: 120,
-                            height: 120,
-                            borderRadius: '50%',
-                            zIndex: 1,
-                            background: 'conic-gradient(from 0deg, #60a5fa, #8b5cf6, #ec4899, #60a5fa)',
-                            filter: 'blur(8px)',
-                            animation: 'testimonialGlow 3s linear infinite',
-                          }}
-                        />
-                        {/* White border ring */}
-                        <Box
-                          sx={{
-                            position: 'absolute',
-                            width: 104,
-                            height: 104,
-                            borderRadius: '50%',
-                            border: '4px solid #fff',
-                            zIndex: 2,
-                          }}
-                        />
-                        <Avatar
-                          sx={{
-                            bgcolor: 'var(--accent)',
-                            width: 96,
-                            height: 96,
-                            fontSize: 44,
-                            zIndex: 3,
-                            boxShadow: '0 0 0 8px #60a5fa33, 0 0 48px #8b5cf6aa',
-                            position: 'relative',
-                          }}
-                        >
-                          {testimonial.avatar}
-                        </Avatar>
-                      </Box>
-                      <Box>
-                        <Typography variant="h6" sx={{ color: 'var(--text-primary)', fontWeight: 600 }}>
-                          {testimonial.name}
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
-                          {testimonial.role} at {testimonial.company}
-                        </Typography>
-                      </Box>
-                    </Box>
-                    <Typography variant="body1" sx={{ color: 'var(--text-primary)', fontStyle: 'italic' }}>
-                      "{testimonial.content}"
+                      mt: 2,
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      justifyContent: 'center',
+                      gap: 1,
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      color="#F0F8FF"
+                      sx={{ opacity: 0.8, whiteSpace: 'nowrap' }}
+                    >
+                      • Likes: 2.0x (100+), 1.5x (50+)
                     </Typography>
-                  </CardContent>
-                </Card>
+                    <Typography
+                      variant="body2"
+                      color="#F0F8FF"
+                      sx={{ opacity: 0.8 }}
+                    >
+                      • Replies: 2.0x (20+), 1.5x (10+)
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="#F0F8FF"
+                      sx={{ opacity: 0.8 }}
+                    >
+                      • Retweets: 2.0x (30+), 1.5x (15+)
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="#F0F8FF"
+                      sx={{ opacity: 0.8 }}
+                    >
+                      • Quote Tweets: 2.0x (15+), 1.5x (8+)
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="#F0F8FF"
+                      sx={{ opacity: 0.8 }}
+                    >
+                      • Bookmarks: 2.0x (25+), 1.5x (12+)
+                    </Typography>
+                  </Box>
+                </Paper>
+              </Box>
+              <Box sx={{ mb: 4 }}>
+                        <Box
+                          sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    mb: 2,
+                    gap: 2,
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <Typography
+                    variant="h5"
+                          sx={{
+                      background: 'linear-gradient(45deg, #8B5CF6, #EC4899)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      textShadow: '0 0 8px rgba(236, 72, 153, 0.1)',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    Early Multiplier
+                        </Typography>
+                  <Chip
+                    label="Expired"
+                    color="error"
+                    variant="outlined"
+                    size="small"
+                  />
+                      </Box>
+                <Paper
+                  sx={{
+                    p: 2,
+                    background: 'rgba(236, 72, 153, 0.08)',
+                    border: '1px solid rgba(236, 72, 153, 0.25)',
+                    borderRadius: '12px',
+                    boxShadow: '0 0 15px rgba(236, 72, 153, 0.2)',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      boxShadow: '0 0 25px rgba(236, 72, 153, 0.4)',
+                    },
+                    '& .katex-display': {
+                      overflowX: 'auto',
+                      overflowY: 'hidden',
+                      WebkitOverflowScrolling: 'touch',
+                      '&::-webkit-scrollbar': {
+                        height: '4px',
+                      },
+                      '&::-webkit-scrollbar-track': {
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        borderRadius: '2px',
+                      },
+                      '&::-webkit-scrollbar-thumb': {
+                        background: 'rgba(236, 72, 153, 0.5)',
+                        borderRadius: '2px',
+                      },
+                      '& .katex': {
+                        fontSize: 'clamp(0.8rem, 2vw, 1.2rem)',
+                      },
+                    },
+                  }}
+                >
+                  <BlockMath>
+                    {`\\text{earlyMultiplier} = 1 + 99 \\times \\frac{\\max(0, T_{genesis} - T_{post})}{604800}`}
+                  </BlockMath>
+                  <Typography
+                    variant="body2"
+                    color="#F0F8FF"
+                    sx={{
+                      mt: 2,
+                      fontSize: '0.9em',
+                      opacity: 0.8,
+                      textShadow: '0 0 2px rgba(0,0,0,0.3)',
+                    }}
+                  >
+                    Applies to posts up to 1 week before genesis. Maximum multiplier is 100x.
+                    </Typography>
+                </Paper>
+              </Box>
               </Grid>
-            ))}
+            {/* Right Column - Leaderboard */}
+            <Grid item xs={12} md={8}>
+              <SignPointsLeaderboard />
           </Grid>
-        </Box>
-
-        {/* CTA Section */}
-        <Box
+          </Grid>
+          <Grid container spacing={4} sx={{ mt: 4, alignItems: 'center' }}>
+            {/* Left side - Claim Space Points */}
+            <Grid item xs={12} md={6}>
+              <Paper
           sx={{
-            textAlign: 'center',
-            p: 6,
-            background: 'rgba(30, 41, 59, 0.8)',
-            backdropFilter: 'blur(10px)',
-            borderRadius: 4,
-            border: '1px solid rgba(96, 165, 250, 0.3)',
-            position: 'relative',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              borderRadius: 4,
-              background: 'linear-gradient(135deg, rgba(96, 165, 250, 0.1), rgba(139, 92, 246, 0.1))',
-              zIndex: -1,
-            },
+                  p: 3,
+                  background: 'rgba(0,0,0,0.5)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: '10px',
+                  height: '100%',
           }}
         >
           <Typography
-            variant="h3"
+                  variant="h5"
             sx={{
-              mb: 3,
-              color: 'var(--text-primary)',
-              fontWeight: 700,
               background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
+                    fontWeight: 'bold',
+                    mb: 2,
             }}
           >
-            Ready to Launch Your Leaderboard?
+                  Claim Space Points
           </Typography>
           <Typography
-            variant="h6"
-            sx={{
-              mb: 4,
-              color: 'var(--text-secondary)',
-              maxWidth: '600px',
-              mx: 'auto',
-            }}
-          >
-            Join thousands of communities already using our leaderboard platform to drive engagement and growth.
+                  variant="body2"
+                  color="rgba(255,255,255,0.7)"
+                  sx={{ mb: 3 }}
+                >
+                  Submit the URL of a recorded Twitter Space where you were a speaker or the DJ to claim your points.
           </Typography>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  label="Twitter Space URL"
+                  value={spaceUrlForPoints}
+                  onChange={(e) => setSpaceUrlForPoints(e.target.value)}
+                  sx={{ mb: 2 }}
+                />
             <Button
+                  fullWidth
               variant="contained"
-              size="large"
-              className="primary"
+                  color="primary"
+                  // Replace with your claim handler if needed
+                >
+                  Claim Points
+                </Button>
+              </Paper>
+            </Grid>
+            {/* Right side - Countdown */}
+            <Grid item xs={12} md={6}>
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography
+                  variant="h5"
               sx={{
-                background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
-                color: 'white',
-                px: 6,
-                py: 2,
-                fontSize: '1.2rem',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #8b5cf6, #60a5fa)',
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 25px rgba(96, 165, 250, 0.4)',
-                },
-              }}
-            >
-              Start Your Free Trial
-            </Button>
-            <Button
-              variant="outlined"
-              size="large"
+                    background:
+                      'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    textShadow:
+                      '0 0 15px rgba(236, 72, 153, 0.2), 0 0 8px rgba(139, 92, 246, 0.15)',
+                    mb: 3,
+                    fontWeight: 'bold',
+                  }}
+                >
+                  Genesis Release
+                </Typography>
+                <Grid container spacing={2} justifyContent="center">
+                  {Object.entries(timeLeft).map(([unit, value]) => (
+                    <Grid item key={unit}>
+                      <Paper
               sx={{
-                color: 'var(--text-secondary)',
-                borderColor: 'var(--text-secondary)',
-                px: 6,
-                py: 2,
-                fontSize: '1.2rem',
-                '&:hover': {
-                  borderColor: 'white',
-                  color: 'white',
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                },
-              }}
+                          p: 2,
+                          background: 'rgba(0,0,0,0.5)',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          borderRadius: '10px',
+                          width: '100px',
+                          textAlign: 'center',
+                        }}
+                      >
+                        <Typography
+                          variant="h4"
+                          sx={{
+                            fontWeight: 'bold',
+                            color: '#EC4899',
+                            textShadow: '0 0 8px #EC4899',
+                          }}
+                        >
+                          {String(value).padStart(2, '0')}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: 'rgba(255,255,255,0.7)',
+                            textTransform: 'uppercase',
+                          }}
+                        >
+                          {unit}
+                        </Typography>
+                      </Paper>
+                    </Grid>
+                  ))}
+                </Grid>
+        </Box>
+            </Grid>
+          </Grid>
+          <Box sx={{ mt: 6, px: 4, textAlign: 'center' }}>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontStyle: 'italic', opacity: 0.8 }}
             >
-              Schedule Demo
+              Disclaimer: Songjam is constantly monitoring the timeline and spaces for spammy behaviour and may adjust the base points formula or the quality algorithm without notice if it appears the system is being nefariously farmed.
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* Honors Section (copy from App.tsx) */}
+        <Box
+          className="honors"
+          id="honors-section"
+          sx={{ 
+            mt: { xs: 4, md: 6 },
+            textAlign: 'center'
+          }}
+        >
+          <Box sx={{
+            background: 'rgba(0, 0, 0, 0.3)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '20px',
+            padding: '40px 20px',
+            maxWidth: '800px',
+            margin: '0 auto',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)'
+          }}>
+            <h2 style={{ marginBottom: '10px' }}>Honors</h2>
+            <p style={{ marginBottom: '30px', fontSize: '0.9rem', color: '#ffffff !important', fontWeight: 'normal' }}>Recognized by leading organizations in the Web3 space.</p>
+            <div className="honors-grid" style={{ 
+              gap: '15px', 
+              maxWidth: '700px', 
+              margin: '0 auto',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+            <div className="honor-item" style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              gap: '8px',
+              padding: '15px 10px'
+            }}>
+              <img src="/logos/chainlink.png" alt="Chainlink" className="honor-logo" style={{ width: '60px', height: '60px', objectFit: 'contain' }} />
+              <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>Chainlink</span>
+            </div>
+            <div className="honor-item" style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              gap: '8px',
+              padding: '15px 10px'
+            }}>
+              <img src="/logos/coinbase.png" alt="Coinbase" className="honor-logo" style={{ width: '60px', height: '60px', objectFit: 'contain' }} />
+              <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>Coinbase</span>
+            </div>
+            <div className="honor-item" style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              gap: '8px',
+              padding: '15px 10px'
+            }}>
+              <img src="/logos/coindesk.png" alt="Coindesk" className="honor-logo" style={{ width: '60px', height: '60px', objectFit: 'contain' }} />
+              <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>Coindesk</span>
+            </div>
+            <div className="honor-item" style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              gap: '8px',
+              padding: '15px 10px'
+            }}>
+              <img src="/logos/filecoin.png" alt="Filecoin" className="honor-logo" style={{ width: '60px', height: '60px', objectFit: 'contain' }} />
+              <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>Filecoin</span>
+            </div>
+            <div className="honor-item" style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              gap: '8px',
+              padding: '15px 10px'
+            }}>
+              <img src="/logos/moonbeam.png" alt="Moonbeam" className="honor-logo" style={{ width: '60px', height: '60px', objectFit: 'contain' }} />
+              <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>Moonbeam</span>
+            </div>
+            <div className="honor-item" style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              gap: '8px',
+              padding: '15px 10px'
+            }}>
+              <img src="/logos/nethermind.png" alt="Nethermind" className="honor-logo" style={{ width: '60px', height: '60px', objectFit: 'contain' }} />
+              <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>Nethermind</span>
+            </div>
+            <div className="honor-item" style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              gap: '8px',
+              padding: '15px 10px'
+            }}>
+              <img src="/logos/oniforce.png" alt="ONI Force" className="honor-logo" style={{ width: '60px', height: '60px', objectFit: 'contain' }} />
+              <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>ONI Force</span>
+            </div>
+            <div className="honor-item" style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              gap: '8px',
+              padding: '15px 10px'
+            }}>
+              <img src="/logos/polkadot.png" alt="Polkadot" className="honor-logo" style={{ width: '60px', height: '60px', objectFit: 'contain' }} />
+              <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>Polkadot</span>
+            </div>
+          </div>
+          </Box>
+        </Box>
+
+        {/* Contact Section (copy from App.tsx) */}
+        <section className="contact" id="contact-section">
+          <h2>Contact</h2>
+          <p>Get in touch with us for more information or support.</p>
+          <form className="contact-form">
+            <div className="form-group">
+              <TextField fullWidth placeholder="Name" variant="outlined" name="name" required inputProps={{ minLength: 2 }} />
+            </div>
+            <div className="form-group">
+              <TextField fullWidth placeholder="Telegram" variant="outlined" name="telegram" required inputProps={{ pattern: '@.*' }} helperText="Start with @" />
+            </div>
+            <div className="form-group">
+              <TextField fullWidth type="email" placeholder="Email" variant="outlined" name="email" required />
+            </div>
+            <div className="form-group">
+              <TextareaAutosize placeholder="Message" name="message" required minLength={10} style={{ width: '100%', minHeight: '100px' }} />
+            </div>
+            <Button type="submit" variant="contained" className="primary">
+              Submit
             </Button>
-          </Stack>
+          </form>
+        </section>
+                <Box
+          className="social-media"
+          sx={{
+            width: '100vw',
+            marginLeft: 'calc(-50vw + 50%)',
+            marginRight: 'calc(-50vw + 50%)',
+            padding: '40px 20px',
+            background: 'rgba(0, 0, 0, 0.3)',
+            backdropFilter: 'blur(10px)',
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+            marginBottom: 0,
+          }}
+        >
+          <h2>Connect With Us</h2>
+          <Box display="flex" flexWrap="wrap" gap={6} justifyContent="center">
+            <a
+              href="https://www.producthunt.com/posts/songjam-otter-ai-for-x-spaces"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="social-link"
+            >
+              <img src="/logos/product-hunt.png" alt="Product Hunt" />
+              <span>Product Hunt</span>
+            </a>
+            <a
+              href="https://github.com/songjamspace"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="social-link"
+            >
+              <img src="/logos/github.png" alt="GitHub" />
+              <span>GitHub</span>
+            </a>
+            <a
+              href="https://x.com/intent/follow?screen_name=SongjamSpace"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="social-link"
+            >
+              <img src="/logos/twitter.png" alt="Twitter" />
+              <span>Twitter</span>
+            </a>
+            <a
+              href="https://www.linkedin.com/company/songjam/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="social-link"
+            >
+              <img src="/logos/linkedin.png" alt="LinkedIn" />
+              <span>LinkedIn</span>
+            </a>
+          </Box>
+        </Box>
+        <Box
+          className="footer"
+          sx={{
+            width: '100vw',
+            marginLeft: 'calc(-50vw + 50%)',
+            marginRight: 'calc(-50vw + 50%)',
+            marginTop: 0,
+            padding: '20px',
+            background: 'rgba(0, 0, 0, 0.5)',
+            backdropFilter: 'blur(10px)',
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+            textAlign: 'center',
+            position: 'relative',
+            zIndex: 1,
+          }}
+        >
+          <p>© 2025 Songjam. All rights reserved.</p>
         </Box>
       </Container>
     </main>

@@ -421,7 +421,7 @@ export default function App() {
                 animation: `${textPulse} 2s infinite ease-in-out`,
               }}
             >
-              {user ? 'Dashboard' : 'Login'}
+              {user ? 'Dashboard' : 'CRM Login'}
             </Button>
             <Button
               href="/leaderboard"
@@ -439,21 +439,7 @@ export default function App() {
             >
               Launch a Leaderboard
             </Button>
-            <Button
-              onClick={handleLanguageChange}
-              variant="outlined"
-              size="small"
-              sx={{
-                color: 'var(--text-secondary)',
-                borderColor: 'var(--text-secondary)',
-                '&:hover': {
-                  borderColor: 'white',
-                  color: 'white',
-                },
-              }}
-            >
-              {t('switchLanguage')}
-            </Button>
+
           </Box>
         </Box>
       </nav>

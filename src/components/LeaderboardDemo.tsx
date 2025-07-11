@@ -56,9 +56,9 @@ const LeaderboardDemo: React.FC = () => {
   const demoData = [
     {
       id: 1,
-      name: 'Alex Chen',
-      username: '@alexchen',
-      avatar: 'https://i.pravatar.cc/150?img=1',
+      name: 'Non Funktard',
+      username: '@nonfunktard',
+      avatar: '/logos/milidy.png',
       score: 2847,
       rank: 1,
       badge: 'gold',
@@ -67,9 +67,9 @@ const LeaderboardDemo: React.FC = () => {
     },
     {
       id: 2,
-      name: 'Sarah Kim',
-      username: '@sarahkim',
-      avatar: 'https://i.pravatar.cc/150?img=2',
+      name: '3LURED L1N3S',
+      username: '@3lured',
+      avatar: '/logos/blur.png',
       score: 2653,
       rank: 2,
       badge: 'silver',
@@ -78,9 +78,9 @@ const LeaderboardDemo: React.FC = () => {
     },
     {
       id: 3,
-      name: 'Mike Rodriguez',
-      username: '@mikerod',
-      avatar: 'https://i.pravatar.cc/150?img=3',
+      name: 'Up Only SZN',
+      username: '@Up_SZN',
+      avatar: '/logos/upface.png',
       score: 2418,
       rank: 3,
       badge: 'bronze',
@@ -245,7 +245,7 @@ const LeaderboardDemo: React.FC = () => {
           Live Leaderboard
         </Typography>
         <Chip
-          label="Real-time Updates"
+          label="Flexible Updates"
           color="primary"
           icon={<Whatshot />}
           sx={{
@@ -451,8 +451,8 @@ const LeaderboardDemo: React.FC = () => {
       {/* Footer Info */}
       <Box sx={{ mt: 3, textAlign: 'center' }}>
         <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
-          This is a live demo showing real-time leaderboard functionality. 
-          Scores update automatically and participants can see their rankings in real-time.
+          This is a live demo showing leaderboard functionality. 
+          Scores update automatically so participants can see their latest rankings.
         </Typography>
       </Box>
     </Box>

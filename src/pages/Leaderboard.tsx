@@ -269,7 +269,7 @@ const Leaderboard: React.FC = () => {
       name: 'Starlordy',
       role: 'CEO',
       company: 'ONI Force',
-      content: 'Songam, was the main partner on our $EVA launch, they did not only provide the leaderboard, but were extremely available and on it all day, every day',
+      content: 'Songjam was the main partner on our $EVA launch, they did not only provide the leaderboard, but were extremely available and on it all day, every day',
       avatar: '/logos/starlordy.png',
       tweetUrl: 'https://x.com/i/spaces/1kvJpyepDPbxE',
     },

@@ -154,12 +154,19 @@ const Leaderboard: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuthContext();
   const { t } = useTranslation();
-  const [selectedPlan, setSelectedPlan] = useState<'starter' | 'pro' | 'enterprise'>('pro');
+  // const [selectedPlan, setSelectedPlan] = useState<
+  //   'starter' | 'pro' | 'enterprise'
+  // >('pro');
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [testimonialFade, setTestimonialFade] = useState(true);
   const [spaceUrlForPoints, setSpaceUrlForPoints] = useState('');
-  const [isClaiming, setIsClaiming] = useState(false);
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  // const [isClaiming, setIsClaiming] = useState(false);
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
   useEffect(() => {
     const calculateTimeLeft = () => {
       const launchDate = new Date('2025-09-17T12:00:00Z');
@@ -181,95 +188,97 @@ const Leaderboard: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const handleLanguageChange = async () => {
-    // Language change logic if needed
-  };
+  // const handleLanguageChange = async () => {
+  //   // Language change logic if needed
+  // };
 
-  const features = [
-    {
-      icon: <TrendingUp color="primary" />,
-      title: 'Real-time Analytics',
-      description: 'Track engagement, growth, and performance metrics in real-time',
-    },
-    {
-      icon: <EmojiEvents color="primary" />,
-      title: 'Competition Management',
-      description: 'Create and manage leaderboards with custom scoring systems',
-    },
-    {
-      icon: <People color="primary" />,
-      title: 'Community Engagement',
-      description: 'Foster community participation with gamified experiences',
-    },
-    {
-      icon: <Analytics color="primary" />,
-      title: 'Advanced Insights',
-      description: 'Deep analytics and reporting for data-driven decisions',
-    },
-    {
-      icon: <AutoAwesome color="primary" />,
-      title: 'Custom Branding',
-      description: 'White-label solutions with your brand identity',
-    },
-    {
-      icon: <Speed color="primary" />,
-      title: 'Lightning Fast',
-      description: 'Optimized performance for seamless user experience',
-    },
-  ];
+  // const features = [
+  //   {
+  //     icon: <TrendingUp color="primary" />,
+  //     title: 'Real-time Analytics',
+  //     description:
+  //       'Track engagement, growth, and performance metrics in real-time',
+  //   },
+  //   {
+  //     icon: <EmojiEvents color="primary" />,
+  //     title: 'Competition Management',
+  //     description: 'Create and manage leaderboards with custom scoring systems',
+  //   },
+  //   {
+  //     icon: <People color="primary" />,
+  //     title: 'Community Engagement',
+  //     description: 'Foster community participation with gamified experiences',
+  //   },
+  //   {
+  //     icon: <Analytics color="primary" />,
+  //     title: 'Advanced Insights',
+  //     description: 'Deep analytics and reporting for data-driven decisions',
+  //   },
+  //   {
+  //     icon: <AutoAwesome color="primary" />,
+  //     title: 'Custom Branding',
+  //     description: 'White-label solutions with your brand identity',
+  //   },
+  //   {
+  //     icon: <Speed color="primary" />,
+  //     title: 'Lightning Fast',
+  //     description: 'Optimized performance for seamless user experience',
+  //   },
+  // ];
 
-  const plans = [
-    {
-      name: 'Pre-TGE',
-      price: '$SANG 100K',
-      period: 'Deposit',
-      features: [
-        'Up to 1,000 participants',
-        'Basic analytics dashboard',
-        'Standard leaderboard templates',
-        'Email support',
-        'API access',
-      ],
-      popular: false,
-    },
-    {
-      name: 'Post-TGE',
-      price: '$SANG 1M',
-      period: 'Deposit',
-      features: [
-        'Up to 10,000 participants',
-        'Advanced analytics & insights',
-        'Custom leaderboard designs',
-        'Priority support',
-        'Advanced API features',
-        'Custom integrations',
-        'White-label options',
-      ],
-      popular: true,
-    },
-    {
-      name: 'Enterprise',
-      price: 'Custom',
-      period: '',
-      features: [
-        'Unlimited participants',
-        'Custom development',
-        'Dedicated support team',
-        'SLA guarantees',
-        'On-premise deployment',
-        'Custom integrations',
-        'Advanced security features',
-      ],
-      popular: false,
-    },
-  ];
+  // const plans = [
+  //   {
+  //     name: 'Pre-TGE',
+  //     price: '$SANG 100K',
+  //     period: 'Deposit',
+  //     features: [
+  //       'Up to 1,000 participants',
+  //       'Basic analytics dashboard',
+  //       'Standard leaderboard templates',
+  //       'Email support',
+  //       'API access',
+  //     ],
+  //     popular: false,
+  //   },
+  //   {
+  //     name: 'Post-TGE',
+  //     price: '$SANG 1M',
+  //     period: 'Deposit',
+  //     features: [
+  //       'Up to 10,000 participants',
+  //       'Advanced analytics & insights',
+  //       'Custom leaderboard designs',
+  //       'Priority support',
+  //       'Advanced API features',
+  //       'Custom integrations',
+  //       'White-label options',
+  //     ],
+  //     popular: true,
+  //   },
+  //   {
+  //     name: 'Enterprise',
+  //     price: 'Custom',
+  //     period: '',
+  //     features: [
+  //       'Unlimited participants',
+  //       'Custom development',
+  //       'Dedicated support team',
+  //       'SLA guarantees',
+  //       'On-premise deployment',
+  //       'Custom integrations',
+  //       'Advanced security features',
+  //     ],
+  //     popular: false,
+  //   },
+  // ];
 
   const testimonials = [
     {
       name: 'Starlordy',
       role: 'CEO',
       company: 'ONI Force',
-      content: 'Songjam was the main partner on our $EVA launch, they did not only provide the leaderboard, but were extremely available and on it all day, every day',
+      content:
+        'Songjam was the main partner on our $EVA launch, they did not only provide the leaderboard, but were extremely available and on it all day, every day',
       avatar: '/logos/starlordy.png',
       tweetUrl: 'https://x.com/i/spaces/1kvJpyepDPbxE',
     },
@@ -277,7 +286,8 @@ const Leaderboard: React.FC = () => {
       name: 'Big.Wil',
       role: 'Host',
       company: 'Virtuals Weekly!',
-      content: 'The Songjam team have quickly shipped an Ethos style slashing method where you flag for low effort content. I LOVE THIS.',
+      content:
+        'The Songjam team have quickly shipped an Ethos style slashing method where you flag for low effort content. I LOVE THIS.',
       avatar: '/logos/bigwil.png',
       tweetUrl: 'https://x.com/bigwil2k3/status/1941633549096059164',
     },
@@ -285,26 +295,29 @@ const Leaderboard: React.FC = () => {
       name: 'Crypto Von Doom',
       role: 'Co-Host',
       company: 'FYI',
-      content: 'Design is flawless and they even break down the points equation on the left side of the page. Smart and leaves no ambiguity.',
+      content:
+        'Design is flawless and they even break down the points equation on the left side of the page. Smart and leaves no ambiguity.',
       avatar: '/logos/vondoom.png',
       tweetUrl: 'https://x.com/CryptoVonDoom/status/1940927605013668295',
     },
   ];
 
-  const handlePrevTestimonial = () => {
-    setTestimonialFade(false);
-    setTimeout(() => {
-      setTestimonialIndex((testimonialIndex + testimonials.length - 1) % testimonials.length);
-      setTestimonialFade(true);
-    }, 250);
-  };
-  const handleNextTestimonial = () => {
-    setTestimonialFade(false);
-    setTimeout(() => {
-      setTestimonialIndex((testimonialIndex + 1) % testimonials.length);
-      setTestimonialFade(true);
-    }, 250);
-  };
+  // const handlePrevTestimonial = () => {
+  //   setTestimonialFade(false);
+  //   setTimeout(() => {
+  //     setTestimonialIndex(
+  //       (testimonialIndex + testimonials.length - 1) % testimonials.length
+  //     );
+  //     setTestimonialFade(true);
+  //   }, 250);
+  // };
+  // const handleNextTestimonial = () => {
+  //   setTestimonialFade(false);
+  //   setTimeout(() => {
+  //     setTestimonialIndex((testimonialIndex + 1) % testimonials.length);
+  //     setTestimonialFade(true);
+  //   }, 250);
+  // };
 
   // Auto-cycle testimonials every 5 seconds
   useEffect(() => {
@@ -314,14 +327,14 @@ const Leaderboard: React.FC = () => {
         setTestimonialIndex((prev) => (prev + 1) % testimonials.length);
         setTestimonialFade(true);
       }, 250);
-    }, 5000);
+    }, 6000);
     return () => clearInterval(interval);
   }, [testimonials.length]);
 
   return (
     <main className="landing" style={{ paddingBottom: 0, marginBottom: 0 }}>
       <Background />
-      
+
       {/* Header */}
       <nav>
         <Box
@@ -434,7 +447,10 @@ const Leaderboard: React.FC = () => {
         </Box>
       </nav>
 
-      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 8 }, position: 'relative', zIndex: 1, pb: 0 }}>
+      <Container
+        maxWidth="lg"
+        sx={{ pt: { xs: 4, md: 8 }, position: 'relative', zIndex: 1, pb: 0 }}
+      >
         {/* Mind-blowing Hero Section with Demo */}
         <Box
           sx={{
@@ -450,23 +466,45 @@ const Leaderboard: React.FC = () => {
             overflow: 'visible',
           }}
         >
-          <Grid container spacing={{ xs: 4, md: 2 }} alignItems="flex-start" justifyContent="center">
-            <Grid item xs={12} md={6} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', height: '100%' }}>
+          <Grid
+            container
+            spacing={{ xs: 4, md: 2 }}
+            alignItems="flex-start"
+            justifyContent="center"
+          >
+            <Grid
+              item
+              xs={12}
+              md={6}
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-start',
+                height: '100%',
+              }}
+            >
               {/* Massive Animated Headline */}
               <Typography
                 variant="h1"
                 sx={{
                   mb: 2,
-                  fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.5rem', lg: '5.5rem' },
+                  fontSize: {
+                    xs: '2.5rem',
+                    sm: '3.5rem',
+                    md: '4.5rem',
+                    lg: '5.5rem',
+                  },
                   fontWeight: 900,
                   letterSpacing: '-0.04em',
                   lineHeight: 1.05,
-                  background: 'linear-gradient(120deg, #60a5fa, #8b5cf6 40%, #ec4899 80%)',
+                  background:
+                    'linear-gradient(120deg, #60a5fa, #8b5cf6 40%, #ec4899 80%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   textShadow:
                     '0 2px 20px #60a5fa99, 0 4px 40px #8b5cf699, 0 8px 80px #ec489999, 0 1px 0 #fff',
-                  animation: 'gradient 8s ease-in-out infinite, titleFloat 3s ease-in-out infinite',
+                  animation:
+                    'gradient 8s ease-in-out infinite, titleFloat 3s ease-in-out infinite',
                   backgroundSize: '200% 200%',
                   zIndex: 2,
                   position: 'relative',
@@ -481,7 +519,12 @@ const Leaderboard: React.FC = () => {
                 sx={{
                   mb: 3,
                   color: 'var(--text-secondary)',
-                  fontSize: { xs: '1rem', sm: '1.2rem', md: '1.4rem', lg: '1.6rem' },
+                  fontSize: {
+                    xs: '1rem',
+                    sm: '1.2rem',
+                    md: '1.4rem',
+                    lg: '1.6rem',
+                  },
                   maxWidth: '700px',
                   mx: 'auto',
                   position: 'relative',
@@ -496,42 +539,50 @@ const Leaderboard: React.FC = () => {
                   textAlign: 'center',
                 }}
               >
-                Reward the top voices in your community through the fairest and most transparent leaderboards in Web3.
+                Reward the top voices in your community through the fairest and
+                most transparent leaderboards in Web3.
               </Typography>
               {/* Neon-glow CTA Button */}
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center" sx={{ zIndex: 2, mt: 1 }}>
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={2}
+                justifyContent="center"
+                sx={{ zIndex: 2, mt: 1 }}
+              >
                 <a
                   href="https://docs.google.com/forms/d/1j3-2ZTkio3KvnK5bv6ac6ZcaJXXUKyguof4uIxXbQHE"
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ textDecoration: 'none' }}
                 >
-                <Button
-                  variant="contained"
-                  size="large"
-                  className="primary"
-                  sx={{
-                    px: 6,
-                    py: 2,
-                    fontSize: '1.3rem',
-                    background: 'linear-gradient(90deg, #60a5fa, #8b5cf6, #ec4899)',
-                    color: 'white',
-                    borderRadius: '40px',
-                    boxShadow: '0 0 32px #60a5fa88, 0 0 64px #ec489988',
-                    textTransform: 'uppercase',
-                    fontWeight: 800,
-                    letterSpacing: '0.08em',
-                    animation: 'pulseGlow 2s infinite',
-                    transition: 'transform 0.2s',
-                    '&:hover': {
-                      background: 'linear-gradient(90deg, #ec4899, #8b5cf6, #60a5fa)',
-                      transform: 'scale(1.06) rotate(-1deg)',
-                      boxShadow: '0 0 64px #ec4899cc, 0 0 128px #60a5facc',
-                    },
-                  }}
-                >
-                  Launch Now
-                </Button>
+                  <Button
+                    variant="contained"
+                    size="large"
+                    className="primary"
+                    sx={{
+                      px: 6,
+                      py: 2,
+                      fontSize: '1.3rem',
+                      background:
+                        'linear-gradient(90deg, #60a5fa, #8b5cf6, #ec4899)',
+                      color: 'white',
+                      borderRadius: '40px',
+                      boxShadow: '0 0 32px #60a5fa88, 0 0 64px #ec489988',
+                      textTransform: 'uppercase',
+                      fontWeight: 800,
+                      letterSpacing: '0.08em',
+                      animation: 'pulseGlow 2s infinite',
+                      transition: 'transform 0.2s',
+                      '&:hover': {
+                        background:
+                          'linear-gradient(90deg, #ec4899, #8b5cf6, #60a5fa)',
+                        transform: 'scale(1.06) rotate(-1deg)',
+                        boxShadow: '0 0 64px #ec4899cc, 0 0 128px #60a5facc',
+                      },
+                    }}
+                  >
+                    Launch Now
+                  </Button>
                 </a>
                 <a
                   href="https://t.me/adamsongjam"
@@ -539,32 +590,41 @@ const Leaderboard: React.FC = () => {
                   rel="noopener noreferrer"
                   style={{ textDecoration: 'none' }}
                 >
-                <Button
-                  variant="outlined"
-                  size="large"
-                  sx={{
-                    color: 'var(--text-secondary)',
-                    borderColor: 'var(--text-secondary)',
-                    px: 6,
-                    py: 2,
-                    fontSize: '1.2rem',
-                    borderRadius: '40px',
-                    fontWeight: 700,
-                    letterSpacing: '0.08em',
-                    background: 'rgba(255,255,255,0.03)',
-                    '&:hover': {
-                      borderColor: 'white',
-                      color: 'white',
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    },
-                  }}
-                >
-                  Contact Us
-                </Button>
+                  <Button
+                    variant="outlined"
+                    size="large"
+                    sx={{
+                      color: 'var(--text-secondary)',
+                      borderColor: 'var(--text-secondary)',
+                      px: 6,
+                      py: 2,
+                      fontSize: '1.2rem',
+                      borderRadius: '40px',
+                      fontWeight: 700,
+                      letterSpacing: '0.08em',
+                      background: 'rgba(255,255,255,0.03)',
+                      '&:hover': {
+                        borderColor: 'white',
+                        color: 'white',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      },
+                    }}
+                  >
+                    Contact Us
+                  </Button>
                 </a>
               </Stack>
               {/* Testimonial Carousel */}
-              <Box sx={{ mt: { xs: 2, md: 4 }, mb: 2, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Box
+                sx={{
+                  mt: { xs: 2, md: 4 },
+                  mb: 2,
+                  width: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                }}
+              >
                 <Card
                   sx={{
                     maxWidth: { xs: 350, sm: 420 },
@@ -583,7 +643,15 @@ const Leaderboard: React.FC = () => {
                     alignItems: 'center',
                   }}
                 >
-                  <Box sx={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 2 }}>
+                  <Box
+                    sx={{
+                      position: 'relative',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      mb: 2,
+                    }}
+                  >
                     {/* Glowing animated ring */}
                     <Box
                       sx={{
@@ -592,7 +660,8 @@ const Leaderboard: React.FC = () => {
                         height: 120,
                         borderRadius: '50%',
                         zIndex: 1,
-                        background: 'conic-gradient(from 0deg, #60a5fa, #8b5cf6, #ec4899, #60a5fa)',
+                        background:
+                          'conic-gradient(from 0deg, #60a5fa, #8b5cf6, #ec4899, #60a5fa)',
                         filter: 'blur(8px)',
                         animation: 'testimonialGlow 3s linear infinite',
                       }}
@@ -620,24 +689,50 @@ const Leaderboard: React.FC = () => {
                       }}
                       src={testimonials[testimonialIndex].avatar}
                     >
-                      {!testimonials[testimonialIndex].avatar && testimonials[testimonialIndex].name[0]}
+                      {!testimonials[testimonialIndex].avatar &&
+                        testimonials[testimonialIndex].name[0]}
                     </Avatar>
                   </Box>
-                  <Typography variant="h6" sx={{ color: 'var(--text-primary)', fontWeight: 700, mt: 1, mb: 0.5 }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      color: 'var(--text-primary)',
+                      fontWeight: 700,
+                      mt: 1,
+                      mb: 0.5,
+                    }}
+                  >
                     {testimonials[testimonialIndex].name}
                   </Typography>
-                  <Typography variant="body2" sx={{ color: 'var(--text-secondary)', mb: 2 }}>
-                    {testimonials[testimonialIndex].role} at {testimonials[testimonialIndex].company}
+                  <Typography
+                    variant="body2"
+                    sx={{ color: 'var(--text-secondary)', mb: 2 }}
+                  >
+                    {testimonials[testimonialIndex].role} at{' '}
+                    {testimonials[testimonialIndex].company}
                   </Typography>
-                  <Typography variant="body1" sx={{ color: 'var(--text-primary)', fontStyle: 'italic', mb: 2, fontSize: '1.15rem', lineHeight: 1.5 }}>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      color: 'var(--text-primary)',
+                      fontStyle: 'italic',
+                      mb: 2,
+                      fontSize: '1.15rem',
+                      lineHeight: 1.5,
+                    }}
+                  >
                     {testimonials[testimonialIndex].tweetUrl ? (
                       <a
                         href={testimonials[testimonialIndex].tweetUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
+                        style={{
+                          color: 'inherit',
+                          textDecoration: 'none',
+                          cursor: 'pointer',
+                        }}
                       >
-                    "{testimonials[testimonialIndex].content}"
+                        "{testimonials[testimonialIndex].content}"
                       </a>
                     ) : (
                       `"${testimonials[testimonialIndex].content}"`
@@ -646,8 +741,25 @@ const Leaderboard: React.FC = () => {
                 </Card>
               </Box>
             </Grid>
-            <Grid item xs={12} md={6} sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'flex-start', height: '100%' }}>
-              <Box sx={{ width: '100%', maxWidth: 480, mx: 'auto', mt: { xs: 4, md: 0 } }}>
+            <Grid
+              item
+              xs={12}
+              md={6}
+              sx={{
+                display: 'flex',
+                justifyContent: 'flex-start',
+                alignItems: 'flex-start',
+                height: '100%',
+              }}
+            >
+              <Box
+                sx={{
+                  width: '100%',
+                  maxWidth: 480,
+                  mx: 'auto',
+                  mt: { xs: 4, md: 0 },
+                }}
+              >
                 <LeaderboardDemo />
               </Box>
             </Grid>
@@ -679,9 +791,18 @@ const Leaderboard: React.FC = () => {
                 animation: 'bounce 2s infinite',
               }}
             >
-              <ArrowForward sx={{ transform: 'rotate(90deg)', color: '#60a5fa', fontSize: 24 }} />
+              <ArrowForward
+                sx={{
+                  transform: 'rotate(90deg)',
+                  color: '#60a5fa',
+                  fontSize: 24,
+                }}
+              />
             </Box>
-            <Typography variant="caption" sx={{ color: '#60a5fa', fontWeight: 700 }}>
+            <Typography
+              variant="caption"
+              sx={{ color: '#60a5fa', fontWeight: 700 }}
+            >
               Scroll
             </Typography>
           </Box>
@@ -723,10 +844,11 @@ const Leaderboard: React.FC = () => {
               lineHeight: '1.6',
             }}
           >
-            Understanding the framework behind the $SANG token, designed for sustainable growth and community engagement.
+            Understanding the framework behind the $SANG token, designed for
+            sustainable growth and community engagement.
           </Typography>
           <Paper
-                  sx={{
+            sx={{
               p: 3,
               background: 'rgba(0, 0, 0, 0.2)',
               borderRadius: 2,
@@ -746,9 +868,9 @@ const Leaderboard: React.FC = () => {
                 background:
                   'radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.1) 0%, transparent 70%)',
                 pointerEvents: 'none',
-                    },
-                  }}
-                >
+              },
+            }}
+          >
             <Grid container spacing={4} alignItems="center">
               <Grid item xs={12} md={6} lg={7}>
                 <Box
@@ -814,10 +936,12 @@ const Leaderboard: React.FC = () => {
                               }}
                               onMouseEnter={(e) => {
                                 e.currentTarget.style.transform = `rotate(${angle}deg) scale(1.05) rotate(-${angle}deg)`;
-                                e.currentTarget.style.filter = 'brightness(1.2)';
+                                e.currentTarget.style.filter =
+                                  'brightness(1.2)';
                               }}
                               onMouseLeave={(e) => {
-                                e.currentTarget.style.transform = 'rotate(0deg) scale(1)';
+                                e.currentTarget.style.transform =
+                                  'rotate(0deg) scale(1)';
                                 e.currentTarget.style.filter = 'brightness(1)';
                               }}
                             />
@@ -902,7 +1026,7 @@ const Leaderboard: React.FC = () => {
                           }}
                         >
                           {data.name}
-                    </Typography>
+                        </Typography>
                         <Typography
                           variant="body1"
                           sx={{
@@ -913,7 +1037,7 @@ const Leaderboard: React.FC = () => {
                           }}
                         >
                           {data.value}%
-                    </Typography>
+                        </Typography>
                       </Box>
                       <Typography
                         variant="body2"
@@ -925,7 +1049,7 @@ const Leaderboard: React.FC = () => {
                     </Box>
                   ))}
                 </Stack>
-          </Grid>
+              </Grid>
             </Grid>
           </Paper>
         </Box>
@@ -951,21 +1075,21 @@ const Leaderboard: React.FC = () => {
             {/* Left Column - Explanation */}
             <Grid item xs={12} md={4} sx={{ minHeight: '600px' }}>
               <Box sx={{ mb: 4 }}>
-          <Typography
+                <Typography
                   variant="h4"
-            sx={{
+                  sx={{
                     background:
                       'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
                     textShadow:
                       '0 0 15px rgba(236, 72, 153, 0.2), 0 0 8px rgba(139, 92, 246, 0.15)',
                     mb: 2,
                     fontWeight: 'bold',
-            }}
-          >
+                  }}
+                >
                   How Sing Points Work
-          </Typography>
+                </Typography>
                 <Typography
                   variant="body1"
                   color="#F0F8FF"
@@ -976,12 +1100,18 @@ const Leaderboard: React.FC = () => {
                     textShadow: '0 0 3px rgba(0,0,0,0.1)',
                   }}
                 >
-                  Sing points are calculated based on your engagement metrics and when you participate. The earlier you engage, the more Sing points you get! Each interaction tagging{' '}
+                  Sing points are calculated based on your engagement metrics
+                  and when you participate. The earlier you engage, the more
+                  Sing points you get! Each interaction tagging{' '}
                   <a
                     href="https://x.com/songjamspace"
                     target="_blank"
                     rel="noopener"
-                    style={{ color: '#60a5fa', fontWeight: 'bold', textDecoration: 'none' }}
+                    style={{
+                      color: '#60a5fa',
+                      fontWeight: 'bold',
+                      textDecoration: 'none',
+                    }}
                   >
                     @SongjamSpace
                   </a>{' '}
@@ -990,17 +1120,22 @@ const Leaderboard: React.FC = () => {
                     href="https://x.com/search?q=%24SANG&src=cashtag_click"
                     target="_blank"
                     rel="noopener"
-                    style={{ color: '#60a5fa', fontWeight: 'bold', textDecoration: 'none' }}
+                    style={{
+                      color: '#60a5fa',
+                      fontWeight: 'bold',
+                      textDecoration: 'none',
+                    }}
                   >
                     $SANG
                   </a>{' '}
-                  contributes to your score, with a special multiplier for early participation.
-                      </Typography>
-                    </Box>
+                  contributes to your score, with a special multiplier for early
+                  participation.
+                </Typography>
+              </Box>
               <Box sx={{ mb: 4 }}>
                 <Typography
                   variant="h5"
-                            sx={{
+                  sx={{
                     background: 'linear-gradient(45deg, #60A5FA, #3B82F6)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
@@ -1012,14 +1147,14 @@ const Leaderboard: React.FC = () => {
                   Base Sing Points Formula
                 </Typography>
                 <Paper
-                      sx={{
+                  sx={{
                     p: 2,
                     background: 'rgba(96, 165, 250, 0.08)',
                     border: '1px solid rgba(96, 165, 250, 0.25)',
                     borderRadius: '12px',
                     boxShadow: '0 0 15px rgba(96, 165, 250, 0.2)',
                     transition: 'all 0.3s ease',
-                        '&:hover': {
+                    '&:hover': {
                       boxShadow: '0 0 25px rgba(96, 165, 250, 0.4)',
                     },
                     '& .katex-display': {
@@ -1040,9 +1175,9 @@ const Leaderboard: React.FC = () => {
                       '& .katex': {
                         fontSize: 'clamp(0.8rem, 2vw, 1.2rem)',
                       },
-                        },
-                      }}
-                    >
+                    },
+                  }}
+                >
                   <BlockMath>
                     {`S_{\\text{base}} = \\begin{gathered} \\underbrace{((L \\cdot 0.2) + (R \\cdot 0.4) + (B \\cdot 0.4) + (RT \\cdot 0.6) + (QT \\cdot 1.0))}_{\\text{Engagement Points}} \\\\[1em] + \\underbrace{((SY \\cdot 5 + DJ \\cdot 10) \\cdot N_{\\text{listeners}} \\div S)}_{\\text{Space Points}} \\end{gathered}`}
                   </BlockMath>
@@ -1056,24 +1191,30 @@ const Leaderboard: React.FC = () => {
                       textShadow: '0 0 2px rgba(0,0,0,0.3)',
                     }}
                   >
-                    Your base score is a sum of <strong>Engagement Points</strong> from interactions (Likes, Replies, Bookmarks, Retweets, Quote Tweets) and <strong>Space Points</strong>, which are awarded for speaking (SY) or DJing (DJ) and are multiplied by the number of listeners (N <sub>listeners</sub>), divided by the number of speakers (S).
+                    Your base score is a sum of{' '}
+                    <strong>Engagement Points</strong> from interactions (Likes,
+                    Replies, Bookmarks, Retweets, Quote Tweets) and{' '}
+                    <strong>Space Points</strong>, which are awarded for
+                    speaking (SY) or DJing (DJ) and are multiplied by the number
+                    of listeners (N <sub>listeners</sub>), divided by the number
+                    of speakers (S).
                   </Typography>
                 </Paper>
-        </Box>
+              </Box>
               <Box sx={{ mb: 4 }}>
-          <Typography
+                <Typography
                   variant="h5"
-            sx={{
+                  sx={{
                     background: 'linear-gradient(45deg, #EC4899, #F472B6)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
                     textShadow: '0 0 8px rgba(236, 72, 153, 0.1)',
                     mb: 2,
                     fontWeight: 'bold',
-            }}
-          >
+                  }}
+                >
                   Engagement Boosters
-          </Typography>
+                </Typography>
                 <Paper
                   sx={{
                     p: 2,
@@ -1119,10 +1260,11 @@ const Leaderboard: React.FC = () => {
                       textShadow: '0 0 2px rgba(0,0,0,0.3)',
                     }}
                   >
-                    Your engagement score gets boosted based on the performance of your tweets. Here are the thresholds:
+                    Your engagement score gets boosted based on the performance
+                    of your tweets. Here are the thresholds:
                   </Typography>
-                        <Box
-                          sx={{
+                  <Box
+                    sx={{
                       mt: 2,
                       display: 'flex',
                       flexWrap: 'wrap',
@@ -1169,8 +1311,8 @@ const Leaderboard: React.FC = () => {
                 </Paper>
               </Box>
               <Box sx={{ mb: 4 }}>
-                        <Box
-                          sx={{
+                <Box
+                  sx={{
                     display: 'flex',
                     alignItems: 'center',
                     mb: 2,
@@ -1180,7 +1322,7 @@ const Leaderboard: React.FC = () => {
                 >
                   <Typography
                     variant="h5"
-                          sx={{
+                    sx={{
                       background: 'linear-gradient(45deg, #8B5CF6, #EC4899)',
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
@@ -1189,14 +1331,14 @@ const Leaderboard: React.FC = () => {
                     }}
                   >
                     Early Multiplier
-                        </Typography>
+                  </Typography>
                   <Chip
                     label="Expired"
                     color="error"
                     variant="outlined"
                     size="small"
                   />
-                      </Box>
+                </Box>
                 <Paper
                   sx={{
                     p: 2,
@@ -1242,47 +1384,49 @@ const Leaderboard: React.FC = () => {
                       textShadow: '0 0 2px rgba(0,0,0,0.3)',
                     }}
                   >
-                    Applies to posts up to 1 week before genesis. Maximum multiplier is 100x.
-                    </Typography>
+                    Applies to posts up to 1 week before genesis. Maximum
+                    multiplier is 100x.
+                  </Typography>
                 </Paper>
               </Box>
-              </Grid>
+            </Grid>
             {/* Right Column - Leaderboard */}
             <Grid item xs={12} md={8}>
               <SignPointsLeaderboard />
-          </Grid>
+            </Grid>
           </Grid>
           <Grid container spacing={4} sx={{ mt: 4, alignItems: 'center' }}>
             {/* Left side - Claim Space Points */}
             <Grid item xs={12} md={6}>
               <Paper
-          sx={{
+                sx={{
                   p: 3,
                   background: 'rgba(0,0,0,0.5)',
                   border: '1px solid rgba(255,255,255,0.1)',
                   borderRadius: '10px',
                   height: '100%',
-          }}
-        >
-          <Typography
+                }}
+              >
+                <Typography
                   variant="h5"
-            sx={{
-              background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+                  sx={{
+                    background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
                     fontWeight: 'bold',
                     mb: 2,
-            }}
-          >
+                  }}
+                >
                   Claim Space Points
-          </Typography>
-          <Typography
+                </Typography>
+                <Typography
                   variant="body2"
                   color="rgba(255,255,255,0.7)"
                   sx={{ mb: 3 }}
                 >
-                  Submit the URL of a recorded Twitter Space where you were a speaker or the DJ to claim your points.
-          </Typography>
+                  Submit the URL of a recorded Twitter Space where you were a
+                  speaker or the DJ to claim your points.
+                </Typography>
                 <TextField
                   fullWidth
                   variant="outlined"
@@ -1291,9 +1435,9 @@ const Leaderboard: React.FC = () => {
                   onChange={(e) => setSpaceUrlForPoints(e.target.value)}
                   sx={{ mb: 2 }}
                 />
-            <Button
+                <Button
                   fullWidth
-              variant="contained"
+                  variant="contained"
                   color="primary"
                   // Replace with your claim handler if needed
                 >
@@ -1306,7 +1450,7 @@ const Leaderboard: React.FC = () => {
               <Box sx={{ textAlign: 'center' }}>
                 <Typography
                   variant="h5"
-              sx={{
+                  sx={{
                     background:
                       'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
                     WebkitBackgroundClip: 'text',
@@ -1323,7 +1467,7 @@ const Leaderboard: React.FC = () => {
                   {Object.entries(timeLeft).map(([unit, value]) => (
                     <Grid item key={unit}>
                       <Paper
-              sx={{
+                        sx={{
                           p: 2,
                           background: 'rgba(0,0,0,0.5)',
                           border: '1px solid rgba(255,255,255,0.1)',
@@ -1355,7 +1499,7 @@ const Leaderboard: React.FC = () => {
                     </Grid>
                   ))}
                 </Grid>
-        </Box>
+              </Box>
             </Grid>
           </Grid>
           <Box sx={{ mt: 6, px: 4, textAlign: 'center' }}>
@@ -1364,7 +1508,10 @@ const Leaderboard: React.FC = () => {
               color="text.secondary"
               sx={{ fontStyle: 'italic', opacity: 0.8 }}
             >
-              Disclaimer: Songjam is constantly monitoring the timeline and spaces for spammy behaviour and may adjust the base points formula or the quality algorithm without notice if it appears the system is being nefariously farmed.
+              Disclaimer: Songjam is constantly monitoring the timeline and
+              spaces for spammy behaviour and may adjust the base points formula
+              or the quality algorithm without notice if it appears the system
+              is being nefariously farmed.
             </Typography>
           </Box>
         </Box>
@@ -1373,113 +1520,239 @@ const Leaderboard: React.FC = () => {
         <Box
           className="honors"
           id="honors-section"
-          sx={{ 
+          sx={{
             mt: { xs: 4, md: 6 },
-            textAlign: 'center'
+            textAlign: 'center',
           }}
         >
-          <Box sx={{
-            background: 'rgba(0, 0, 0, 0.3)',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '20px',
-            padding: '40px 20px',
-            maxWidth: '800px',
-            margin: '0 auto',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)'
-          }}>
-            <h2 style={{ marginBottom: '10px' }}>Honors</h2>
-            <p style={{ marginBottom: '30px', fontSize: '0.9rem', color: '#ffffff !important', fontWeight: 'normal' }}>Recognized by leading organizations in the Web3 space.</p>
-            <div className="honors-grid" style={{ 
-              gap: '15px', 
-              maxWidth: '700px', 
+          <Box
+            sx={{
+              background: 'rgba(0, 0, 0, 0.3)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '20px',
+              padding: '40px 20px',
+              maxWidth: '800px',
               margin: '0 auto',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-            <div className="honor-item" style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
-              gap: '8px',
-              padding: '15px 10px'
-            }}>
-              <img src="/logos/chainlink.png" alt="Chainlink" className="honor-logo" style={{ width: '60px', height: '60px', objectFit: 'contain' }} />
-              <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>Chainlink</span>
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+            }}
+          >
+            <h2 style={{ marginBottom: '10px' }}>Honors</h2>
+            <p
+              style={{
+                marginBottom: '30px',
+                fontSize: '0.9rem',
+                color: '#ffffff !important',
+                fontWeight: 'normal',
+              }}
+            >
+              Recognized by leading organizations in the Web3 space.
+            </p>
+            <div
+              className="honors-grid"
+              style={{
+                gap: '15px',
+                maxWidth: '700px',
+                margin: '0 auto',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(4, 1fr)',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <div
+                className="honor-item"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '15px 10px',
+                }}
+              >
+                <img
+                  src="/logos/chainlink.png"
+                  alt="Chainlink"
+                  className="honor-logo"
+                  style={{
+                    width: '60px',
+                    height: '60px',
+                    objectFit: 'contain',
+                  }}
+                />
+                <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>
+                  Chainlink
+                </span>
+              </div>
+              <div
+                className="honor-item"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '15px 10px',
+                }}
+              >
+                <img
+                  src="/logos/coinbase.png"
+                  alt="Coinbase"
+                  className="honor-logo"
+                  style={{
+                    width: '60px',
+                    height: '60px',
+                    objectFit: 'contain',
+                  }}
+                />
+                <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>
+                  Coinbase
+                </span>
+              </div>
+              <div
+                className="honor-item"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '15px 10px',
+                }}
+              >
+                <img
+                  src="/logos/coindesk.png"
+                  alt="Coindesk"
+                  className="honor-logo"
+                  style={{
+                    width: '60px',
+                    height: '60px',
+                    objectFit: 'contain',
+                  }}
+                />
+                <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>
+                  Coindesk
+                </span>
+              </div>
+              <div
+                className="honor-item"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '15px 10px',
+                }}
+              >
+                <img
+                  src="/logos/filecoin.png"
+                  alt="Filecoin"
+                  className="honor-logo"
+                  style={{
+                    width: '60px',
+                    height: '60px',
+                    objectFit: 'contain',
+                  }}
+                />
+                <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>
+                  Filecoin
+                </span>
+              </div>
+              <div
+                className="honor-item"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '15px 10px',
+                }}
+              >
+                <img
+                  src="/logos/moonbeam.png"
+                  alt="Moonbeam"
+                  className="honor-logo"
+                  style={{
+                    width: '60px',
+                    height: '60px',
+                    objectFit: 'contain',
+                  }}
+                />
+                <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>
+                  Moonbeam
+                </span>
+              </div>
+              <div
+                className="honor-item"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '15px 10px',
+                }}
+              >
+                <img
+                  src="/logos/nethermind.png"
+                  alt="Nethermind"
+                  className="honor-logo"
+                  style={{
+                    width: '60px',
+                    height: '60px',
+                    objectFit: 'contain',
+                  }}
+                />
+                <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>
+                  Nethermind
+                </span>
+              </div>
+              <div
+                className="honor-item"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '15px 10px',
+                }}
+              >
+                <img
+                  src="/logos/oniforce.png"
+                  alt="ONI Force"
+                  className="honor-logo"
+                  style={{
+                    width: '60px',
+                    height: '60px',
+                    objectFit: 'contain',
+                  }}
+                />
+                <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>
+                  ONI Force
+                </span>
+              </div>
+              <div
+                className="honor-item"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '15px 10px',
+                }}
+              >
+                <img
+                  src="/logos/polkadot.png"
+                  alt="Polkadot"
+                  className="honor-logo"
+                  style={{
+                    width: '60px',
+                    height: '60px',
+                    objectFit: 'contain',
+                  }}
+                />
+                <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>
+                  Polkadot
+                </span>
+              </div>
             </div>
-            <div className="honor-item" style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
-              gap: '8px',
-              padding: '15px 10px'
-            }}>
-              <img src="/logos/coinbase.png" alt="Coinbase" className="honor-logo" style={{ width: '60px', height: '60px', objectFit: 'contain' }} />
-              <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>Coinbase</span>
-            </div>
-            <div className="honor-item" style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
-              gap: '8px',
-              padding: '15px 10px'
-            }}>
-              <img src="/logos/coindesk.png" alt="Coindesk" className="honor-logo" style={{ width: '60px', height: '60px', objectFit: 'contain' }} />
-              <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>Coindesk</span>
-            </div>
-            <div className="honor-item" style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
-              gap: '8px',
-              padding: '15px 10px'
-            }}>
-              <img src="/logos/filecoin.png" alt="Filecoin" className="honor-logo" style={{ width: '60px', height: '60px', objectFit: 'contain' }} />
-              <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>Filecoin</span>
-            </div>
-            <div className="honor-item" style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
-              gap: '8px',
-              padding: '15px 10px'
-            }}>
-              <img src="/logos/moonbeam.png" alt="Moonbeam" className="honor-logo" style={{ width: '60px', height: '60px', objectFit: 'contain' }} />
-              <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>Moonbeam</span>
-            </div>
-            <div className="honor-item" style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
-              gap: '8px',
-              padding: '15px 10px'
-            }}>
-              <img src="/logos/nethermind.png" alt="Nethermind" className="honor-logo" style={{ width: '60px', height: '60px', objectFit: 'contain' }} />
-              <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>Nethermind</span>
-            </div>
-            <div className="honor-item" style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
-              gap: '8px',
-              padding: '15px 10px'
-            }}>
-              <img src="/logos/oniforce.png" alt="ONI Force" className="honor-logo" style={{ width: '60px', height: '60px', objectFit: 'contain' }} />
-              <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>ONI Force</span>
-            </div>
-            <div className="honor-item" style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
-              gap: '8px',
-              padding: '15px 10px'
-            }}>
-              <img src="/logos/polkadot.png" alt="Polkadot" className="honor-logo" style={{ width: '60px', height: '60px', objectFit: 'contain' }} />
-              <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>Polkadot</span>
-            </div>
-          </div>
           </Box>
         </Box>
 
@@ -1489,23 +1762,51 @@ const Leaderboard: React.FC = () => {
           <p>Get in touch with us for more information or support.</p>
           <form className="contact-form">
             <div className="form-group">
-              <TextField fullWidth placeholder="Name" variant="outlined" name="name" required inputProps={{ minLength: 2 }} />
+              <TextField
+                fullWidth
+                placeholder="Name"
+                variant="outlined"
+                name="name"
+                required
+                inputProps={{ minLength: 2 }}
+              />
             </div>
             <div className="form-group">
-              <TextField fullWidth placeholder="Telegram" variant="outlined" name="telegram" required inputProps={{ pattern: '@.*' }} helperText="Start with @" />
+              <TextField
+                fullWidth
+                placeholder="Telegram"
+                variant="outlined"
+                name="telegram"
+                required
+                inputProps={{ pattern: '@.*' }}
+                helperText="Start with @"
+              />
             </div>
             <div className="form-group">
-              <TextField fullWidth type="email" placeholder="Email" variant="outlined" name="email" required />
+              <TextField
+                fullWidth
+                type="email"
+                placeholder="Email"
+                variant="outlined"
+                name="email"
+                required
+              />
             </div>
             <div className="form-group">
-              <TextareaAutosize placeholder="Message" name="message" required minLength={10} style={{ width: '100%', minHeight: '100px' }} />
+              <TextareaAutosize
+                placeholder="Message"
+                name="message"
+                required
+                minLength={10}
+                style={{ width: '100%', minHeight: '100px' }}
+              />
             </div>
             <Button type="submit" variant="contained" className="primary">
               Submit
             </Button>
           </form>
         </section>
-                <Box
+        <Box
           className="social-media"
           sx={{
             width: '100vw',
@@ -1581,4 +1882,4 @@ const Leaderboard: React.FC = () => {
   );
 };
 
-export default Leaderboard; 
+export default Leaderboard;

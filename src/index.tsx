@@ -15,7 +15,6 @@ import Settings from './pages/Settings';
 import CampaignDetails from './pages/CampaignDetails';
 import MusicAgent from './pages/MusicAgent';
 import Leaderboard from './pages/Leaderboard';
-import Landing from './components/Landing.jsx';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>

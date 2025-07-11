@@ -80,7 +80,7 @@ nav {
   background: linear-gradient(135deg, #60a5fa, #8b5cf6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: float 6s ease-in-out infinite;
+  /* animation: float 6s ease-in-out infinite; */
 }
 
 .nav-controls {
@@ -954,18 +954,6 @@ nav {
   z-index: 10;
 }
 
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1.5rem;
-  font-weight: 600;
-  background: linear-gradient(135deg, #60a5fa, #8b5cf6);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: float 6s ease-in-out infinite;
-}
-
 /* Add smooth transitions */
 * {
   transition: all 0.3s ease;
@@ -1302,8 +1290,7 @@ html {
 }
 
 .footer {
-  margin-top: 4rem;
-  padding: 4rem 2rem 2rem;
+  /* padding: 4rem 2rem 2rem; */
   border-radius: 16px 16px 0 0;
 }
 

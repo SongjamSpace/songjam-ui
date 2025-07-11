@@ -23,7 +23,7 @@ const theme = createTheme({
     },
   },
   typography: {
-    fontFamily: 'Inter, system-ui, sans-serif',
+    fontFamily: 'Inter, system-ui, sans-serif, font-chakra-petch',
     h1: {
       fontSize: '4rem',
       fontWeight: 800,

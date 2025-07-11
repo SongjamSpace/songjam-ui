@@ -22,6 +22,7 @@
     "@types/react-dom": "^18.2.19",
     "@types/react-katex": "^3.0.4",
     "@types/react-toastify": "^4.0.2",
+    "@types/webfontloader": "^1.6.38",
     "@vitejs/plugin-react": "^4.2.1",
     "concurrently": "^8.2.2",
     "eslint": "^8.56.0",
@@ -76,6 +77,7 @@
     "socket.io-client": "^4.8.1",
     "three": "^0.174.0",
     "typed.js": "^2.1.0",
-    "viem": "^2.27.0"
+    "viem": "^2.27.0",
+    "webfontloader": "^1.6.28"
   }
 }

@@ -15,6 +15,14 @@ import Settings from './pages/Settings';
 import CampaignDetails from './pages/CampaignDetails';
 import MusicAgent from './pages/MusicAgent';
 import Leaderboard from './pages/Leaderboard';
+import WebFont from 'webfontloader';
+import Flag from './pages/Flag';
+
+WebFont.load({
+  google: {
+    families: ['Chakra Petch:400,700&display=swap'],
+  },
+});
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
@@ -41,6 +49,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
                 <Route path="/campaigns/:id" element={<CampaignDetails />} />
                 <Route path="/dj" element={<MusicAgent />} />
                 <Route path="/leaderboard" element={<Leaderboard />} />
+                <Route path="/flags" element={<Flag />} />
               </Routes>
             </AuthProvider>
           </ThemeProvider>

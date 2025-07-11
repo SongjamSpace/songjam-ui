@@ -50,7 +50,7 @@ const SignPointsLeaderboard = () => {
   }, [limit]);
 
   return (
-    <Grid item xs={12} md={8}>
+    <Box sx={{ px: { xs: 1, sm: 2, md: 3 }, width: '100%' }}>
       <Box
         sx={{
           display: 'flex',
@@ -80,9 +80,27 @@ const SignPointsLeaderboard = () => {
             textAlign: 'center',
           }}
         >
-          2% of $SANG Supply Reserved for Pre-Genesis Yappers, 3% Reserved for
-          Genesis Yappers
+          2% of $SANG Supply Reserved for Pre-Genesis Yappers, 3% Reserved for Genesis Yappers
         </Typography>
+      </Box>
+      {/* Centered filter above the table */}
+      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+        <Select
+          value={limit}
+          onChange={(e) => {
+            setLimit(Number(e.target.value));
+          }}
+          size="small"
+          sx={{ minWidth: 120, background: 'rgba(255,255,255,0.04)', color: 'white' }}
+        >
+          <MenuItem value={100} disabled={limit !== 100}>
+            Top 100
+          </MenuItem>
+          <MenuItem value={500} disabled={limit === 0}>
+            Top 500
+          </MenuItem>
+          <MenuItem value={0}>Show All</MenuItem>
+        </Select>
       </Box>
       <TableContainer
         component={Paper}
@@ -122,31 +140,6 @@ const SignPointsLeaderboard = () => {
                 }}
               >
                 Sing Points
-              </TableCell>
-              <TableCell
-                align="right"
-                sx={{
-                  color: '#F0F8FF',
-                  borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-                  fontWeight: 'bold',
-                  width: '1%',
-                }}
-              >
-                <Select
-                  value={limit}
-                  onChange={(e) => {
-                    setLimit(Number(e.target.value));
-                  }}
-                  size="small"
-                >
-                  <MenuItem value={100} disabled={limit !== 100}>
-                    Top 100
-                  </MenuItem>
-                  <MenuItem value={500} disabled={limit === 0}>
-                    Top 500
-                  </MenuItem>
-                  <MenuItem value={0}>Show All</MenuItem>
-                </Select>
               </TableCell>
             </TableRow>
           </TableHead>
@@ -240,7 +233,7 @@ const SignPointsLeaderboard = () => {
           </TableBody>
         </Table>
       </TableContainer>
-    </Grid>
+    </Box>
   );
 };
 

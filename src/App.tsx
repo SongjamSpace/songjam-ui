@@ -232,20 +232,6 @@ export default function App() {
     document.body.className = 'dark';
   }, []);
 
-  // Auto-scroll to sections based on URL hash
-  useEffect(() => {
-    const hash = window.location.hash;
-    if (hash === '#tokenomics') {
-      const element = document.getElementById('tokenomics-section');
-      if (element) {
-        // Small delay to ensure the component is fully rendered
-        setTimeout(() => {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }, 100);
-      }
-    }
-  }, []);
-
   const handleClaimSpacePoints = async () => {
     if (!spaceUrlForPoints.trim()) {
       return toast.error('Please enter a valid Twitter Space URL.');
@@ -331,10 +317,7 @@ export default function App() {
             </Button>
             <Button
               onClick={() => {
-                const element = document.getElementById('tokenomics-section');
-                if (element) {
-                  element.scrollIntoView({ behavior: 'smooth' });
-                }
+                navigate('/#tokenomics');
               }}
               variant="text"
               size="small"
@@ -347,10 +330,7 @@ export default function App() {
             </Button>
             <Button
               onClick={() => {
-                const element = document.getElementById('leaderboard-section');
-                if (element) {
-                  element.scrollIntoView({ behavior: 'smooth' });
-                }
+                navigate('/#leaderboard');
               }}
               variant="text"
               size="small"

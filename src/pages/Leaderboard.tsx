@@ -271,6 +271,19 @@ const Leaderboard: React.FC = () => {
   //     popular: false,
   //   },
   // ];
+  // Auto-scroll to sections based on URL hash
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash === '#tokenomics' || hash === '#leaderboard') {
+      const element = document.getElementById(hash.slice(1) + '-section');
+      if (element) {
+        // Small delay to ensure the component is fully rendered
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    }
+  }, []);
 
   const testimonials = [
     {

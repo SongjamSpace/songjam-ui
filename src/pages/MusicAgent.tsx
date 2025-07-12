@@ -40,9 +40,11 @@ import {
   FiberManualRecord,
   SkipNext,
   SkipPrevious,
+  DeleteOutline,
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import {
+  deleteMusicUpload,
   getMusicUploadsByUserId,
   uploadMusic,
 } from '../services/storage/musicAgent.storage';
@@ -472,6 +474,15 @@ const MusicAgent = () => {
       const uploads = await getMusicUploadsByUserId(user.uid);
       setAudioUploads(uploads);
       setIsLoading(false);
+    }
+  };
+
+  const handleDeleteUpload = async (fileName: string) => {
+    if (user) {
+      await deleteMusicUpload(fileName, user.uid);
+      const uploads = await getMusicUploadsByUserId(user.uid);
+      setAudioUploads(uploads);
+      addLog(`Deleted music: ${fileName}`, 'success');
     }
   };
 
@@ -1097,6 +1108,16 @@ const MusicAgent = () => {
                               primary={audioUpload.name}
                               sx={{ color: 'white' }}
                             />
+                            {/* Delete button */}
+                            <IconButton
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                await handleDeleteUpload(audioUpload.name);
+                              }}
+                              sx={{ color: '#f44336' }}
+                            >
+                              <DeleteOutline />
+                            </IconButton>
                           </ListItemButton>
                         ))}
                       </List>

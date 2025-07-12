@@ -1,4 +1,4 @@
-import { getDownloadURL } from 'firebase/storage';
+import { deleteObject, getDownloadURL } from 'firebase/storage';
 import { ref, uploadBytes, listAll } from 'firebase/storage';
 import { storage } from '../firebase.service';
 
@@ -19,4 +19,9 @@ export const getMusicUploadsByUserId = async (
     list.items.map(async (item) => await getDownloadURL(item))
   );
   return names.map((name, index) => ({ name, audioUrl: urls[index] }));
+};
+
+export const deleteMusicUpload = async (fileName: string, uid: string) => {
+  const storageRef = ref(storage, `music-agent-uploads/${uid}/${fileName}`);
+  await deleteObject(storageRef);
 };

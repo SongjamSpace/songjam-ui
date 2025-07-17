@@ -250,6 +250,7 @@ export default function Dashboard() {
   const [completedSpaces, setCompletedSpaces] = useState<Space[]>([]);
   const [isSpaceSyncing, setIsSpaceSyncing] = useState(false);
   const hasUpdatedSpaceStatus = useRef(false);
+  const hasProcessedUrlParams = useRef(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -387,7 +388,8 @@ export default function Dashboard() {
         const state = space.metadata.state;
         if (state === 'Ended') {
           const path = await transcribeSpace(spaceId, projectId);
-          await updateSpaceRequests(user?.uid || '');
+          // TODO: Enable this
+          // await updateSpaceRequests(user?.uid || '');
           navigate(path); // Navigates to /crm/:spaceId
         } else if (state === 'Running') {
           try {
@@ -545,7 +547,12 @@ export default function Dashboard() {
     const broadcastId = searchParams.get('broadcastId');
     const boostFollowers = searchParams.get('boostFollowers') === 'true';
     const boostSpace = searchParams.get('boostSpace') === 'true';
-    if (defaultProject && (spaceId || broadcastId)) {
+    if (
+      defaultProject &&
+      (spaceId || broadcastId) &&
+      !hasProcessedUrlParams.current
+    ) {
+      hasProcessedUrlParams.current = true;
       // if (spaceId === 'new') {
       //   setIsShowNewCampaign(true);
       // } else {

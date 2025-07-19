@@ -11,8 +11,8 @@ import {
   Avatar,
   Select,
   MenuItem,
-  Grid,
   keyframes,
+  Button,
 } from '@mui/material';
 
 import { useEffect, useState } from 'react';
@@ -80,18 +80,23 @@ const SignPointsLeaderboard = () => {
             textAlign: 'center',
           }}
         >
-          2% of $SANG Supply Reserved for Pre-Genesis Yappers, 3% Reserved for Genesis Yappers
+          2% of $SANG Supply Reserved for Pre-Genesis Yappers, 3% Reserved for
+          Genesis Yappers
         </Typography>
       </Box>
       {/* Centered filter above the table */}
-      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
         <Select
           value={limit}
           onChange={(e) => {
             setLimit(Number(e.target.value));
           }}
           size="small"
-          sx={{ minWidth: 120, background: 'rgba(255,255,255,0.04)', color: 'white' }}
+          sx={{
+            minWidth: 120,
+            background: 'rgba(255,255,255,0.04)',
+            color: 'white',
+          }}
         >
           <MenuItem value={100} disabled={limit !== 100}>
             Top 100
@@ -101,6 +106,16 @@ const SignPointsLeaderboard = () => {
           </MenuItem>
           <MenuItem value={0}>Show All</MenuItem>
         </Select>
+        <Button
+          variant="contained"
+          color="primary"
+          size="small"
+          onClick={() => {
+            window.open('https://leaderboard.songjam.space', '_blank');
+          }}
+        >
+          Connect X
+        </Button>
       </Box>
       <TableContainer
         component={Paper}

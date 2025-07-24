@@ -54,6 +54,8 @@ import {
   MusicAgentRequest,
   createMusicAgentRequest,
 } from '../services/db/musicAgentRequets.service';
+import { createDjInstance } from '../services/db/djInstance.service';
+import { extractSpaceId } from '../utils';
 
 // Advanced animations
 const pulse = keyframes`
@@ -151,14 +153,14 @@ const MusicAgent = () => {
   // Fetch user uploads on mount or when user changes
   useEffect(() => {
     if (user) {
-      connectSocket();
+      // connectSocket();
       fetchUserUploads();
     }
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-      }
-    };
+    // return () => {
+    //   if (socketRef.current) {
+    //     socketRef.current.disconnect();
+    //   }
+    // };
   }, [user]);
 
   useEffect(() => {
@@ -201,13 +203,21 @@ const MusicAgent = () => {
   };
 
   // Define handlers outside connectSocket
-  const handleConnect = () => {
+  const handleConnect = async () => {
     setWsStatus('connected');
     addLog('Connected to server successfully', 'success');
+    await createDjInstance({
+      spaceId: extractSpaceId(spaceUrl) || '',
+      userId: user?.uid || '',
+      username: user?.displayName || '',
+      socketId: socketRef.current?.id || '',
+    });
+    await handleJoinSpace();
   };
   const handleDisconnect = () => {
     setWsStatus('disconnected');
     addLog('Disconnected from server', 'error');
+    setIsInSpace(false);
   };
   const handleConnectError = () => {
     setWsStatus('disconnected');
@@ -224,7 +234,7 @@ const MusicAgent = () => {
       addLog('Disconnected from server', 'info');
       return;
     }
-
+    setIsLoading(true);
     setWsStatus('connecting');
     addLog('Connecting to server...', 'info');
     const socket = io(import.meta.env.VITE_JAM_MUSIC_AGENT_URL, {
@@ -260,7 +270,6 @@ const MusicAgent = () => {
       handleJoinSpace();
     }
 
-    setIsLoading(true);
     addLog('Requesting to join space...', 'info');
 
     socketRef.current.once(
@@ -505,7 +514,7 @@ const MusicAgent = () => {
           bottom: 0,
           background:
             'radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.1) 0%, transparent 50%)',
-          animation: `${pulse} 4s infinite ease-in-out`,
+          // animation: `${pulse} 4s infinite ease-in-out`,
         },
       }}
     >
@@ -608,7 +617,7 @@ const MusicAgent = () => {
                 <Box
                   sx={{
                     position: 'relative',
-                    animation: `${pulse} 2s infinite ease-in-out`,
+                    // animation: `${pulse} 2s infinite ease-in-out`,
                   }}
                 >
                   <MusicNote
@@ -648,8 +657,8 @@ const MusicAgent = () => {
                 </Typography>
               </Box>
               <Stack direction="row" spacing={2}>
-                <Tooltip
-                  title={wsStatus === 'connected' ? 'Disconnect' : 'Connect'}
+                {wsStatus === 'connected' && <Tooltip
+                  title={'Disconnect'}
                 >
                   <IconButton
                     onClick={() => connectSocket(wsStatus === 'connected')}
@@ -657,10 +666,10 @@ const MusicAgent = () => {
                       color: wsStatus === 'connected' ? '#4caf50' : '#f44336',
                       '&:hover': { transform: 'scale(1.1)' },
                       transition: 'transform 0.2s',
-                      animation:
-                        wsStatus === 'connected'
-                          ? `${pulse} 2s infinite`
-                          : 'none',
+                      // animation:
+                      //   wsStatus === 'connected'
+                      //     ? `${pulse} 2s infinite`
+                      //     : 'none',
                       position: 'relative',
                       '&::after':
                         wsStatus === 'connected'
@@ -673,14 +682,14 @@ const MusicAgent = () => {
                               bottom: -2,
                               borderRadius: '50%',
                               border: '2px solid #4caf50',
-                              animation: `${pulse} 2s infinite`,
+                              // animation: `${pulse} 2s infinite`,
                             }
                           : {},
                     }}
                   >
                     <RadioButtonChecked />
                   </IconButton>
-                </Tooltip>
+                </Tooltip>}
                 <Tooltip title={isMuted ? 'Unmute' : 'Mute'}>
                   <IconButton
                     onClick={() => {
@@ -832,7 +841,7 @@ const MusicAgent = () => {
                               height: '60px',
                               background:
                                 'radial-gradient(circle at center, rgba(96, 165, 250, 0.1) 0%, transparent 70%)',
-                              animation: `${pulse} 2s infinite ease-in-out`,
+                              // animation: `${pulse} 2s infinite ease-in-out`,
                             },
                           }}
                         >
@@ -1177,9 +1186,9 @@ const MusicAgent = () => {
                     <Button
                       variant="contained"
                       fullWidth
-                      onClick={handleJoinSpace}
+                      onClick={() => connectSocket()}
                       disabled={
-                        !socketRef.current?.connected || !spaceUrl || !audioUrl
+                        !spaceUrl || !audioUrl
                       }
                       sx={{
                         background: 'linear-gradient(135deg, #60a5fa, #3b82f6)',
@@ -1328,7 +1337,7 @@ const MusicAgent = () => {
                                   ? '2px solid #60a5fa'
                                   : 'none',
                               transition: 'all 0.2s',
-                              animation: `${pulse} 2s infinite ease-in-out`,
+                              // animation: `${pulse} 2s infinite ease-in-out`,
                               position: 'relative',
                               overflow: 'hidden',
                               '&::after': {
@@ -1486,7 +1495,7 @@ const MusicAgent = () => {
                                           : log.type === 'error'
                                           ? '#f44336'
                                           : '#60a5fa',
-                                      animation: `${pulse} 2s infinite`,
+                                      // animation: `${pulse} 2s infinite`,
                                     }}
                                   />
                                   [{log.timestamp}] {log.message}

@@ -534,6 +534,9 @@ const Leaderboard: React.FC = () => {
                   size="large"
                   className="primary"
                   onClick={async () => {
+                    if (preparingDemo) {
+                      return;
+                    }
                     if (!demoQuery) {
                       toast.error('Please enter a @username or $cashtag');
                       return;
@@ -546,7 +549,9 @@ const Leaderboard: React.FC = () => {
                     setPreparingDemo(true);
                     try {
                       await axios.post(
-                        `http://localhost:8080/demo/prepare-leaderboard`,
+                        `${
+                          import.meta.env.VITE_JAM_SERVER_URL
+                        }/demo/prepare-leaderboard`,
                         {
                           query: demoQuery,
                         }
@@ -579,7 +584,7 @@ const Leaderboard: React.FC = () => {
                     },
                   }}
                 >
-                  Try Demo
+                  {preparingDemo ? 'Preparing...' : 'Try Demo'}
                 </Button>
                 {/* </a> */}
                 <a

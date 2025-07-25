@@ -43,10 +43,7 @@ import 'katex/dist/katex.min.css';
 import SignPointsLeaderboard from '../components/SignPointsLeaderboard';
 import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
-import {
-  getDemoLeaderboard,
-  queryIdExists,
-} from '../services/db/demoLeaderboard.service';
+import { getDemoDoc } from '../services/db/demoLeaderboard.service';
 import axios from 'axios';
 
 const electrifyPulse = keyframes`
@@ -542,7 +539,7 @@ const Leaderboard: React.FC = () => {
                       return;
                     }
                     // check if already exists
-                    if (await queryIdExists(demoQuery)) {
+                    if (await getDemoDoc(demoQuery)) {
                       setSearchParams({ queryId: demoQuery });
                       return;
                     }

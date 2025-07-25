@@ -24,7 +24,10 @@ import {
   LocalFireDepartment,
   AutoAwesome,
 } from '@mui/icons-material';
-import { getDemoLeaderboard } from '../services/db/demoLeaderboard.service';
+import {
+  getDemoDoc,
+  getDemoLeaderboard,
+} from '../services/db/demoLeaderboard.service';
 
 const glowPulse = keyframes`
   0% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
@@ -89,14 +92,24 @@ const demoData = [
 const LeaderboardDemo: React.FC<{ queryId: string | null }> = ({ queryId }) => {
   const [currentRank, setCurrentRank] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [demoDoc, setDemoDoc] = useState<{
+    createdAt: number;
+    tweetsCount: number;
+    totalImpressions: number;
+  } | null>(null);
   const [demoLeaderboard, setDemoLeaderboard] =
     useState<
       { totalPoints: number; userId: string; name: string; username: string }[]
     >(demoData);
 
   const fetchDemoLeaderboard = async (queryId: string) => {
-    const lb = await getDemoLeaderboard(queryId);
+    const responses = await Promise.all([
+      getDemoLeaderboard(queryId),
+      getDemoDoc(queryId),
+    ]);
+    const lb = responses[0];
     setDemoLeaderboard(lb.sort((a, b) => b.totalPoints - a.totalPoints) as any);
+    setDemoDoc(responses[1]);
   };
 
   useEffect(() => {
@@ -281,12 +294,10 @@ const LeaderboardDemo: React.FC<{ queryId: string | null }> = ({ queryId }) => {
             variant="h6"
             sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
           >
-            {Math.round(
-              demoLeaderboard.reduce((acc, user) => acc + user.totalPoints, 0)
-            )}
+            {demoDoc?.tweetsCount || (Math.floor(Math.random() * 50) + 10) * 12}
           </Typography>
           <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
-            Total Points
+            Latest Tweets
           </Typography>
         </Box>
 
@@ -295,10 +306,11 @@ const LeaderboardDemo: React.FC<{ queryId: string | null }> = ({ queryId }) => {
             variant="h6"
             sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
           >
-            {(Math.floor(Math.random() * 50) + 10) * 12}
+            {demoDoc?.totalImpressions ||
+              (Math.floor(Math.random() * 50) + 100) * 12}
           </Typography>
           <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
-            Active Today
+            Impressions
           </Typography>
         </Box>
       </Box>

@@ -16,7 +16,14 @@ export const getDemoLeaderboard = async (queryId: string) => {
   return docs.docs.map((doc) => doc.data());
 };
 
-export const queryIdExists = async (queryId: string) => {
+export const getDemoDoc = async (queryId: string) => {
   const ss = await getDoc(doc(db, 'demo', queryId));
-  return ss.exists();
+  if (!ss.exists) {
+    return null;
+  }
+  return ss.data() as {
+    createdAt: number;
+    tweetsCount: number;
+    totalImpressions: number;
+  };
 };

@@ -45,6 +45,11 @@ import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
 import { getDemoDoc } from '../services/db/demoLeaderboard.service';
 import axios from 'axios';
+import { extractSpaceId } from '../utils';
+import { createSpaceSubmission } from '../services/db/spaceSubmissions.service';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
+import { LoadingButton } from '@mui/lab';
+import LoginDialog from '../components/LoginDialog';
 
 const electrifyPulse = keyframes`
   0% { text-shadow: 0 0 1px #60a5fa, 0 0 2px #60a5fa, 0 0 3px rgba(236, 72, 153, 0.5); }
@@ -163,6 +168,51 @@ const Leaderboard: React.FC = () => {
   const [preparingDemo, setPreparingDemo] = useState(false);
   const [demoQuery, setDemoQuery] = useState('');
   const [searchParams, setSearchParams] = useSearchParams();
+  const { user: dynamicUser } = useDynamicContext();
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [isClaiming, setIsClaiming] = useState(false);
+  const { loading: authLoading } = useAuthContext();
+
+  const handleClaimSpacePoints = async () => {
+    const _spaceId = extractSpaceId(spaceUrlForPoints);
+    if (!spaceUrlForPoints.trim() || !_spaceId) {
+      return toast.error('Please enter a valid Twitter Space URL.');
+    }
+    if (!dynamicUser) {
+      setShowAuthDialog(true);
+      return;
+    }
+    const twitterCredentials = dynamicUser.verifiedCredentials.find(
+      (cred) => cred.format === 'oauth'
+    );
+    if (!twitterCredentials) {
+      toast.error('Please connect your Twitter account.');
+      return setShowAuthDialog(true);
+    }
+    const spaceId = extractSpaceId(spaceUrlForPoints);
+    if (!spaceId) {
+      toast.error('Please enter a valid Twitter Space URL.');
+      return;
+    }
+    setIsClaiming(true);
+    try {
+      await createSpaceSubmission(spaceId, {
+        spaceUrl: spaceUrlForPoints,
+        userId: twitterCredentials.id,
+        twitterId: twitterCredentials.oauthAccountId,
+        username: twitterCredentials.oauthUsername,
+        name: twitterCredentials.publicIdentifier,
+        createdAt: new Date(),
+        spacePoints: 0,
+      });
+      toast.success('Space URL submitted for verification!');
+      setSpaceUrlForPoints('');
+    } catch (error) {
+      toast.error('Failed to submit space URL. Please try again.');
+    } finally {
+      setIsClaiming(false);
+    }
+  };
 
   useEffect(() => {
     const calculateTimeLeft = () => {
@@ -541,12 +591,13 @@ const Leaderboard: React.FC = () => {
                       toast.error('Please enter a @username or $cashtag');
                       return;
                     }
+                    setPreparingDemo(true);
                     // check if already exists
                     if (await getDemoDoc(demoQuery)) {
+                      setPreparingDemo(false);
                       setSearchParams({ queryId: demoQuery });
                       return;
                     }
-                    setPreparingDemo(true);
                     try {
                       await axios.post(
                         `${
@@ -1437,15 +1488,17 @@ const Leaderboard: React.FC = () => {
                   value={spaceUrlForPoints}
                   onChange={(e) => setSpaceUrlForPoints(e.target.value)}
                   sx={{ mb: 2 }}
+                  helperText="Space url: x.com/i/spaces/*"
                 />
-                <Button
+                <LoadingButton
+                  loading={isClaiming}
                   fullWidth
                   variant="contained"
                   color="primary"
-                  // Replace with your claim handler if needed
+                  onClick={handleClaimSpacePoints}
                 >
                   Claim Points
-                </Button>
+                </LoadingButton>
               </Paper>
             </Grid>
             {/* Right side - Countdown */}
@@ -1882,6 +1935,10 @@ const Leaderboard: React.FC = () => {
         </Box>
       </Container>
       <Toaster position="bottom-right" />
+      <LoginDialog
+        open={showAuthDialog && !authLoading}
+        onClose={() => setShowAuthDialog(false)}
+      />
     </main>
   );
 };

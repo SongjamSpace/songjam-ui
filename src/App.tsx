@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import './App.css';
 import Background from './components/Background';
 import Logo from './components/Logo';
-import songjamImage from './songjam.png';
 import {
   Button,
   TextField,
@@ -13,9 +12,6 @@ import {
   Typography,
   useTheme,
   TextareaAutosize,
-  Paper,
-  Link,
-  Chip,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { LoadingButton } from '@mui/lab';
@@ -29,20 +25,8 @@ import { createCheckoutSession } from './services/db/stripe';
 import { useAuthContext } from './contexts/AuthContext';
 import AIDemoPreview from './components/AIDemoPreview';
 import { keyframes } from '@mui/system';
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  Text,
-} from 'recharts';
-import { BlockMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
-import { createSpaceSubmission } from './services/db/spaceSubmissions.service';
-import SignPointsLeaderboard from './components/SignPointsLeaderboard';
 
 const electrifyPulse = keyframes`
   0% { text-shadow: 0 0 1px #60a5fa, 0 0 2px #60a5fa, 0 0 3px rgba(236, 72, 153, 0.5); }
@@ -82,14 +66,10 @@ export default function App() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const [spaceUrlForPoints, setSpaceUrlForPoints] = useState('');
-  const [isClaiming, setIsClaiming] = useState(false);
   const [xUser, setXUser] = useState<{
     screenName: string;
     avatarUrl: string;
   } | null>(null);
-
-  const { user: dynamicUser } = useDynamicContext();
 
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
@@ -231,46 +211,6 @@ export default function App() {
   useEffect(() => {
     document.body.className = 'dark';
   }, []);
-
-  const handleClaimSpacePoints = async () => {
-    if (!spaceUrlForPoints.trim()) {
-      return toast.error('Please enter a valid Twitter Space URL.');
-    }
-    if (!dynamicUser) {
-      setShowAuthDialog(true);
-      return;
-    }
-    const twitterCredentials = dynamicUser.verifiedCredentials.find(
-      (cred) => cred.format === 'oauth'
-    );
-    if (!twitterCredentials) {
-      toast.error('Please connect your Twitter account.');
-      return setShowAuthDialog(true);
-    }
-    const spaceId = extractSpaceId(spaceUrlForPoints);
-    if (!spaceId) {
-      toast.error('Please enter a valid Twitter Space URL.');
-      return;
-    }
-    setIsClaiming(true);
-    try {
-      await createSpaceSubmission(spaceId, {
-        spaceUrl: spaceUrlForPoints,
-        userId: twitterCredentials.id,
-        twitterId: twitterCredentials.oauthAccountId,
-        username: twitterCredentials.oauthUsername,
-        name: twitterCredentials.publicIdentifier,
-        createdAt: new Date(),
-        spacePoints: 0,
-      });
-      toast.success('Space URL submitted for verification!');
-      setSpaceUrlForPoints('');
-    } catch (error) {
-      toast.error('Failed to submit space URL. Please try again.');
-    } finally {
-      setIsClaiming(false);
-    }
-  };
 
   return (
     <main className="landing">

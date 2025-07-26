@@ -415,26 +415,17 @@ const LeaderboardDemo: React.FC<{ queryId: string | null }> = ({ queryId }) => {
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Badge
-                      badgeContent={index === 0 ? 'NEW' : null}
-                      color="error"
+                    <Avatar
                       sx={{
-                        '& .MuiBadge-badge': {
-                          fontSize: '0.6rem',
-                          height: '16px',
-                          minWidth: '16px',
-                        },
+                        width: 45,
+                        height: 45,
+                        ...getRankStyle(index + 1),
                       }}
-                    >
-                      <Avatar
-                        sx={{
-                          width: 45,
-                          height: 45,
-                          ...getRankStyle(index + 1),
-                        }}
-                        src={`https://unavatar.io/twitter/${user.username}`}
-                      />
-                    </Badge>
+                      src={
+                        (user as any)?.avatar ||
+                        `https://unavatar.io/twitter/${user.username}`
+                      }
+                    />
                     <Box sx={{ minWidth: 0, flex: 1, maxWidth: 150 }}>
                       <Typography
                         variant="body1"

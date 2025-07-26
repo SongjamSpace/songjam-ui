@@ -959,6 +959,25 @@ const SpaceCRM: React.FC = () => {
                         </Typography>
                       </Box>
                     </Box>
+                    <Box className="stat-item">
+                      <Box>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: 'text.secondary' }}
+                        >
+                          {t('startedAtStat', 'Started at')}
+                        </Typography>
+                        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                          {format(new Date(space.startedAt), 'MMM dd, yyyy')}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{ color: 'text.secondary', display: 'block' }}
+                        >
+                          {format(new Date(space.startedAt), 'h:mm a')}
+                        </Typography>
+                      </Box>
+                    </Box>
                   </Box>
                 ) : (
                   <CircularProgress

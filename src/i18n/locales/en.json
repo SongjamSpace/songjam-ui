@@ -36,5 +36,6 @@
   "currentLangCode": "en",
   "pauseButton": "Pause",
   "resumeButton": "Resume",
-  "generationPaused": "Generation paused. Click Resume to continue."
-} 
+  "generationPaused": "Generation paused. Click Resume to continue.",
+  "startedAtStat": "Started At"
+}

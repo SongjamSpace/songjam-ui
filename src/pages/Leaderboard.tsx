@@ -21,19 +21,8 @@ import {
   TextField,
   TextareaAutosize,
 } from '@mui/material';
-import {
-  TrendingUp,
-  EmojiEvents,
-  Star,
-  CheckCircle,
-  ArrowForward,
-  People,
-  Analytics,
-  AutoAwesome,
-  Speed,
-  Security,
-} from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { ArrowForward } from '@mui/icons-material';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Background from '../components/Background';
 import Logo from '../components/Logo';
 import LeaderboardDemo from '../components/LeaderboardDemo';
@@ -52,6 +41,10 @@ import {
 import { BlockMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
 import SignPointsLeaderboard from '../components/SignPointsLeaderboard';
+import toast from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
+import { getDemoDoc } from '../services/db/demoLeaderboard.service';
+import axios from 'axios';
 
 const electrifyPulse = keyframes`
   0% { text-shadow: 0 0 1px #60a5fa, 0 0 2px #60a5fa, 0 0 3px rgba(236, 72, 153, 0.5); }
@@ -167,6 +160,10 @@ const Leaderboard: React.FC = () => {
     minutes: 0,
     seconds: 0,
   });
+  const [preparingDemo, setPreparingDemo] = useState(false);
+  const [demoQuery, setDemoQuery] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+
   useEffect(() => {
     const calculateTimeLeft = () => {
       const launchDate = new Date('2025-09-17T12:00:00Z');
@@ -188,89 +185,6 @@ const Leaderboard: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // const handleLanguageChange = async () => {
-  //   // Language change logic if needed
-  // };
-
-  // const features = [
-  //   {
-  //     icon: <TrendingUp color="primary" />,
-  //     title: 'Real-time Analytics',
-  //     description:
-  //       'Track engagement, growth, and performance metrics in real-time',
-  //   },
-  //   {
-  //     icon: <EmojiEvents color="primary" />,
-  //     title: 'Competition Management',
-  //     description: 'Create and manage leaderboards with custom scoring systems',
-  //   },
-  //   {
-  //     icon: <People color="primary" />,
-  //     title: 'Community Engagement',
-  //     description: 'Foster community participation with gamified experiences',
-  //   },
-  //   {
-  //     icon: <Analytics color="primary" />,
-  //     title: 'Advanced Insights',
-  //     description: 'Deep analytics and reporting for data-driven decisions',
-  //   },
-  //   {
-  //     icon: <AutoAwesome color="primary" />,
-  //     title: 'Custom Branding',
-  //     description: 'White-label solutions with your brand identity',
-  //   },
-  //   {
-  //     icon: <Speed color="primary" />,
-  //     title: 'Lightning Fast',
-  //     description: 'Optimized performance for seamless user experience',
-  //   },
-  // ];
-
-  // const plans = [
-  //   {
-  //     name: 'Pre-TGE',
-  //     price: '$SANG 100K',
-  //     period: 'Deposit',
-  //     features: [
-  //       'Up to 1,000 participants',
-  //       'Basic analytics dashboard',
-  //       'Standard leaderboard templates',
-  //       'Email support',
-  //       'API access',
-  //     ],
-  //     popular: false,
-  //   },
-  //   {
-  //     name: 'Post-TGE',
-  //     price: '$SANG 1M',
-  //     period: 'Deposit',
-  //     features: [
-  //       'Up to 10,000 participants',
-  //       'Advanced analytics & insights',
-  //       'Custom leaderboard designs',
-  //       'Priority support',
-  //       'Advanced API features',
-  //       'Custom integrations',
-  //       'White-label options',
-  //     ],
-  //     popular: true,
-  //   },
-  //   {
-  //     name: 'Enterprise',
-  //     price: 'Custom',
-  //     period: '',
-  //     features: [
-  //       'Unlimited participants',
-  //       'Custom development',
-  //       'Dedicated support team',
-  //       'SLA guarantees',
-  //       'On-premise deployment',
-  //       'Custom integrations',
-  //       'Advanced security features',
-  //     ],
-  //     popular: false,
-  //   },
-  // ];
   // Auto-scroll to sections based on URL hash
   useEffect(() => {
     const hash = window.location.hash;
@@ -343,6 +257,13 @@ const Leaderboard: React.FC = () => {
     }, 6000);
     return () => clearInterval(interval);
   }, [testimonials.length]);
+
+  useEffect(() => {
+    const queryId = searchParams.get('queryId');
+    if (queryId) {
+      setDemoQuery(queryId);
+    }
+  }, [searchParams]);
 
   return (
     <main className="landing" style={{ paddingBottom: 0, marginBottom: 0 }}>
@@ -555,6 +476,46 @@ const Leaderboard: React.FC = () => {
                 Reward the top voices in your community through the fairest and
                 most transparent leaderboards in Web3.
               </Typography>
+              <Box display={'flex'} justifyContent={'center'}>
+                <TextField
+                  // fullWidth
+                  label="Enter your account or cashtag"
+                  value={demoQuery}
+                  onChange={(e) => setDemoQuery(e.target.value)}
+                  placeholder="@SongjamSpace or $SANG"
+                  sx={{
+                    mb: 3,
+                    width: 320,
+                    '& .MuiOutlinedInput-root': {
+                      color: '#fff',
+                      '& fieldset': {
+                        borderColor: 'rgba(255, 255, 255, 0.3)',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: '#40E0D0',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#40E0D0',
+                      },
+                    },
+                    '& .MuiInputLabel-root': {
+                      color: 'rgba(255, 255, 255, 0.7)',
+                      '&.Mui-focused': {
+                        color: '#40E0D0',
+                      },
+                    },
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <img
+                        src="/logos/twitter.png"
+                        alt="X"
+                        style={{ width: 16, height: 16, marginRight: 8 }}
+                      />
+                    ),
+                  }}
+                />
+              </Box>
               {/* Neon-glow CTA Button */}
               <Stack
                 direction={{ xs: 'column', sm: 'row' }}
@@ -562,41 +523,70 @@ const Leaderboard: React.FC = () => {
                 justifyContent="center"
                 sx={{ zIndex: 2, mt: 1 }}
               >
-                <a
+                {/* <a
                   href="https://docs.google.com/forms/d/1j3-2ZTkio3KvnK5bv6ac6ZcaJXXUKyguof4uIxXbQHE"
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ textDecoration: 'none' }}
-                >
-                  <Button
-                    variant="contained"
-                    size="large"
-                    className="primary"
-                    sx={{
-                      px: 6,
-                      py: 2,
-                      fontSize: '1.3rem',
+                > */}
+                <Button
+                  variant="contained"
+                  size="large"
+                  className="primary"
+                  onClick={async () => {
+                    if (preparingDemo) {
+                      return;
+                    }
+                    if (!demoQuery) {
+                      toast.error('Please enter a @username or $cashtag');
+                      return;
+                    }
+                    // check if already exists
+                    if (await getDemoDoc(demoQuery)) {
+                      setSearchParams({ queryId: demoQuery });
+                      return;
+                    }
+                    setPreparingDemo(true);
+                    try {
+                      await axios.post(
+                        `${
+                          import.meta.env.VITE_JAM_SERVER_URL
+                        }/demo/prepare-leaderboard`,
+                        {
+                          query: demoQuery,
+                        }
+                      );
+                      setSearchParams({ queryId: demoQuery });
+                    } catch (e) {
+                    } finally {
+                      setPreparingDemo(false);
+                    }
+                  }}
+                  sx={{
+                    px: 6,
+                    py: 2,
+                    fontSize: '1.3rem',
+                    background:
+                      'linear-gradient(90deg, #60a5fa, #8b5cf6, #ec4899)',
+                    color: 'white',
+                    borderRadius: '40px',
+                    boxShadow: '0 0 32px #60a5fa88, 0 0 64px #ec489988',
+                    textTransform: 'uppercase',
+                    fontWeight: 800,
+                    letterSpacing: '0.08em',
+                    animation: 'pulseGlow 2s infinite',
+                    transition: 'transform 0.2s',
+                    '&:hover': {
                       background:
-                        'linear-gradient(90deg, #60a5fa, #8b5cf6, #ec4899)',
-                      color: 'white',
-                      borderRadius: '40px',
-                      boxShadow: '0 0 32px #60a5fa88, 0 0 64px #ec489988',
-                      textTransform: 'uppercase',
-                      fontWeight: 800,
-                      letterSpacing: '0.08em',
-                      animation: 'pulseGlow 2s infinite',
-                      transition: 'transform 0.2s',
-                      '&:hover': {
-                        background:
-                          'linear-gradient(90deg, #ec4899, #8b5cf6, #60a5fa)',
-                        transform: 'scale(1.06) rotate(-1deg)',
-                        boxShadow: '0 0 64px #ec4899cc, 0 0 128px #60a5facc',
-                      },
-                    }}
-                  >
-                    Launch Now
-                  </Button>
-                </a>
+                        'linear-gradient(90deg, #ec4899, #8b5cf6, #60a5fa)',
+                      transform: 'scale(1.06) rotate(-1deg)',
+                      boxShadow: '0 0 64px #ec4899cc, 0 0 128px #60a5facc',
+                    },
+                  }}
+                >
+                  {preparingDemo ? 'Preparing...' : 'Try Demo'}
+                </Button>
+                {/* </a> */}
                 <a
                   href="https://t.me/adamsongjam"
                   target="_blank"
@@ -773,7 +763,7 @@ const Leaderboard: React.FC = () => {
                   mt: { xs: 4, md: 0 },
                 }}
               >
-                <LeaderboardDemo />
+                <LeaderboardDemo queryId={searchParams.get('queryId')} />
               </Box>
             </Grid>
           </Grid>
@@ -1891,6 +1881,7 @@ const Leaderboard: React.FC = () => {
           <p>© 2025 Songjam. All rights reserved.</p>
         </Box>
       </Container>
+      <Toaster position="bottom-right" />
     </main>
   );
 };

@@ -37,5 +37,10 @@
   "pauseButton": "Pause",
   "resumeButton": "Resume",
   "generationPaused": "Generation paused. Click Resume to continue.",
-  "startedAtStat": "Started At"
+  "startedAtStat": "Started At",
+  "tweetSummaryTitle": "Tweet Summary",
+  "copyTweetButton": "Copy Tweet",
+  "copyToClipboard": "Copy to Clipboard",
+  "noTweetSummaryAvailable": "No tweet summary available",
+  "viewOnX": "View on X"
 }

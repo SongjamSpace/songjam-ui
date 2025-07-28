@@ -509,3 +509,18 @@ export const getTestListeners = (): SpaceListener[] => {
     },
   ];
 };
+
+const TWEET_SUMMARY_COLLECTION = 'tweetSpacesPipeline';
+export type TweetSummary = {
+  createdAt: number;
+  isSent: boolean;
+  spaceId: string;
+  status: 'SENT';
+  tweet: string;
+  tweetId: string;
+};
+export const getTweetSummary = async (spaceId: string) => {
+  const docRef = doc(db, TWEET_SUMMARY_COLLECTION, spaceId);
+  const docSnap = await getDoc(docRef);
+  return docSnap.data() as TweetSummary;
+};

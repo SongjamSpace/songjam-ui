@@ -313,6 +313,22 @@ const LeaderboardDemo: React.FC<{ queryId: string | null }> = ({ queryId }) => {
             Impressions
           </Typography>
         </Box>
+        {demoDoc?.createdAt && (
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography
+              variant="h6"
+              sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
+            >
+              {new Date(demoDoc?.createdAt).toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric',
+              })}
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
+              Last Refreshed
+            </Typography>
+          </Box>
+        )}
       </Box>
 
       {/* Leaderboard Table */}

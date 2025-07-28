@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import {
@@ -93,6 +93,7 @@ const SpaceCRM: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { spaceId } = useParams<{ spaceId: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [space, setSpace] = useState<Space | null>(null);
   const [activeTab, setActiveTab] = useState<CRMTab>('audience');
   const [selectedModel, setSelectedModel] = useState('grok');
@@ -136,7 +137,12 @@ const SpaceCRM: React.FC = () => {
 
     const unsubscribe = subscribeToSpace(spaceId, (space) => {
       if (space) {
-        setActiveTab(space.isBroadcast ? 'listenerRetention' : 'audience');
+        const defaultTab = space.isBroadcast ? 'listenerRetention' : 'audience';
+        // Only update URL if no tab parameter is already set
+        if (!searchParams.get('tab')) {
+          setActiveTab(defaultTab);
+          setSearchParams({ tab: defaultTab });
+        }
         setSpace(space);
         if (space.state !== 'Ended' && !hasUpdatedSpaceStatus.current) {
           hasUpdatedSpaceStatus.current = true;
@@ -204,6 +210,25 @@ const SpaceCRM: React.FC = () => {
     }
   }, [user]);
 
+  // Handle URL search params for activeTab
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (
+      tabParam &&
+      [
+        'dashboard',
+        'audience',
+        'content',
+        'timeline',
+        'transcription',
+        'listenerRetention',
+        'campaigns',
+      ].includes(tabParam)
+    ) {
+      setActiveTab(tabParam as CRMTab);
+    }
+  }, [searchParams]);
+
   const handleTabChange = (_: React.SyntheticEvent, newValue: CRMTab) => {
     // const isPro = user?.currentPlan === 'pro';
     // if (
@@ -214,6 +239,7 @@ const SpaceCRM: React.FC = () => {
     //   return;
     // }
     setActiveTab(newValue);
+    setSearchParams({ tab: newValue });
   };
 
   const handleRetentionContextUpdate = useCallback(

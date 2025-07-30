@@ -38,8 +38,7 @@ export type UserLeaderboardEntry = {
   name: string;
   totalPoints: number;
 
-  postGenesisPoints: number;
-  preGenesisPoints: number;
+  maxEarlyMultiplier: number;
 };
 
 export const getTwitterMentionsLeaderboard = async (

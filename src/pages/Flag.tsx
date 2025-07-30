@@ -27,7 +27,7 @@ const Flag = () => {
   const { user } = useDynamicContext();
 
   //   const [reportInfo, setReportInfo] = useState<AgentReport | null>(null);
-  const [projectId, setProjectId] = useState<string>('evaonlinexyz');
+  const [projectId, setProjectId] = useState<string>('');
   const [flagUserId, setFlagUserId] = useState<string>('');
   const [slashDoc, setSlashDoc] = useState<SlashDoc | null>(null);
   const [loading, setLoading] = useState(true);
@@ -114,12 +114,14 @@ const Flag = () => {
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
     const id = searchParams.get('userId');
+    const projectId = searchParams.get('projectId');
     if (!id) {
       alert('No userId provided');
       return;
     }
     setFlagUserId(id);
-    fetchSlash(projectId, id);
+    setProjectId(projectId || 'evaonlinexyz');
+    fetchSlash(projectId || 'evaonlinexyz', id);
   }, [user]);
 
   const fetchReport = async (id: string) => {

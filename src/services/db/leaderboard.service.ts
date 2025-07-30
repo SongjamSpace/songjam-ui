@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { db } from '../firebase.service';
 import {
   doc,
@@ -19,11 +20,14 @@ import {
   arrayUnion,
 } from 'firebase/firestore';
 
-const projectIdMap: { [key: string]: string } = {
-  evaonlinexyz: 'evaonlinexyz_leaderboard',
+const leaderboardEndpointsIdMap: { [key: string]: string } = {
+  evaonlinexyz: 'https://evaonlinexyz-leaderboard.logesh-063.workers.dev/',
+  songjamspace:
+    'https://songjamspace-leaderboard.logesh-063.workers.dev/songjamspace',
 };
 const projectIdTweetsMap: { [key: string]: string } = {
   evaonlinexyz: 'evaonlinexyz_twitterMentions',
+  songjamspace: 'twitterMentions_17_06_2025',
 };
 
 export type LeaderboardUser = {
@@ -64,15 +68,21 @@ export type UserTweetMention = {
 };
 
 export const getLeaderBoardUser = async (projectId: string, userId: string) => {
-  const leaderboardRef = doc(db, projectIdMap[projectId], userId);
-  const docSs = await getDoc(leaderboardRef);
-  return docSs.data() as LeaderboardUser;
+  const lbData = await axios.get(leaderboardEndpointsIdMap[projectId]);
+  const leaderboard = Array.isArray(lbData.data)
+    ? lbData.data
+    : lbData.data.result;
+  const leaderboardUser = leaderboard.find(
+    (user: LeaderboardUser) => user.userId === userId
+  );
+  return leaderboardUser;
 };
 
 export const getTwitterMentions = async (projectId: string, userId: string) => {
   const leaderboardRef = query(
     collection(db, projectIdTweetsMap[projectId]),
-    where('id', '==', userId)
+    where('id', '==', userId),
+    limit(20)
   );
   const snapshot = await getDocs(leaderboardRef);
   return snapshot.docs.map((d) => d.data() as UserTweetMention);
@@ -107,6 +117,7 @@ export type SlashDoc = {
   slashCount: number;
   defendCount: number;
   slashedUsernames: string[];
+  slashedUserIds: string[];
   defendedUsernames: string[];
   updatedAt: number;
 };
@@ -128,10 +139,11 @@ export const createSlash = async (
     proposer,
     username,
     slashedUsernames: [proposer],
-    slashedUserIds: arrayUnion(voterUserId),
+    slashedUserIds: [voterUserId],
     defendedUsernames: [],
     updatedAt: 0,
     userId: flagUserId,
+    projectId,
   } as SlashDoc;
   await setDoc(slashRef, slashDoc);
   return slashDoc;

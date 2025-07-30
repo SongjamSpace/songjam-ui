@@ -17,6 +17,7 @@ import MusicAgent from './pages/MusicAgent';
 import Leaderboard from './pages/Leaderboard';
 import WebFont from 'webfontloader';
 import Flag from './pages/Flag';
+import SignPointsLeaderboard from './components/SignPointsLeaderboard';
 
 WebFont.load({
   google: {
@@ -48,7 +49,10 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/campaigns/:id" element={<CampaignDetails />} />
                 <Route path="/dj" element={<MusicAgent />} />
-                <Route path="/leaderboard" element={<Leaderboard />} />
+                <Route
+                  path="/leaderboard"
+                  element={<SignPointsLeaderboard />}
+                />
                 <Route path="/flags" element={<Flag />} />
               </Routes>
             </AuthProvider>

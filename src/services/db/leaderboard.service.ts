@@ -143,6 +143,7 @@ export const createSlash = async (
     defendedUsernames: [],
     updatedAt: 0,
     userId: flagUserId,
+    projectId,
   } as SlashDoc;
   await setDoc(slashRef, slashDoc);
   return slashDoc;

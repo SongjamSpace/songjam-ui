@@ -616,11 +616,11 @@ const SignPointsLeaderboard = () => {
                               width: 40,
                               height: 40,
                               border:
-                                user.preGenesisPoints > 0
+                                user.maxEarlyMultiplier > 1
                                   ? '2px solid #8B5CF6'
                                   : '2px solid #EC4899',
                               boxShadow:
-                                user.preGenesisPoints > 0
+                                user.maxEarlyMultiplier > 1
                                   ? '0 0 10px #8B5CF6'
                                   : '0 0 10px #EC4899',
                             }}

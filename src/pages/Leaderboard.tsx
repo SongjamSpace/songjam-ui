@@ -1157,7 +1157,7 @@ const Leaderboard: React.FC = () => {
               <Button
                 variant="contained"
                 color="primary"
-                onClick={() => (window.location.href = '/leaderboard')}
+                onClick={() => navigate('/leaderboard')}
                 sx={{
                   background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
                   '&:hover': {

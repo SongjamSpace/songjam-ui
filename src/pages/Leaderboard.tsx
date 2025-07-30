@@ -1122,6 +1122,53 @@ const Leaderboard: React.FC = () => {
             marginRight: 'calc(-50vw + 50%)',
           }}
         >
+          {/* Navigation Section */}
+          <Box sx={{ mb: 4, textAlign: 'center' }}>
+            <Paper
+              sx={{
+                p: 3,
+                background: 'rgba(0,0,0,0.5)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '10px',
+                display: 'inline-block',
+                width: '100%',
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{
+                  background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  fontWeight: 'bold',
+                  mb: 2,
+                }}
+              >
+                View $SANG Leaderboard
+              </Typography>
+              <Typography
+                variant="body2"
+                color="rgba(255,255,255,0.7)"
+                sx={{ mb: 3 }}
+              >
+                Track your Sing Points, see rankings, and compete for token
+                rewards
+              </Typography>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => (window.location.href = '/leaderboard')}
+                sx={{
+                  background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #3b82f6, #7c3aed)',
+                  },
+                }}
+              >
+                View Leaderboard
+              </Button>
+            </Paper>
+          </Box>
           <Grid container spacing={4} sx={{ mt: 4, alignItems: 'center' }}>
             {/* Left side - Claim Space Points */}
             <Grid item xs={12} md={6}>

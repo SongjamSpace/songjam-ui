@@ -124,13 +124,22 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
   // Query all listeners (removed limit)
   const [liveListeners, loading, error] = useCollectionData(
     query(
-      collection(db, 'spaces', spaceId, 'liveListeners'),
+      collection(
+        db,
+        'spaces',
+        spaceId,
+        space?.state === 'Ended' ? 'listenerLogs' : 'liveListeners'
+      ),
       orderBy('joinedAt', 'desc') // Keep ordering if needed, or remove if natural order is fine
     )
   );
 
   useEffect(() => {
-    if (liveListeners?.length && previousListeners.length === 0) {
+    if (
+      liveListeners?.length &&
+      previousListeners.length === 0 &&
+      space?.state !== 'Ended'
+    ) {
       setPreviousListeners(liveListeners as SpaceListener[]);
     }
   }, [liveListeners]);

@@ -134,21 +134,25 @@ const ListenerNotifications: React.FC<ListenerNotificationsProps> = ({
                   : 'Unknown time'}
               </Typography>
             </Box>
-            <IconButton
-              size="small"
-              onClick={() =>
-                window.open(
-                  `https://twitter.com/${listener.twitterScreenName}`,
-                  '_blank'
-                )
-              }
-              sx={{
-                color: 'rgba(255, 255, 255, 0.7)',
-                '&:hover': { color: '#1DA1F2' },
-              }}
-            >
-              <Person fontSize="small" />
-            </IconButton>
+            {listener.location ? (
+              <Typography variant="caption">{listener.location}</Typography>
+            ) : (
+              <IconButton
+                size="small"
+                onClick={() =>
+                  window.open(
+                    `https://twitter.com/${listener.twitterScreenName}`,
+                    '_blank'
+                  )
+                }
+                sx={{
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  '&:hover': { color: '#1DA1F2' },
+                }}
+              >
+                <Person fontSize="small" />
+              </IconButton>
+            )}
           </Box>
         ))}
       </Box>

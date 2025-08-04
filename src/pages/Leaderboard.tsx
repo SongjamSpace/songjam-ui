@@ -6,18 +6,9 @@ import {
   Button,
   Grid,
   Card,
-  CardContent,
-  CardActions,
-  Chip,
   Stack,
   Paper,
-  Divider,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
   Avatar,
-  Badge,
   TextField,
   TextareaAutosize,
 } from '@mui/material';
@@ -28,7 +19,7 @@ import Logo from '../components/Logo';
 import LeaderboardDemo from '../components/LeaderboardDemo';
 import { keyframes } from '@mui/system';
 import { useAuthContext } from '../contexts/AuthContext';
-import { useTranslation } from 'react-i18next';
+// import { useTranslation } from 'react-i18next';
 import {
   PieChart,
   Pie,
@@ -38,17 +29,11 @@ import {
   ResponsiveContainer,
   Text as RechartsText,
 } from 'recharts';
-import { BlockMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
-import SignPointsLeaderboard from '../components/SignPointsLeaderboard';
 import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
 import { getDemoDoc } from '../services/db/demoLeaderboard.service';
 import axios from 'axios';
-import { extractSpaceId } from '../utils';
-import { createSpaceSubmission } from '../services/db/spaceSubmissions.service';
-import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
-import { LoadingButton } from '@mui/lab';
 import LoginDialog from '../components/LoginDialog';
 
 const electrifyPulse = keyframes`
@@ -63,7 +48,7 @@ const panelBorderGlow = keyframes`
   100% { box-shadow: 0 0 20px rgba(96, 165, 250, 0.5); }
 `;
 
-const textPulse = keyframes`
+export const textPulse = keyframes`
   0% { opacity: 0.7; }
   50% { opacity: 1; }
   100% { opacity: 0.7; }
@@ -151,94 +136,23 @@ const renderCustomizedLabel = ({
 const Leaderboard: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuthContext();
-  const { t } = useTranslation();
+  // const { t } = useTranslation();
   // const [selectedPlan, setSelectedPlan] = useState<
   //   'starter' | 'pro' | 'enterprise'
   // >('pro');
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [testimonialFade, setTestimonialFade] = useState(true);
-  const [spaceUrlForPoints, setSpaceUrlForPoints] = useState('');
-  // const [isClaiming, setIsClaiming] = useState(false);
-  const [timeLeft, setTimeLeft] = useState({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
   const [preparingDemo, setPreparingDemo] = useState(false);
   const [demoQuery, setDemoQuery] = useState('');
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user: dynamicUser } = useDynamicContext();
+  // const { user: dynamicUser } = useDynamicContext();
   const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const [isClaiming, setIsClaiming] = useState(false);
   const { loading: authLoading } = useAuthContext();
-
-  const handleClaimSpacePoints = async () => {
-    const _spaceId = extractSpaceId(spaceUrlForPoints);
-    if (!spaceUrlForPoints.trim() || !_spaceId) {
-      return toast.error('Please enter a valid Twitter Space URL.');
-    }
-    if (!dynamicUser) {
-      setShowAuthDialog(true);
-      return;
-    }
-    const twitterCredentials = dynamicUser.verifiedCredentials.find(
-      (cred) => cred.format === 'oauth'
-    );
-    if (!twitterCredentials) {
-      toast.error('Please connect your Twitter account.');
-      return setShowAuthDialog(true);
-    }
-    const spaceId = extractSpaceId(spaceUrlForPoints);
-    if (!spaceId) {
-      toast.error('Please enter a valid Twitter Space URL.');
-      return;
-    }
-    setIsClaiming(true);
-    try {
-      await createSpaceSubmission(spaceId, {
-        spaceUrl: spaceUrlForPoints,
-        userId: twitterCredentials.id,
-        twitterId: twitterCredentials.oauthAccountId,
-        username: twitterCredentials.oauthUsername,
-        name: twitterCredentials.publicIdentifier,
-        createdAt: new Date(),
-        spacePoints: 0,
-      });
-      toast.success('Space URL submitted for verification!');
-      setSpaceUrlForPoints('');
-    } catch (error) {
-      toast.error('Failed to submit space URL. Please try again.');
-    } finally {
-      setIsClaiming(false);
-    }
-  };
-
-  useEffect(() => {
-    const calculateTimeLeft = () => {
-      const launchDate = new Date('2025-09-17T12:00:00Z');
-      const difference = launchDate.getTime() - new Date().getTime();
-      if (difference > 0) {
-        return {
-          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-          minutes: Math.floor((difference / 1000 / 60) % 60),
-          seconds: Math.floor((difference / 1000) % 60),
-        };
-      }
-      return { days: 0, hours: 0, minutes: 0, seconds: 0 };
-    };
-    const timer = setInterval(() => {
-      setTimeLeft(calculateTimeLeft());
-    }, 1000);
-    setTimeLeft(calculateTimeLeft());
-    return () => clearInterval(timer);
-  }, []);
 
   // Auto-scroll to sections based on URL hash
   useEffect(() => {
     const hash = window.location.hash;
-    if (hash === '#tokenomics' || hash === '#leaderboard') {
+    if (hash === '#tokenomics' || hash === '#honors' || hash === '#contact') {
       const element = document.getElementById(hash.slice(1) + '-section');
       if (element) {
         // Small delay to ensure the component is fully rendered
@@ -1168,127 +1082,6 @@ const Leaderboard: React.FC = () => {
                 View Leaderboard
               </Button>
             </Paper>
-          </Box>
-          <Grid container spacing={4} sx={{ mt: 4, alignItems: 'center' }}>
-            {/* Left side - Claim Space Points */}
-            <Grid item xs={12} md={6}>
-              <Paper
-                sx={{
-                  p: 3,
-                  background: 'rgba(0,0,0,0.5)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '10px',
-                  height: '100%',
-                }}
-              >
-                <Typography
-                  variant="h5"
-                  sx={{
-                    background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    fontWeight: 'bold',
-                    mb: 2,
-                  }}
-                >
-                  Claim Space Points
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color="rgba(255,255,255,0.7)"
-                  sx={{ mb: 3 }}
-                >
-                  Submit the URL of a recorded Twitter Space where you were a
-                  speaker or the DJ to claim your points.
-                </Typography>
-                <TextField
-                  fullWidth
-                  variant="outlined"
-                  label="Twitter Space URL"
-                  value={spaceUrlForPoints}
-                  onChange={(e) => setSpaceUrlForPoints(e.target.value)}
-                  sx={{ mb: 2 }}
-                  helperText="Space url: x.com/i/spaces/*"
-                />
-                <LoadingButton
-                  loading={isClaiming}
-                  fullWidth
-                  variant="contained"
-                  color="primary"
-                  onClick={handleClaimSpacePoints}
-                >
-                  Claim Points
-                </LoadingButton>
-              </Paper>
-            </Grid>
-            {/* Right side - Countdown */}
-            <Grid item xs={12} md={6}>
-              <Box sx={{ textAlign: 'center' }}>
-                <Typography
-                  variant="h5"
-                  sx={{
-                    background:
-                      'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    textShadow:
-                      '0 0 15px rgba(236, 72, 153, 0.2), 0 0 8px rgba(139, 92, 246, 0.15)',
-                    mb: 3,
-                    fontWeight: 'bold',
-                  }}
-                >
-                  Genesis Release
-                </Typography>
-                <Grid container spacing={2} justifyContent="center">
-                  {Object.entries(timeLeft).map(([unit, value]) => (
-                    <Grid item key={unit}>
-                      <Paper
-                        sx={{
-                          p: 2,
-                          background: 'rgba(0,0,0,0.5)',
-                          border: '1px solid rgba(255,255,255,0.1)',
-                          borderRadius: '10px',
-                          width: '100px',
-                          textAlign: 'center',
-                        }}
-                      >
-                        <Typography
-                          variant="h4"
-                          sx={{
-                            fontWeight: 'bold',
-                            color: '#EC4899',
-                            textShadow: '0 0 8px #EC4899',
-                          }}
-                        >
-                          {String(value).padStart(2, '0')}
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: 'rgba(255,255,255,0.7)',
-                            textTransform: 'uppercase',
-                          }}
-                        >
-                          {unit}
-                        </Typography>
-                      </Paper>
-                    </Grid>
-                  ))}
-                </Grid>
-              </Box>
-            </Grid>
-          </Grid>
-          <Box sx={{ mt: 6, px: 4, textAlign: 'center' }}>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ fontStyle: 'italic', opacity: 0.8 }}
-            >
-              Disclaimer: Songjam is constantly monitoring the timeline and
-              spaces for spammy behaviour and may adjust the base points formula
-              or the quality algorithm without notice if it appears the system
-              is being nefariously farmed.
-            </Typography>
           </Box>
         </Box>
 

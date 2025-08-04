@@ -15,6 +15,7 @@ import {
   Grid,
   IconButton,
   CircularProgress,
+  TextField,
 } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import Background from '../components/Background';
@@ -23,6 +24,16 @@ import { UserLeaderboardEntry } from '../services/db/twitterMentions.service';
 import { BlockMath } from 'react-katex';
 import axios from 'axios';
 import FlagModal from './FlagModal';
+import { LoadingButton } from '@mui/lab';
+import toast, { Toaster } from 'react-hot-toast';
+import { createSpaceSubmission } from '../services/db/spaceSubmissions.service';
+import { extractSpaceId } from '../utils';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
+import LoginDialog from './LoginDialog';
+import { useAuthContext } from '../contexts/AuthContext';
+import Logo from './Logo';
+import { useNavigate } from 'react-router-dom';
+import { textPulse } from '../pages/Leaderboard';
 
 const innerTextPulse = keyframes`
   0% { text-shadow: 0 0 12px #fff; opacity: 0.98; }
@@ -46,6 +57,80 @@ const SignPointsLeaderboard = () => {
     username: string;
     name: string;
   } | null>(null);
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
+  const [spaceUrlForPoints, setSpaceUrlForPoints] = useState('');
+  const [isClaiming, setIsClaiming] = useState(false);
+  const { user: dynamicUser } = useDynamicContext();
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const { user, loading: authLoading } = useAuthContext();
+  const navigate = useNavigate();
+
+  const handleClaimSpacePoints = async () => {
+    const _spaceId = extractSpaceId(spaceUrlForPoints);
+    if (!spaceUrlForPoints.trim() || !_spaceId) {
+      return toast.error('Please enter a valid Twitter Space URL.');
+    }
+    if (!dynamicUser) {
+      setShowAuthDialog(true);
+      return;
+    }
+    const twitterCredentials = dynamicUser.verifiedCredentials.find(
+      (cred) => cred.format === 'oauth'
+    );
+    if (!twitterCredentials) {
+      toast.error('Please connect your Twitter account.');
+      return setShowAuthDialog(true);
+    }
+    const spaceId = extractSpaceId(spaceUrlForPoints);
+    if (!spaceId) {
+      toast.error('Please enter a valid Twitter Space URL.');
+      return;
+    }
+    setIsClaiming(true);
+    try {
+      await createSpaceSubmission(spaceId, {
+        spaceUrl: spaceUrlForPoints,
+        userId: twitterCredentials.id,
+        twitterId: twitterCredentials.oauthAccountId,
+        username: twitterCredentials.oauthUsername,
+        name: twitterCredentials.publicIdentifier,
+        createdAt: new Date(),
+        spacePoints: 0,
+      });
+      toast.success('Space URL submitted for verification!');
+      setSpaceUrlForPoints('');
+    } catch (error) {
+      toast.error('Failed to submit space URL. Please try again.');
+    } finally {
+      setIsClaiming(false);
+    }
+  };
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const launchDate = new Date('2025-09-17T12:00:00Z');
+      const difference = launchDate.getTime() - new Date().getTime();
+      if (difference > 0) {
+        return {
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60),
+        };
+      }
+      return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+    };
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTimeLeft());
+    }, 1000);
+    setTimeLeft(calculateTimeLeft());
+    return () => clearInterval(timer);
+  }, []);
 
   const fetchLeaderboard = async () => {
     setLoading(true);
@@ -119,6 +204,105 @@ const SignPointsLeaderboard = () => {
   return (
     <Box>
       <Background />
+      {/* Header */}
+      <nav>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            width: '100%',
+            position: 'relative',
+          }}
+        >
+          <div className="logo">
+            <Logo />
+            <span>Songjam</span>
+          </div>
+          <Box display="flex" gap={2} alignItems="center">
+            <Button
+              onClick={() => {
+                navigate('/#tokenomics');
+              }}
+              variant="text"
+              size="small"
+              sx={{
+                color: 'white',
+                '&:hover': { textDecoration: 'underline' },
+              }}
+            >
+              Tokenomics
+            </Button>
+            <Button
+              onClick={() => {
+                navigate('/leaderboard');
+              }}
+              variant="text"
+              size="small"
+              sx={{
+                color: 'white',
+                '&:hover': { textDecoration: 'underline' },
+              }}
+            >
+              Leaderboard
+            </Button>
+            <Button
+              onClick={() => {
+                navigate('/#honors');
+              }}
+              variant="text"
+              size="small"
+              sx={{
+                color: 'white',
+                '&:hover': { textDecoration: 'underline' },
+              }}
+            >
+              Honors
+            </Button>
+            <Button
+              onClick={() => {
+                navigate('/#contact');
+              }}
+              variant="text"
+              size="small"
+              sx={{
+                color: 'white',
+                '&:hover': { textDecoration: 'underline' },
+              }}
+            >
+              Contact
+            </Button>
+            <Button
+              onClick={() => navigate('/dashboard')}
+              variant="outlined"
+              size="small"
+              sx={{
+                color: 'white',
+                '&:hover': { textDecoration: 'underline' },
+                animation: `${textPulse} 2s infinite ease-in-out`,
+              }}
+            >
+              {user ? 'Dashboard' : 'CRM Login'}
+            </Button>
+            <Button
+              onClick={() => navigate('/spaces-crm')}
+              variant="contained"
+              size="small"
+              sx={{
+                background: 'linear-gradient(90deg, #00BCD4 0%, #3F51B5 100%)',
+                color: 'white',
+                '&:hover': {
+                  background:
+                    'linear-gradient(90deg, #3F51B5 0%, #00BCD4 100%)',
+                  boxShadow: '0 0 20px rgba(0, 188, 212, 0.8)',
+                },
+              }}
+            >
+              Boost & Analyze X Spaces
+            </Button>
+          </Box>
+        </Box>
+      </nav>
       <Grid container spacing={4} position={'relative'} p={4}>
         {/* Left Column - Explanation */}
         <Grid item xs={12} md={4} sx={{ minHeight: '600px' }}>
@@ -729,6 +913,141 @@ const SignPointsLeaderboard = () => {
             </TableContainer>
           </Box>
         </Grid>
+
+        <Box
+          my={4}
+          p={4}
+          width={'100%'}
+          sx={{
+            background: 'rgba(0, 0, 0, 0.7)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            boxShadow:
+              '0 3px 15px rgba(139, 92, 246, 0.1), 0 0 10px rgba(236, 72, 153, 0.08)',
+          }}
+        >
+          <Grid container spacing={4} sx={{ mt: 4, alignItems: 'center' }}>
+            {/* Left side - Claim Space Points */}
+            <Grid item xs={12} md={6}>
+              <Paper
+                sx={{
+                  p: 3,
+                  background: 'rgba(0,0,0,0.5)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: '10px',
+                  height: '100%',
+                }}
+              >
+                <Typography
+                  variant="h5"
+                  sx={{
+                    background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    fontWeight: 'bold',
+                    mb: 2,
+                  }}
+                >
+                  Claim Space Points
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="rgba(255,255,255,0.7)"
+                  sx={{ mb: 3 }}
+                >
+                  Submit the URL of a recorded Twitter Space where you were a
+                  speaker or the DJ to claim your points.
+                </Typography>
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  label="Twitter Space URL"
+                  value={spaceUrlForPoints}
+                  onChange={(e) => setSpaceUrlForPoints(e.target.value)}
+                  sx={{ mb: 2 }}
+                  helperText="Space url: x.com/i/spaces/*"
+                />
+                <LoadingButton
+                  loading={isClaiming}
+                  fullWidth
+                  variant="contained"
+                  color="primary"
+                  onClick={handleClaimSpacePoints}
+                >
+                  Claim Points
+                </LoadingButton>
+              </Paper>
+            </Grid>
+            {/* Right side - Countdown */}
+            <Grid item xs={12} md={6}>
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    background:
+                      'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    textShadow:
+                      '0 0 15px rgba(236, 72, 153, 0.2), 0 0 8px rgba(139, 92, 246, 0.15)',
+                    mb: 3,
+                    fontWeight: 'bold',
+                  }}
+                >
+                  Genesis Release
+                </Typography>
+                <Grid container spacing={2} justifyContent="center">
+                  {Object.entries(timeLeft).map(([unit, value]) => (
+                    <Grid item key={unit}>
+                      <Paper
+                        sx={{
+                          p: 2,
+                          background: 'rgba(0,0,0,0.5)',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          borderRadius: '10px',
+                          width: '100px',
+                          textAlign: 'center',
+                        }}
+                      >
+                        <Typography
+                          variant="h4"
+                          sx={{
+                            fontWeight: 'bold',
+                            color: '#EC4899',
+                            textShadow: '0 0 8px #EC4899',
+                          }}
+                        >
+                          {String(value).padStart(2, '0')}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: 'rgba(255,255,255,0.7)',
+                            textTransform: 'uppercase',
+                          }}
+                        >
+                          {unit}
+                        </Typography>
+                      </Paper>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
+            </Grid>
+          </Grid>
+          <Box sx={{ mt: 6, px: 4, textAlign: 'center' }}>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontStyle: 'italic', opacity: 0.8 }}
+            >
+              Disclaimer: Songjam is constantly monitoring the timeline and
+              spaces for spammy behaviour and may adjust the base points formula
+              or the quality algorithm without notice if it appears the system
+              is being nefariously farmed.
+            </Typography>
+          </Box>
+        </Box>
       </Grid>
 
       {/* Flag Modal */}
@@ -748,6 +1067,11 @@ const SignPointsLeaderboard = () => {
           }}
         />
       )}
+      <Toaster position="bottom-right" />
+      <LoginDialog
+        open={showAuthDialog && !authLoading}
+        onClose={() => setShowAuthDialog(false)}
+      />
     </Box>
   );
 };

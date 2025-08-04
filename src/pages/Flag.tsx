@@ -438,7 +438,7 @@ const Flag = () => {
         </Box>
         {reportInfo && <AgenticReportComp reportInfo={reportInfo} />}
         {/* Horizontally scrollable tweets */}
-        <Box
+        {/* <Box
           sx={{
             width: '100%',
             pt: 4,
@@ -451,7 +451,6 @@ const Flag = () => {
             alignItems: 'flex-start',
           }}
         >
-          {/* Example tweet IDs, replace with your own or fetch dynamically */}
           {slashedTweets.map(({ tweetId }) => (
             <Box
               key={tweetId}
@@ -466,7 +465,7 @@ const Flag = () => {
               ></iframe>
             </Box>
           ))}
-        </Box>
+        </Box> */}
       </Container>
       <Toaster position="bottom-right" />
     </Box>

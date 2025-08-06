@@ -5,8 +5,8 @@ import {
   Paper,
   useTheme,
   IconButton,
-  Chip,
-  Button,
+  ToggleButton,
+  ToggleButtonGroup,
 } from '@mui/material';
 import { Space, SpaceListener } from '../../services/db/spaces.service';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
@@ -37,6 +37,15 @@ import {
 } from '../../services/db/campaign.service';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { LoadingButton } from '@mui/lab';
+import MapView from '../../pages/MapView';
+import MapIcon from '@mui/icons-material/Map';
+import TimelineIcon from '@mui/icons-material/Timeline';
+import CircularProgress from '@mui/material/CircularProgress';
+import { MapDataPoint, GeocodedSpaceListener } from '../../types/map.types';
+import {
+  geocodeLocationWithCache,
+  extractCoordinates,
+} from '../../services/geocoding.service';
 
 interface LiveDashboardViewProps {
   spaceId: string;
@@ -108,6 +117,7 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
   );
   const [userCampaigns, setUserCampaigns] = useState<Campaign[]>([]);
   const [isBoosting, setIsBoosting] = useState(false);
+  const [viewMode, setViewMode] = useState<'timeline' | 'map'>('timeline');
   // const [currentUserJoinedAt, setCurrentUserJoinedAt] = useState<number | null>(
   //   null
   // );
@@ -133,6 +143,12 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
       orderBy('joinedAt', 'desc') // Keep ordering if needed, or remove if natural order is fine
     )
   );
+
+  const [mapData, setMapData] = useState<MapDataPoint[]>([]);
+  const [geocodedListeners, setGeocodedListeners] = useState<
+    GeocodedSpaceListener[]
+  >([]);
+  const [isGeocoding, setIsGeocoding] = useState(false);
 
   useEffect(() => {
     if (
@@ -178,6 +194,122 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
       fetchCampaign(spaceId);
     }
   }, [spaceId, user]);
+
+  useEffect(() => {
+    if (leftListeners?.length) {
+      const onlyLocationUsers = leftListeners.filter(
+        (listener) => listener.location
+      ) as SpaceListener[];
+
+      // Initialize geocoded listeners with pending status
+      const initialGeocodedListeners: GeocodedSpaceListener[] =
+        onlyLocationUsers.map((listener) => ({
+          ...listener,
+          geocodingStatus: 'pending' as const,
+        }));
+
+      setGeocodedListeners(initialGeocodedListeners);
+
+      // Start geocoding process
+      geocodeListeners(onlyLocationUsers);
+    }
+  }, [leftListeners]);
+
+  const geocodeListeners = async (listeners: SpaceListener[]) => {
+    if (isGeocoding) return;
+
+    setIsGeocoding(true);
+
+    try {
+      const listenersWithLocation = listeners.filter(
+        (listener) => listener.location
+      );
+
+      for (let i = 0; i < listenersWithLocation.length; i++) {
+        const listener = listenersWithLocation[i];
+
+        try {
+          // Update status to pending
+          setGeocodedListeners((prev) =>
+            prev.map((l) =>
+              l.userId === listener.userId
+                ? { ...l, geocodingStatus: 'pending' as const }
+                : l
+            )
+          );
+
+          // Geocode the location (this will check cache internally and cache the result)
+          const geocodingResult = await geocodeLocationWithCache(
+            listener.location
+          );
+          const coordinates = extractCoordinates(geocodingResult);
+
+          // Update with coordinates if found
+          setGeocodedListeners((prev) =>
+            prev.map((l) =>
+              l.userId === listener.userId
+                ? {
+                    ...l,
+                    coordinates,
+                    geocodingStatus: coordinates
+                      ? ('success' as const)
+                      : ('failed' as const),
+                  }
+                : l
+            )
+          );
+
+          // Add delay to respect rate limits
+          if (i < listenersWithLocation.length - 1) {
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+          }
+        } catch (error) {
+          console.error(
+            `Failed to geocode location for ${listener.displayName}:`,
+            error
+          );
+
+          // Update status to failed
+          setGeocodedListeners((prev) =>
+            prev.map((l) =>
+              l.userId === listener.userId
+                ? { ...l, geocodingStatus: 'failed' as const }
+                : l
+            )
+          );
+        }
+      }
+    } catch (error) {
+      console.error('Geocoding process failed:', error);
+      toast.error('Failed to geocode some locations');
+    } finally {
+      setIsGeocoding(false);
+    }
+  };
+
+  // Update map data when geocoded listeners change
+  useEffect(() => {
+    const listenersWithCoordinates = geocodedListeners.filter(
+      (listener) =>
+        listener.coordinates && listener.geocodingStatus === 'success'
+    );
+
+    const newMapData: MapDataPoint[] = listenersWithCoordinates.map(
+      (listener) => ({
+        username: `@${listener.twitterScreenName}`,
+        name: listener.displayName,
+        location: listener.location,
+        coordinates: listener.coordinates!,
+        followers: listener.followersCount,
+        bio: listener.biography,
+        verified: listener.isVerified,
+        userId: listener.userId,
+        avatarUrl: listener.avatarUrl,
+      })
+    );
+
+    setMapData(newMapData);
+  }, [geocodedListeners]);
 
   return (
     <Box
@@ -378,7 +510,7 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
           <DashboardStats space={space} />
         </Box>
 
-        {/* Main Visualization - Scatter Plot */}
+        {/* Main Visualization - Toggle between Timeline and Map */}
         <Box sx={{ gridColumn: 'span 9', height: '600px', minWidth: 0 }}>
           <Paper
             sx={{
@@ -391,134 +523,243 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
               overflow: 'hidden',
             }}
           >
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              Participant Join Timeline {loading ? '(Loading...)' : ''}
-              {error && (
-                <Typography color="error" variant="caption" sx={{ ml: 2 }}>
-                  Error: {error.toString()}
-                </Typography>
-              )}
-            </Typography>
+            {/* Header with title and toggle */}
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                mb: 2,
+              }}
+            >
+              <Typography variant="h6" zIndex={999}>
+                {viewMode === 'timeline'
+                  ? `Participant Join Timeline ${loading ? '(Loading...)' : ''}`
+                  : 'Geographic Distribution'}
+                {error && (
+                  <Typography color="error" variant="caption" sx={{ ml: 2 }}>
+                    Error: {error.toString()}
+                  </Typography>
+                )}
+              </Typography>
+
+              {/* View Toggle */}
+              <ToggleButtonGroup
+                value={viewMode}
+                exclusive
+                onChange={(event, newViewMode) => {
+                  if (newViewMode !== null) {
+                    setViewMode(newViewMode);
+                  }
+                }}
+                size="small"
+                sx={{
+                  zIndex: 999,
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  '& .MuiToggleButton-root': {
+                    color: theme.palette.text.secondary,
+                    borderColor: 'rgba(255, 255, 255, 0.2)',
+                    '&.Mui-selected': {
+                      backgroundColor: theme.palette.primary.main,
+                      color: 'white',
+                      '&:hover': {
+                        backgroundColor: theme.palette.primary.dark,
+                      },
+                    },
+                    '&:hover': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    },
+                  },
+                }}
+              >
+                <ToggleButton value="timeline" aria-label="timeline view">
+                  <TimelineIcon sx={{ mr: 1 }} />
+                  Timeline
+                </ToggleButton>
+                <ToggleButton value="map" aria-label="map view">
+                  <MapIcon sx={{ mr: 1 }} />
+                  Map
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Box>
+
+            {/* Content area */}
             <Box sx={{ flex: 1, position: 'relative', minHeight: 0 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <ScatterChart
-                  margin={{
-                    top: 20,
-                    right: 30,
-                    bottom: 50,
-                    left: 20, // Increased bottom margin for labels
-                  }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke={theme.palette.divider}
-                  />
-                  <XAxis
-                    dataKey="x"
-                    type="number"
-                    name="Joined At"
-                    domain={['dataMin', 'dataMax']}
-                    tickFormatter={(unixTime) =>
-                      format(new Date(unixTime), 'HH:mm:ss')
-                    }
-                    angle={-45} // Angle labels for better readability
-                    textAnchor="end"
-                    height={60} // Increase height to accommodate angled labels
-                    stroke={theme.palette.text.secondary}
-                  />
-                  <YAxis
-                    dataKey="y"
-                    type="number"
-                    name="Listener Index"
-                    hide // Hide Y-axis as it's just for vertical separation
-                  />
-                  <Tooltip
-                    cursor={{ strokeDasharray: '3 3' }}
-                    content={({ active, payload }) => {
-                      if (active && payload && payload.length) {
-                        const data = payload[0].payload;
-                        return (
-                          <Paper
-                            sx={{
-                              p: 1,
-                              background: 'rgba(0, 0, 0, 0.8)',
-                              color: '#fff',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 1,
-                            }}
-                          >
-                            {data.avatarUrl && (
-                              <img
-                                src={data.avatarUrl}
-                                alt={data.displayName}
-                                width={24}
-                                height={24}
-                                style={{ borderRadius: '50%' }}
-                              />
-                            )}
-                            <Typography variant="caption">
-                              {data.displayName} (@{data.twitterScreenName})
-                              <br />
-                              Joined: {format(new Date(data.x), 'PPpp')}
-                            </Typography>
-                          </Paper>
-                        );
-                      }
-                      return null;
+              {viewMode === 'timeline' ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <ScatterChart
+                    margin={{
+                      top: 20,
+                      right: 30,
+                      bottom: 50,
+                      left: 20, // Increased bottom margin for labels
                     }}
-                  />
-                  <Legend />
-                  {space?.state === 'Running' ? (
-                    <>
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={theme.palette.divider}
+                    />
+                    <XAxis
+                      dataKey="x"
+                      type="number"
+                      name="Joined At"
+                      domain={['dataMin', 'dataMax']}
+                      tickFormatter={(unixTime) =>
+                        format(new Date(unixTime), 'HH:mm:ss')
+                      }
+                      angle={-45} // Angle labels for better readability
+                      textAnchor="end"
+                      height={60} // Increase height to accommodate angled labels
+                      stroke={theme.palette.text.secondary}
+                    />
+                    <YAxis
+                      dataKey="y"
+                      type="number"
+                      name="Listener Index"
+                      hide // Hide Y-axis as it's just for vertical separation
+                    />
+                    <Tooltip
+                      cursor={{ strokeDasharray: '3 3' }}
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          const data = payload[0].payload;
+                          return (
+                            <Paper
+                              sx={{
+                                p: 1,
+                                background: 'rgba(0, 0, 0, 0.8)',
+                                color: '#fff',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1,
+                              }}
+                            >
+                              {data.avatarUrl && (
+                                <img
+                                  src={data.avatarUrl}
+                                  alt={data.displayName}
+                                  width={24}
+                                  height={24}
+                                  style={{ borderRadius: '50%' }}
+                                />
+                              )}
+                              <Typography variant="caption">
+                                {data.displayName} (@{data.twitterScreenName})
+                                <br />
+                                Joined: {format(new Date(data.x), 'PPpp')}
+                              </Typography>
+                            </Paper>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Legend />
+                    {space?.state === 'Running' ? (
+                      <>
+                        <Scatter
+                          name="Live Participants"
+                          data={
+                            liveListeners?.map((listener, index) => ({
+                              ...listener,
+                              x: listener.joinedAt,
+                              y: index + 1, // Ensure we have a valid y coordinate
+                            })) || []
+                          }
+                          fill={theme.palette.primary.main}
+                          shape={<CustomScatterShape />}
+                        />
+                        <Scatter
+                          name="Left Listeners"
+                          data={
+                            leftListeners?.map((listener, index) => ({
+                              ...listener,
+                              x: listener.leftAt,
+                              y: index + 1,
+                            })) || []
+                          }
+                          fill={theme.palette.error.main}
+                          shape={<CustomScatterShape />}
+                          onClick={(e) => {
+                            const payload = e.payload;
+                            window.open(
+                              `https://x.com/${payload.twitterScreenName}`,
+                              '_blank'
+                            );
+                          }}
+                        />
+                      </>
+                    ) : (
                       <Scatter
-                        name="Live Participants"
+                        name="Participants"
                         data={
-                          liveListeners?.map((listener, index) => ({
+                          leftListeners?.map((listener, index) => ({
                             ...listener,
                             x: listener.joinedAt,
-                            y: index + 1, // Ensure we have a valid y coordinate
+                            y: index + 1,
                           })) || []
                         }
                         fill={theme.palette.primary.main}
                         shape={<CustomScatterShape />}
                       />
-                      <Scatter
-                        name="Left Listeners"
-                        data={
-                          leftListeners?.map((listener, index) => ({
-                            ...listener,
-                            x: listener.leftAt,
-                            y: index + 1,
-                          })) || []
-                        }
-                        fill={theme.palette.error.main}
-                        shape={<CustomScatterShape />}
-                        onClick={(e) => {
-                          const payload = e.payload;
-                          window.open(
-                            `https://x.com/${payload.twitterScreenName}`,
-                            '_blank'
-                          );
-                        }}
-                      />
-                    </>
-                  ) : (
-                    <Scatter
-                      name="Participants"
-                      data={
-                        leftListeners?.map((listener, index) => ({
-                          ...listener,
-                          x: listener.joinedAt,
-                          y: index + 1,
-                        })) || []
-                      }
-                      fill={theme.palette.primary.main}
-                      shape={<CustomScatterShape />}
-                    />
+                    )}
+                  </ScatterChart>
+                </ResponsiveContainer>
+              ) : (
+                <Box>
+                  {/* Geocoding Status */}
+                  {isGeocoding && (
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 2,
+                        mb: 2,
+                        p: 2,
+                        bgcolor: 'rgba(255, 255, 255, 0.1)',
+                        borderRadius: 1,
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                      }}
+                    >
+                      <CircularProgress size={20} />
+                      <Typography variant="body2" color="text.secondary">
+                        Geocoding listener locations...
+                      </Typography>
+                    </Box>
                   )}
-                </ScatterChart>
-              </ResponsiveContainer>
+
+                  {/* Geocoding Results Summary */}
+                  {!isGeocoding && geocodedListeners.length > 0 && (
+                    <Box
+                      sx={{
+                        mb: 2,
+                        p: 2,
+                        bgcolor: 'rgba(255, 255, 255, 0.1)',
+                        borderRadius: 1,
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                      }}
+                    >
+                      <Typography variant="body2" color="text.secondary">
+                        {
+                          geocodedListeners.filter(
+                            (l) => l.geocodingStatus === 'success'
+                          ).length
+                        }{' '}
+                        of {geocodedListeners.length} locations geocoded
+                        successfully (
+                        {
+                          geocodedListeners.filter(
+                            (l) => l.geocodingStatus === 'failed'
+                          ).length
+                        }{' '}
+                        not campatible)
+                      </Typography>
+                    </Box>
+                  )}
+
+                  <MapView data={mapData} />
+                </Box>
+              )}
             </Box>
           </Paper>
         </Box>

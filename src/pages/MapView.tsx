@@ -85,7 +85,7 @@ const MapView: React.FC<MapViewProps> = ({ data }) => {
   };
 
   const getVerifiedColor = (verified: boolean) => {
-    return verified ? '#1DA1F2' : '#95a5a6';
+    return verified ? '#10b981' : '#f59e0b';
   };
 
   return (
@@ -140,9 +140,9 @@ const MapView: React.FC<MapViewProps> = ({ data }) => {
                         <Geography
                           key={geo.rsmKey}
                           geography={geo}
-                          fill="#2c3e50"
+                          fill="#60a5fa"
                           stroke="#34495e"
-                          strokeWidth={0.5}
+                          strokeWidth={0.4}
                           style={{
                             default: { outline: 'none' },
                             hover: { fill: '#34495e', outline: 'none' },
@@ -179,31 +179,83 @@ const MapView: React.FC<MapViewProps> = ({ data }) => {
                       >
                         <Tooltip
                           title={
-                            <Box>
+                            <Box sx={{ p: 0.5 }}>
                               <Typography
                                 variant="subtitle2"
-                                sx={{ fontWeight: 'bold' }}
+                                sx={{
+                                  fontWeight: 'bold',
+                                  color: '#60a5fa',
+                                  mb: 0.5,
+                                }}
                               >
                                 {name}
                               </Typography>
-                              <Typography variant="body2">
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  color: '#cbd5e1',
+                                  mb: 0.5,
+                                  fontFamily: 'monospace',
+                                }}
+                              >
                                 {username}
                               </Typography>
-                              <Typography variant="body2">
-                                {location}
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  color: '#94a3b8',
+                                  fontSize: '0.75rem',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: 0.5,
+                                }}
+                              >
+                                📍 {location}
+                              </Typography>
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  color: '#60a5fa',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 500,
+                                  mt: 0.5,
+                                }}
+                              >
+                                {followers.toLocaleString()} followers
                               </Typography>
                             </Box>
                           }
                           arrow
+                          placement="top"
+                          enterDelay={300}
+                          leaveDelay={0}
                         >
                           <circle
                             r={getMarkerSize(followers)}
                             fill={getVerifiedColor(verified)}
-                            stroke="#fff"
-                            strokeWidth={2}
+                            stroke={verified ? '#60a5fa' : '#8b5cf6'}
+                            strokeWidth={2.5}
                             style={{
                               cursor: 'pointer',
-                              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+                              filter: `
+                                drop-shadow(0 4px 8px rgba(0,0,0,0.4))
+                                drop-shadow(0 2px 4px rgba(96, 165, 250, 0.3))
+                              `,
+                              transition: 'all 0.3s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.transform = 'scale(1.2)';
+                              e.currentTarget.style.filter = `
+                                drop-shadow(0 6px 12px rgba(0,0,0,0.5))
+                                drop-shadow(0 4px 8px rgba(96, 165, 250, 0.5))
+                              `;
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.transform = 'scale(1)';
+                              e.currentTarget.style.filter = `
+                                drop-shadow(0 4px 8px rgba(0,0,0,0.4))
+                                drop-shadow(0 2px 4px rgba(96, 165, 250, 0.3))
+                              `;
                             }}
                           />
                         </Tooltip>

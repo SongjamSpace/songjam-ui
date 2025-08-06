@@ -732,7 +732,7 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
                   {!isGeocoding && geocodedListeners.length > 0 && (
                     <Box
                       sx={{
-                        mb: 2,
+                        // mb: 2,
                         p: 2,
                         bgcolor: 'rgba(255, 255, 255, 0.1)',
                         borderRadius: 1,

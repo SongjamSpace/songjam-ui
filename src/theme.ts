@@ -134,6 +134,30 @@ const theme = createTheme({
         },
       },
     },
+    MuiTooltip: {
+      styleOverrides: {
+        tooltip: {
+          background: 'rgba(30, 41, 59, 0.95)',
+          backdropFilter: 'blur(12px)',
+          borderRadius: '12px',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
+          padding: '12px 16px',
+          fontSize: '0.875rem',
+          color: '#f8fafc',
+          maxWidth: '300px',
+          '& .MuiTooltip-arrow': {
+            color: 'rgba(30, 41, 59, 0.95)',
+          },
+        },
+        arrow: {
+          color: 'rgba(30, 41, 59, 0.95)',
+          '&::before': {
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+          },
+        },
+      },
+    },
   },
 });
 

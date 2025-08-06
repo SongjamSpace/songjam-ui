@@ -135,7 +135,7 @@ const ListenerNotifications: React.FC<ListenerNotificationsProps> = ({
               </Typography>
             </Box>
             {listener.location ? (
-              <Typography variant="caption">{listener.location}</Typography>
+              <Typography variant="caption">📍 {listener.location}</Typography>
             ) : (
               <IconButton
                 size="small"

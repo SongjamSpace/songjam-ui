@@ -84,9 +84,9 @@ const MapView: React.FC<MapViewProps> = ({ data }) => {
     );
   };
 
-  const getVerifiedColor = (verified: boolean) => {
-    return verified ? '#10b981' : '#f59e0b';
-  };
+  // const getVerifiedColor = (verified: boolean) => {
+  //   return verified ? '#10b981' : '#f59e0b';
+  // };
 
   return (
     <Box
@@ -95,7 +95,7 @@ const MapView: React.FC<MapViewProps> = ({ data }) => {
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        // pb: 8,
+        pb: 8,
       }}
     >
       <Container
@@ -108,12 +108,12 @@ const MapView: React.FC<MapViewProps> = ({ data }) => {
             <Paper
               elevation={8}
               sx={{
-                // p: 3,
+                p: 3,
                 background: 'rgba(255, 255, 255, 0.1)',
                 backdropFilter: 'blur(10px)',
                 border: '1px solid rgba(255, 255, 255, 0.2)',
                 borderRadius: 3,
-                height: '700px',
+                height: '500px',
                 position: 'relative',
                 overflow: 'hidden',
               }}
@@ -121,7 +121,7 @@ const MapView: React.FC<MapViewProps> = ({ data }) => {
               <ComposableMap
                 projection="geoEqualEarth"
                 projectionConfig={{
-                  scale: 147,
+                  scale: 250,
                 }}
                 style={{
                   width: '100%',
@@ -232,7 +232,7 @@ const MapView: React.FC<MapViewProps> = ({ data }) => {
                         >
                           <circle
                             r={getMarkerSize(followers)}
-                            fill={getVerifiedColor(verified)}
+                            fill={'#f15999'}
                             stroke={verified ? '#60a5fa' : '#8b5cf6'}
                             strokeWidth={2.5}
                             style={{

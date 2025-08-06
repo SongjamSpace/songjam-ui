@@ -251,6 +251,7 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
                 ? {
                     ...l,
                     coordinates,
+                    country: geocodingResult[0]?.display_name?.split(',').pop(),
                     geocodingStatus: coordinates
                       ? ('success' as const)
                       : ('failed' as const),
@@ -305,6 +306,7 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
         verified: listener.isVerified,
         userId: listener.userId,
         avatarUrl: listener.avatarUrl,
+        country: listener.country,
       })
     );
 
@@ -732,7 +734,7 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
                   {!isGeocoding && geocodedListeners.length > 0 && (
                     <Box
                       sx={{
-                        // mb: 2,
+                        mb: 2,
                         p: 2,
                         bgcolor: 'rgba(255, 255, 255, 0.1)',
                         borderRadius: 1,

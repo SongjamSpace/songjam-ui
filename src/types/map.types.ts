@@ -59,4 +59,5 @@ export interface GeocodedSpaceListener {
   // Geocoded coordinates
   coordinates?: [number, number] | null; // [longitude, latitude]
   geocodingStatus: 'pending' | 'success' | 'failed';
+  country?: string;
 }

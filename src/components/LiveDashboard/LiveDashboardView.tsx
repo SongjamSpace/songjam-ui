@@ -947,53 +947,12 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
                               variant="caption"
                               color="text.secondary"
                             >
-                              Failed
+                              Invalid
                             </Typography>
                           </Box>
                         </Box>
                       )}
                     </Box>
-
-                    {/* Progress Bar for Geocoding */}
-                    {isGeocoding && (
-                      <Box sx={{ mt: 2 }}>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            mb: 0.5,
-                          }}
-                        >
-                          <Typography variant="caption" color="text.secondary">
-                            Geocoding Progress
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {successfullyGeocodedListeners.length +
-                              pendingGeocodedListeners.length}{' '}
-                            / {geocodedListeners.length}
-                          </Typography>
-                        </Box>
-                        <LinearProgress
-                          variant="determinate"
-                          value={
-                            geocodedListeners.length > 0
-                              ? ((successfullyGeocodedListeners.length +
-                                  pendingGeocodedListeners.length) /
-                                  geocodedListeners.length) *
-                                100
-                              : 0
-                          }
-                          sx={{
-                            height: 6,
-                            borderRadius: 3,
-                            bgcolor: 'rgba(255, 255, 255, 0.1)',
-                            '& .MuiLinearProgress-bar': {
-                              bgcolor: '#ff9800',
-                            },
-                          }}
-                        />
-                      </Box>
-                    )}
                   </Box>
 
                   <MapView data={mapData} />

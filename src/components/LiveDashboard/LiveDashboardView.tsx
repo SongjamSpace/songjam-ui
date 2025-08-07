@@ -313,6 +313,16 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
     setMapData(newMapData);
   }, [geocodedListeners]);
 
+  const successfullyGeocodedListeners = geocodedListeners.filter(
+    (listener) => listener.geocodingStatus === 'success'
+  );
+  const failedGeocodedListeners = geocodedListeners.filter(
+    (listener) => listener.geocodingStatus === 'failed'
+  );
+  const pendingGeocodedListeners = geocodedListeners.filter(
+    (listener) => listener.geocodingStatus === 'pending'
+  );
+
   return (
     <Box
       sx={{
@@ -742,19 +752,15 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
                       }}
                     >
                       <Typography variant="body2" color="text.secondary">
-                        {
-                          geocodedListeners.filter(
-                            (l) => l.geocodingStatus === 'success'
-                          ).length
-                        }{' '}
-                        of {geocodedListeners.length} locations geocoded
-                        successfully (
-                        {
-                          geocodedListeners.filter(
-                            (l) => l.geocodingStatus === 'failed'
-                          ).length
-                        }{' '}
-                        not campatible)
+                        {successfullyGeocodedListeners.length} of{' '}
+                        {geocodedListeners.length} locations geocoded
+                        successfully{' '}
+                        {pendingGeocodedListeners.length > 0 && (
+                          <>({pendingGeocodedListeners.length} pending)</>
+                        )}
+                        {failedGeocodedListeners.length > 0 && (
+                          <>({failedGeocodedListeners.length} not compatible)</>
+                        )}
                       </Typography>
                     </Box>
                   )}

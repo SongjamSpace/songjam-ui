@@ -41,6 +41,7 @@ import MapView from '../../pages/MapView';
 import MapIcon from '@mui/icons-material/Map';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import CircularProgress from '@mui/material/CircularProgress';
+import LinearProgress from '@mui/material/LinearProgress';
 import { MapDataPoint, GeocodedSpaceListener } from '../../types/map.types';
 import {
   geocodeLocationWithCache,
@@ -208,10 +209,11 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
   }, [spaceId, user]);
 
   useEffect(() => {
-    if (leftListeners?.length) {
-      const onlyLocationUsers = leftListeners.filter(
-        (listener) => listener.location
-      ) as SpaceListener[];
+    if (liveListeners?.length || leftListeners?.length) {
+      const onlyLocationUsers = [
+        ...(liveListeners || []),
+        ...(leftListeners || []),
+      ].filter((listener) => listener.location) as SpaceListener[];
 
       // Find new listeners that haven't been processed yet
       const newListeners = onlyLocationUsers.filter(
@@ -238,7 +240,7 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
         geocodeListeners(newListeners);
       }
     }
-  }, [leftListeners]);
+  }, [liveListeners, leftListeners]);
 
   const geocodeListeners = async (listeners: SpaceListener[]) => {
     if (isGeocoding) return;
@@ -548,16 +550,17 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
         </Box>
 
         {/* Main Visualization - Toggle between Timeline and Map */}
-        <Box sx={{ gridColumn: 'span 9', height: '600px', minWidth: 0 }}>
+        <Box sx={{ gridColumn: 'span 9', height: '1000px', minWidth: 0 }}>
           <Paper
             sx={{
               p: 3,
-              height: '100%',
+              // height: viewMode === 'timeline' ? '100%' : '600px',
               background: 'rgba(255, 255, 255, 0.03)',
               backdropFilter: 'blur(10px)',
               display: 'flex',
               flexDirection: 'column',
-              overflow: 'hidden',
+              // overflow: 'hidden',
+              ...(viewMode === 'map' ? {} : { height: '600px' }),
             }}
           >
             {/* Header with title and toggle */}
@@ -744,51 +747,254 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
                 </ResponsiveContainer>
               ) : (
                 <Box>
-                  {/* Geocoding Status */}
-                  {isGeocoding && (
+                  {/* Listener Statistics Dashboard */}
+                  <Box
+                    sx={{
+                      mb: 2,
+                      p: 2,
+                      bgcolor: 'rgba(255, 255, 255, 0.1)',
+                      borderRadius: 1,
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                    }}
+                  >
+                    <Typography
+                      variant="subtitle2"
+                      color="text.primary"
+                      sx={{ mb: 1, fontWeight: 600 }}
+                    >
+                      Listener Analytics
+                    </Typography>
+
                     <Box
                       sx={{
                         display: 'flex',
+                        gap: 3,
+                        flexWrap: 'wrap',
                         alignItems: 'center',
-                        gap: 2,
-                        mb: 2,
-                        p: 2,
-                        bgcolor: 'rgba(255, 255, 255, 0.1)',
-                        borderRadius: 1,
-                        border: '1px solid rgba(255, 255, 255, 0.2)',
                       }}
                     >
-                      <CircularProgress size={20} />
-                      <Typography variant="body2" color="text.secondary">
-                        Geocoding listener locations...
-                      </Typography>
-                    </Box>
-                  )}
+                      {/* Total Listeners */}
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                          p: 1.5,
+                          bgcolor: 'rgba(25, 118, 210, 0.1)',
+                          borderRadius: 1,
+                          border: '1px solid rgba(25, 118, 210, 0.3)',
+                          minWidth: 120,
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: '50%',
+                            bgcolor: '#1976d2',
+                          }}
+                        />
+                        <Box>
+                          <Typography
+                            variant="h6"
+                            color="primary"
+                            sx={{ fontWeight: 600 }}
+                          >
+                            {[
+                              ...(liveListeners || []),
+                              ...(leftListeners || []),
+                            ]?.length || 0}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            Total Listeners
+                          </Typography>
+                        </Box>
+                      </Box>
 
-                  {/* Geocoding Results Summary */}
-                  {!isGeocoding && geocodedListeners.length > 0 && (
-                    <Box
-                      sx={{
-                        mb: 2,
-                        p: 2,
-                        bgcolor: 'rgba(255, 255, 255, 0.1)',
-                        borderRadius: 1,
-                        border: '1px solid rgba(255, 255, 255, 0.2)',
-                      }}
-                    >
-                      <Typography variant="body2" color="text.secondary">
-                        {successfullyGeocodedListeners.length} of{' '}
-                        {geocodedListeners.length} locations geocoded
-                        successfully{' '}
-                        {pendingGeocodedListeners.length > 0 && (
-                          <>({pendingGeocodedListeners.length} pending)</>
-                        )}
-                        {failedGeocodedListeners.length > 0 && (
-                          <>({failedGeocodedListeners.length} not compatible)</>
-                        )}
-                      </Typography>
+                      {/* Listeners with Location */}
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                          p: 1.5,
+                          bgcolor: 'rgba(156, 39, 176, 0.1)',
+                          borderRadius: 1,
+                          border: '1px solid rgba(156, 39, 176, 0.3)',
+                          minWidth: 120,
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: '50%',
+                            bgcolor: '#9c27b0',
+                          }}
+                        />
+                        <Box>
+                          <Typography
+                            variant="h6"
+                            sx={{ color: '#9c27b0', fontWeight: 600 }}
+                          >
+                            {geocodedListeners.length || 0}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            With Location
+                          </Typography>
+                        </Box>
+                      </Box>
+
+                      {/* Successfully Geocoded */}
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                          p: 1.5,
+                          bgcolor: 'rgba(76, 175, 80, 0.1)',
+                          borderRadius: 1,
+                          border: '1px solid rgba(76, 175, 80, 0.3)',
+                          minWidth: 120,
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: '50%',
+                            bgcolor: '#4caf50',
+                          }}
+                        />
+                        <Box>
+                          <Typography
+                            variant="h6"
+                            sx={{ color: '#4caf50', fontWeight: 600 }}
+                          >
+                            {successfullyGeocodedListeners.length}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            Geocoded
+                          </Typography>
+                        </Box>
+                      </Box>
+
+                      {/* Geocoding Progress */}
+                      {isGeocoding && (
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            p: 1.5,
+                            bgcolor: 'rgba(255, 152, 0, 0.1)',
+                            borderRadius: 1,
+                            border: '1px solid rgba(255, 152, 0, 0.3)',
+                            minWidth: 120,
+                          }}
+                        >
+                          <CircularProgress
+                            size={16}
+                            sx={{ color: '#ff9800' }}
+                          />
+                          <Box>
+                            <Typography
+                              variant="h6"
+                              sx={{ color: '#ff9800', fontWeight: 600 }}
+                            >
+                              {pendingGeocodedListeners.length}
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              Processing
+                            </Typography>
+                          </Box>
+                        </Box>
+                      )}
+
+                      {/* Failed Geocoding */}
+                      {failedGeocodedListeners.length > 0 && (
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            p: 1.5,
+                            bgcolor: 'rgba(244, 67, 54, 0.1)',
+                            borderRadius: 1,
+                            border: '1px solid rgba(244, 67, 54, 0.3)',
+                            minWidth: 120,
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              width: 8,
+                              height: 8,
+                              borderRadius: '50%',
+                              bgcolor: '#f44336',
+                            }}
+                          />
+                          <Box>
+                            <Typography
+                              variant="h6"
+                              sx={{ color: '#f44336', fontWeight: 600 }}
+                            >
+                              {failedGeocodedListeners.length}
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              Failed
+                            </Typography>
+                          </Box>
+                        </Box>
+                      )}
                     </Box>
-                  )}
+
+                    {/* Progress Bar for Geocoding */}
+                    {isGeocoding && (
+                      <Box sx={{ mt: 2 }}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            mb: 0.5,
+                          }}
+                        >
+                          <Typography variant="caption" color="text.secondary">
+                            Geocoding Progress
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {successfullyGeocodedListeners.length +
+                              pendingGeocodedListeners.length}{' '}
+                            / {geocodedListeners.length}
+                          </Typography>
+                        </Box>
+                        <LinearProgress
+                          variant="determinate"
+                          value={
+                            geocodedListeners.length > 0
+                              ? ((successfullyGeocodedListeners.length +
+                                  pendingGeocodedListeners.length) /
+                                  geocodedListeners.length) *
+                                100
+                              : 0
+                          }
+                          sx={{
+                            height: 6,
+                            borderRadius: 3,
+                            bgcolor: 'rgba(255, 255, 255, 0.1)',
+                            '& .MuiLinearProgress-bar': {
+                              bgcolor: '#ff9800',
+                            },
+                          }}
+                        />
+                      </Box>
+                    )}
+                  </Box>
 
                   <MapView data={mapData} />
                 </Box>

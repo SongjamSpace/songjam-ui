@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -130,6 +130,17 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
       orderBy('joinedAt', 'desc') // Keep ordering if needed, or remove if natural order is fine
     )
   );
+  // const [leftListeners, setLeftListeners] = useState<SpaceListener[]>([]);
+
+  // useEffect(() => {
+  //   if (waitLeftListeners?.length) {
+  //     setLeftListeners(waitLeftListeners.slice(0, 8) as any);
+
+  //     setTimeout(() => {
+  //       setLeftListeners(waitLeftListeners as any);
+  //     }, 20000);
+  //   }
+  // }, [waitLeftListeners]);
 
   // Query all listeners (removed limit)
   const [liveListeners, loading, error] = useCollectionData(
@@ -149,6 +160,7 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
     GeocodedSpaceListener[]
   >([]);
   const [isGeocoding, setIsGeocoding] = useState(false);
+  const processedListenersRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     if (
@@ -201,17 +213,30 @@ const LiveDashboardView: React.FC<LiveDashboardViewProps> = ({
         (listener) => listener.location
       ) as SpaceListener[];
 
-      // Initialize geocoded listeners with pending status
-      const initialGeocodedListeners: GeocodedSpaceListener[] =
-        onlyLocationUsers.map((listener) => ({
-          ...listener,
-          geocodingStatus: 'pending' as const,
-        }));
+      // Find new listeners that haven't been processed yet
+      const newListeners = onlyLocationUsers.filter(
+        (listener) => !processedListenersRef.current.has(listener.userId)
+      );
 
-      setGeocodedListeners(initialGeocodedListeners);
+      if (newListeners.length > 0) {
+        // Add only new listeners to the existing array
+        const newGeocodedListeners: GeocodedSpaceListener[] = newListeners.map(
+          (listener) => ({
+            ...listener,
+            geocodingStatus: 'pending' as const,
+          })
+        );
 
-      // Start geocoding process
-      geocodeListeners(onlyLocationUsers);
+        setGeocodedListeners((prev) => [...prev, ...newGeocodedListeners]);
+
+        // Mark these listeners as processed
+        newListeners.forEach((listener) => {
+          processedListenersRef.current.add(listener.userId);
+        });
+
+        // Start geocoding process for only the new listeners
+        geocodeListeners(newListeners);
+      }
     }
   }, [leftListeners]);
 

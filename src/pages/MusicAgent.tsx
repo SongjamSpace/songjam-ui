@@ -23,9 +23,9 @@ import {
   keyframes,
   Slider,
   Skeleton,
+  Alert,
 } from '@mui/material';
 import {
-  CloudUpload,
   PlayArrow,
   Stop,
   MusicNote,
@@ -34,14 +34,15 @@ import {
   VolumeUp,
   VolumeOff,
   Refresh,
-  Equalizer,
   GraphicEq,
   RadioButtonChecked,
   FiberManualRecord,
   SkipNext,
   SkipPrevious,
-  DeleteOutline,
 } from '@mui/icons-material';
+import EmojiReactions from '../components/EmojiReactions';
+import SoundBoard from '../components/SoundBoard';
+import MusicLibrary from '../components/MusicLibrary';
 import { useTranslation } from 'react-i18next';
 import {
   deleteMusicUpload,
@@ -109,8 +110,13 @@ const MusicAgent = () => {
     }>
   >([]);
   const socketRef = useRef<Socket | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [audioUploads, setAudioUploads] = useState<
+    {
+      name: string;
+      audioUrl: string;
+    }[]
+  >([]);
+  const [soundboardFiles, setSoundboardFiles] = useState<
     {
       name: string;
       audioUrl: string;
@@ -122,7 +128,6 @@ const MusicAgent = () => {
   const [duration, setDuration] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
   const [isLibraryLoading, setIsLibraryLoading] = useState(false);
   const activityLogRef = useRef<HTMLDivElement>(null);
   const [currentEmoji, setCurrentEmoji] = useState('🎧');
@@ -134,12 +139,6 @@ const MusicAgent = () => {
       activityLogRef.current.scrollTop = 0;
     }
   }, [logs]);
-
-  // Mock waveform data (in a real app, this would come from audio analysis)
-  const waveformData = Array.from(
-    { length: 50 },
-    () => Math.random() * 0.5 + 0.1
-  );
 
   // Show login dialog if not authenticated
   React.useEffect(() => {
@@ -189,9 +188,14 @@ const MusicAgent = () => {
     if (!user) return;
     setIsLibraryLoading(true);
     const uploads = await getMusicUploadsByUserId(user.uid);
-    setAudioUploads(uploads);
+
+    // Filter out slot files for soundboard
+    const slotFiles = uploads.filter((file) => file.name.startsWith('slot_'));
+    const musicFiles = uploads.filter((file) => !file.name.startsWith('slot_'));
+
+    setAudioUploads(musicFiles);
+    setSoundboardFiles(slotFiles);
     setIsLibraryLoading(false);
-    // setUserUploads(uploads);
   };
 
   const addLog = (
@@ -299,6 +303,7 @@ const MusicAgent = () => {
     socketRef.current.emit('join-space', {
       spaceId: spaceUrl.split('/').pop(),
       requestId,
+      soundboardUrls: soundboardFiles.map((s) => s.audioUrl),
     });
   };
 
@@ -366,8 +371,7 @@ const MusicAgent = () => {
       setAudioUrl(audioUrl);
       addLog(`Uploaded music to ${audioUrl}`, 'success');
       // Refresh uploads list
-      const uploads = await getMusicUploadsByUserId(user.uid);
-      setAudioUploads(uploads);
+      await fetchUserUploads();
       setIsLoading(false);
     }
   };
@@ -397,7 +401,7 @@ const MusicAgent = () => {
   };
 
   // Emoji reactions
-  const emojis = ['🎉', '🔥', '😂', '🥁', '👏', '🎧', '🎵', '🎸', '🎹', '🎺'];
+
   const handleEmojiReact = (emoji: string) => {
     if (socketRef.current && socketRef.current.connected && user) {
       socketRef.current.emit('react-emoji', {
@@ -454,43 +458,10 @@ const MusicAgent = () => {
     }
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
-
-  const handleDrop = async (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-
-    const file = e.dataTransfer.files[0];
-    if (file && file.type === 'audio/mpeg' && user) {
-      if (file.size > 20 * 1024 * 1024) {
-        addLog('File size must be less than 20mb', 'error');
-        alert('File size must be less than 20mb');
-        return;
-      }
-      setIsLoading(true);
-      const audioUrl = await uploadMusic(file, user.uid);
-      setAudioUrl(audioUrl);
-      addLog(`Uploaded music to ${audioUrl}`, 'success');
-      // Refresh uploads list
-      const uploads = await getMusicUploadsByUserId(user.uid);
-      setAudioUploads(uploads);
-      setIsLoading(false);
-    }
-  };
-
   const handleDeleteUpload = async (fileName: string) => {
     if (user) {
       await deleteMusicUpload(fileName, user.uid);
-      const uploads = await getMusicUploadsByUserId(user.uid);
-      setAudioUploads(uploads);
+      await fetchUserUploads();
       addLog(`Deleted music: ${fileName}`, 'success');
     }
   };
@@ -657,39 +628,39 @@ const MusicAgent = () => {
                 </Typography>
               </Box>
               <Stack direction="row" spacing={2}>
-                {wsStatus === 'connected' && <Tooltip
-                  title={'Disconnect'}
-                >
-                  <IconButton
-                    onClick={() => connectSocket(wsStatus === 'connected')}
-                    sx={{
-                      color: wsStatus === 'connected' ? '#4caf50' : '#f44336',
-                      '&:hover': { transform: 'scale(1.1)' },
-                      transition: 'transform 0.2s',
-                      // animation:
-                      //   wsStatus === 'connected'
-                      //     ? `${pulse} 2s infinite`
-                      //     : 'none',
-                      position: 'relative',
-                      '&::after':
-                        wsStatus === 'connected'
-                          ? {
-                              content: '""',
-                              position: 'absolute',
-                              top: -2,
-                              left: -2,
-                              right: -2,
-                              bottom: -2,
-                              borderRadius: '50%',
-                              border: '2px solid #4caf50',
-                              // animation: `${pulse} 2s infinite`,
-                            }
-                          : {},
-                    }}
-                  >
-                    <RadioButtonChecked />
-                  </IconButton>
-                </Tooltip>}
+                {wsStatus === 'connected' && (
+                  <Tooltip title={'Disconnect'}>
+                    <IconButton
+                      onClick={() => connectSocket(wsStatus === 'connected')}
+                      sx={{
+                        color: wsStatus === 'connected' ? '#4caf50' : '#f44336',
+                        '&:hover': { transform: 'scale(1.1)' },
+                        transition: 'transform 0.2s',
+                        // animation:
+                        //   wsStatus === 'connected'
+                        //     ? `${pulse} 2s infinite`
+                        //     : 'none',
+                        position: 'relative',
+                        '&::after':
+                          wsStatus === 'connected'
+                            ? {
+                                content: '""',
+                                position: 'absolute',
+                                top: -2,
+                                left: -2,
+                                right: -2,
+                                bottom: -2,
+                                borderRadius: '50%',
+                                border: '2px solid #4caf50',
+                                // animation: `${pulse} 2s infinite`,
+                              }
+                            : {},
+                      }}
+                    >
+                      <RadioButtonChecked />
+                    </IconButton>
+                  </Tooltip>
+                )}
                 <Tooltip title={isMuted ? 'Unmute' : 'Mute'}>
                   <IconButton
                     onClick={() => {
@@ -753,443 +724,61 @@ const MusicAgent = () => {
                   />
                 </Box>
 
-                {/* Waveform Visualizer */}
+                {/* Sound Board */}
                 <Box sx={{ mb: 4 }}>
-                  <Paper
-                    sx={{
-                      p: 3,
-                      background: 'rgba(0, 0, 0, 0.2)',
-                      borderRadius: 2,
-                      border: '1px solid rgba(96, 165, 250, 0.1)',
-                      position: 'relative',
-                      overflow: 'hidden',
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background:
-                          'radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.1) 0%, transparent 70%)',
-                        pointerEvents: 'none',
-                      },
+                  <SoundBoard
+                    onSoundPlay={(audioUrl) => {
+                      addLog(`Playing sound effect`, 'info');
                     }}
-                  >
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        mb: 2,
-                        color: '#60a5fa',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1,
-                        textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
-                      }}
-                    >
-                      <Equalizer /> Track Visualizer
-                    </Typography>
-                    <Box
-                      sx={{
-                        height: 120,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '2px',
-                        mb: 2,
-                        position: 'relative',
-                        overflow: 'hidden',
-                        borderRadius: 1,
-                        background: isDragging
-                          ? 'rgba(96, 165, 250, 0.2)'
-                          : 'rgba(0, 0, 0, 0.2)',
-                        p: 1,
-                        transition: 'all 0.3s ease',
-                        border: isDragging
-                          ? '2px dashed #60a5fa'
-                          : '1px solid rgba(96, 165, 250, 0.1)',
-                        cursor: 'pointer',
-                        '&:hover': {
-                          background: 'rgba(96, 165, 250, 0.1)',
-                        },
-                      }}
-                      onDragOver={handleDragOver}
-                      onDragLeave={handleDragLeave}
-                      onDrop={handleDrop}
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      {!audioUrl ? (
-                        <Box
-                          sx={{
-                            width: '100%',
-                            height: '100%',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            // gap: 2,
-                            color: isDragging
-                              ? 'rgba(96, 165, 250, 0.8)'
-                              : 'rgba(255, 255, 255, 0.3)',
-                            position: 'relative',
-                            '&::before': {
-                              content: '""',
-                              position: 'absolute',
-                              top: '50%',
-                              left: '50%',
-                              transform: 'translate(-50%, -50%)',
-                              width: '60px',
-                              height: '60px',
-                              background:
-                                'radial-gradient(circle at center, rgba(96, 165, 250, 0.1) 0%, transparent 70%)',
-                              // animation: `${pulse} 2s infinite ease-in-out`,
-                            },
-                          }}
-                        >
-                          <CloudUpload
-                            sx={{
-                              fontSize: 40,
-                              color: isDragging
-                                ? 'rgba(96, 165, 250, 0.8)'
-                                : 'rgba(96, 165, 250, 0.3)',
-                              animation: isDragging
-                                ? 'none'
-                                : `${float} 3s infinite ease-in-out`,
-                            }}
-                          />
-                          <Typography
-                            variant="body1"
-                            sx={{
-                              fontStyle: 'italic',
-                              textAlign: 'center',
-                              maxWidth: '200px',
-                              lineHeight: 1.4,
-                            }}
-                          >
-                            {isDragging
-                              ? 'Drop your track here'
-                              : 'Drop your track here to cue your music'}
-                          </Typography>
-                        </Box>
-                      ) : (
-                        waveformData.map((height, index) => (
-                          <Box
-                            key={index}
-                            sx={{
-                              flex: 1,
-                              height: `${height * 100}%`,
-                              background:
-                                index <
-                                (currentTime / (duration || 1)) *
-                                  waveformData.length
-                                  ? 'linear-gradient(to top, #60a5fa, #3b82f6)'
-                                  : 'rgba(96, 165, 250, 0.2)',
-                              borderRadius: '2px',
-                              transition: 'background 0.3s ease',
-                              minHeight: '4px',
-                            }}
-                          />
-                        ))
-                      )}
-                    </Box>
-
-                    {/* Playback Controls */}
-                    <Stack direction="row" spacing={2} alignItems="center">
-                      <IconButton
-                        onClick={() => {
-                          if (audioRef.current) {
-                            audioRef.current.currentTime = Math.max(
-                              0,
-                              currentTime - 10
-                            );
-                          }
-                        }}
-                        disabled={!audioUrl}
-                        sx={{
-                          color: audioUrl
-                            ? '#60a5fa'
-                            : 'rgba(255, 255, 255, 0.3)',
-                          '&:hover': { transform: 'scale(1.1)' },
-                          transition: 'transform 0.2s',
-                        }}
-                      >
-                        <SkipPrevious />
-                      </IconButton>
-
-                      <IconButton
-                        onClick={handlePlayPause}
-                        disabled={!audioUrl}
-                        sx={{
-                          color: audioUrl
-                            ? '#60a5fa'
-                            : 'rgba(255, 255, 255, 0.3)',
-                          '&:hover': { transform: 'scale(1.1)' },
-                          transition: 'transform 0.2s',
-                          width: 48,
-                          height: 48,
-                        }}
-                      >
-                        {isPlaying ? <Stop /> : <PlayArrow />}
-                      </IconButton>
-
-                      <IconButton
-                        onClick={() => {
-                          if (audioRef.current) {
-                            audioRef.current.currentTime = Math.min(
-                              duration,
-                              currentTime + 10
-                            );
-                          }
-                        }}
-                        disabled={!audioUrl}
-                        sx={{
-                          color: audioUrl
-                            ? '#60a5fa'
-                            : 'rgba(255, 255, 255, 0.3)',
-                          '&:hover': { transform: 'scale(1.1)' },
-                          transition: 'transform 0.2s',
-                        }}
-                      >
-                        <SkipNext />
-                      </IconButton>
-
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: audioUrl
-                            ? 'rgba(255, 255, 255, 0.7)'
-                            : 'rgba(255, 255, 255, 0.3)',
-                          minWidth: 45,
-                          textAlign: 'center',
-                        }}
-                      >
-                        {formatTime(currentTime)}
-                      </Typography>
-
-                      <Slider
-                        value={currentTime}
-                        max={duration || 100}
-                        onChange={handleSeek}
-                        disabled={!audioUrl}
-                        sx={{
-                          color: audioUrl
-                            ? '#60a5fa'
-                            : 'rgba(255, 255, 255, 0.3)',
-                          '& .MuiSlider-thumb': {
-                            width: 12,
-                            height: 12,
-                            '&:hover, &.Mui-focusVisible': {
-                              boxShadow: '0 0 0 8px rgba(96, 165, 250, 0.16)',
-                            },
-                          },
-                          '& .MuiSlider-track': {
-                            background: audioUrl
-                              ? 'linear-gradient(90deg, #60a5fa, #3b82f6)'
-                              : 'rgba(255, 255, 255, 0.3)',
-                          },
-                          '& .MuiSlider-rail': {
-                            background: 'rgba(96, 165, 250, 0.2)',
-                          },
-                        }}
-                      />
-
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: audioUrl
-                            ? 'rgba(255, 255, 255, 0.7)'
-                            : 'rgba(255, 255, 255, 0.3)',
-                          minWidth: 45,
-                          textAlign: 'center',
-                        }}
-                      >
-                        {formatTime(duration)}
-                      </Typography>
-                    </Stack>
-                  </Paper>
+                    onSoundStop={() => {
+                      addLog(`Stopped sound effect`, 'info');
+                    }}
+                    socket={socketRef.current}
+                    isConnected={wsStatus === 'connected'}
+                    isInSpace={isInSpace}
+                    userId={user?.uid}
+                    onLog={addLog}
+                    soundboardFiles={soundboardFiles}
+                    onFilesUpdated={fetchUserUploads}
+                  />
                 </Box>
 
                 {/* Music Uploads */}
-                <Box sx={{ mb: 4 }}>
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      mb: 2,
-                      color: '#60a5fa',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                      textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
-                    }}
-                  >
-                    <CloudUpload /> Your Music Library
-                  </Typography>
-                  <Paper
-                    sx={{
-                      p: 2,
-                      background: 'rgba(0, 0, 0, 0.2)',
-                      borderRadius: 2,
-                      maxHeight: '300px',
-                      overflow: 'auto',
-                      border: '1px solid rgba(96, 165, 250, 0.1)',
-                      '&::-webkit-scrollbar': {
-                        width: '8px',
-                      },
-                      '&::-webkit-scrollbar-track': {
-                        background: 'rgba(0, 0, 0, 0.1)',
-                        borderRadius: '4px',
-                      },
-                      '&::-webkit-scrollbar-thumb': {
-                        background: 'rgba(96, 165, 250, 0.3)',
-                        borderRadius: '4px',
-                        '&:hover': {
-                          background: 'rgba(96, 165, 250, 0.5)',
-                        },
-                      },
-                    }}
-                  >
-                    {isLibraryLoading ? (
-                      <List>
-                        {[1, 2, 3, 4, 5].map((i) => (
-                          <ListItemButton
-                            key={i}
-                            sx={{
-                              borderRadius: 1,
-                              mb: 1,
-                              transition: 'all 0.2s',
-                              background: 'rgba(255,255,255,0.05)',
-                            }}
-                            disabled
-                          >
-                            <Radio disabled sx={{ color: '#60a5fa' }} />
-                            <ListItemText
-                              primary={
-                                <Skeleton
-                                  variant="text"
-                                  width={120}
-                                  sx={{ bgcolor: 'rgba(96, 165, 250, 0.1)' }}
-                                />
-                              }
-                            />
-                          </ListItemButton>
-                        ))}
-                      </List>
-                    ) : audioUploads.length === 0 ? (
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: 'rgba(255, 255, 255, 0.5)',
-                          textAlign: 'center',
-                          py: 2,
-                        }}
-                      >
-                        No uploads yet
-                      </Typography>
-                    ) : (
-                      <List>
-                        {audioUploads.map((audioUpload) => (
-                          <ListItemButton
-                            key={audioUpload.audioUrl}
-                            onClick={() =>
-                              handleSelectUpload(audioUpload.audioUrl)
-                            }
-                            selected={audioUpload.audioUrl === audioUrl}
-                            sx={{
-                              borderRadius: 1,
-                              mb: 1,
-                              transition: 'all 0.2s',
-                              '&.Mui-selected': {
-                                background: 'rgba(96, 165, 250, 0.2)',
-                                transform: 'scale(1.02)',
-                                boxShadow: '0 0 10px rgba(96, 165, 250, 0.3)',
-                              },
-                              '&:hover': {
-                                background: 'rgba(96, 165, 250, 0.1)',
-                                transform: 'scale(1.01)',
-                              },
-                            }}
-                          >
-                            <Radio
-                              checked={audioUpload.audioUrl === audioUrl}
-                              value={audioUpload.audioUrl}
-                              sx={{ color: '#60a5fa' }}
-                            />
-                            <ListItemText
-                              primary={audioUpload.name}
-                              sx={{ color: 'white' }}
-                            />
-                            {/* Delete button */}
-                            <IconButton
-                              onClick={async (e) => {
-                                e.stopPropagation();
-                                await handleDeleteUpload(audioUpload.name);
-                              }}
-                              sx={{ color: '#f44336' }}
-                            >
-                              <DeleteOutline />
-                            </IconButton>
-                          </ListItemButton>
-                        ))}
-                      </List>
-                    )}
-                  </Paper>
-                  <Button
-                    variant="outlined"
-                    startIcon={<CloudUpload />}
-                    onClick={() => fileInputRef.current?.click()}
-                    sx={{
-                      mt: 2,
-                      borderColor: '#60a5fa',
-                      color: '#60a5fa',
-                      '&:hover': {
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(96, 165, 250, 0.1)',
-                        transform: 'scale(1.02)',
-                      },
-                      transition: 'all 0.2s',
-                      position: 'relative',
-                      overflow: 'hidden',
-                      '&::after': {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background:
-                          'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
-                        transform: 'translateX(-100%)',
-                        transition: 'transform 0.5s',
-                      },
-                      '&:hover::after': {
-                        transform: 'translateX(100%)',
-                      },
-                    }}
-                    disabled={isLoading}
-                  >
-                    Upload New Track
-                  </Button>
-                  <input
-                    type="file"
-                    hidden
-                    ref={fileInputRef}
-                    accept="audio/mpeg"
-                    onChange={handleFileChange}
-                  />
-                </Box>
+                <MusicLibrary
+                  audioUploads={audioUploads}
+                  selectedAudioUrl={audioUrl}
+                  isLibraryLoading={isLibraryLoading}
+                  isLoading={isLoading}
+                  onSelectUpload={handleSelectUpload}
+                  onDeleteUpload={handleDeleteUpload}
+                  onFileChange={handleFileChange}
+                />
               </Box>
 
               {/* Right Column */}
               <Box>
                 {/* Control Buttons */}
                 <Box sx={{ mb: 4 }}>
+                  {/* Connection Warning */}
+                  {/* {wsStatus !== 'connected' && !isInSpace && (
+                    <Alert
+                      severity="warning"
+                      sx={{
+                        mb: 2,
+                        background: 'rgba(255, 193, 7, 0.1)',
+                        border: '1px solid rgba(255, 193, 7, 0.3)',
+                        color: '#ffc107',
+                      }}
+                    >
+                      Join a space to use the soundboard
+                    </Alert>
+                  )} */}
                   <Stack direction="row" spacing={2}>
                     <Button
                       variant="contained"
                       fullWidth
                       onClick={() => connectSocket()}
-                      disabled={
-                        !spaceUrl || !audioUrl
-                      }
+                      disabled={!spaceUrl || !audioUrl}
                       sx={{
                         background: 'linear-gradient(135deg, #60a5fa, #3b82f6)',
                         '&:hover': {
@@ -1275,98 +864,12 @@ const MusicAgent = () => {
                 </Box>
 
                 {/* Emoji Reactions */}
-                <Box sx={{ mb: 4 }}>
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      mb: 2,
-                      color: '#60a5fa',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                      textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
-                    }}
-                  >
-                    <EmojiEmotions /> Reactions
-                  </Typography>
-                  <Paper
-                    sx={{
-                      p: 2,
-                      background: 'rgba(0, 0, 0, 0.2)',
-                      borderRadius: 2,
-                      border: '1px solid rgba(96, 165, 250, 0.1)',
-                      position: 'relative',
-                      overflow: 'hidden',
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background:
-                          'radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.1) 0%, transparent 70%)',
-                        pointerEvents: 'none',
-                      },
-                    }}
-                  >
-                    <Stack
-                      direction="row"
-                      spacing={1}
-                      sx={{
-                        flexWrap: 'wrap',
-                        gap: 1,
-                        justifyContent: 'center',
-                      }}
-                    >
-                      {emojis.map((emoji) => (
-                        <Zoom key={emoji} in>
-                          <Button
-                            onClick={() => handleEmojiReact(emoji)}
-                            sx={{
-                              fontSize: 24,
-                              width: 68,
-                              height: 48,
-                              background: 'rgba(96, 165, 250, 0.1)',
-                              '&:hover': {
-                                background: 'rgba(96, 165, 250, 0.2)',
-                                transform: 'scale(1.1) rotate(5deg)',
-                              },
-                              border:
-                                currentEmoji === emoji
-                                  ? '2px solid #60a5fa'
-                                  : 'none',
-                              transition: 'all 0.2s',
-                              // animation: `${pulse} 2s infinite ease-in-out`,
-                              position: 'relative',
-                              overflow: 'hidden',
-                              '&::after': {
-                                content: '""',
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                right: 0,
-                                bottom: 0,
-                                background:
-                                  'radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, transparent 70%)',
-                                opacity: 0,
-                                transition: 'opacity 0.2s',
-                              },
-                              '&:hover::after': {
-                                opacity: 1,
-                              },
-                            }}
-                            disabled={
-                              !socketRef.current?.connected || !isInSpace
-                            }
-                          >
-                            {emoji}
-                          </Button>
-                        </Zoom>
-                      ))}
-                    </Stack>
-                  </Paper>
-                </Box>
+                <EmojiReactions
+                  onEmojiReact={handleEmojiReact}
+                  currentEmoji={currentEmoji}
+                  isConnected={true}
+                  isInSpace={true}
+                />
                 {/* Volumn Slider */}
                 <Box sx={{ mb: 4 }}>
                   <Typography

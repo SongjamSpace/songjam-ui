@@ -13,17 +13,18 @@ import {
   ListItem,
   ListItemText,
   Divider,
-  ListItemButton,
-  Radio,
+  // ListItemButton,
+  // Radio,
   IconButton,
   Tooltip,
   Fade,
-  Zoom,
-  useTheme,
+  // Zoom,
+  // useTheme,
   keyframes,
   Slider,
-  Skeleton,
-  Alert,
+  // Skeleton,
+  // Alert,
+  // Dialog,
 } from '@mui/material';
 import {
   PlayArrow,
@@ -41,7 +42,7 @@ import {
   SkipPrevious,
 } from '@mui/icons-material';
 import EmojiReactions from '../components/EmojiReactions';
-import SoundBoard from '../components/SoundBoard';
+import SoundBoard, { SoundSlot } from '../components/SoundBoard';
 import MusicLibrary from '../components/MusicLibrary';
 import { useTranslation } from 'react-i18next';
 import {
@@ -57,6 +58,15 @@ import {
 } from '../services/db/musicAgentRequets.service';
 import { createDjInstance } from '../services/db/djInstance.service';
 import { extractSpaceId } from '../utils';
+import Logo from '../components/Logo';
+// import {
+//   DynamicEmbeddedWidget,
+//   useDynamicContext,
+// } from '@dynamic-labs/sdk-react-core';
+// import {
+//   getSangStakingStatus,
+//   StakingInfo,
+// } from '../services/blockchain.service';
 
 // Advanced animations
 const pulse = keyframes`
@@ -90,8 +100,8 @@ const neonPulse = keyframes`
 `;
 
 const MusicAgent = () => {
-  const { t } = useTranslation();
-  const theme = useTheme();
+  // const { t } = useTranslation();
+  // const theme = useTheme();
   const { user, loading: authLoading } = useAuthContext();
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [spaceUrl, setSpaceUrl] = useState('');
@@ -123,7 +133,6 @@ const MusicAgent = () => {
     }[]
   >([]);
   const [audioUrl, setAudioUrl] = useState('');
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -132,6 +141,51 @@ const MusicAgent = () => {
   const activityLogRef = useRef<HTMLDivElement>(null);
   const [currentEmoji, setCurrentEmoji] = useState('🎧');
   const [volume, setVolume] = useState(1);
+  const [soundSlots, setSoundSlots] = useState<SoundSlot[]>(
+    Array.from({ length: 10 }, (_, index) => ({
+      name: 'Empty',
+      audioUrl: '',
+      isPlaying: false,
+      isLoading: false,
+      isLoaded: false,
+      fullName: '',
+    }))
+  );
+  // const [stakingInfo, setStakingInfo] = useState<StakingInfo | null>(null);
+  // const [isCheckingStake, setIsCheckingStake] = useState(false);
+  // const { primaryWallet } = useDynamicContext();
+
+  // useEffect(() => {
+  //   if (primaryWallet?.address) {
+  //     checkStaking();
+  //   }
+  // }, [primaryWallet]);
+
+  // const checkStaking = async () => {
+  //   if (primaryWallet?.address && !stakingInfo && !isCheckingStake) {
+  //     setIsCheckingStake(true);
+  //     try {
+  //       const info = await getSangStakingStatus(primaryWallet.address); // Base chainId
+  //       setStakingInfo(info);
+  //       setIsCheckingStake(false);
+
+  //       if (info.hasMinimumStake && !user) {
+  //         // Auto-start X login if they have sufficient tokens
+  //         try {
+  //           // await signInWithSocialAccount(ProviderEnum.Twitter, {
+  //           //   redirectUrl: window.location.href,
+  //           // });
+  //         } catch (error) {
+  //           console.error('Error signing in with Twitter:', error);
+  //           // toast.error('Failed to connect X account');
+  //         }
+  //       }
+  //     } catch (error) {
+  //       console.error('Error checking staking status:', error);
+  //       // toast.error('Failed to check ELYTRA staking status');
+  //     }
+  //   }
+  // };
 
   // Add effect to scroll to top when new logs are added
   useEffect(() => {
@@ -303,7 +357,7 @@ const MusicAgent = () => {
     socketRef.current.emit('join-space', {
       spaceId: spaceUrl.split('/').pop(),
       requestId,
-      soundboardUrls: soundboardFiles.map((s) => s.audioUrl),
+      soundboardUrls: soundSlots.map((s) => s.audioUrl),
     });
   };
 
@@ -431,32 +485,32 @@ const MusicAgent = () => {
     }
   };
 
-  const formatTime = (time: number) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
+  // const formatTime = (time: number) => {
+  //   const minutes = Math.floor(time / 60);
+  //   const seconds = Math.floor(time % 60);
+  //   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  // };
 
-  const handlePlayPause = () => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-        setMusicStarted(false);
-      } else {
-        audioRef.current.play();
-        setIsPlaying(true);
-        setMusicStarted(true);
-      }
-    }
-  };
+  // const handlePlayPause = () => {
+  //   if (audioRef.current) {
+  //     if (isPlaying) {
+  //       audioRef.current.pause();
+  //       setIsPlaying(false);
+  //       setMusicStarted(false);
+  //     } else {
+  //       audioRef.current.play();
+  //       setIsPlaying(true);
+  //       setMusicStarted(true);
+  //     }
+  //   }
+  // };
 
-  const handleSeek = (event: Event, newValue: number | number[]) => {
-    if (audioRef.current && typeof newValue === 'number') {
-      audioRef.current.currentTime = newValue;
-      setCurrentTime(newValue);
-    }
-  };
+  // const handleSeek = (event: Event, newValue: number | number[]) => {
+  //   if (audioRef.current && typeof newValue === 'number') {
+  //     audioRef.current.currentTime = newValue;
+  //     setCurrentTime(newValue);
+  //   }
+  // };
 
   const handleDeleteUpload = async (fileName: string) => {
     if (user) {
@@ -538,10 +592,25 @@ const MusicAgent = () => {
       ))}
 
       <Container maxWidth="lg">
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            width: '100%',
+            position: 'relative',
+          }}
+        >
+          <div className="logo">
+            <Logo />
+            <span>Songjam</span>
+          </div>
+        </Box>
         <Fade in timeout={1000}>
           <Paper
             elevation={24}
             sx={{
+              mt: 6,
               p: 4,
               background: 'rgba(15, 23, 42, 0.95)',
               borderRadius: 4,
@@ -740,6 +809,8 @@ const MusicAgent = () => {
                     onLog={addLog}
                     soundboardFiles={soundboardFiles}
                     onFilesUpdated={fetchUserUploads}
+                    soundSlots={soundSlots}
+                    setSoundSlots={setSoundSlots}
                   />
                 </Box>
 
@@ -1021,6 +1092,13 @@ const MusicAgent = () => {
           </Paper>
         </Fade>
         <LoginDialog open={showAuthDialog && !authLoading} />
+        {/* <Dialog
+          open={!!user && !primaryWallet}
+          onClose={() => {}}
+          maxWidth="sm"
+        >
+          <DynamicEmbeddedWidget background="default" style={{ width: 350 }} />
+        </Dialog> */}
       </Container>
     </Box>
   );

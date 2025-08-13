@@ -78,7 +78,6 @@ const FlagModal = ({
   };
 
   const handleVote = async (vote: 'defend' | 'slash') => {
-    debugger;
     if (loading || isButtonDisabled) {
       return;
     }

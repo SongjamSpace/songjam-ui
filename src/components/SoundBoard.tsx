@@ -5,21 +5,10 @@ import {
   Typography,
   IconButton,
   Button,
-  Stack,
   Tooltip,
-  Fade,
   Zoom,
   keyframes,
   CircularProgress,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  ListItemIcon,
   Alert,
   Snackbar,
 } from '@mui/material';
@@ -27,16 +16,18 @@ import {
   CloudUpload,
   PlayArrow,
   LibraryMusic,
-  Refresh,
   Error,
-  CheckCircle,
+  Delete,
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { Socket } from 'socket.io-client';
 import {
   uploadMusic,
   getMusicUploadsByUserId,
+  deleteMusicUpload,
 } from '../services/storage/musicAgent.storage';
+import SoundLibraryPopover from './SoundLibraryPopover';
+import QueueMusicRoundedIcon from '@mui/icons-material/QueueMusicRounded';
 
 // Animations
 const pulse = keyframes`
@@ -57,13 +48,14 @@ const float = keyframes`
   100% { transform: translateY(0px) rotate(0deg); }
 `;
 
-interface SoundSlot {
+export interface SoundSlot {
   name: string;
   audioUrl: string;
   isPlaying: boolean;
   isLoading: boolean;
   isLoaded: boolean;
   error?: string;
+  fullName: string;
 }
 
 interface SoundBoardProps {
@@ -76,16 +68,9 @@ interface SoundBoardProps {
   onLog?: (message: string, type: 'info' | 'success' | 'error') => void;
   soundboardFiles?: { name: string; audioUrl: string }[];
   onFilesUpdated?: () => void;
+  soundSlots: SoundSlot[];
+  setSoundSlots: React.Dispatch<React.SetStateAction<SoundSlot[]>>;
 }
-
-const defaultSoundNames = [
-  'Laugh Track',
-  'Drum Roll',
-  'Applause',
-  'Boo',
-  'Whistle',
-  'Ding',
-];
 
 const SoundBoard: React.FC<SoundBoardProps> = ({
   onSoundPlay,
@@ -97,23 +82,14 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
   onLog,
   soundboardFiles = [],
   onFilesUpdated,
+  soundSlots,
+  setSoundSlots,
 }) => {
   const { t } = useTranslation();
-  const [soundSlots, setSoundSlots] = useState<SoundSlot[]>(
-    Array.from({ length: 6 }, (_, index) => ({
-      name: defaultSoundNames[index] || `Sound ${index + 1}`,
-      audioUrl: '',
-      isPlaying: false,
-      isLoading: false,
-      isLoaded: false,
-    }))
-  );
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [userSoundboardFiles, setUserSoundboardFiles] = useState<
-    { name: string; audioUrl: string }[]
-  >([]);
 
   const [selectedSlotForUpload, setSelectedSlotForUpload] = useState<
     number | null
@@ -122,12 +98,10 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const localAudioRefs = useRef<{ [key: number]: HTMLAudioElement }>({});
 
-  // Load user soundboard configuration and files
-  useEffect(() => {
-    if (userId) {
-      loadUserSoundboardFiles();
-    }
-  }, [userId]);
+  // Library popover state
+  const [libraryAnchorEl, setLibraryAnchorEl] = useState<HTMLElement | null>(
+    null
+  );
 
   // Populate slots with available files
   useEffect(() => {
@@ -141,7 +115,7 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
         // Create a map of slot files (user files + default files)
         const slotFileMap = new Map<
           string,
-          { name: string; audioUrl: string }
+          { name: string; audioUrl: string; fullName?: string }
         >();
 
         // Add user's slot files first (they take priority)
@@ -153,6 +127,7 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
             slotFileMap.set(slotIndex, {
               name: originalName,
               audioUrl: file.audioUrl,
+              fullName: file.name,
             });
           }
         });
@@ -174,15 +149,23 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
         setSoundSlots((prev) =>
           prev.map((slot, index) => {
             const slotFile = slotFileMap.get(index.toString());
-            if (slotFile && !slot.audioUrl) {
+            if (slotFile) {
               return {
                 ...slot,
                 name: slotFile.name,
                 audioUrl: slotFile.audioUrl,
                 isLoaded: true,
+                fullName: slotFile.fullName || '',
               };
             }
-            return slot;
+            // If no slot file found, reset to empty
+            return {
+              ...slot,
+              name: 'Empty',
+              audioUrl: '',
+              isLoaded: false,
+              fullName: '',
+            };
           })
         );
       } catch (error) {
@@ -378,16 +361,6 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
   //     }
   //   };
 
-  const loadUserSoundboardFiles = async () => {
-    if (!userId) return;
-    try {
-      const files = await getMusicUploadsByUserId(userId);
-      setUserSoundboardFiles(files);
-    } catch (error) {
-      console.error('Error loading soundboard files:', error);
-    }
-  };
-
   const loadDefaultSlotFiles = async () => {
     try {
       // Get default slot files from Firebase (slot_0, slot_1, etc.)
@@ -459,6 +432,7 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
                 name: originalName.replace(/\.[^/.]+$/, ''), // Remove file extension, keep original name
                 audioUrl,
                 isLoaded: true,
+                fullName: originalName,
               }
             : slot
         )
@@ -527,6 +501,107 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
     fileInputRef.current?.click();
   };
 
+  const handleDeleteSlot = async (slotIndex: number) => {
+    if (!userId) return;
+
+    try {
+      // // Update the slot to be empty
+      // setSoundSlots((prev) =>
+      //   prev.map((slot, index) =>
+      //     index === slotIndex
+      //       ? {
+      //           ...slot,
+      //           name: 'Empty',
+      //           audioUrl: '',
+      //           isLoaded: false,
+      //           isPlaying: false,
+      //         }
+      //       : slot
+      //   )
+      // );
+
+      // // Save configuration
+      // await saveSoundboardConfig();
+
+      // setSuccessMessage(`Sound removed from slot ${slotIndex + 1}`);
+      // onLog?.(`Sound removed from slot ${slotIndex + 1}`, 'success');
+      if (soundSlots[slotIndex].fullName) {
+        deleteMusicUpload(soundSlots[slotIndex].fullName, userId);
+        //  remove slot from soundSlots
+        setSoundSlots((prev) =>
+          prev.map((slot, index) =>
+            index === slotIndex
+              ? { ...slot, name: 'Empty', audioUrl: '', isLoaded: false }
+              : slot
+          )
+        );
+      }
+
+      // Trigger parent to refresh files
+      onFilesUpdated?.();
+    } catch (error) {
+      console.error('Error deleting slot:', error);
+      setError('Failed to remove sound from slot');
+      onLog?.('Failed to remove sound from slot', 'error');
+    }
+  };
+
+  // Library popover handlers
+  const handleLibraryClick = (event: React.MouseEvent<HTMLElement>) => {
+    setLibraryAnchorEl(event.currentTarget);
+  };
+
+  const handleLibraryClose = () => {
+    setLibraryAnchorEl(null);
+  };
+
+  const handleLibrarySoundSelect = async (
+    sound: { name: string; audioUrl: string },
+    slotIndex: number
+  ) => {
+    if (!userId) return;
+
+    try {
+      // Create a new file with slot_{index} prefix
+      const slotPrefix = `slot_${slotIndex}_`;
+      const originalName = sound.name;
+      // const newFileName = slotPrefix + originalName + '.mp3'; // Add extension
+
+      // Update the selected slot
+      setSoundSlots((prev) =>
+        prev.map((slot, index) =>
+          index === slotIndex
+            ? {
+                ...slot,
+                name: originalName,
+                audioUrl: sound.audioUrl,
+                isLoaded: true,
+                fullName: originalName,
+              }
+            : slot
+        )
+      );
+
+      // Save configuration
+      await saveSoundboardConfig();
+
+      setSuccessMessage(
+        `Sound "${originalName}" assigned to slot ${slotIndex + 1}`
+      );
+      onLog?.(
+        `Sound assigned: ${originalName} to slot ${slotIndex + 1}`,
+        'success'
+      );
+
+      // // Trigger parent to refresh files
+      // onFilesUpdated?.();
+    } catch (error) {
+      console.error('Error assigning sound:', error);
+      setError('Failed to assign sound to slot');
+      onLog?.('Failed to assign sound to slot', 'error');
+    }
+  };
+
   return (
     <Box>
       <Box
@@ -551,23 +626,17 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
         </Typography>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          {/* Connection Status */}
-          <Box
-            sx={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              backgroundColor: isConnected && isInSpace ? '#4caf50' : '#f44336',
-              animation:
-                isConnected && isInSpace ? `${pulse} 2s infinite` : 'none',
-            }}
-          />
-
+          <Button
+            onClick={handleLibraryClick}
+            startIcon={<QueueMusicRoundedIcon fontSize="small" />}
+          >
+            Library
+          </Button>
           {/* Refresh Button */}
-          <Tooltip title="Refresh soundboard">
+          {/* <Tooltip title="Refresh soundboard">
             <IconButton
               onClick={handleRefreshSoundboard}
-              disabled={!isConnected || !isInSpace || isLoading}
+              disabled={isLoading}
               sx={{
                 color: '#60a5fa',
                 '&:hover': { transform: 'scale(1.1)' },
@@ -576,7 +645,7 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
             >
               <Refresh />
             </IconButton>
-          </Tooltip>
+          </Tooltip> */}
         </Box>
       </Box>
 
@@ -604,183 +673,213 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
+            gridTemplateColumns: 'repeat(5, 1fr)',
             gap: 2,
             mb: 2,
           }}
         >
           {soundSlots.map((slot, index) => (
             <Zoom in key={index}>
-              <Paper
-                elevation={slot.isPlaying ? 8 : 4}
+              <Box
                 sx={{
-                  aspectRatio: '1',
-                  position: 'relative',
-                  background: slot.isPlaying
-                    ? 'linear-gradient(135deg, rgba(96, 165, 250, 0.3), rgba(139, 92, 246, 0.3))'
-                    : slot.isLoaded
-                    ? 'rgba(15, 23, 42, 0.8)'
-                    : 'rgba(15, 23, 42, 0.4)',
-                  border: slot.isPlaying
-                    ? '2px solid #60a5fa'
-                    : slot.isLoaded
-                    ? '1px solid rgba(96, 165, 250, 0.2)'
-                    : '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: 2,
-                  cursor: slot.isLoaded ? 'pointer' : 'default',
-                  transition: 'all 0.3s ease',
-                  animation: slot.isPlaying ? `${glow} 1s infinite` : 'none',
-                  '&:hover': slot.isLoaded
-                    ? {
-                        transform: 'scale(1.05)',
-                        boxShadow: '0 8px 25px rgba(96, 165, 250, 0.3)',
-                        borderColor: '#60a5fa',
-                      }
-                    : {},
-                  overflow: 'hidden',
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: slot.isPlaying
-                      ? 'radial-gradient(circle at center, rgba(96, 165, 250, 0.2) 0%, transparent 70%)'
-                      : 'none',
-                    pointerEvents: 'none',
-                  },
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
                 }}
               >
-                {/* Sound Slot Content */}
-                <Box
+                <Paper
+                  elevation={slot.isPlaying ? 8 : 4}
                   sx={{
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    p: 2,
+                    aspectRatio: '1',
                     position: 'relative',
+                    width: '100%',
+                    background: slot.isPlaying
+                      ? 'linear-gradient(135deg, rgba(96, 165, 250, 0.3), rgba(139, 92, 246, 0.3))'
+                      : slot.isLoaded
+                      ? 'rgba(15, 23, 42, 0.8)'
+                      : 'rgba(15, 23, 42, 0.4)',
+                    border: slot.isPlaying
+                      ? '2px solid #60a5fa'
+                      : slot.isLoaded
+                      ? '2px solid #4caf50'
+                      : '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: 1,
+                    cursor: slot.isLoaded ? 'pointer' : 'default',
+                    transition: 'all 0.3s ease',
+                    animation: slot.isPlaying ? `${glow} 1s infinite` : 'none',
+                    '&:hover': slot.isLoaded
+                      ? {
+                          transform: 'scale(1.05)',
+                          boxShadow: '0 8px 25px rgba(96, 165, 250, 0.3)',
+                          borderColor: '#60a5fa',
+                        }
+                      : {},
+                    overflow: 'hidden',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: slot.isPlaying
+                        ? 'radial-gradient(circle at center, rgba(96, 165, 250, 0.2) 0%, transparent 70%)'
+                        : 'none',
+                      pointerEvents: 'none',
+                    },
                   }}
                 >
-                  {/* Loading State */}
-                  {slot.isLoading && (
-                    <CircularProgress
-                      size={24}
-                      sx={{
-                        color: '#60a5fa',
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                      }}
-                    />
-                  )}
-
-                  {/* Error State */}
-                  {slot.error && (
-                    <Tooltip title={slot.error}>
-                      <Error
+                  {/* Sound Slot Content */}
+                  <Box
+                    sx={{
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      p: 1,
+                      position: 'relative',
+                    }}
+                  >
+                    {/* Loading State */}
+                    {slot.isLoading && (
+                      <CircularProgress
+                        size={20}
                         sx={{
-                          color: '#f44336',
+                          color: '#60a5fa',
                           position: 'absolute',
-                          top: 8,
-                          right: 8,
-                          fontSize: '1rem',
+                          top: '50%',
+                          left: '50%',
+                          transform: 'translate(-50%, -50%)',
+                          zIndex: 2,
                         }}
                       />
-                    </Tooltip>
-                  )}
+                    )}
 
-                  {/* Loaded State */}
-                  {slot.isLoaded && !slot.isLoading && (
-                    <CheckCircle
+                    {/* Status Icons - Top Right */}
+                    <Box
                       sx={{
-                        color: '#4caf50',
                         position: 'absolute',
-                        top: 8,
-                        right: 8,
-                        fontSize: '1rem',
+                        top: 4,
+                        right: 4,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 0.5,
+                        zIndex: 3,
                       }}
-                    />
-                  )}
+                    >
+                      {/* Error State */}
+                      {slot.error && (
+                        <Tooltip title={slot.error}>
+                          <Error
+                            sx={{
+                              color: '#f44336',
+                              fontSize: '0.75rem',
+                            }}
+                          />
+                        </Tooltip>
+                      )}
+                    </Box>
 
-                  {/* Play/Stop Button */}
-                  <IconButton
-                    onClick={() => handlePlaySound(index)}
-                    disabled={!slot.isLoaded || slot.isLoading}
-                    sx={{
-                      color: slot.isPlaying
-                        ? '#4caf50'
-                        : slot.isLoaded
-                        ? '#60a5fa'
-                        : 'rgba(255, 255, 255, 0.3)',
-                      fontSize: '2rem',
-                      mb: 1,
-                      '&:hover': slot.isLoaded
-                        ? {
-                            transform: 'scale(1.1)',
-                            color: slot.isPlaying ? '#45a049' : '#3b82f6',
+                    {/* Action Buttons - Side by Side */}
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        justifyContent: 'center',
+                        mb: 0.5,
+                      }}
+                    >
+                      {/* Upload/Delete Button */}
+                      {userId && (
+                        <Tooltip
+                          title={
+                            slot.isLoaded ? 'Remove sound' : 'Upload sound file'
                           }
-                        : {},
-                      transition: 'all 0.2s',
-                      animation: slot.isPlaying
-                        ? `${pulse} 1s infinite`
-                        : 'none',
-                    }}
-                  >
-                    <PlayArrow />
-                  </IconButton>
+                        >
+                          <IconButton
+                            onClick={() =>
+                              slot.isLoaded
+                                ? handleDeleteSlot(index)
+                                : handleSlotUpload(index)
+                            }
+                            disabled={isConnected || isInSpace}
+                            size="small"
+                            sx={{
+                              color: slot.isLoaded
+                                ? 'rgba(255, 107, 107, 0.8)'
+                                : 'rgba(255, 255, 255, 0.6)',
+                              fontSize: '0.75rem',
+                              padding: 0.5,
+                              minWidth: 'auto',
+                              '&:hover': {
+                                color: slot.isLoaded ? '#ff6b6b' : '#60a5fa',
+                                transform: 'scale(1.1)',
+                              },
+                              transition: 'all 0.2s',
+                            }}
+                          >
+                            {slot.isLoaded ? (
+                              <Delete fontSize="small" />
+                            ) : (
+                              <CloudUpload fontSize="small" />
+                            )}
+                          </IconButton>
+                        </Tooltip>
+                      )}
 
-                  {/* Upload Button */}
-                  {userId && (
-                    <Tooltip title="Upload sound file">
+                      {/* Play/Stop Button */}
                       <IconButton
-                        onClick={() => handleSlotUpload(index)}
-                        disabled={isConnected || isInSpace}
+                        onClick={() => handlePlaySound(index)}
+                        disabled={!slot.isLoaded || slot.isLoading}
                         sx={{
-                          color: 'rgba(255, 255, 255, 0.6)',
-                          fontSize: '1rem',
-                          position: 'absolute',
-                          top: 8,
-                          left: 8,
-                          '&:hover': {
-                            color: '#60a5fa',
-                            transform: 'scale(1.1)',
-                          },
+                          color: slot.isPlaying
+                            ? '#4caf50'
+                            : slot.isLoaded
+                            ? '#60a5fa'
+                            : 'rgba(255, 255, 255, 0.3)',
+                          fontSize: '1.5rem',
+                          '&:hover': slot.isLoaded
+                            ? {
+                                transform: 'scale(1.1)',
+                                color: slot.isPlaying ? '#45a049' : '#3b82f6',
+                              }
+                            : {},
                           transition: 'all 0.2s',
+                          animation: slot.isPlaying
+                            ? `${pulse} 1s infinite`
+                            : 'none',
                         }}
                       >
-                        <CloudUpload />
+                        <PlayArrow fontSize="medium" />
                       </IconButton>
-                    </Tooltip>
-                  )}
+                    </Box>
+                  </Box>
+                </Paper>
 
-                  {/* Sound Name */}
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: slot.isLoaded
-                        ? 'white'
-                        : 'rgba(255, 255, 255, 0.5)',
-                      textAlign: 'center',
-                      fontWeight: 'medium',
-                      textShadow: '0 0 5px rgba(0, 0, 0, 0.5)',
-                      fontSize: '0.75rem',
-                      lineHeight: 1.2,
-                      maxWidth: '100%',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                    }}
-                  >
-                    {slot.name}
-                  </Typography>
-                </Box>
-              </Paper>
+                {/* Sound Name Below Slot */}
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: slot.isLoaded ? 'white' : 'rgba(255, 255, 255, 0.5)',
+                    textAlign: 'center',
+                    fontWeight: 'medium',
+                    textShadow: '0 0 5px rgba(0, 0, 0, 0.5)',
+                    fontSize: '0.75rem',
+                    lineHeight: 1.2,
+                    mt: 1,
+                    maxWidth: '100%',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                  }}
+                >
+                  {slot.name}
+                </Typography>
+              </Box>
             </Zoom>
           ))}
         </Box>
@@ -863,6 +962,19 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
         ref={fileInputRef}
         accept="audio/*"
         onChange={handleFileUpload}
+      />
+
+      {/* Sound Library Popover */}
+      <SoundLibraryPopover
+        open={Boolean(libraryAnchorEl)}
+        anchorEl={libraryAnchorEl}
+        onClose={handleLibraryClose}
+        onSelectSound={handleLibrarySoundSelect}
+        availableSlots={soundSlots.map((slot, index) => ({
+          index,
+          name: slot.name,
+          isLoaded: slot.isLoaded,
+        }))}
       />
     </Box>
   );

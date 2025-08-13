@@ -21,7 +21,23 @@ export const getMusicUploadsByUserId = async (
   return names.map((name, index) => ({ name, audioUrl: urls[index] }));
 };
 
-export const deleteMusicUpload = async (fileName: string, uid: string) => {
-  const storageRef = ref(storage, `music-agent-uploads/${uid}/${fileName}`);
+export const getDefaultSoundFiles = async () => {
+  const storageRef = ref(storage, `dj-default-sounds`);
+  const list = await listAll(storageRef);
+  const names = list.items.map((item) => item.name);
+  const urls = await Promise.all(
+    list.items.map(async (item) => await getDownloadURL(item))
+  );
+  return names.map((name, index) => ({ name, audioUrl: urls[index] }));
+};
+
+export const deleteMusicUpload = async (
+  fileNameWithExtension: string,
+  uid: string
+) => {
+  const storageRef = ref(
+    storage,
+    `music-agent-uploads/${uid}/${fileNameWithExtension}`
+  );
   await deleteObject(storageRef);
 };

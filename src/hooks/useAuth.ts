@@ -64,17 +64,17 @@ export function useAuth() {
                 displayName: creds.oauthDisplayName,
                 accountId: creds.oauthAccountId,
               };
-              if (
-                [
-                  'RealThikst',
-                  'CaptainCKeth',
-                  'Topdog2222_',
-                  '0xLest',
-                ].includes(creds.oauthUsername ?? '')
-              ) {
-                xProps['currentPlan'] = 'pro';
-                userDoc.currentPlan = 'pro';
-              }
+              // To be removed later
+              // if (
+              //   [
+              //     'CaptainCKeth',
+              //     'Topdog2222_',
+              //     '0xLest',
+              //   ].includes(creds.oauthUsername ?? '')
+              // ) {
+              //   xProps['currentPlan'] = 'pro';
+              //   userDoc.currentPlan = 'pro';
+              // }
               await updateXProps(userDoc.uid, xProps);
             }
           }

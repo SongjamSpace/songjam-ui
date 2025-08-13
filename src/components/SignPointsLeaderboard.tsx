@@ -812,15 +812,15 @@ const SignPointsLeaderboard = () => {
                               border:
                                 user.maxEarlyMultiplier > 1
                                   ? '2px solid #8B5CF6'
-                                  : user.lurkyScore !== undefined
-                                  ? '2px solid #FFD700'
-                                  : '2px solid #EC4899',
+                                  : user.totalPoints
+                                  ? '2px solid #EC4899'
+                                  : '2px solid #FFD700',
                               boxShadow:
                                 user.maxEarlyMultiplier > 1
                                   ? '0 0 10px #8B5CF6'
-                                  : user.lurkyScore !== undefined
-                                  ? '0 0 10px #FFD700'
-                                  : '0 0 10px #EC4899',
+                                  : user.totalPoints
+                                  ? '0 0 10px #EC4899'
+                                  : '0 0 10px #FFD700',
                             }}
                             src={`https://unavatar.io/twitter/${user.username}`}
                           />

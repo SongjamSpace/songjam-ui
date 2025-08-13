@@ -39,6 +39,7 @@ export type UserLeaderboardEntry = {
   totalPoints: number;
 
   maxEarlyMultiplier: number;
+  lurkyScore?: number;
 };
 
 export const getTwitterMentionsLeaderboard = async (

@@ -748,6 +748,16 @@ const SignPointsLeaderboard = () => {
                         fontWeight: 'bold',
                       }}
                     >
+                      Lurky Score
+                    </TableCell>
+                    <TableCell
+                      align="right"
+                      sx={{
+                        color: '#F0F8FF',
+                        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                        fontWeight: 'bold',
+                      }}
+                    >
                       Sing Points
                     </TableCell>
                   </TableRow>
@@ -802,10 +812,14 @@ const SignPointsLeaderboard = () => {
                               border:
                                 user.maxEarlyMultiplier > 1
                                   ? '2px solid #8B5CF6'
+                                  : user.lurkyScore !== undefined
+                                  ? '2px solid #FFD700'
                                   : '2px solid #EC4899',
                               boxShadow:
                                 user.maxEarlyMultiplier > 1
                                   ? '0 0 10px #8B5CF6'
+                                  : user.lurkyScore !== undefined
+                                  ? '0 0 10px #FFD700'
                                   : '0 0 10px #EC4899',
                             }}
                             src={`https://unavatar.io/twitter/${user.username}`}
@@ -863,6 +877,32 @@ const SignPointsLeaderboard = () => {
                           variant="body1"
                           sx={{
                             fontWeight: 'bold',
+                            color:
+                              user.lurkyScore !== undefined
+                                ? '#FFD700'
+                                : 'rgba(255, 255, 255, 0.6)',
+                            textShadow:
+                              user.lurkyScore !== undefined
+                                ? '0 0 8px #FFD700'
+                                : 'none',
+                          }}
+                        >
+                          {user.lurkyScore !== undefined
+                            ? user.lurkyScore.toFixed(2)
+                            : 'N/A'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        sx={{
+                          color: '#F0F8FF',
+                          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                        }}
+                      >
+                        <Typography
+                          variant="body1"
+                          sx={{
+                            fontWeight: 'bold',
                             color: '#EC4899',
                             textShadow: '0 0 8px #EC4899',
                           }}
@@ -874,7 +914,7 @@ const SignPointsLeaderboard = () => {
                   ))}
                   {loading && (
                     <TableRow>
-                      <TableCell colSpan={4} align="center" sx={{ py: 3 }}>
+                      <TableCell colSpan={5} align="center" sx={{ py: 3 }}>
                         <Box
                           sx={{
                             display: 'flex',
@@ -896,7 +936,7 @@ const SignPointsLeaderboard = () => {
                   )}
                   {!hasMore && displayedLeaderboard.length > 0 && (
                     <TableRow>
-                      <TableCell colSpan={4} align="center" sx={{ py: 2 }}>
+                      <TableCell colSpan={5} align="center" sx={{ py: 2 }}>
                         <Typography
                           variant="body2"
                           color="#F0F8FF"

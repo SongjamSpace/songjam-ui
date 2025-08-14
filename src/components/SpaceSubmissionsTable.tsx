@@ -110,7 +110,7 @@ const SpaceDetailsDialog: React.FC<{
 
   const calculateFinalPoints = () => {
     const participants = spaceDetails?.totalLiveListeners || 0;
-    const speakersCount = spaceDetails?.speakers?.length || 1;
+    const speakersCount = speakers.length || 1;
     const totalListeners = participants - speakersCount;
     const baseXlisteners = baseSpaceYaps * totalListeners;
     return Math.round(baseXlisteners / speakersCount);
@@ -140,6 +140,9 @@ const SpaceDetailsDialog: React.FC<{
 
   const transcriptionExists =
     spaceDetails?.transcriptionProgress === TranscriptionProgress.ENDED;
+  const speakers = spaceDetails
+    ? [...spaceDetails.admins, ...spaceDetails.speakers]
+    : [];
 
   return (
     <Dialog
@@ -269,7 +272,7 @@ const SpaceDetailsDialog: React.FC<{
                   Live Listeners: {spaceDetails?.totalLiveListeners || 'N/A'}
                 </Typography>
                 <Typography variant="body2" sx={{ color: '#ffffff' }}>
-                  Speakers: {spaceDetails?.speakers?.length || 'N/A'}
+                  Speakers: {speakers.length || 'N/A'}
                 </Typography>
                 <Typography variant="body2" sx={{ color: '#ffffff' }}>
                   Started:{' '}
@@ -318,16 +321,8 @@ const SpaceDetailsDialog: React.FC<{
                 />
                 <Typography variant="body2" sx={{ color: '#b0b0b0', mb: 1 }}>
                   Calculation: ({spaceDetails?.totalLiveListeners || 0} -{' '}
-                  {spaceDetails?.speakers?.length || 1}) × {baseSpaceYaps} ÷{' '}
-                  {spaceDetails?.speakers?.length || 1}
+                  {speakers.length || 1}) × {baseSpaceYaps} ÷ {speakers.length}
                 </Typography>
-                {/* <Typography variant="body2" sx={{ color: '#b0b0b0', mb: 2 }}>
-                  = {baseSpaceYaps} ×{' '}
-                  {(
-                    (spaceDetails?.totalLiveListeners || 0) /
-                    (spaceDetails?.speakers?.length || 1)
-                  ).toFixed(2)}
-                </Typography> */}
                 <Typography
                   variant="body1"
                   fontWeight="bold"
@@ -449,7 +444,7 @@ const SpaceDetailsDialog: React.FC<{
             </Grid>
 
             {/* Speakers List */}
-            {spaceDetails?.speakers && spaceDetails.speakers.length > 0 && (
+            {speakers && speakers.length > 0 && (
               <Grid item xs={12}>
                 <Typography variant="h6" gutterBottom sx={{ color: '#ffffff' }}>
                   Speakers
@@ -462,27 +457,25 @@ const SpaceDetailsDialog: React.FC<{
                     border: '1px solid #404040',
                   }}
                 >
-                  {spaceDetails.speakers.map(
-                    (speaker: TwitterUser, index: number) => (
-                      <Typography
-                        key={index}
-                        variant="body2"
-                        sx={{ color: '#ffffff' }}
+                  {speakers.map((speaker: TwitterUser, index: number) => (
+                    <Typography
+                      key={index}
+                      variant="body2"
+                      sx={{ color: '#ffffff' }}
+                    >
+                      <a
+                        href={`https://x.com/${speaker.twitterScreenName}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          color: '#ffffff',
+                          textDecoration: 'underline',
+                        }}
                       >
-                        <a
-                          href={`https://x.com/${speaker.twitterScreenName}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            color: '#ffffff',
-                            textDecoration: 'underline',
-                          }}
-                        >
-                          {speaker.displayName} (@{speaker.twitterScreenName})
-                        </a>
-                      </Typography>
-                    )
-                  )}
+                        {speaker.displayName} (@{speaker.twitterScreenName})
+                      </a>
+                    </Typography>
+                  ))}
                 </Box>
               </Grid>
             )}

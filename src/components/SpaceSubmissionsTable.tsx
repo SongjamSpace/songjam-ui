@@ -109,9 +109,11 @@ const SpaceDetailsDialog: React.FC<{
   };
 
   const calculateFinalPoints = () => {
-    const liveListeners = spaceDetails?.totalLiveListeners || 0;
+    const participants = spaceDetails?.totalLiveListeners || 0;
     const speakersCount = spaceDetails?.speakers?.length || 1;
-    return Math.round(baseSpaceYaps * (liveListeners / speakersCount));
+    const totalListeners = participants - speakersCount;
+    const baseXlisteners = baseSpaceYaps * totalListeners;
+    return Math.round(baseXlisteners / speakersCount);
   };
 
   const handleAnalyzeCoin = async () => {
@@ -315,17 +317,17 @@ const SpaceDetailsDialog: React.FC<{
                   }}
                 />
                 <Typography variant="body2" sx={{ color: '#b0b0b0', mb: 1 }}>
-                  Calculation: {baseSpaceYaps} × (
-                  {spaceDetails?.totalLiveListeners || 0} ÷{' '}
-                  {spaceDetails?.speakers?.length || 1})
+                  Calculation: ({spaceDetails?.totalLiveListeners || 0} -{' '}
+                  {spaceDetails?.speakers?.length || 1}) × {baseSpaceYaps} ÷{' '}
+                  {spaceDetails?.speakers?.length || 1}
                 </Typography>
-                <Typography variant="body2" sx={{ color: '#b0b0b0', mb: 2 }}>
+                {/* <Typography variant="body2" sx={{ color: '#b0b0b0', mb: 2 }}>
                   = {baseSpaceYaps} ×{' '}
                   {(
                     (spaceDetails?.totalLiveListeners || 0) /
                     (spaceDetails?.speakers?.length || 1)
                   ).toFixed(2)}
-                </Typography>
+                </Typography> */}
                 <Typography
                   variant="body1"
                   fontWeight="bold"

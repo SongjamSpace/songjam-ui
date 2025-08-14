@@ -123,7 +123,7 @@ const SpaceDetailsDialog: React.FC<{
       }
       await axios.post(
         `${
-          import.meta.env.VITE_JAM_MUSIC_AGENT_URL
+          import.meta.env.VITE_JAM_TWEET_AGENT_URL
         }/api/analyze-songjam-mentions`,
         {
           spaceId,

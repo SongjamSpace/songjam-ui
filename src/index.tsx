@@ -19,6 +19,7 @@ import WebFont from 'webfontloader';
 import Flag from './pages/Flag';
 import SignPointsLeaderboard from './components/SignPointsLeaderboard';
 import MapView from './pages/MapView';
+import Admin from './pages/Admin';
 
 WebFont.load({
   google: {
@@ -56,6 +57,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
                 />
                 <Route path="/flags" element={<Flag />} />
                 <Route path="/map" element={<MapView />} />
+                <Route path="/admin-test" element={<Admin />} />
               </Routes>
             </AuthProvider>
           </ThemeProvider>

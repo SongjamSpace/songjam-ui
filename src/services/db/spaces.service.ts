@@ -101,6 +101,16 @@ export type Space = {
     twitterUsername: string;
     viewCountGraph: number[];
   };
+  coinAnalysis?: {
+    breakdown: { sang: number; songjam: number };
+    noOfMentions: number;
+    speakerMentions: {
+      count: number;
+      name: string;
+      userId: string;
+      username: string;
+    }[];
+  };
 };
 
 export type SpaceDoc = Space & {

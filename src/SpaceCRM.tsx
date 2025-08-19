@@ -525,6 +525,7 @@ const SpaceCRM: React.FC = () => {
                     startIcon={<AutorenewIcon />}
                     onClick={async () => {
                       if (isTranscribing) return;
+                      let hlsUrl = space.hlsUrl;
                       setIsTranscribing(true);
                       if (!user) {
                         setShowAuthDialog(true);
@@ -537,6 +538,33 @@ const SpaceCRM: React.FC = () => {
                         );
                         setIsTranscribing(false);
                         return;
+                      }
+                      const isLiveHlsUrl = hlsUrl.includes('type=live');
+                      if (isLiveHlsUrl) {
+                        try {
+                          const res = await axios.post(
+                            `${
+                              import.meta.env.VITE_JAM_SERVER_URL
+                            }/update-space`,
+                            {
+                              spaceId,
+                            }
+                          );
+                          if (res.data.newHlsUrl) hlsUrl = res.data.newHlsUrl;
+                          else {
+                            alert(
+                              'Unable to update the space, please try again later'
+                            );
+                            setIsTranscribing(false);
+                            return;
+                          }
+                        } catch (e) {
+                          alert(
+                            'Unable to fetch the Live Stream Url, please try again later'
+                          );
+                          setIsTranscribing(false);
+                          return;
+                        }
                       }
                       const projectId =
                         user.defaultProjectId || user.projectIds[0] || '';

@@ -68,6 +68,7 @@ import ViewersChart from './components/LiveDashboard/ViewersChart';
 import { transcribePy } from './services/transcription.service';
 import axios from 'axios';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { getTweetedSpaceSummaryDoc } from './services/db/tweetSpacesPipeline';
 
 type CRMTab =
   | 'dashboard'
@@ -116,6 +117,7 @@ const SpaceCRM: React.FC = () => {
   const [segments, setSegments] = useState<Segment[]>([]);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const hasUpdatedSpaceStatus = useRef(false);
+  const [isSendingTweet, setIsSendingTweet] = useState(false);
 
   // useEffect(() => {
   //   if (user && space) {
@@ -518,59 +520,131 @@ const SpaceCRM: React.FC = () => {
                 (!space.transcriptionStatus ||
                   space.transcriptionStatus === 'NOT_STARTED' ||
                   space.transcriptionStatus === 'FAILED') ? (
-                  <LoadingButton
-                    loading={isTranscribing}
-                    variant="contained"
-                    size="small"
-                    startIcon={<AutorenewIcon />}
-                    onClick={async () => {
-                      if (isTranscribing) return;
-                      let hlsUrl = space.hlsUrl;
-                      setIsTranscribing(true);
-                      if (!user) {
-                        setShowAuthDialog(true);
-                        setIsTranscribing(false);
-                        return;
-                      }
-                      if (space.state !== 'Ended') {
-                        toast.error(
-                          "Space hasn't ended yet, please come back later for Analysis"
-                        );
-                        setIsTranscribing(false);
-                        return;
-                      }
-                      const isLiveHlsUrl = hlsUrl.includes('type=live');
-                      if (isLiveHlsUrl) {
-                        try {
-                          const res = await axios.post(
-                            `${
-                              import.meta.env.VITE_JAM_SERVER_URL
-                            }/update-space`,
-                            {
-                              spaceId,
-                            }
-                          );
-                          if (res.data.newHlsUrl) hlsUrl = res.data.newHlsUrl;
-                          else {
-                            alert(
-                              'Unable to update the space, please try again later'
-                            );
-                            setIsTranscribing(false);
-                            return;
-                          }
-                        } catch (e) {
-                          alert(
-                            'Unable to fetch the Live Stream Url, please try again later'
+                  space.isSpaceAvailableForReplay ? (
+                    <LoadingButton
+                      loading={isTranscribing}
+                      variant="contained"
+                      size="small"
+                      startIcon={<AutorenewIcon />}
+                      onClick={async () => {
+                        if (isTranscribing) return;
+                        let hlsUrl = space.hlsUrl;
+                        setIsTranscribing(true);
+                        if (!user) {
+                          setShowAuthDialog(true);
+                          setIsTranscribing(false);
+                          return;
+                        }
+                        if (space.state !== 'Ended') {
+                          toast.error(
+                            "Space hasn't ended yet, please come back later for Analysis"
                           );
                           setIsTranscribing(false);
                           return;
                         }
+                        const isLiveHlsUrl = hlsUrl.includes('type=live');
+                        if (isLiveHlsUrl) {
+                          try {
+                            const res = await axios.post(
+                              `${
+                                import.meta.env.VITE_JAM_SERVER_URL
+                              }/update-space`,
+                              {
+                                spaceId,
+                              }
+                            );
+                            if (res.data.newHlsUrl) hlsUrl = res.data.newHlsUrl;
+                            else {
+                              alert(
+                                'Unable to update the space, please try again later'
+                              );
+                              setIsTranscribing(false);
+                              return;
+                            }
+                          } catch (e) {
+                            alert(
+                              'Unable to fetch the Live Stream Url, please try again later'
+                            );
+                            setIsTranscribing(false);
+                            return;
+                          }
+                        }
+                        const projectId =
+                          user.defaultProjectId || user.projectIds[0] || '';
+                        if (spaceId && projectId) {
+                          await transcribePy(space.hlsUrl, spaceId);
+                        }
+                      }}
+                      sx={{
+                        ml: 2,
+                        background: 'linear-gradient(90deg, #60a5fa, #8b5cf6)',
+                        '&:hover': {
+                          background:
+                            'linear-gradient(90deg, #3b82f6, #7c3aed)',
+                        },
+                      }}
+                    >
+                      Transcribe Space
+                    </LoadingButton>
+                  ) : (
+                    <Alert severity="warning" sx={{ ml: 2 }}>
+                      Not a Recorded Space
+                    </Alert>
+                  )
+                ) : space.transcriptionProgress !==
+                  TranscriptionProgress.ENDED ? (
+                  <Chip
+                    icon={<CircularProgress size={18} />}
+                    label={space.userHelperMessage}
+                    variant="filled"
+                    sx={{
+                      ml: 2,
+                    }}
+                    deleteIcon={
+                      space.state !== 'Ended' ? (
+                        <OpenInNewIcon sx={{ mx: 2, width: 16 }} />
+                      ) : undefined
+                    }
+                    onDelete={
+                      space.state !== 'Ended'
+                        ? () =>
+                            window.open(
+                              `${window.location.origin}/live/${spaceId}`
+                            )
+                        : undefined
+                    }
+                  />
+                ) : user?.specialAccess?.includes('TWEET_SPACE_SUMMARY') ? (
+                  <LoadingButton
+                    variant="contained"
+                    size="small"
+                    startIcon={<AutorenewIcon />}
+                    loading={isSendingTweet}
+                    onClick={async () => {
+                      if (!spaceId) return;
+                      const spaceTweetDoc = await getTweetedSpaceSummaryDoc(
+                        spaceId
+                      );
+                      if (spaceTweetDoc) {
+                        alert('Space summary already tweeted');
+                        if (spaceTweetDoc.tweetId) {
+                          window.open(
+                            `https://x.com/SongjamSpace/status/${spaceTweetDoc.tweetId}`,
+                            '_blank'
+                          );
+                        }
+                        return;
                       }
-                      const projectId =
-                        user.defaultProjectId || user.projectIds[0] || '';
-                      if (spaceId && projectId) {
-                        await transcribePy(space.hlsUrl, spaceId);
-                      }
+                      setIsSendingTweet(true);
+                      await axios.post(
+                        `${
+                          import.meta.env.VITE_JAM_SERVER_URL
+                        }/handle-space-tweet`,
+                        {
+                          spaceId,
+                        }
+                      );
+                      setIsSendingTweet(false);
                     }}
                     sx={{
                       ml: 2,
@@ -580,34 +654,9 @@ const SpaceCRM: React.FC = () => {
                       },
                     }}
                   >
-                    Transcribe {space.isBroadcast ? 'Live' : 'Space'}
+                    Tweet Space Summary
                   </LoadingButton>
-                ) : (
-                  space.transcriptionProgress !==
-                    TranscriptionProgress.ENDED && (
-                    <Chip
-                      icon={<CircularProgress size={18} />}
-                      label={space.userHelperMessage}
-                      variant="filled"
-                      sx={{
-                        ml: 2,
-                      }}
-                      deleteIcon={
-                        space.state !== 'Ended' ? (
-                          <OpenInNewIcon sx={{ mx: 2, width: 16 }} />
-                        ) : undefined
-                      }
-                      onDelete={
-                        space.state !== 'Ended'
-                          ? () =>
-                              window.open(
-                                `${window.location.origin}/live/${spaceId}`
-                              )
-                          : undefined
-                      }
-                    />
-                  )
-                )}
+                ) : null}
               </>
             ) : (
               <CircularProgress size={24} sx={{ mr: 2 }} />

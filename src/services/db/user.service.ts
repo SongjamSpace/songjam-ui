@@ -38,10 +38,7 @@ export type SongjamUser = {
   endsAt: number;
   startsAt: number;
   accountId?: string | null;
-};
-
-type SongjamUserDoc = SongjamUser & {
-  createdAt: string;
+  specialAccess?: Array<'TWEET_SPACE_SUMMARY'>;
 };
 
 export const USER_COLLECTION = 'users';

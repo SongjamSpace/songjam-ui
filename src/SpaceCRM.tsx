@@ -638,8 +638,8 @@ const SpaceCRM: React.FC = () => {
                       setIsSendingTweet(true);
                       await axios.post(
                         `${
-                          import.meta.env.VITE_JAM_SERVER_URL
-                        }/handle-space-tweet`,
+                          import.meta.env.VITE_JAM_TWEET_AGENT_URL
+                        }/api/handle-space-tweet`,
                         {
                           spaceId,
                         }

@@ -542,8 +542,8 @@ const SpaceCRM: React.FC = () => {
                           setIsTranscribing(false);
                           return;
                         }
-                        const isLiveHlsUrl = hlsUrl.includes('type=live');
-                        if (isLiveHlsUrl) {
+                        const isLiveHlsUrl = hlsUrl?.includes('type=live');
+                        if (!hlsUrl || isLiveHlsUrl) {
                           try {
                             const res = await axios.post(
                               `${
@@ -553,7 +553,7 @@ const SpaceCRM: React.FC = () => {
                                 spaceId,
                               }
                             );
-                            if (res.data.newHlsUrl) hlsUrl = res.data.newHlsUrl;
+                            if (res.data.hlsUrl) hlsUrl = res.data.hlsUrl;
                             else {
                               alert(
                                 'Unable to update the space, please try again later'
@@ -572,7 +572,7 @@ const SpaceCRM: React.FC = () => {
                         const projectId =
                           user.defaultProjectId || user.projectIds[0] || '';
                         if (spaceId && projectId) {
-                          await transcribePy(space.hlsUrl, spaceId);
+                          await transcribePy(hlsUrl, spaceId);
                         }
                       }}
                       sx={{

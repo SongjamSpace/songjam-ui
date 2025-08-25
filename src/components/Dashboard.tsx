@@ -222,7 +222,7 @@ const ProcessingDialog = ({
 export default function Dashboard() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [value, setValue] = useState(0);
+  const [tabValue, setTabValue] = useState(0);
   const [spaceUrl, setSpaceUrl] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const { user, loading: authLoading } = useAuthContext();
@@ -567,6 +567,29 @@ export default function Dashboard() {
     }
   }, [defaultProject]);
 
+  // Handle tab parameter from URL
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const tabParam = searchParams.get('tab');
+
+    if (tabParam) {
+      switch (tabParam) {
+        case 'campaigns':
+          setTabValue(0);
+          break;
+        case 'livespace':
+          setTabValue(2);
+          break;
+        case 'endedspace':
+          setTabValue(3);
+          break;
+        default:
+          // Keep default value (0) for any other or invalid tab values
+          break;
+      }
+    }
+  }, []);
+
   const updateSpaceStatus = async () => {
     if (isSpaceSyncing || hasUpdatedSpaceStatus.current) return;
     if (scheduledSpaces.length > 0 || liveSpaces.length > 0) {
@@ -595,7 +618,7 @@ export default function Dashboard() {
   }, [scheduledSpaces, liveSpaces]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
+    setTabValue(newValue);
   };
 
   const handleAddSpace = async (
@@ -1317,7 +1340,7 @@ export default function Dashboard() {
             sx={{ borderBottom: 1, borderColor: 'rgba(255, 255, 255, 0.12)' }}
           >
             <Tabs
-              value={value}
+              value={tabValue}
               onChange={handleTabChange}
               aria-label="dashboard tabs"
               variant="fullWidth"
@@ -1450,21 +1473,21 @@ export default function Dashboard() {
               />
             </Tabs>
           </Box>
-          <TabPanel value={value} index={0}>
+          <TabPanel value={tabValue} index={0}>
             {renderNewCampaignsList(
               newCampaigns as Campaign[],
               loadingProjectSpaces || isLoading,
               null
             )}
           </TabPanel>
-          <TabPanel value={value} index={1}>
+          <TabPanel value={tabValue} index={1}>
             {renderScheduledList(
               scheduledSpaces as Space[],
               loadingProjectSpaces || isLoading,
               null
             )}
           </TabPanel>
-          <TabPanel value={value} index={2}>
+          <TabPanel value={tabValue} index={2}>
             {renderSpaceList(
               liveSpaces as Space[],
               loadingProjectSpaces || isLoading,
@@ -1472,7 +1495,7 @@ export default function Dashboard() {
               'Live'
             )}
           </TabPanel>
-          <TabPanel value={value} index={3}>
+          <TabPanel value={tabValue} index={3}>
             {renderSpaceList(
               completedSpaces as Space[],
               loadingProjectSpaces || isLoading,

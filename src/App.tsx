@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import './App.css';
 import Background from './components/Background';
 import Logo from './components/Logo';
@@ -13,7 +13,7 @@ import {
   useTheme,
   TextareaAutosize,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { LoadingButton } from '@mui/lab';
 import { submitToAirtable } from './services/airtable.service';
 import { toast, Toaster } from 'react-hot-toast';
@@ -70,6 +70,79 @@ export default function App() {
     screenName: string;
     avatarUrl: string;
   } | null>(null);
+  const location = useLocation();
+  const action = useMemo(() => {
+    return new URLSearchParams(location.search).get('action');
+  }, [location.search]);
+
+  const renderActionButtons = useMemo(() => {
+    return () => {
+      if (action === 'boostspace') {
+        return (
+          <LoadingButton
+            loading={isLoading}
+            variant="contained"
+            className="primary"
+            onClick={() => handleAnalyze(spaceUrl, true)}
+            sx={{
+              flex: 1,
+              py: 1.5,
+              fontSize: '1.1rem',
+            }}
+          >
+            {t('inviteToFollow', 'Boost Space')}
+          </LoadingButton>
+        );
+      }
+      if (action === 'livespace') {
+        return (
+          <LoadingButton
+            loading={isLoading}
+            variant="contained"
+            className="primary"
+            onClick={() => handleAnalyze(spaceUrl)}
+            sx={{
+              flex: 1,
+              py: 1.5,
+              fontSize: '1.1rem',
+            }}
+          >
+            {t('analyzeButton')}
+          </LoadingButton>
+        );
+      }
+      return (
+        <>
+          <LoadingButton
+            loading={isLoading}
+            variant="contained"
+            className="primary"
+            onClick={() => handleAnalyze(spaceUrl, true)}
+            sx={{
+              flex: 1,
+              py: 1.5,
+              fontSize: '1.1rem',
+            }}
+          >
+            {t('inviteToFollow', 'Boost Space')}
+          </LoadingButton>
+          <LoadingButton
+            loading={isLoading}
+            variant="outlined"
+            className="info"
+            onClick={() => handleAnalyze(spaceUrl)}
+            sx={{
+              flex: 1,
+              py: 1.5,
+              fontSize: '1.1rem',
+            }}
+          >
+            {t('analyzeButton')}
+          </LoadingButton>
+        </>
+      );
+    };
+  }, [action, isLoading, spaceUrl, t]);
 
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
@@ -457,32 +530,7 @@ export default function App() {
                 />
 
                 <Box display="flex" gap={2}>
-                  <LoadingButton
-                    loading={isLoading}
-                    variant="contained"
-                    className="primary"
-                    onClick={() => handleAnalyze(spaceUrl, true)}
-                    sx={{
-                      flex: 1,
-                      py: 1.5,
-                      fontSize: '1.1rem',
-                    }}
-                  >
-                    {t('inviteToFollow', 'Boost Space')}
-                  </LoadingButton>
-                  <LoadingButton
-                    loading={isLoading}
-                    variant="outlined"
-                    className="info"
-                    onClick={() => handleAnalyze(spaceUrl)}
-                    sx={{
-                      flex: 1,
-                      py: 1.5,
-                      fontSize: '1.1rem',
-                    }}
-                  >
-                    {t('analyzeButton')}
-                  </LoadingButton>
+                  {renderActionButtons()}
                 </Box>
               </Stack>
 

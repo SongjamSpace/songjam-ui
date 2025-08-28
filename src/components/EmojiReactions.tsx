@@ -7,6 +7,8 @@ import {
   Button,
   Popover,
   IconButton,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { EmojiEmotions, Add } from '@mui/icons-material';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
@@ -24,6 +26,8 @@ const EmojiReactions: React.FC<EmojiReactionsProps> = ({
   isConnected,
   isInSpace,
 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [showPicker, setShowPicker] = useState(false);
 
@@ -56,15 +60,16 @@ const EmojiReactions: React.FC<EmojiReactionsProps> = ({
   };
 
   return (
-    <Box sx={{ mb: 4 }}>
+    <Box sx={{ mb: { xs: 3, sm: 4 } }}>
       <Typography
         variant="h6"
         sx={{
-          mb: 2,
+          mb: { xs: 1.5, sm: 2 },
           color: '#60a5fa',
           display: 'flex',
           alignItems: 'center',
           gap: 1,
+          fontSize: { xs: '1rem', sm: '1.25rem' },
         }}
       >
         <EmojiEmotions /> Reactions
@@ -72,7 +77,7 @@ const EmojiReactions: React.FC<EmojiReactionsProps> = ({
 
       <Paper
         sx={{
-          p: 2,
+          p: { xs: 1.5, sm: 2 },
           background: 'rgba(0, 0, 0, 0.2)',
           borderRadius: 2,
           border: '1px solid rgba(96, 165, 250, 0.1)',
@@ -80,10 +85,10 @@ const EmojiReactions: React.FC<EmojiReactionsProps> = ({
       >
         <Stack
           direction="row"
-          spacing={1}
+          spacing={{ xs: 0.5, sm: 1 }}
           sx={{
             flexWrap: 'wrap',
-            gap: 1,
+            gap: { xs: 0.5, sm: 1 },
             justifyContent: 'center',
           }}
         >
@@ -91,39 +96,45 @@ const EmojiReactions: React.FC<EmojiReactionsProps> = ({
             <Button
               key={emoji}
               onClick={() => onEmojiReact(emoji)}
+              size={isMobile ? 'small' : 'medium'}
               sx={{
-                fontSize: 24,
-                width: 68,
-                height: 48,
+                fontSize: { xs: 18, sm: 24 },
+                width: { xs: 38, sm: 48 },
+                height: { xs: 38, sm: 48 },
                 background: 'rgba(96, 165, 250, 0.1)',
                 '&:hover': {
                   background: 'rgba(96, 165, 250, 0.2)',
-                  transform: 'scale(1.1)',
+                  transform: 'scale(1.05)',
                 },
-                border: currentEmoji === emoji ? '2px solid #60a5fa' : 'none',
                 transition: 'all 0.2s',
+                border: '1px solid rgba(96, 165, 250, 0.2)',
+                borderRadius: 1,
+                color: 'white',
+                '&:active': {
+                  transform: 'scale(0.95)',
+                },
               }}
-              disabled={!isConnected || !isInSpace}
             >
               {emoji}
             </Button>
           ))}
-
           <IconButton
             onClick={handleAddClick}
+            size={isMobile ? 'small' : 'medium'}
             sx={{
-              width: 48,
-              height: 48,
+              width: { xs: 38, sm: 48 },
+              height: { xs: 38, sm: 48 },
               background: 'rgba(96, 165, 250, 0.1)',
+              border: '1px solid rgba(96, 165, 250, 0.2)',
+              color: '#60a5fa',
               '&:hover': {
                 background: 'rgba(96, 165, 250, 0.2)',
-                transform: 'scale(1.1)',
+                transform: 'scale(1.05)',
               },
               transition: 'all 0.2s',
             }}
-            disabled={!isConnected || !isInSpace}
           >
-            <Add />
+            <Add fontSize={isMobile ? 'small' : 'medium'} />
           </IconButton>
         </Stack>
       </Paper>
@@ -141,7 +152,14 @@ const EmojiReactions: React.FC<EmojiReactionsProps> = ({
           horizontal: 'center',
         }}
       >
-        <EmojiPicker onEmojiClick={handleEmojiClick} />
+        <EmojiPicker
+          onEmojiClick={handleEmojiClick}
+          width={isMobile ? 300 : 400}
+          height={isMobile ? 400 : 500}
+          searchPlaceHolder="Search emoji..."
+          skinTonesDisabled
+          lazyLoadEmojis
+        />
       </Popover>
     </Box>
   );

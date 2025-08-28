@@ -11,6 +11,7 @@ export const uploadMusic = async (file: File, uid: string) => {
 export const getMusicUploadsByUserId = async (
   uid: string
 ): Promise<{ name: string; audioUrl: string }[]> => {
+  // const storageRef = ref(storage, `dj-uploads/${uid}`);
   const storageRef = ref(storage, `music-agent-uploads/${uid}`);
   const list = await listAll(storageRef);
   // get the name of the file

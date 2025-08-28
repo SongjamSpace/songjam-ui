@@ -10,6 +10,8 @@ import {
   Radio,
   IconButton,
   Skeleton,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { CloudUpload, Close } from '@mui/icons-material';
 
@@ -38,13 +40,15 @@ const MusicLibrary: React.FC<MusicLibraryProps> = ({
   onFileChange,
 }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   return (
-    <Box sx={{ mb: 4 }}>
+    <Box sx={{ mb: { xs: 3, sm: 4 } }}>
       <Typography
         variant="h5"
         sx={{
-          mb: 3,
+          mb: { xs: 2, sm: 3 },
           background: 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)',
           backgroundClip: 'text',
           WebkitBackgroundClip: 'text',
@@ -55,18 +59,19 @@ const MusicLibrary: React.FC<MusicLibraryProps> = ({
           gap: 1.5,
           textShadow: '0 0 20px rgba(96, 165, 250, 0.3)',
           letterSpacing: '0.5px',
+          fontSize: { xs: '1.25rem', sm: '1.5rem' },
         }}
       >
-        <CloudUpload sx={{ fontSize: 28, color: '#60a5fa' }} />
+        <CloudUpload sx={{ fontSize: { xs: 24, sm: 28 }, color: '#60a5fa' }} />
         Your Music Library
       </Typography>
 
       <Paper
         sx={{
-          p: 3,
+          p: { xs: 2, sm: 3 },
           background: 'rgba(15, 23, 42, 0.8)',
           borderRadius: 3,
-          maxHeight: '350px',
+          maxHeight: { xs: '250px', sm: '350px' },
           overflow: 'hidden',
           border: '1px solid rgba(96, 165, 250, 0.15)',
           backdropFilter: 'blur(10px)',
@@ -79,7 +84,7 @@ const MusicLibrary: React.FC<MusicLibraryProps> = ({
           sx={{
             flex: 1,
             overflow: 'auto',
-            mb: 2,
+            mb: { xs: 1.5, sm: 2 },
             pr: 1, // Add right padding to prevent content from being covered by scrollbar
             '&::-webkit-scrollbar': {
               width: '6px', // Reduced from 10px to 6px
@@ -98,254 +103,188 @@ const MusicLibrary: React.FC<MusicLibraryProps> = ({
                   'linear-gradient(180deg, rgba(96, 165, 250, 0.6) 0%, rgba(59, 130, 246, 0.6) 100%)',
               },
             },
-            '&::-webkit-scrollbar-corner': {
-              background: 'transparent', // Hide corner where scrollbars meet
-            },
-            // Hide horizontal scrollbar
-            '&::-webkit-scrollbar:horizontal': {
-              display: 'none',
-            },
-            '&::-webkit-scrollbar-thumb:horizontal': {
-              display: 'none',
-            },
-            '&::-webkit-scrollbar-track:horizontal': {
-              display: 'none',
-            },
           }}
         >
           {isLibraryLoading ? (
-            <List>
-              {[1, 2, 3, 4, 5].map((i) => (
-                <ListItemButton
-                  key={i}
+            // Loading skeletons
+            Array.from({ length: 5 }).map((_, index) => (
+              <Box key={index} sx={{ mb: 1 }}>
+                <Skeleton
+                  variant="rectangular"
+                  height={isMobile ? 40 : 50}
                   sx={{
-                    borderRadius: 2,
-                    mb: 1.5,
-                    transition: 'all 0.3s ease',
-                    background: 'rgba(96, 165, 250, 0.05)',
-                    border: '1px solid rgba(96, 165, 250, 0.1)',
+                    borderRadius: 1,
+                    background: 'rgba(255, 255, 255, 0.1)',
                   }}
-                  disabled
-                >
-                  <Radio disabled sx={{ color: '#60a5fa' }} />
-                  <ListItemText
-                    primary={
-                      <Skeleton
-                        variant="text"
-                        width={140}
-                        height={24}
-                        sx={{
-                          bgcolor: 'rgba(96, 165, 250, 0.15)',
-                          borderRadius: 1,
-                        }}
-                      />
-                    }
-                  />
-                </ListItemButton>
-              ))}
-            </List>
+                />
+              </Box>
+            ))
           ) : audioUploads.length === 0 ? (
+            // Empty state
             <Box
               sx={{
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                py: 4,
+                justifyContent: 'center',
                 color: 'rgba(255, 255, 255, 0.6)',
+                textAlign: 'center',
               }}
             >
               <CloudUpload
                 sx={{
-                  fontSize: 48,
-                  color: 'rgba(96, 165, 250, 0.3)',
+                  fontSize: { xs: 48, sm: 64 },
                   mb: 2,
+                  color: 'rgba(96, 165, 250, 0.5)',
                 }}
               />
               <Typography
                 variant="body1"
                 sx={{
-                  textAlign: 'center',
-                  fontWeight: 500,
-                  letterSpacing: '0.5px',
+                  mb: 1,
+                  fontSize: { xs: '0.875rem', sm: '1rem' },
                 }}
               >
-                No tracks uploaded yet
+                No music uploaded yet
               </Typography>
               <Typography
                 variant="body2"
                 sx={{
-                  textAlign: 'center',
-                  mt: 1,
-                  opacity: 0.7,
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                  opacity: 0.8,
                 }}
               >
                 Upload your first track to get started
               </Typography>
             </Box>
           ) : (
-            <List
-              sx={{
-                width: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-              }}
-            >
-              {audioUploads.map((audioUpload) => (
-                <ListItemButton
-                  key={audioUpload.audioUrl}
-                  onClick={() => onSelectUpload(audioUpload.audioUrl)}
-                  selected={audioUpload.audioUrl === selectedAudioUrl}
-                  sx={{
-                    width: '95%',
-                    borderRadius: 2,
-                    mb: 1.5,
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    background:
-                      audioUpload.audioUrl === selectedAudioUrl
-                        ? 'linear-gradient(135deg, rgba(96, 165, 250, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%)'
-                        : 'rgba(255, 255, 255, 0.02)',
-                    border:
-                      audioUpload.audioUrl === selectedAudioUrl
+            // Music list
+            <List dense>
+              {audioUploads.map((upload, index) => {
+                const isSelected = upload.audioUrl === selectedAudioUrl;
+                const fileName = upload.name.replace(/\.[^/.]+$/, ''); // Remove file extension
+
+                return (
+                  <ListItemButton
+                    key={index}
+                    onClick={() => onSelectUpload(upload.audioUrl)}
+                    selected={isSelected}
+                    sx={{
+                      borderRadius: 1,
+                      mb: 0.5,
+                      background: isSelected
+                        ? 'linear-gradient(135deg, rgba(96, 165, 250, 0.2), rgba(139, 92, 246, 0.2))'
+                        : 'transparent',
+                      border: isSelected
                         ? '1px solid rgba(96, 165, 250, 0.3)'
-                        : '1px solid rgba(255, 255, 255, 0.05)',
-                    '&.Mui-selected': {
-                      transform: 'scale(1.02)',
-                      boxShadow: '0 8px 25px rgba(96, 165, 250, 0.2)',
+                        : '1px solid transparent',
                       '&:hover': {
-                        transform: 'scale(1.03)',
-                        boxShadow: '0 12px 35px rgba(96, 165, 250, 0.25)',
+                        background: isSelected
+                          ? 'linear-gradient(135deg, rgba(96, 165, 250, 0.25), rgba(139, 92, 246, 0.25))'
+                          : 'rgba(96, 165, 250, 0.1)',
+                        borderColor: 'rgba(96, 165, 250, 0.2)',
                       },
-                    },
-                    '&:hover': {
-                      background:
-                        audioUpload.audioUrl === selectedAudioUrl
-                          ? 'linear-gradient(135deg, rgba(96, 165, 250, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%)'
-                          : 'rgba(96, 165, 250, 0.08)',
-                      transform: 'scale(1.01)',
-                      border: '1px solid rgba(96, 165, 250, 0.2)',
-                    },
-                  }}
-                >
-                  <Radio
-                    checked={audioUpload.audioUrl === selectedAudioUrl}
-                    value={audioUpload.audioUrl}
-                    sx={{
-                      color: '#60a5fa',
-                      '&.Mui-checked': {
-                        color: '#3b82f6',
-                      },
-                    }}
-                  />
-                  <ListItemText
-                    primary={
-                      <Typography
-                        sx={{
-                          color:
-                            audioUpload.audioUrl === selectedAudioUrl
-                              ? '#ffffff'
-                              : 'rgba(255, 255, 255, 0.9)',
-                          fontWeight:
-                            audioUpload.audioUrl === selectedAudioUrl
-                              ? 600
-                              : 500,
-                          //   fontSize: '0.95rem',
-                          letterSpacing: '0.3px',
-                        }}
-                        variant="subtitle2"
-                      >
-                        {audioUpload.name}
-                      </Typography>
-                    }
-                  />
-                  <IconButton
-                    onClick={async (e) => {
-                      e.stopPropagation();
-                      await onDeleteUpload(audioUpload.name);
-                    }}
-                    sx={{
-                      color: 'rgba(239, 68, 68, 0.7)',
-                      background: 'rgba(239, 68, 68, 0.1)',
-                      border: '1px solid rgba(239, 68, 68, 0.2)',
-                      width: 32,
-                      height: 32,
                       transition: 'all 0.2s ease',
-                      '&:hover': {
-                        color: 'rgba(239, 68, 68, 0.9)',
-                        background: 'rgba(239, 68, 68, 0.15)',
-                        border: '1px solid rgba(239, 68, 68, 0.3)',
-                        transform: 'scale(1.1)',
-                      },
+                      minHeight: { xs: 40, sm: 50 },
+                      p: 0,
                     }}
                   >
-                    <Close sx={{ fontSize: 16 }} />
-                  </IconButton>
-                </ListItemButton>
-              ))}
+                    <Radio
+                      checked={isSelected}
+                      sx={{
+                        color: 'rgba(96, 165, 250, 0.5)',
+                        '&.Mui-checked': {
+                          color: '#60a5fa',
+                        },
+                        mr: { xs: 1, sm: 1.5 },
+                      }}
+                    />
+                    <ListItemText
+                      primary={
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: isSelected ? '#60a5fa' : 'white',
+                            fontWeight: isSelected ? 600 : 400,
+                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                            textShadow: isSelected
+                              ? '0 0 5px rgba(96, 165, 250, 0.3)'
+                              : 'none',
+                          }}
+                        >
+                          {fileName}
+                        </Typography>
+                      }
+                      sx={{
+                        flex: 1,
+                        minWidth: 0, // Allow text to shrink
+                      }}
+                    />
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDeleteUpload(upload.name);
+                      }}
+                      size={isMobile ? 'small' : 'medium'}
+                      sx={{
+                        color: 'rgba(255, 107, 107, 0.7)',
+                        '&:hover': {
+                          color: '#ff6b6b',
+                          transform: 'scale(1.1)',
+                        },
+                        transition: 'all 0.2s',
+                        ml: { xs: 0.5, sm: 1 },
+                      }}
+                    >
+                      <Close fontSize={isMobile ? 'small' : 'small'} />
+                    </IconButton>
+                  </ListItemButton>
+                );
+              })}
             </List>
           )}
         </Box>
 
+        {/* Upload Button */}
         <Box
           sx={{
             display: 'flex',
             justifyContent: 'center',
-            pt: 1,
+            pt: { xs: 1, sm: 1.5 },
             borderTop: '1px solid rgba(96, 165, 250, 0.1)',
           }}
         >
           <Button
             variant="outlined"
-            startIcon={<CloudUpload />}
             onClick={() => fileInputRef.current?.click()}
-            sx={{
-              borderColor: '#60a5fa',
-              color: '#60a5fa',
-              borderRadius: 2,
-              px: 3,
-              py: 1.5,
-              fontWeight: 600,
-              letterSpacing: '0.5px',
-              background: 'rgba(96, 165, 250, 0.05)',
-              borderWidth: '2px',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              position: 'relative',
-              overflow: 'hidden',
-              '&:hover': {
-                borderColor: '#3b82f6',
-                backgroundColor: 'rgba(96, 165, 250, 0.1)',
-                transform: 'translateY(-2px)',
-                boxShadow: '0 8px 25px rgba(96, 165, 250, 0.3)',
-              },
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: '-100%',
-                width: '100%',
-                height: '100%',
-                background:
-                  'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
-                transition: 'left 0.5s ease',
-              },
-              '&:hover::before': {
-                left: '100%',
-              },
-            }}
             disabled={isLoading}
+            startIcon={<CloudUpload />}
+            size={isMobile ? 'small' : 'medium'}
+            sx={{
+              borderColor: 'rgba(96, 165, 250, 0.5)',
+              color: '#60a5fa',
+              '&:hover': {
+                borderColor: '#60a5fa',
+                background: 'rgba(96, 165, 250, 0.1)',
+                transform: 'scale(1.02)',
+              },
+              transition: 'all 0.2s',
+              minWidth: { xs: '120px', sm: '140px' },
+            }}
           >
-            Upload New Track
+            {isLoading ? 'Uploading...' : 'Upload Music'}
           </Button>
         </Box>
-      </Paper>
 
-      <input
-        type="file"
-        hidden
-        ref={fileInputRef}
-        accept="audio/mpeg"
-        onChange={onFileChange}
-      />
+        {/* Hidden file input */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          style={{ display: 'none' }}
+          accept="audio/mpeg"
+          onChange={onFileChange}
+        />
+      </Paper>
     </Box>
   );
 };

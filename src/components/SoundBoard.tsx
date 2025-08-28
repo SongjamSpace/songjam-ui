@@ -11,6 +11,9 @@ import {
   CircularProgress,
   Alert,
   Snackbar,
+  useMediaQuery,
+  useTheme,
+  Grid,
 } from '@mui/material';
 import {
   CloudUpload,
@@ -86,6 +89,9 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
   setSoundSlots,
 }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -609,7 +615,9 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          mb: 2,
+          mb: { xs: 1.5, sm: 2 },
+          flexDirection: { xs: 'row' },
+          gap: { xs: 1, sm: 0 },
         }}
       >
         <Typography
@@ -620,15 +628,24 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
             alignItems: 'center',
             gap: 1,
             textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
+            fontSize: { xs: '1rem', sm: '1.25rem' },
           }}
         >
           <LibraryMusic /> Sound Board
         </Typography>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            alignSelf: { xs: 'center', sm: 'flex-end' },
+          }}
+        >
           <Button
             onClick={handleLibraryClick}
             startIcon={<QueueMusicRoundedIcon fontSize="small" />}
+            size={isMobile ? 'small' : 'medium'}
           >
             Library
           </Button>
@@ -651,7 +668,7 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
 
       <Paper
         sx={{
-          p: 3,
+          p: { xs: 2, sm: 3 },
           background: 'rgba(0, 0, 0, 0.2)',
           borderRadius: 2,
           border: '1px solid rgba(96, 165, 250, 0.1)',
@@ -673,9 +690,16 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(5, 1fr)',
-            gap: 2,
-            mb: 2,
+            gridTemplateColumns: {
+              xs: 'repeat(5, 1fr)',
+            },
+            gap: { xs: 1, sm: 1.5, md: 2 },
+            mb: { xs: 1.5, sm: 2 },
+            overflowX: 'auto',
+            scrollbarWidth: 'none',
+            '&::-webkit-scrollbar': {
+              display: 'none',
+            },
           }}
         >
           {soundSlots.map((slot, index) => (
@@ -737,14 +761,14 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
                       flexDirection: 'column',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      p: 1,
+                      p: { xs: 0.5, sm: 1 },
                       position: 'relative',
                     }}
                   >
                     {/* Loading State */}
                     {slot.isLoading && (
                       <CircularProgress
-                        size={20}
+                        size={isMobile ? 16 : 20}
                         sx={{
                           color: '#60a5fa',
                           position: 'absolute',
@@ -760,8 +784,8 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
                     <Box
                       sx={{
                         position: 'absolute',
-                        top: 4,
-                        right: 4,
+                        top: { xs: 2, sm: 4 },
+                        right: { xs: 2, sm: 4 },
                         display: 'flex',
                         flexDirection: 'column',
                         gap: 0.5,
@@ -774,7 +798,7 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
                           <Error
                             sx={{
                               color: '#f44336',
-                              fontSize: '0.75rem',
+                              fontSize: { xs: '0.6rem', sm: '0.75rem' },
                             }}
                           />
                         </Tooltip>
@@ -786,9 +810,9 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
                       sx={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 1,
+                        gap: { xs: 0.5, sm: 1 },
                         justifyContent: 'center',
-                        mb: 0.5,
+                        mb: { xs: 0.25, sm: 0.5 },
                       }}
                     >
                       {/* Upload/Delete Button */}
@@ -805,13 +829,13 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
                                 : handleSlotUpload(index)
                             }
                             disabled={isConnected || isInSpace}
-                            size="small"
+                            size={isMobile ? 'small' : 'small'}
                             sx={{
                               color: slot.isLoaded
                                 ? 'rgba(255, 107, 107, 0.8)'
                                 : 'rgba(255, 255, 255, 0.6)',
-                              fontSize: '0.75rem',
-                              padding: 0.5,
+                              fontSize: { xs: '0.6rem', sm: '0.75rem' },
+                              padding: { xs: 0.25, sm: 0.5 },
                               minWidth: 'auto',
                               '&:hover': {
                                 color: slot.isLoaded ? '#ff6b6b' : '#60a5fa',
@@ -821,9 +845,11 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
                             }}
                           >
                             {slot.isLoaded ? (
-                              <Delete fontSize="small" />
+                              <Delete fontSize={isMobile ? 'small' : 'small'} />
                             ) : (
-                              <CloudUpload fontSize="small" />
+                              <CloudUpload
+                                fontSize={isMobile ? 'small' : 'small'}
+                              />
                             )}
                           </IconButton>
                         </Tooltip>
@@ -839,7 +865,7 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
                             : slot.isLoaded
                             ? '#60a5fa'
                             : 'rgba(255, 255, 255, 0.3)',
-                          fontSize: '1.5rem',
+                          fontSize: { xs: '1.2rem', sm: '1.5rem' },
                           '&:hover': slot.isLoaded
                             ? {
                                 transform: 'scale(1.1)',
@@ -852,7 +878,7 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
                             : 'none',
                         }}
                       >
-                        <PlayArrow fontSize="medium" />
+                        <PlayArrow fontSize={isMobile ? 'small' : 'medium'} />
                       </IconButton>
                     </Box>
                   </Box>
@@ -866,9 +892,9 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
                     textAlign: 'center',
                     fontWeight: 'medium',
                     textShadow: '0 0 5px rgba(0, 0, 0, 0.5)',
-                    fontSize: '0.75rem',
+                    fontSize: { xs: '0.6rem', sm: '0.75rem' },
                     lineHeight: 1.2,
-                    mt: 1,
+                    mt: { xs: 0.5, sm: 1 },
                     maxWidth: '100%',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -891,7 +917,7 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
             color: 'rgba(255, 255, 255, 0.7)',
             textAlign: 'center',
             fontStyle: 'italic',
-            fontSize: '0.8rem',
+            fontSize: { xs: '0.7rem', sm: '0.8rem' },
           }}
         >
           {userId

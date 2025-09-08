@@ -56,12 +56,12 @@ export const createReferral = async (
 };
 
 // Get referral by user ID
-export const getReferralByUserId = async (
-  userId: string
+export const getReferralByTwitterId = async (
+  twitterId: string
 ): Promise<Referral | null> => {
   const q = query(
     collection(db, REFERRAL_COLLECTION),
-    where('uid', '==', userId)
+    where('accountId', '==', twitterId)
   );
 
   const querySnapshot = await getDocs(q);
@@ -134,7 +134,7 @@ export const incrementPlayCount = async (referralId: string): Promise<void> => {
 
 // Get or create referral for user
 export const getOrCreateReferral = async (
-  userId: string,
+  twitterId: string,
   userData: {
     accountId?: string | null;
     email: string;
@@ -143,14 +143,14 @@ export const getOrCreateReferral = async (
   }
 ): Promise<Referral> => {
   // First try to get existing referral
-  const existingReferral = await getReferralByUserId(userId);
+  const existingReferral = await getReferralByTwitterId(twitterId);
   if (existingReferral) {
     return existingReferral;
   }
 
   // Create new referral if none exists
-  await createReferral(userId, userData);
-  const newReferral = await getReferralByUserId(userId);
+  await createReferral(twitterId, userData);
+  const newReferral = await getReferralByTwitterId(twitterId);
 
   if (!newReferral) {
     throw new Error('Failed to create referral');

@@ -41,6 +41,7 @@ export type SongjamUser = {
   specialAccess?: Array<'TWEET_SPACE_SUMMARY'>;
   referredById?: string | null; // ID of the user who referred this user
   referredByUid?: string | null; // ID of the user who referred this user
+  referredByTwitterId?: string | null; // ID of the user who referred this user
 
   isSignUp?: boolean; // Only for local
 };
@@ -91,8 +92,8 @@ export const createUser = async (id: string, user: SongjamUser) => {
     domain: isCustomDomain(domain) ? domain : '',
     name: 'Project 1',
   } as Project);
-  batch.set(doc(projectRef, 'members', user.email), {
-    email: user.email,
+  batch.set(doc(projectRef, 'members', user.uid), {
+    email: user.email ?? '',
     role: 'creator',
     isPending: false,
     isAccepted: true,
@@ -100,6 +101,7 @@ export const createUser = async (id: string, user: SongjamUser) => {
     updatedAt: Date.now(),
     userId: id,
     projectId: projectRef.id,
+    accountId: user.accountId ?? '',
   });
   const projectId = projectRef.id;
 
@@ -249,8 +251,13 @@ export const updateXProps = async (
 export const updateUserReferredBy = async (
   userId: string,
   referredById: string,
-  uid: string
+  referredByUid: string,
+  referredByTwitterId: string
 ) => {
   const userRef = doc(db, USER_COLLECTION, userId);
-  await updateDoc(userRef, { referredById, referredByUid: uid });
+  await updateDoc(userRef, {
+    referredById,
+    referredByUid,
+    referredByTwitterId,
+  });
 };

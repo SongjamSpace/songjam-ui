@@ -28,43 +28,32 @@ import {
   useMediaQuery,
   useTheme,
   Grid,
-  Card,
-  CardContent,
 } from '@mui/material';
 import {
   PlayArrow,
   Stop,
   MusicNote,
   Link,
-  EmojiEmotions,
   VolumeUp,
   VolumeOff,
-  Refresh,
   GraphicEq,
   RadioButtonChecked,
   FiberManualRecord,
-  SkipNext,
-  SkipPrevious,
-  Menu,
+  LogoutRounded,
 } from '@mui/icons-material';
 import EmojiReactions from '../components/EmojiReactions';
 import SoundBoard, { SoundSlot } from '../components/SoundBoard';
 import MusicLibrary from '../components/MusicLibrary';
-import { useTranslation } from 'react-i18next';
 import {
   deleteMusicUpload,
   getMusicUploadsByUserId,
   uploadMusic,
 } from '../services/storage/musicAgent.storage';
-import { uploadAndNormalizeMusic } from '../services/musicAgentUpload.service';
+// import { uploadAndNormalizeMusic } from '../services/musicAgentUpload.service';
 import { useAuthContext } from '../contexts/AuthContext';
 import LoginDialog from '../components/LoginDialog';
 import { updateUserReferredBy } from '../services/db/user.service';
-import {
-  MusicAgentRequest,
-  createMusicAgentRequest,
-} from '../services/db/musicAgentRequets.service';
-import { createDjInstance } from '../services/db/djInstance.service';
+import { createDjSpacesDoc } from '../services/db/djSpaces.service';
 import { extractSpaceId } from '../utils';
 import {
   getOrCreateReferral,
@@ -72,8 +61,9 @@ import {
   incrementReferralCount,
   getReferralById,
   Referral,
-  getReferralByUserId,
+  getReferralByTwitterId,
 } from '../services/db/referral.service';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 // import {
 //   DynamicEmbeddedWidget,
 //   useDynamicContext,
@@ -84,11 +74,11 @@ import {
 // } from '../services/blockchain.service';
 
 // Advanced animations
-const pulse = keyframes`
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.05); opacity: 0.8; }
-  100% { transform: scale(1); opacity: 1; }
-`;
+// const pulse = keyframes`
+//   0% { transform: scale(1); opacity: 1; }
+//   50% { transform: scale(1.05); opacity: 0.8; }
+//   100% { transform: scale(1); opacity: 1; }
+// `;
 
 const wave = keyframes`
   0% { transform: translateY(0); }
@@ -169,6 +159,7 @@ const MusicAgent = () => {
   );
   const [referral, setReferral] = useState<Referral | null>(null);
   const [isLoadingReferral, setIsLoadingReferral] = useState(false);
+  const { handleLogOut } = useDynamicContext();
   // const [stakingInfo, setStakingInfo] = useState<StakingInfo | null>(null);
   // const [isCheckingStake, setIsCheckingStake] = useState(false);
   // const { primaryWallet } = useDynamicContext();
@@ -279,14 +270,19 @@ const MusicAgent = () => {
   };
 
   const fetchOrCreateReferral = async (isCreate: boolean = false) => {
-    if (!user) {
-      addLog('Please sign in to create a referral code', 'error');
+    if (!user || !user.accountId) {
+      if (isCreate)
+        alert('Please sign in with X (twitter) to create a referral code');
+      if (user && !user?.accountId) {
+        await handleLogOut();
+        setShowAuthDialog(true);
+      }
       return;
     }
     setIsLoadingReferral(true);
     try {
       if (isCreate) {
-        const referralData = await getOrCreateReferral(user.uid, {
+        const referralData = await getOrCreateReferral(user.accountId, {
           accountId: user.accountId,
           email: user.email,
           username: user.displayName,
@@ -298,7 +294,7 @@ const MusicAgent = () => {
           'success'
         );
       } else {
-        const referralData = await getReferralByUserId(user.uid);
+        const referralData = await getReferralByTwitterId(user.accountId);
         setReferral(referralData);
       }
     } catch (error) {
@@ -321,12 +317,6 @@ const MusicAgent = () => {
   const handleConnect = async () => {
     setWsStatus('connected');
     addLog('Connected to server successfully', 'success');
-    await createDjInstance({
-      spaceId: extractSpaceId(spaceUrl) || '',
-      userId: user?.uid || '',
-      username: user?.displayName || '',
-      socketId: socketRef.current?.id || '',
-    });
     await handleJoinSpace();
   };
   const handleDisconnect = () => {
@@ -394,6 +384,18 @@ const MusicAgent = () => {
         if (response.status === 'success') {
           setIsInSpace(true);
           addLog(`Successfully joined space: ${response.spaceId}`, 'success');
+          if (user.uid) {
+            createDjSpacesDoc({
+              spaceId: extractSpaceId(spaceUrl) ?? '',
+              userId: user.uid ?? '',
+              username: user?.username ?? user?.displayName ?? '',
+              socketId: socketRef.current?.id ?? '',
+              email: user?.email,
+              referredById: user?.referredById ?? '',
+              referredByUid: user?.referredByUid ?? '',
+              referredByTwitterId: user.referredByTwitterId ?? '',
+            });
+          }
 
           // Increment play count for referring user if this user was referred
           if (user?.referredById) {
@@ -407,18 +409,9 @@ const MusicAgent = () => {
       setIsLoading(false);
       addLog(`Failed to join space: ${error.message}`, 'error');
     });
-    const requestId = await createMusicAgentRequest({
-      userId: user.uid,
-      email: user.email,
-      audioUrl,
-      spaceUrl,
-      startedAt: Date.now(),
-    });
-    addLog(`Request ID: ${requestId}`, 'info');
 
     socketRef.current.emit('join-space', {
       spaceId: spaceUrl.split('/').pop(),
-      requestId,
       soundboardUrls: soundSlots.map((s) => s.audioUrl),
     });
   };
@@ -633,8 +626,8 @@ const MusicAgent = () => {
     try {
       // Get the referral document by ID
       const referralDoc = await getReferralById(referralId);
-      if (!referralDoc) {
-        addLog('Invalid referral ID', 'error');
+      if (!referralDoc || !referralDoc.accountId) {
+        addLog('Invalid referral ID or twitterId', 'error');
         return;
       }
 
@@ -642,7 +635,12 @@ const MusicAgent = () => {
       await incrementReferralCount(referralDoc.id);
 
       // Update user document with referredById
-      await updateUserReferredBy(user.uid, referralDoc.id, referralDoc.uid);
+      await updateUserReferredBy(
+        user.uid,
+        referralDoc.id,
+        referralDoc.uid,
+        referralDoc.accountId
+      );
 
       addLog(
         `Successfully tracked referral from ${
@@ -753,7 +751,6 @@ const MusicAgent = () => {
           <Paper
             elevation={24}
             sx={{
-              mt: { xs: 2, sm: 4, md: 6 },
               p: { xs: 2, sm: 3, md: 4 },
               background: 'rgba(15, 23, 42, 0.95)',
               borderRadius: { xs: 2, sm: 3, md: 4 },
@@ -794,7 +791,7 @@ const MusicAgent = () => {
                 justifyContent: 'space-between',
                 mb: { xs: 3, sm: 4, md: 6 },
                 position: 'relative',
-                flexDirection: { xs: 'row' },
+                flexDirection: { xs: 'column', md: 'row' },
                 gap: { xs: 2, sm: 0 },
               }}
             >
@@ -906,6 +903,53 @@ const MusicAgent = () => {
                     {isMuted ? <VolumeOff /> : <VolumeUp />}
                   </IconButton>
                 </Tooltip>
+
+                {user && user.username && (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      ml: 'auto',
+                      p: 1,
+                      borderRadius: 2,
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: '#60a5fa',
+                        fontWeight: 'bold',
+                        fontSize: '0.9rem',
+                        textShadow: '0 0 5px rgba(96, 165, 250, 0.5)',
+                      }}
+                    >
+                      @{user.username}
+                    </Typography>
+                    <Tooltip title="Logout">
+                      <IconButton
+                        size="small"
+                        onClick={async () => {
+                          await handleLogOut();
+                          setShowAuthDialog(true);
+                        }}
+                        sx={{
+                          color: '#ff6b6b',
+                          '&:hover': {
+                            backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                            transform: 'scale(1.1)',
+                          },
+                          transition: 'all 0.2s ease-in-out',
+                        }}
+                      >
+                        <LogoutRounded fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                )}
               </Stack>
             </Box>
 

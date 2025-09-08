@@ -151,7 +151,7 @@ export function useAuth() {
             username: newUser.username || '',
           });
           await createUser(dynamicUser.userId, newUser);
-          setUser(newUser);
+          setUser({ ...newUser, isSignUp: true });
         }
       } catch (error) {
         console.error('Error processing dynamic user:', error);

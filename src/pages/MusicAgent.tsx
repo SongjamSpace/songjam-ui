@@ -59,13 +59,21 @@ import {
 import { uploadAndNormalizeMusic } from '../services/musicAgentUpload.service';
 import { useAuthContext } from '../contexts/AuthContext';
 import LoginDialog from '../components/LoginDialog';
+import { updateUserReferredBy } from '../services/db/user.service';
 import {
   MusicAgentRequest,
   createMusicAgentRequest,
 } from '../services/db/musicAgentRequets.service';
 import { createDjInstance } from '../services/db/djInstance.service';
 import { extractSpaceId } from '../utils';
-import Logo from '../components/Logo';
+import {
+  getOrCreateReferral,
+  incrementPlayCount,
+  incrementReferralCount,
+  getReferralById,
+  Referral,
+  getReferralByUserId,
+} from '../services/db/referral.service';
 // import {
 //   DynamicEmbeddedWidget,
 //   useDynamicContext,
@@ -159,6 +167,8 @@ const MusicAgent = () => {
       fullName: '',
     }))
   );
+  const [referral, setReferral] = useState<Referral | null>(null);
+  const [isLoadingReferral, setIsLoadingReferral] = useState(false);
   // const [stakingInfo, setStakingInfo] = useState<StakingInfo | null>(null);
   // const [isCheckingStake, setIsCheckingStake] = useState(false);
   // const { primaryWallet } = useDynamicContext();
@@ -216,6 +226,7 @@ const MusicAgent = () => {
     if (user) {
       // connectSocket();
       fetchUserUploads();
+      fetchOrCreateReferral(false);
     }
     // return () => {
     //   if (socketRef.current) {
@@ -223,6 +234,13 @@ const MusicAgent = () => {
     //   }
     // };
   }, [user]);
+
+  // Handle referral tracking when user signs up
+  useEffect(() => {
+    if (user?.isSignUp) {
+      handleReferralTracking();
+    }
+  }, [user?.isSignUp]);
 
   useEffect(() => {
     if (audioUrl) {
@@ -258,6 +276,37 @@ const MusicAgent = () => {
     setAudioUploads(musicFiles);
     setSoundboardFiles(slotFiles);
     setIsLibraryLoading(false);
+  };
+
+  const fetchOrCreateReferral = async (isCreate: boolean = false) => {
+    if (!user) {
+      addLog('Please sign in to create a referral code', 'error');
+      return;
+    }
+    setIsLoadingReferral(true);
+    try {
+      if (isCreate) {
+        const referralData = await getOrCreateReferral(user.uid, {
+          accountId: user.accountId,
+          email: user.email,
+          username: user.displayName,
+          uid: user.uid,
+        });
+        setReferral(referralData);
+        addLog(
+          `Referral code created: ${referralData.referralCode}`,
+          'success'
+        );
+      } else {
+        const referralData = await getReferralByUserId(user.uid);
+        setReferral(referralData);
+      }
+    } catch (error) {
+      console.error('Error fetching/creating referral:', error);
+      addLog('Failed to create referral code', 'error');
+    } finally {
+      setIsLoadingReferral(false);
+    }
   };
 
   const addLog = (
@@ -345,6 +394,11 @@ const MusicAgent = () => {
         if (response.status === 'success') {
           setIsInSpace(true);
           addLog(`Successfully joined space: ${response.spaceId}`, 'success');
+
+          // Increment play count for referring user if this user was referred
+          if (user?.referredById) {
+            incrementPlayCount(user?.referredById);
+          }
         }
       }
     );
@@ -393,7 +447,7 @@ const MusicAgent = () => {
 
     socketRef.current.once(
       'music-started',
-      (response: { success: boolean; message?: string }) => {
+      async (response: { success: boolean; message?: string }) => {
         setIsLoading(false);
         if (response.success) {
           setMusicStarted(true);
@@ -402,6 +456,16 @@ const MusicAgent = () => {
             audioRef.current.play();
           }
           addLog('Music started playing successfully', 'success');
+
+          // Increment play count for referral
+          if (referral) {
+            try {
+              await incrementPlayCount(referral.id);
+              addLog('Play count updated', 'info');
+            } catch (error) {
+              console.error('Failed to increment play count:', error);
+            }
+          }
         } else {
           addLog(
             `Failed to play music: ${response.message || 'Unknown error'}`,
@@ -539,6 +603,61 @@ const MusicAgent = () => {
       await deleteMusicUpload(fileName, user.uid);
       await fetchUserUploads();
       addLog(`Deleted music: ${fileName}`, 'success');
+    }
+  };
+
+  const copyReferralUrl = async () => {
+    if (referral) {
+      const referralUrl = `${location.origin}/dj?ref=${referral.id}`;
+      try {
+        await navigator.clipboard.writeText(referralUrl);
+        addLog('Referral URL copied to clipboard!', 'success');
+      } catch (error) {
+        console.error('Failed to copy referral URL:', error);
+        addLog('Failed to copy referral URL', 'error');
+      }
+    }
+  };
+
+  // Get referral ID from URL parameters
+  const getReferralIdFromUrl = (): string | null => {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('ref');
+  };
+
+  // Handle referral tracking when user signs up
+  const handleReferralTracking = async () => {
+    const referralId = getReferralIdFromUrl();
+    if (!referralId || !user?.isSignUp) return;
+
+    try {
+      // Get the referral document by ID
+      const referralDoc = await getReferralById(referralId);
+      if (!referralDoc) {
+        addLog('Invalid referral ID', 'error');
+        return;
+      }
+
+      // Increment referral count
+      await incrementReferralCount(referralDoc.id);
+
+      // Update user document with referredById
+      await updateUserReferredBy(user.uid, referralDoc.id, referralDoc.uid);
+
+      addLog(
+        `Successfully tracked referral from ${
+          referralDoc.username || referralDoc.email
+        }`,
+        'success'
+      );
+
+      // Clear the ref parameter from URL to prevent duplicate tracking
+      const url = new URL(window.location.href);
+      url.searchParams.delete('ref');
+      window.history.replaceState({}, '', url.toString());
+    } catch (error) {
+      console.error('Error tracking referral:', error);
+      addLog('Failed to track referral', 'error');
     }
   };
 
@@ -1039,6 +1158,231 @@ const MusicAgent = () => {
                       step={0.1}
                       // disabled={!socketRef.current?.connected || !isInSpace}
                     />
+                  </Paper>
+                </Box>
+
+                {/* Referral Section */}
+                <Box sx={{ mb: { xs: 3, sm: 4 } }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      mb: 2,
+                      color: '#60a5fa',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
+                      fontSize: { xs: '1rem', sm: '1.25rem' },
+                    }}
+                  >
+                    <Link /> Referral Code
+                  </Typography>
+                  <Paper
+                    sx={{
+                      p: { xs: 1.5, sm: 2 },
+                      background: 'rgba(0, 0, 0, 0.2)',
+                      borderRadius: 2,
+                      border: '1px solid rgba(96, 165, 250, 0.1)',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background:
+                          'radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.1) 0%, transparent 70%)',
+                        pointerEvents: 'none',
+                      },
+                    }}
+                  >
+                    {isLoadingReferral ? (
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
+                      >
+                        <CircularProgress size={20} />
+                        <Typography variant="body2" color="white">
+                          Creating referral code...
+                        </Typography>
+                      </Box>
+                    ) : referral ? (
+                      <Stack spacing={2}>
+                        <Box>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: '#60a5fa',
+                              mb: 1,
+                              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                            }}
+                          >
+                            Your Referral Code:
+                          </Typography>
+                          <Typography
+                            variant="h6"
+                            sx={{
+                              color: 'white',
+                              fontFamily: 'monospace',
+                              fontWeight: 'bold',
+                              letterSpacing: '2px',
+                              textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
+                            }}
+                          >
+                            {referral.referralCode}
+                          </Typography>
+                        </Box>
+                        <Box>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: '#60a5fa',
+                              mb: 1,
+                              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                            }}
+                          >
+                            Referral URL:
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: 'white',
+                              fontFamily: 'monospace',
+                              wordBreak: 'break-all',
+                              fontSize: { xs: '0.7rem', sm: '0.8rem' },
+                              mb: 2,
+                            }}
+                          >
+                            {location.origin}/dj?ref={referral.id}
+                          </Typography>
+                        </Box>
+                        <Button
+                          variant="outlined"
+                          onClick={copyReferralUrl}
+                          size="small"
+                          sx={{
+                            // background:
+                            //   'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+                            // '&:hover': {
+                            //   background:
+                            //     'linear-gradient(135deg, #7c3aed, #6d28d9)',
+                            // },
+                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                          }}
+                        >
+                          Copy Referral URL
+                        </Button>
+
+                        {/* Analytics Row */}
+                        {/* <Box
+                          sx={{
+                            display: 'flex',
+                            width: '100%',
+                            gap: 1,
+                            mt: 1,
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              flex: 1,
+                              textAlign: 'center',
+                              p: 2,
+                              borderRadius: 2,
+                              background: 'rgba(76, 175, 80, 0.1)',
+                              border: '1px solid rgba(76, 175, 80, 0.3)',
+                            }}
+                          >
+                            <Typography
+                              variant="h5"
+                              sx={{
+                                color: '#4caf50',
+                                fontWeight: 'bold',
+                                fontSize: { xs: '1.25rem', sm: '1.5rem' },
+                                mb: 0.5,
+                              }}
+                            >
+                              {referral.referralCount}
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: '#60a5fa',
+                                fontSize: { xs: '0.7rem', sm: '0.8rem' },
+                                fontWeight: 500,
+                              }}
+                            >
+                              Referrals
+                            </Typography>
+                          </Box>
+                          <Box
+                            sx={{
+                              flex: 1,
+                              textAlign: 'center',
+                              p: 2,
+                              borderRadius: 2,
+                              background: 'rgba(255, 152, 0, 0.1)',
+                              border: '1px solid rgba(255, 152, 0, 0.3)',
+                            }}
+                          >
+                            <Typography
+                              variant="h5"
+                              sx={{
+                                color: '#ff9800',
+                                fontWeight: 'bold',
+                                fontSize: { xs: '1.25rem', sm: '1.5rem' },
+                                mb: 0.5,
+                              }}
+                            >
+                              {referral.playCount}
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: '#60a5fa',
+                                fontSize: { xs: '0.7rem', sm: '0.8rem' },
+                                fontWeight: 500,
+                              }}
+                            >
+                              Plays
+                            </Typography>
+                          </Box>
+                        </Box> */}
+                      </Stack>
+                    ) : (
+                      <Box sx={{ textAlign: 'center' }}>
+                        <Typography
+                          variant="body2"
+                          color="white"
+                          sx={{ mb: 2 }}
+                        >
+                          Create your referral code to start inviting others!
+                        </Typography>
+                        <Button
+                          variant="contained"
+                          onClick={() => fetchOrCreateReferral(true)}
+                          disabled={!user || isLoadingReferral}
+                          sx={{
+                            background:
+                              'linear-gradient(135deg, #60a5fa, #3b82f6)',
+                            '&:hover': {
+                              background:
+                                'linear-gradient(135deg, #3b82f6, #2563eb)',
+                            },
+                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                          }}
+                        >
+                          {isLoadingReferral ? (
+                            <>
+                              <CircularProgress size={16} sx={{ mr: 1 }} />
+                              Creating...
+                            </>
+                          ) : (
+                            'Create Referral Code'
+                          )}
+                        </Button>
+                      </Box>
+                    )}
                   </Paper>
                 </Box>
 

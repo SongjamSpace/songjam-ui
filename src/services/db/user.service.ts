@@ -39,6 +39,10 @@ export type SongjamUser = {
   startsAt: number;
   accountId?: string | null;
   specialAccess?: Array<'TWEET_SPACE_SUMMARY'>;
+  referredById?: string | null; // ID of the user who referred this user
+  referredByUid?: string | null; // ID of the user who referred this user
+
+  isSignUp?: boolean; // Only for local
 };
 
 export const USER_COLLECTION = 'users';
@@ -240,4 +244,13 @@ export const updateXProps = async (
 ) => {
   const userRef = doc(db, USER_COLLECTION, userId);
   await updateDoc(userRef, xProps);
+};
+
+export const updateUserReferredBy = async (
+  userId: string,
+  referredById: string,
+  uid: string
+) => {
+  const userRef = doc(db, USER_COLLECTION, userId);
+  await updateDoc(userRef, { referredById, referredByUid: uid });
 };

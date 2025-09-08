@@ -29,7 +29,7 @@ export const REFERRAL_COLLECTION = 'referrals';
 
 // Create a new referral document
 export const createReferral = async (
-  userId: string,
+  twitterId: string,
   userData: {
     accountId?: string | null;
     email: string;
@@ -37,8 +37,7 @@ export const createReferral = async (
     uid: string;
   }
 ): Promise<string> => {
-  const referralRef = doc(collection(db, REFERRAL_COLLECTION));
-  const docId = referralRef.id;
+  const referralRef = doc(db, REFERRAL_COLLECTION, twitterId);
 
   const referralData: Omit<Referral, 'id'> = {
     accountId: userData.accountId ?? '',
@@ -48,11 +47,11 @@ export const createReferral = async (
     createdAt: Date.now(),
     referralCount: 0,
     playCount: 0,
-    referralCode: docId,
+    referralCode: twitterId,
   };
 
   await setDoc(referralRef, referralData);
-  return docId;
+  return twitterId;
 };
 
 // Get referral by user ID

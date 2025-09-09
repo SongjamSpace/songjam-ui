@@ -494,7 +494,7 @@ const SpaceDetailsDialog: React.FC<{
                 return;
               }
               window.open(
-                `https://songjam.space/dashboard?spaceId=${spaceId}`,
+                `https://app.songjam.space/dashboard?spaceId=${spaceId}`,
                 '_blank'
               );
             }}

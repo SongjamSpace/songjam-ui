@@ -476,7 +476,7 @@ const CampaignDetails = (props: Props) => {
             <Button
               variant="outlined"
               color="primary"
-              href={`https://songjam.space/live/${campaign.spaceId}`}
+              href={`https://app.songjam.space/live/${campaign.spaceId}`}
               target="_blank"
               // endIcon={}
             >

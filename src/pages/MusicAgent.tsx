@@ -271,11 +271,12 @@ const MusicAgent = () => {
 
   const fetchOrCreateReferral = async (isCreate: boolean = false) => {
     if (!user || !user.accountId) {
-      if (isCreate)
+      if (isCreate) {
         alert('Please sign in with X (twitter) to create a referral code');
-      if (user && !user?.accountId) {
-        await handleLogOut();
-        setShowAuthDialog(true);
+        if (user && !user?.accountId) {
+          await handleLogOut();
+          setShowAuthDialog(true);
+        }
       }
       return;
     }

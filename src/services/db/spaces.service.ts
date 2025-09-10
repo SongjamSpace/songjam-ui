@@ -71,7 +71,7 @@ export type Space = {
   // Space details
   hlsUrl: string;
   title: string;
-  state: 'Ended' | 'Running' | 'NotStarted';
+  state: 'Ended' | 'Running' | 'NotStarted' | 'TimedOut';
   mediaKey: string;
   createdAt: number;
   startedAt: number;

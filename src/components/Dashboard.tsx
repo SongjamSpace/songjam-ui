@@ -341,7 +341,7 @@ export default function Dashboard() {
           projectId,
         });
         const space = await getBroadcastFromX(spaceId);
-        if (space && space.state === 'Ended') {
+        if (space && (space.state === 'Ended' || space.state === 'TimedOut')) {
           const path = await transcribeSpace(spaceId, projectId, true);
           navigate(path);
         } else if (space) {
@@ -382,11 +382,13 @@ export default function Dashboard() {
       const space = await getRawSpaceFromX(spaceId);
       if (
         space &&
-        ['Ended', 'Running', 'NotStarted'].includes(space.metadata.state)
+        ['Ended', 'Running', 'NotStarted', 'TimedOut'].includes(
+          space.metadata.state
+        )
       ) {
         setProcessingSpace(space);
         const state = space.metadata.state;
-        if (state === 'Ended') {
+        if (state === 'Ended' || state === 'TimedOut') {
           const path = await transcribeSpace(spaceId, projectId);
           // TODO: Enable this
           // await updateSpaceRequests(user?.uid || '');

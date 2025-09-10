@@ -16,7 +16,7 @@ const LATEST_DJ_COLLECTION = 'djSpaces';
 
 export const createDjSpacesDoc = async (obj: DjInstance) => {
   await setDoc(doc(collection(db, LATEST_DJ_COLLECTION), obj.spaceId), {
-    ...Object,
+    ...obj,
     createdDateTime: serverTimestamp(),
     createdAt: Date.now(),
   });

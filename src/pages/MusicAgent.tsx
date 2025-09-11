@@ -390,6 +390,7 @@ const MusicAgent = () => {
               spaceId: extractSpaceId(spaceUrl) ?? '',
               userId: user.uid ?? '',
               username: user?.username ?? user?.displayName ?? '',
+              twitterId: user.accountId ?? '',
               socketId: socketRef.current?.id ?? '',
               email: user?.email,
               referredById: user?.referredById ?? '',

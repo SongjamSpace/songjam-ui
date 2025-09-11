@@ -7,6 +7,7 @@ export type DjInstance = {
   username: string;
   socketId: string;
   email?: string;
+  twitterId?: string;
 
   referredById?: string;
   referredByUid?: string;

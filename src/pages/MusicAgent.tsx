@@ -159,6 +159,7 @@ const MusicAgent = () => {
   );
   const [referral, setReferral] = useState<Referral | null>(null);
   const [isLoadingReferral, setIsLoadingReferral] = useState(false);
+  const [speakText, setSpeakText] = useState('');
   const { handleLogOut } = useDynamicContext();
   // const [stakingInfo, setStakingInfo] = useState<StakingInfo | null>(null);
   // const [isCheckingStake, setIsCheckingStake] = useState(false);
@@ -563,6 +564,19 @@ const MusicAgent = () => {
     if (socketRef.current && socketRef.current.connected && user) {
       setVolume(newValue as number);
       socketRef.current.emit('change-volume', { volume: newValue as number });
+    }
+  };
+
+  const handleSpeakText = () => {
+    if (
+      socketRef.current &&
+      socketRef.current.connected &&
+      user &&
+      speakText.trim()
+    ) {
+      socketRef.current.emit('speak-text', { text: speakText.trim() });
+      addLog(`Speaking text: ${speakText.trim()}`, 'info');
+      setSpeakText(''); // Clear the input after sending
     }
   };
 
@@ -1157,6 +1171,116 @@ const MusicAgent = () => {
                     isConnected={true}
                     isInSpace={true}
                   />
+                </Box>
+
+                {/* Speak Text Section */}
+                <Box sx={{ mb: { xs: 3, sm: 4 } }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      mb: 2,
+                      color: '#60a5fa',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
+                      fontSize: { xs: '1rem', sm: '1.25rem' },
+                    }}
+                  >
+                    <VolumeUp /> Speak Text
+                  </Typography>
+                  <Paper
+                    sx={{
+                      p: { xs: 1.5, sm: 2 },
+                      background: 'rgba(0, 0, 0, 0.2)',
+                      borderRadius: 2,
+                      border: '1px solid rgba(96, 165, 250, 0.1)',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background:
+                          'radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.1) 0%, transparent 70%)',
+                        pointerEvents: 'none',
+                      },
+                    }}
+                  >
+                    <Stack spacing={2}>
+                      <TextField
+                        fullWidth
+                        value={speakText}
+                        onChange={(e) => setSpeakText(e.target.value)}
+                        placeholder="Enter text"
+                        variant="outlined"
+                        size={isMobile ? 'small' : 'medium'}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            color: 'white',
+                            '& fieldset': {
+                              borderColor: 'rgba(96, 165, 250, 0.5)',
+                            },
+                            '&:hover fieldset': {
+                              borderColor: '#60a5fa',
+                            },
+                            '&.Mui-focused fieldset': {
+                              borderColor: '#60a5fa',
+                              boxShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
+                            },
+                          },
+                        }}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            handleSpeakText();
+                          }
+                        }}
+                      />
+                      <Button
+                        variant="contained"
+                        onClick={handleSpeakText}
+                        disabled={
+                          !speakText.trim() || !socketRef.current?.connected
+                          // !isInSpace
+                        }
+                        fullWidth
+                        sx={{
+                          background:
+                            'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+                          '&:hover': {
+                            background:
+                              'linear-gradient(135deg, #7c3aed, #6d28d9)',
+                            transform: 'scale(1.02)',
+                          },
+                          height: { xs: 40, sm: 48 },
+                          transition: 'all 0.2s',
+                          position: 'relative',
+                          overflow: 'hidden',
+                          '&::after': {
+                            content: '""',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            background:
+                              'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
+                            transform: 'translateX(-100%)',
+                            transition: 'transform 0.5s',
+                          },
+                          '&:hover::after': {
+                            transform: 'translateX(100%)',
+                          },
+                          boxShadow: '0 0 20px rgba(139, 92, 246, 0.3)',
+                        }}
+                      >
+                        Speak Now
+                      </Button>
+                    </Stack>
+                  </Paper>
                 </Box>
 
                 {/* Volume Slider */}

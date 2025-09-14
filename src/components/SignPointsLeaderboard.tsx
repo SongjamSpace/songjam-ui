@@ -113,7 +113,7 @@ const SignPointsLeaderboard = () => {
 
   useEffect(() => {
     const calculateTimeLeft = () => {
-      const launchDate = new Date('2025-09-17T12:00:00Z');
+      const launchDate = new Date('2025-09-19T16:00:00Z');
       const difference = launchDate.getTime() - new Date().getTime();
       if (difference > 0) {
         return {

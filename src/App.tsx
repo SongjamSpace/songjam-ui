@@ -153,7 +153,7 @@ export default function App() {
 
   useEffect(() => {
     const calculateTimeLeft = () => {
-      const launchDate = new Date('2025-09-17T12:00:00Z'); // September 17, 2025 @ 12 PM UTC
+      const launchDate = new Date('2025-09-19T16:00:00Z'); // September 19, 2025 @ 4 PM UTC
       const difference = launchDate.getTime() - new Date().getTime();
 
       if (difference > 0) {

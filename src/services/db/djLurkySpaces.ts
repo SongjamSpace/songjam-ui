@@ -5,6 +5,7 @@ import {
   increment,
   collection,
   addDoc,
+  onSnapshot,
 } from 'firebase/firestore';
 import { db } from '../firebase.service';
 import { TwitterUser } from './spaces.service';
@@ -19,6 +20,8 @@ export type DjLurkySpace = {
   startedAt?: number;
   admins?: TwitterUser[];
   speakers?: TwitterUser[];
+  playStatus?: 'REQUESTED' | 'PLAYING' | 'STOPPED';
+  soundboardStatus?: 'NOT_LOADED' | 'LOADING' | 'LOADED';
 };
 
 export const getDjLurkySpaceDoc = async (spaceId: string) => {
@@ -28,6 +31,16 @@ export const getDjLurkySpaceDoc = async (spaceId: string) => {
     return docData.data() as DjLurkySpace;
   }
   return null;
+};
+
+export const djLurkyDocSnapshot = async (
+  spaceId: string,
+  callback: (doc: DjLurkySpace) => void
+) => {
+  const docRef = doc(db, DJ_LURKY_SPACES_COL_NAME, spaceId);
+  return onSnapshot(docRef, (doc) => {
+    callback(doc.data() as DjLurkySpace);
+  });
 };
 
 export enum RequestType {
@@ -45,6 +58,7 @@ export enum RequestType {
 type RequstData = {
   audioFullPath?: string;
   emoji?: string;
+  mp3AudioPaths?: string[];
 };
 
 type LurkySpaceDjRequest = {

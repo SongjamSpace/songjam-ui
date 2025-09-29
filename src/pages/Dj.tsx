@@ -56,10 +56,11 @@ import {
 } from '@dynamic-labs/sdk-react-core';
 import {
   DjLurkySpace,
-  getDjLurkySpaceDoc,
+  djLurkyDocSnapshot,
   sendDjRequest,
 } from '../services/db/djLurkySpaces';
 import { RequestType } from '../services/db/djLurkySpaces';
+import { LoadingButton } from '@mui/lab';
 // import {
 //   DynamicEmbeddedWidget,
 //   useDynamicContext,
@@ -120,6 +121,7 @@ const Dj = () => {
     {
       name: string;
       audioUrl: string;
+      audioFullPath: string;
     }[]
   >([]);
   const [audioFullPath, setAudioFullPath] = useState('');
@@ -181,6 +183,7 @@ const Dj = () => {
     setSoundboardFiles(
       slotFiles.map((file) => ({
         name: file.name,
+        audioFullPath: file.audioFullPath,
         audioUrl: `https://firebasestorage.googleapis.com/v0/b/lustrous-stack-453106-f6.firebasestorage.app/o/${encodeURIComponent(
           file.audioFullPath
         )}?alt=media`,
@@ -278,7 +281,7 @@ const Dj = () => {
 
   useEffect(() => {
     if (spaceId) {
-      getDjLurkySpaceDoc(spaceId).then((doc) => {
+      djLurkyDocSnapshot(spaceId, (doc) => {
         setSpaceDoc(doc);
       });
     }
@@ -751,6 +754,33 @@ const Dj = () => {
                     soundSlots={soundSlots}
                     setSoundSlots={setSoundSlots}
                   />
+                  <Box display={'flex'} justifyContent={'center'}>
+                    <LoadingButton
+                      disabled={
+                        spaceDoc?.soundboardStatus === 'LOADED' || isLoading
+                      }
+                      loading={spaceDoc?.soundboardStatus === 'LOADING'}
+                      sx={{ mt: 2 }}
+                      variant="contained"
+                      onClick={async () => {
+                        setIsLoading(true);
+                        await sendDjRequest(
+                          spaceId,
+                          RequestType.LOAD_SOUNDBOARD,
+                          {
+                            mp3AudioPaths: soundboardFiles.map(
+                              (file) => file.audioFullPath
+                            ),
+                          }
+                        );
+                        setIsLoading(false);
+                      }}
+                    >
+                      {spaceDoc?.soundboardStatus === 'LOADED'
+                        ? 'Soundboard Loaded'
+                        : 'Submit Soundboard'}
+                    </LoadingButton>
+                  </Box>
                 </Box>
 
                 {/* Music Uploads */}

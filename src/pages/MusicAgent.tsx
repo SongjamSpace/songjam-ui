@@ -47,6 +47,7 @@ import MusicLibrary from '../components/MusicLibrary';
 import {
   deleteMusicUpload,
   getMusicUploadsByUserId,
+  getUploadedAudioPaths,
   uploadMusic,
 } from '../services/storage/musicAgent.storage';
 // import { uploadAndNormalizeMusic } from '../services/musicAgentUpload.service';
@@ -111,7 +112,6 @@ const MusicAgent = () => {
   const { user, loading: authLoading } = useAuthContext();
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [spaceUrl, setSpaceUrl] = useState('');
-  const [musicStarted, setMusicStarted] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [wsStatus, setWsStatus] = useState<
@@ -130,19 +130,17 @@ const MusicAgent = () => {
     {
       name: string;
       audioUrl: string;
+      audioFullPath: string;
     }[]
   >([]);
   const [soundboardFiles, setSoundboardFiles] = useState<
     {
       name: string;
       audioUrl: string;
+      audioFullPath: string;
     }[]
   >([]);
-  const [audioUrl, setAudioUrl] = useState('');
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [audioFullPath, setAudioFullPath] = useState('');
   const [isLibraryLoading, setIsLibraryLoading] = useState(false);
   const activityLogRef = useRef<HTMLDivElement>(null);
   const [currentEmoji, setCurrentEmoji] = useState('🎧');
@@ -234,39 +232,33 @@ const MusicAgent = () => {
     }
   }, [user?.isSignUp]);
 
-  useEffect(() => {
-    if (audioUrl) {
-      audioRef.current = new Audio(audioUrl);
-      audioRef.current.addEventListener('timeupdate', () => {
-        if (audioRef.current) {
-          setCurrentTime(audioRef.current.currentTime);
-          setDuration(audioRef.current.duration);
-        }
-      });
-      audioRef.current.addEventListener('ended', () => {
-        setIsPlaying(false);
-        setCurrentTime(0);
-      });
-    }
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-    };
-  }, [audioUrl]);
-
   const fetchUserUploads = async () => {
     if (!user) return;
     setIsLibraryLoading(true);
-    const uploads = await getMusicUploadsByUserId(user.uid);
+    const uploads = await getUploadedAudioPaths(user.uid);
 
     // Filter out slot files for soundboard
     const slotFiles = uploads.filter((file) => file.name.startsWith('slot_'));
     const musicFiles = uploads.filter((file) => !file.name.startsWith('slot_'));
 
-    setAudioUploads(musicFiles);
-    setSoundboardFiles(slotFiles);
+    setAudioUploads(
+      musicFiles.map((file) => ({
+        name: file.name,
+        audioFullPath: file.audioFullPath,
+        audioUrl: `https://firebasestorage.googleapis.com/v0/b/lustrous-stack-453106-f6.firebasestorage.app/o/${encodeURIComponent(
+          file.audioFullPath
+        )}?alt=media`,
+      }))
+    );
+    setSoundboardFiles(
+      slotFiles.map((file) => ({
+        name: file.name,
+        audioFullPath: file.audioFullPath,
+        audioUrl: `https://firebasestorage.googleapis.com/v0/b/lustrous-stack-453106-f6.firebasestorage.app/o/${encodeURIComponent(
+          file.audioFullPath
+        )}?alt=media`,
+      }))
+    );
     setIsLibraryLoading(false);
   };
 
@@ -364,7 +356,7 @@ const MusicAgent = () => {
   };
 
   const handleJoinSpace = async () => {
-    if (!spaceUrl || !socketRef.current?.connected || !audioUrl || !user)
+    if (!spaceUrl || !socketRef.current?.connected || !audioFullPath || !user)
       return;
     if (isInSpace) {
       const confirm = window.confirm(
@@ -372,7 +364,6 @@ const MusicAgent = () => {
       );
       if (!confirm) return;
       setIsInSpace(false);
-      setMusicStarted(false);
       // setIsMuted(false);
       handleJoinSpace();
     }
@@ -420,38 +411,17 @@ const MusicAgent = () => {
   };
 
   const handlePlayMusic = () => {
-    if (!socketRef.current?.connected || !audioUrl) return;
+    if (!socketRef.current?.connected || !audioFullPath) return;
 
     setIsLoading(true);
     addLog('Requesting to play music...', 'info');
 
-    // Initialize audio if not already done
-    if (!audioRef.current) {
-      audioRef.current = new Audio(audioUrl);
-      audioRef.current.addEventListener('timeupdate', () => {
-        if (audioRef.current) {
-          setCurrentTime(audioRef.current.currentTime);
-          setDuration(audioRef.current.duration);
-        }
-      });
-      audioRef.current.addEventListener('ended', () => {
-        setIsPlaying(false);
-        setMusicStarted(false);
-        setCurrentTime(0);
-      });
-    }
-
     socketRef.current.once(
-      'music-started',
+      'music-played',
       async (response: { success: boolean; message?: string }) => {
         setIsLoading(false);
         if (response.success) {
-          setMusicStarted(true);
-          setIsPlaying(true);
-          if (audioRef.current) {
-            audioRef.current.play();
-          }
-          addLog('Music started playing successfully', 'success');
+          addLog('Music completed playing', 'success');
 
           // Increment play count for referral
           if (referral) {
@@ -472,7 +442,9 @@ const MusicAgent = () => {
     );
 
     socketRef.current.emit('play-music', {
-      mp3Url: audioUrl,
+      mp3Url: `https://firebasestorage.googleapis.com/v0/b/lustrous-stack-453106-f6.firebasestorage.app/o/${encodeURIComponent(
+        audioFullPath
+      )}?alt=media`,
     });
   };
 
@@ -490,7 +462,6 @@ const MusicAgent = () => {
     if (file && file.type === 'audio/mpeg' && user) {
       setIsLoading(true);
       const audioUrl = await uploadMusic(file, user.uid);
-      setAudioUrl(audioUrl);
       addLog(`Uploaded music to ${audioUrl}`, 'success');
       // Refresh uploads list
       await fetchUserUploads();
@@ -513,27 +484,9 @@ const MusicAgent = () => {
   };
 
   // Select existing upload
-  const handleSelectUpload = (url: string) => {
-    setAudioUrl(url);
-    // Initialize audio when a track is selected
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
-    }
-    audioRef.current = new Audio(url);
-    audioRef.current.addEventListener('timeupdate', () => {
-      if (audioRef.current) {
-        setCurrentTime(audioRef.current.currentTime);
-        setDuration(audioRef.current.duration);
-      }
-    });
-    audioRef.current.addEventListener('ended', () => {
-      setIsPlaying(false);
-      setMusicStarted(false);
-      setCurrentTime(0);
-    });
-    const fileName = url?.split('%2F')?.pop()?.split('?')[0] ?? '';
-    addLog(`Selected music: ${fileName}`, 'info');
+  const handleSelectUpload = (audioPath: string) => {
+    setAudioFullPath(audioPath);
+    addLog(`Music file selected`, 'info');
   };
 
   // Emoji reactions
@@ -579,33 +532,6 @@ const MusicAgent = () => {
       setSpeakText(''); // Clear the input after sending
     }
   };
-
-  // const formatTime = (time: number) => {
-  //   const minutes = Math.floor(time / 60);
-  //   const seconds = Math.floor(time % 60);
-  //   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  // };
-
-  // const handlePlayPause = () => {
-  //   if (audioRef.current) {
-  //     if (isPlaying) {
-  //       audioRef.current.pause();
-  //       setIsPlaying(false);
-  //       setMusicStarted(false);
-  //     } else {
-  //       audioRef.current.play();
-  //       setIsPlaying(true);
-  //       setMusicStarted(true);
-  //     }
-  //   }
-  // };
-
-  // const handleSeek = (event: Event, newValue: number | number[]) => {
-  //   if (audioRef.current && typeof newValue === 'number') {
-  //     audioRef.current.currentTime = newValue;
-  //     setCurrentTime(newValue);
-  //   }
-  // };
 
   const handleDeleteUpload = async (fileName: string) => {
     if (user) {
@@ -833,19 +759,6 @@ const MusicAgent = () => {
                       filter: 'drop-shadow(0 0 10px rgba(96, 165, 250, 0.5))',
                     }}
                   />
-                  {musicStarted && (
-                    <GraphicEq
-                      sx={{
-                        position: 'absolute',
-                        top: -10,
-                        right: -10,
-                        fontSize: { xs: 16, sm: 18, md: 20 },
-                        color: '#4caf50',
-                        animation: `${wave} 1s infinite ease-in-out`,
-                        filter: 'drop-shadow(0 0 5px rgba(76, 175, 80, 0.5))',
-                      }}
-                    />
-                  )}
                 </Box>
                 <Typography
                   variant={isMobile ? 'h4' : 'h3'}
@@ -1038,7 +951,7 @@ const MusicAgent = () => {
                 {/* Music Uploads */}
                 <MusicLibrary
                   audioUploads={audioUploads}
-                  selectedAudioUrl={audioUrl}
+                  selectedAudioFullPath={audioFullPath}
                   isLibraryLoading={isLibraryLoading}
                   isLoading={isLoading}
                   onSelectUpload={handleSelectUpload}
@@ -1074,7 +987,7 @@ const MusicAgent = () => {
                       variant="contained"
                       fullWidth
                       onClick={() => connectSocket()}
-                      disabled={!spaceUrl || !audioUrl}
+                      disabled={!spaceUrl || !audioFullPath}
                       size={isMobile ? 'large' : 'large'}
                       sx={{
                         background: 'linear-gradient(135deg, #60a5fa, #3b82f6)',
@@ -1118,7 +1031,9 @@ const MusicAgent = () => {
                       fullWidth
                       onClick={handlePlayMusic}
                       disabled={
-                        !socketRef.current?.connected || !isInSpace || !audioUrl
+                        !socketRef.current?.connected ||
+                        !isInSpace ||
+                        !audioFullPath
                       }
                       size={isMobile ? 'large' : 'large'}
                       sx={{
@@ -1152,8 +1067,6 @@ const MusicAgent = () => {
                     >
                       {isLoading ? (
                         <CircularProgress size={24} color="inherit" />
-                      ) : musicStarted ? (
-                        <Stop />
                       ) : (
                         <>
                           Play Music <PlayArrow />

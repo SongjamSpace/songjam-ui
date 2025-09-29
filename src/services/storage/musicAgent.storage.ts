@@ -22,6 +22,20 @@ export const getMusicUploadsByUserId = async (
   return names.map((name, index) => ({ name, audioUrl: urls[index] }));
 };
 
+export const getUploadedAudioPaths = async (
+  uid: string
+): Promise<{ name: string; audioFullPath: string }[]> => {
+  // const storageRef = ref(storage, `dj-uploads/${uid}`);
+  const storageRef = ref(storage, `music-agent-uploads/${uid}`);
+  const list = await listAll(storageRef);
+  // get the name of the file
+  const names = list.items.map((item) => ({
+    name: item.name,
+    audioFullPath: item.fullPath,
+  }));
+  return names;
+};
+
 export const getDefaultSoundFiles = async () => {
   const storageRef = ref(storage, `dj-default-sounds`);
   const list = await listAll(storageRef);

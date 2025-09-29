@@ -17,12 +17,12 @@ import { CloudUpload, Close } from '@mui/icons-material';
 
 interface AudioUpload {
   name: string;
-  audioUrl: string;
+  audioFullPath: string;
 }
 
 interface MusicLibraryProps {
   audioUploads: AudioUpload[];
-  selectedAudioUrl: string;
+  selectedAudioFullPath: string;
   isLibraryLoading: boolean;
   isLoading: boolean;
   onSelectUpload: (url: string) => void;
@@ -32,7 +32,7 @@ interface MusicLibraryProps {
 
 const MusicLibrary: React.FC<MusicLibraryProps> = ({
   audioUploads,
-  selectedAudioUrl,
+  selectedAudioFullPath,
   isLibraryLoading,
   isLoading,
   onSelectUpload,
@@ -161,13 +161,14 @@ const MusicLibrary: React.FC<MusicLibraryProps> = ({
             // Music list
             <List dense>
               {audioUploads.map((upload, index) => {
-                const isSelected = upload.audioUrl === selectedAudioUrl;
+                const isSelected =
+                  upload.audioFullPath === selectedAudioFullPath;
                 const fileName = upload.name.replace(/\.[^/.]+$/, ''); // Remove file extension
 
                 return (
                   <ListItemButton
                     key={index}
-                    onClick={() => onSelectUpload(upload.audioUrl)}
+                    onClick={() => onSelectUpload(upload.audioFullPath)}
                     selected={isSelected}
                     sx={{
                       borderRadius: 1,

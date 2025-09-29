@@ -20,6 +20,7 @@ import Flag from './pages/Flag';
 import SignPointsLeaderboard from './components/SignPointsLeaderboard';
 import MapView from './pages/MapView';
 import Admin from './pages/Admin';
+import Dj from './pages/Dj';
 
 WebFont.load({
   google: {
@@ -51,6 +52,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/campaigns/:id" element={<CampaignDetails />} />
                 <Route path="/dj" element={<MusicAgent />} />
+                <Route path="/live-dj" element={<Dj />} />
                 <Route
                   path="/leaderboard"
                   element={<SignPointsLeaderboard />}

@@ -1576,7 +1576,7 @@ const MusicAgent = () => {
             </Grid>
           </Paper>
         </Fade>
-        <LoginDialog open={showAuthDialog && !authLoading} />
+        <LoginDialog open={showAuthDialog && !authLoading} showOnlyTwitter />
         {/* <Dialog
           open={!!user && !primaryWallet}
           onClose={() => {}}

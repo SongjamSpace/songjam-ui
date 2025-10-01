@@ -61,6 +61,7 @@ import {
 } from '../services/db/djLurkySpaces';
 import { RequestType } from '../services/db/djLurkySpaces';
 import { LoadingButton } from '@mui/lab';
+import LoginDialog from '../components/LoginDialog';
 // import {
 //   DynamicEmbeddedWidget,
 //   useDynamicContext,
@@ -940,10 +941,7 @@ const Dj = () => {
             </Grid>
           </Paper>
         </Fade>
-        {/* <LoginDialog open={showAuthDialog && !authLoading} /> */}
-        <Dialog open={!user} onClose={() => {}} maxWidth="sm">
-          <DynamicEmbeddedWidget background="default" style={{ width: 350 }} />
-        </Dialog>
+        <LoginDialog open={showAuthDialog && !authLoading} showOnlyTwitter />
       </Container>
     </Box>
   );

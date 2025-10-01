@@ -7,25 +7,37 @@ import {
   Box,
   Typography,
   LinearProgress,
+  Button,
   // TextField,
   // Button,
   // IconButton,
   // InputAdornment,
 } from '@mui/material';
-import TwitterLogin from './TwitterLogin';
+// import TwitterLogin from './TwitterLogin';
 import DynamicLogin from './DynamicLogin';
+import { TwitterIcon } from '@dynamic-labs/iconic';
 // import SendIcon from '@mui/icons-material/Send';
 // import { signInWithEmailLink } from 'firebase/auth';
 // import { auth } from '../services/firebase.service';
 import { useAuthContext } from '../contexts/AuthContext';
+import { useSocialAccounts } from '@dynamic-labs/sdk-react-core';
+import { ProviderEnum } from '@dynamic-labs/types';
+
 interface LoginDialogProps {
   open: boolean;
   onClose?: () => void;
+  showOnlyTwitter?: boolean;
 }
 
-const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
+const LoginDialog: React.FC<LoginDialogProps> = ({
+  open,
+  onClose,
+  showOnlyTwitter,
+}) => {
   // const [email, setEmail] = useState('');
   const { loading } = useAuthContext();
+  const { error, isProcessing, signInWithSocialAccount } = useSocialAccounts();
+
   return (
     <Dialog
       open={open}
@@ -60,10 +72,10 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
             mb: 3,
           }}
         >
-          Sign in with your Email to access Space analytics, audience insights,
-          and AI-powered tools.
+          Sign in with your Twitter to access Space analytics, audience
+          insights, and AI-powered tools.
         </DialogContentText>
-        {loading && <LinearProgress sx={{ mb: 3 }} />}
+        {loading || (isProcessing && <LinearProgress sx={{ mb: 3 }} />)}
         <Box
           sx={{
             display: 'flex',
@@ -98,7 +110,32 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
           /> */}
           {/* </Box> */}
           {/* <Typography>or</Typography> */}
-          <DynamicLogin />
+          {showOnlyTwitter ? (
+            <Button
+              disabled={loading || isProcessing}
+              onClick={() => signInWithSocialAccount(ProviderEnum.Twitter)}
+              variant="contained"
+              sx={{
+                // backgroundColor: '#000000',
+                // "&:hover": {
+                //   backgroundColor: "#272727",
+                // },
+                borderRadius: '4px',
+                padding: '0 32px',
+                height: '40px',
+                // width: '250px',
+                maxWidth: '380px',
+                textTransform: 'none',
+                gap: 1,
+                fontWeight: 500,
+                fontSize: '14px',
+              }}
+            >
+              {loading ? 'Connecting...' : 'Login with X'}
+            </Button>
+          ) : (
+            <DynamicLogin />
+          )}
         </Box>
       </DialogContent>
     </Dialog>

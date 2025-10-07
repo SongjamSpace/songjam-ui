@@ -62,14 +62,11 @@ export interface SoundSlot {
 }
 
 interface SoundBoardProps {
-  onSoundPlay?: (audioUrl: string) => void;
-  onSoundStop?: () => void;
+  onSoundPlay: (slotIndex: number) => void;
   socket?: Socket | null;
-  isConnected?: boolean;
-  isInSpace?: boolean;
+  canPlay: boolean;
   userId?: string;
   onLog?: (message: string, type: 'info' | 'success' | 'error') => void;
-  soundboardFiles?: { name: string; audioUrl: string }[];
   onFilesUpdated?: () => void;
   soundSlots: SoundSlot[];
   setSoundSlots: React.Dispatch<React.SetStateAction<SoundSlot[]>>;
@@ -77,13 +74,10 @@ interface SoundBoardProps {
 
 const SoundBoard: React.FC<SoundBoardProps> = ({
   onSoundPlay,
-  onSoundStop,
   socket,
-  isConnected = false,
-  isInSpace = false,
+  canPlay,
   userId,
   onLog,
-  soundboardFiles = [],
   onFilesUpdated,
   soundSlots,
   setSoundSlots,
@@ -91,11 +85,9 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
   const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const [selectedSlotForUpload, setSelectedSlotForUpload] = useState<
     number | null
@@ -109,86 +101,6 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
     null
   );
 
-  // Populate slots with available files
-  useEffect(() => {
-    const populateSlots = async () => {
-      if (!userId) return;
-
-      try {
-        // Get default slot files
-        const defaultSlotFiles = await loadDefaultSlotFiles();
-
-        // Create a map of slot files (user files + default files)
-        const slotFileMap = new Map<
-          string,
-          { name: string; audioUrl: string; fullName?: string }
-        >();
-
-        // Add user's slot files first (they take priority)
-        soundboardFiles.forEach((file) => {
-          const slotMatch = file.name.match(/^slot_(\d+)_(.+)$/);
-          if (slotMatch) {
-            const slotIndex = slotMatch[1];
-            const originalName = slotMatch[2].replace(/\.[^/.]+$/, ''); // Remove extension
-            slotFileMap.set(slotIndex, {
-              name: originalName,
-              audioUrl: file.audioUrl,
-              fullName: file.name,
-            });
-          }
-        });
-
-        // Fill remaining slots with default files
-        defaultSlotFiles.forEach((file) => {
-          const slotMatch = file.name.match(/^slot_(\d+)_(.+)$/);
-          if (slotMatch && !slotFileMap.has(slotMatch[1])) {
-            const slotIndex = slotMatch[1];
-            const originalName = slotMatch[2].replace(/\.[^/.]+$/, ''); // Remove extension
-            slotFileMap.set(slotIndex, {
-              name: originalName,
-              audioUrl: file.audioUrl,
-            });
-          }
-        });
-
-        // Update slots with available files
-        setSoundSlots((prev) =>
-          prev.map((slot, index) => {
-            const slotFile = slotFileMap.get(index.toString());
-            if (slotFile) {
-              return {
-                ...slot,
-                name: slotFile.name,
-                audioUrl: slotFile.audioUrl,
-                isLoaded: true,
-                fullName: slotFile.fullName || '',
-              };
-            }
-            // If no slot file found, reset to empty
-            return {
-              ...slot,
-              name: 'Empty',
-              audioUrl: '',
-              isLoaded: false,
-              fullName: '',
-            };
-          })
-        );
-      } catch (error) {
-        console.error('Error populating slots:', error);
-      }
-    };
-
-    populateSlots();
-  }, [userId, soundboardFiles]);
-
-  //   // Load sounds when connected and in space
-  //   useEffect(() => {
-  //     if (socket && isConnected && isInSpace) {
-  //       loadSoundboard();
-  //     }
-  //   }, [socket, isConnected, isInSpace]);
-
   // Cleanup local audio on unmount
   useEffect(() => {
     return () => {
@@ -201,146 +113,11 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
     };
   }, []);
 
-  // Handle local audio ended events
-  useEffect(() => {
-    const handleAudioEnded = (slotIndex: number) => {
-      setSoundSlots((prev) =>
-        prev.map((slot, index) =>
-          index === slotIndex ? { ...slot, isPlaying: false } : slot
-        )
-      );
-      onSoundStop?.();
-    };
-
-    // Add ended event listeners to all local audio elements
-    Object.keys(localAudioRefs.current).forEach((slotIndexStr) => {
-      const slotIndex = parseInt(slotIndexStr);
-      const audio = localAudioRefs.current[slotIndex];
-      if (audio) {
-        audio.addEventListener('ended', () => handleAudioEnded(slotIndex));
-      }
-    });
-
-    return () => {
-      Object.keys(localAudioRefs.current).forEach((slotIndexStr) => {
-        const slotIndex = parseInt(slotIndexStr);
-        const audio = localAudioRefs.current[slotIndex];
-        if (audio) {
-          audio.removeEventListener('ended', () => handleAudioEnded(slotIndex));
-        }
-      });
-    };
-  }, [onSoundStop]);
-
-  // Set up WebSocket event listeners
-  useEffect(() => {
-    if (!socket) return;
-
-    const handleSoundboardLoaded = (data: {
-      success: boolean;
-      message?: string;
-    }) => {
-      setIsLoading(false);
-      if (data.success) {
-        setSuccessMessage('Soundboard loaded successfully');
-        // Request current status
-        socket.emit('get-soundboard-status');
-      } else {
-        setError(data.message || 'Failed to load soundboard');
-      }
-    };
-
-    const handleSoundPlayed = (data: {
-      success: boolean;
-      slotIndex: number;
-      message?: string;
-    }) => {
-      if (data.success) {
-        setSoundSlots((prev) =>
-          prev.map((slot, index) =>
-            index === data.slotIndex
-              ? { ...slot, isPlaying: true }
-              : { ...slot, isPlaying: false }
-          )
-        );
-        onSoundPlay?.(soundSlots[data.slotIndex]?.audioUrl || '');
-      } else {
-        setError(
-          data.message || `Failed to play sound at slot ${data.slotIndex + 1}`
-        );
-      }
-    };
-
-    const handleSoundboardStatus = (data: {
-      slots: Array<{
-        index: number;
-        name: string;
-        audioUrl: string;
-        isLoaded: boolean;
-        isLoading: boolean;
-        error?: string;
-      }>;
-    }) => {
-      setSoundSlots((prev) =>
-        prev.map((slot, index) => {
-          const statusSlot = data.slots.find((s) => s.index === index);
-          if (statusSlot) {
-            return {
-              ...slot,
-              name: statusSlot.name,
-              audioUrl: statusSlot.audioUrl,
-              isLoaded: statusSlot.isLoaded,
-              isLoading: statusSlot.isLoading,
-              error: statusSlot.error,
-            };
-          }
-          return slot;
-        })
-      );
-    };
-
-    const handleError = (data: { message: string }) => {
-      setError(data.message);
-      setIsLoading(false);
-    };
-
-    // Add event listeners
-    socket.on('soundboard-loaded', handleSoundboardLoaded);
-    socket.on('sound-played', handleSoundPlayed);
-    socket.on('soundboard-status', handleSoundboardStatus);
-    socket.on('error', handleError);
-
-    // Cleanup
-    return () => {
-      socket.off('soundboard-loaded', handleSoundboardLoaded);
-      socket.off('sound-played', handleSoundPlayed);
-      socket.off('soundboard-status', handleSoundboardStatus);
-      socket.off('error', handleError);
-    };
-  }, [socket, soundSlots, onSoundPlay]);
-
-  const loadSoundboard = () => {
-    if (!socket || !isConnected || !isInSpace) {
-      setError('Not connected to space');
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-    socket.emit('load-soundboard');
-  };
-
-  const handleRefreshSoundboard = () => {
-    loadSoundboard();
-  };
-
   const handleCloseError = () => {
     setError(null);
   };
 
-  const handleCloseSuccess = () => {
-    setSuccessMessage(null);
-  };
+  const handleCloseSuccess = () => {};
 
   //   const loadUserSoundboardConfig = async () => {
   //     if (!userId) return;
@@ -367,20 +144,6 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
   //     }
   //   };
 
-  const loadDefaultSlotFiles = async () => {
-    try {
-      // Get default slot files from Firebase (slot_0, slot_1, etc.)
-      const defaultFiles = await getMusicUploadsByUserId('default');
-      const slotFiles = defaultFiles.filter((file) =>
-        /^slot_\d+/.test(file.name)
-      );
-      return slotFiles;
-    } catch (error) {
-      console.error('Error loading default slot files:', error);
-      return [];
-    }
-  };
-
   const saveSoundboardConfig = async () => {
     if (!userId) return;
     try {
@@ -405,9 +168,9 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
     const file = event.target.files?.[0];
     if (!file || !userId || selectedSlotForUpload === null) return;
 
-    // Check file size (max 50MB for sound effects)
-    if (file.size > 50 * 1024 * 1024) {
-      setError('File size must be less than 50MB');
+    // Check file size (max 500KB for sound effects)
+    if (file.size > 500 * 1024) {
+      setError('File size must be less than 500KB');
       return;
     }
 
@@ -447,7 +210,6 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
       // Save configuration
       await saveSoundboardConfig();
 
-      setSuccessMessage(`Sound uploaded to slot ${selectedSlotForUpload + 1}`);
       onLog?.(`Sound uploaded: ${file.name}`, 'success');
 
       // Trigger parent to refresh files
@@ -479,27 +241,9 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
       return;
     }
     // Play the sound
-    if (isConnected && isInSpace && socket) {
-      // Play via socket
-      socket.emit('play-sound', { index: slotIndex });
-    } else {
-      // Play locally
-      if (!localAudioRefs.current[slotIndex]) {
-        localAudioRefs.current[slotIndex] = new Audio(slot.audioUrl);
-      }
-
-      localAudioRefs.current[slotIndex].play().catch((error) => {
-        console.error('Error playing audio:', error);
-        setError('Failed to play sound');
-      });
+    if (canPlay) {
+      onSoundPlay?.(slotIndex);
     }
-
-    setSoundSlots((prev) =>
-      prev.map((s, index) =>
-        index === slotIndex ? { ...s, isPlaying: true } : s
-      )
-    );
-    onSoundPlay?.(slot.audioUrl);
   };
 
   const handleSlotUpload = (slotIndex: number) => {
@@ -591,9 +335,6 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
       // Save configuration
       await saveSoundboardConfig();
 
-      setSuccessMessage(
-        `Sound "${originalName}" assigned to slot ${slotIndex + 1}`
-      );
       onLog?.(
         `Sound assigned: ${originalName} to slot ${slotIndex + 1}`,
         'success'
@@ -644,6 +385,7 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
         >
           <Button
             onClick={handleLibraryClick}
+            disabled={canPlay}
             startIcon={<QueueMusicRoundedIcon fontSize="small" />}
             size={isMobile ? 'small' : 'medium'}
           >
@@ -766,7 +508,8 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
                     }}
                   >
                     {/* Loading State */}
-                    {slot.isLoading && (
+                    {(slot.isLoading ||
+                      (uploadingFile && selectedSlotForUpload === index)) && (
                       <CircularProgress
                         size={isMobile ? 16 : 20}
                         sx={{
@@ -828,7 +571,13 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
                                 ? handleDeleteSlot(index)
                                 : handleSlotUpload(index)
                             }
-                            disabled={isConnected || isInSpace}
+                            disabled={
+                              !slot.isLoaded &&
+                              (canPlay ||
+                                uploadingFile ||
+                                index !==
+                                  soundSlots.findIndex((s) => !s.isLoaded))
+                            }
                             size={isMobile ? 'small' : 'small'}
                             sx={{
                               color: slot.isLoaded
@@ -858,7 +607,12 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
                       {/* Play/Stop Button */}
                       <IconButton
                         onClick={() => handlePlaySound(index)}
-                        disabled={!slot.isLoaded || slot.isLoading}
+                        disabled={
+                          !slot.isLoaded ||
+                          slot.isLoading ||
+                          !canPlay ||
+                          (uploadingFile && selectedSlotForUpload === index)
+                        }
                         sx={{
                           color: slot.isPlaying
                             ? '#4caf50'
@@ -921,10 +675,8 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
           }}
         >
           {userId
-            ? 'Click to play • Upload custom sounds • Works locally or in spaces'
-            : isConnected && isInSpace
-            ? 'Click to play • Use for live reactions'
-            : 'Connect to a space to use the soundboard'}
+            ? 'Click to play • Upload custom sounds'
+            : 'Click to play • Use for live reactions'}
         </Typography>
       </Paper>
 
@@ -954,7 +706,7 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
         open={!!error}
         autoHideDuration={6000}
         onClose={handleCloseError}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
         <Alert
           onClose={handleCloseError}
@@ -962,22 +714,6 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
           sx={{ width: '100%' }}
         >
           {error}
-        </Alert>
-      </Snackbar>
-
-      {/* Success Snackbar */}
-      <Snackbar
-        open={!!successMessage}
-        autoHideDuration={3000}
-        onClose={handleCloseSuccess}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert
-          onClose={handleCloseSuccess}
-          severity="success"
-          sx={{ width: '100%' }}
-        >
-          {successMessage}
         </Alert>
       </Snackbar>
 
@@ -999,6 +735,11 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
         availableSlots={soundSlots.map((slot, index) => ({
           index,
           name: slot.name,
+          isLoaded: slot.isLoaded,
+        }))}
+        soundSlots={soundSlots.map((slot) => ({
+          name: slot.name,
+          audioUrl: slot.audioUrl,
           isLoaded: slot.isLoaded,
         }))}
       />

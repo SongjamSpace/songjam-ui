@@ -14,7 +14,13 @@ const DJ_LURKY_SPACES_COL_NAME = 'djLurkySpaces';
 
 export type DjLurkySpace = {
   spaceId: string;
-  status: 'REQUESTED' | 'JOINED' | 'FAILED' | 'ENDED';
+  status:
+    | 'STARTING'
+    | 'SPEAKER_REQUESTED'
+    | 'LIVE'
+    | 'SPEAKER_REJECTED'
+    | 'FAILED'
+    | 'LEFT';
   createdAt: number;
   title?: string;
   startedAt?: number;
@@ -53,12 +59,16 @@ export enum RequestType {
   REACT_EMOJI = 'REACT_EMOJI',
   SPEAK_TEXT = 'SPEAK_TEXT',
   LEAVE_SPACE = 'LEAVE_SPACE',
+  VOLUME_CHANGE = 'VOLUME_CHANGE',
 }
 
 type RequstData = {
   audioFullPath?: string;
   emoji?: string;
   mp3AudioPaths?: string[];
+  mp3AudioUrls?: string[];
+  volume?: number;
+  slotIndex?: number;
 };
 
 type LurkySpaceDjRequest = {
@@ -74,7 +84,8 @@ const REQUESTS_SUB_COLLECTION = 'requests';
 export const sendDjRequest = async (
   spaceId: string,
   requestType: RequestType,
-  data: RequstData
+  data: RequstData,
+  onComplete?: () => void
 ) => {
   const docRef = collection(
     db,
@@ -82,13 +93,19 @@ export const sendDjRequest = async (
     spaceId,
     REQUESTS_SUB_COLLECTION
   );
-  await addDoc(docRef, {
+  const snapshot = await addDoc(docRef, {
     requestType,
     data,
     createdAt: Date.now(),
     isComplete: false,
     spaceId,
   } as LurkySpaceDjRequest);
+  if (onComplete) {
+    onSnapshot(snapshot, (doc) => {
+      const data = doc.data() as LurkySpaceDjRequest;
+      if (data.isComplete) onComplete();
+    });
+  }
 };
 
 export const updateDjDoc = async (

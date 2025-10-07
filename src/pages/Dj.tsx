@@ -30,6 +30,7 @@ import {
   Grid,
   Dialog,
   Alert,
+  Chip,
 } from '@mui/material';
 import {
   PlayArrow,
@@ -103,7 +104,6 @@ const Dj = () => {
   const { user, loading: authLoading } = useAuthContext();
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [spaceId, setSpaceId] = useState('');
-  const [musicStarted, setMusicStarted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [logs, setLogs] = useState<
     Array<{
@@ -115,13 +115,6 @@ const Dj = () => {
   const [audioUploads, setAudioUploads] = useState<
     {
       name: string;
-      audioFullPath: string;
-    }[]
-  >([]);
-  const [soundboardFiles, setSoundboardFiles] = useState<
-    {
-      name: string;
-      audioUrl: string;
       audioFullPath: string;
     }[]
   >([]);
@@ -145,7 +138,7 @@ const Dj = () => {
   // Check if current user is an admin
   const isCurrentUserAdmin = () => {
     if (!user || !spaceDoc?.admins) return false;
-    return spaceDoc.admins.some((admin) => admin.userId === user.uid);
+    return spaceDoc.admins.some((admin) => admin.userId === user.accountId);
   };
 
   // Show login dialog if not authenticated
@@ -181,14 +174,22 @@ const Dj = () => {
 
     setAudioUploads(musicFiles);
     setAudioFullPath(musicFiles[0]?.audioFullPath);
-    setSoundboardFiles(
-      slotFiles.map((file) => ({
-        name: file.name,
-        audioFullPath: file.audioFullPath,
-        audioUrl: `https://firebasestorage.googleapis.com/v0/b/lustrous-stack-453106-f6.firebasestorage.app/o/${encodeURIComponent(
-          file.audioFullPath
-        )}?alt=media`,
-      }))
+    setSoundSlots((prevSlots) =>
+      prevSlots.map((slot, index) => {
+        const slotFile = slotFiles[index];
+        if (slotFile) {
+          return {
+            ...slot,
+            name: slotFile.name,
+            fullName: slotFile.name,
+            audioUrl: `https://firebasestorage.googleapis.com/v0/b/lustrous-stack-453106-f6.firebasestorage.app/o/${encodeURIComponent(
+              slotFile.audioFullPath
+            )}?alt=media`,
+            audioFullPath: slotFile.audioFullPath,
+          } as SoundSlot & { audioFullPath: string };
+        }
+        return slot;
+      })
     );
     setIsLibraryLoading(false);
   };
@@ -207,9 +208,16 @@ const Dj = () => {
     setIsLoading(true);
     addLog('Requesting to play music...', 'info');
 
-    await sendDjRequest(spaceId, RequestType.PLAY_MUSIC, {
-      audioFullPath,
-    });
+    await sendDjRequest(
+      spaceId,
+      RequestType.PLAY_MUSIC,
+      {
+        audioFullPath,
+      },
+      () => {
+        console.log('Play music request completed');
+      }
+    );
     setIsLoading(false);
   };
 
@@ -270,6 +278,10 @@ const Dj = () => {
 
   const handleVolumeChange = (event: Event, newValue: number | number[]) => {
     // TODO:
+    setVolume(newValue as number);
+    sendDjRequest(spaceId, RequestType.VOLUME_CHANGE, {
+      volume: newValue as number,
+    });
   };
 
   const handleDeleteUpload = async (fileName: string) => {
@@ -434,7 +446,7 @@ const Dj = () => {
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: { xs: 1, sm: 2 },
+                  gap: { xs: 1 },
                   flexDirection: { xs: 'row' },
                   textAlign: { xs: 'center', sm: 'left' },
                 }}
@@ -445,41 +457,28 @@ const Dj = () => {
                     // animation: `${pulse} 2s infinite ease-in-out`,
                   }}
                 >
-                  <MusicNote
-                    sx={{
-                      fontSize: { xs: 32, sm: 36, md: 40 },
-                      color: '#60a5fa',
-                      filter: 'drop-shadow(0 0 10px rgba(96, 165, 250, 0.5))',
+                  <img
+                    src="/songjam-latest.png"
+                    style={{
+                      width: 32,
+                      height: 32,
                     }}
                   />
-                  {musicStarted && (
-                    <GraphicEq
-                      sx={{
-                        position: 'absolute',
-                        top: -10,
-                        right: -10,
-                        fontSize: { xs: 16, sm: 18, md: 20 },
-                        color: '#4caf50',
-                        animation: `${wave} 1s infinite ease-in-out`,
-                        filter: 'drop-shadow(0 0 5px rgba(76, 175, 80, 0.5))',
-                      }}
-                    />
-                  )}
                 </Box>
                 <Box>
                   <Typography
                     variant={isMobile ? 'h4' : 'h3'}
                     sx={{
-                      background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
+                      // background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
+                      // WebkitBackgroundClip: 'text',
+                      // WebkitTextFillColor: 'transparent',
                       fontWeight: 'bold',
-                      letterSpacing: '0.5px',
+                      // letterSpacing: '0.5px',
                       textShadow: '0 0 10px rgba(96, 165, 250, 0.3)',
-                      fontSize: { xs: '1.5rem', sm: '2rem', md: '3rem' },
+                      // fontSize: { xs: '1.5rem', sm: '2rem', md: '3rem' },
                     }}
                   >
-                    Songjam DJ
+                    SONGJAM
                   </Typography>
                 </Box>
               </Box>
@@ -511,7 +510,6 @@ const Dj = () => {
                         color: '#60a5fa',
                         fontWeight: 'bold',
                         fontSize: '0.9rem',
-                        textShadow: '0 0 5px rgba(96, 165, 250, 0.5)',
                       }}
                     >
                       @{user.username}
@@ -540,7 +538,7 @@ const Dj = () => {
               </Stack>
             </Box>
 
-            {!!spaceDoc && (
+            {spaceDoc ? (
               <Stack
                 sx={{
                   mb: { xs: 3, sm: 4 },
@@ -553,21 +551,50 @@ const Dj = () => {
               >
                 <Stack direction={'row'} alignItems={'center'} gap={1}>
                   <FiberManualRecord sx={{ fontSize: 12, color: '#4caf50' }} />
-                  {spaceDoc?.title && (
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        color: '#60a5fa',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1,
-                        textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
-                        fontSize: { xs: '1rem', sm: '1.25rem' },
-                      }}
-                    >
-                      {spaceDoc.title}
-                    </Typography>
-                  )}
+
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      color: '#60a5fa',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
+                      fontSize: { xs: '1rem', sm: '1.25rem' },
+                    }}
+                  >
+                    {spaceDoc.title || '--No Space Title--'}
+                  </Typography>
+
+                  <Chip
+                    label={spaceDoc?.status}
+                    size="medium"
+                    sx={{
+                      ml: 'auto',
+                      bgcolor:
+                        spaceDoc?.status === 'LIVE'
+                          ? 'rgba(76, 175, 80, 0.2)'
+                          : spaceDoc?.status === 'STARTING' ||
+                            spaceDoc?.status === 'SPEAKER_REQUESTED'
+                          ? 'rgba(255, 152, 0, 0.2)'
+                          : spaceDoc?.status === 'LEFT' ||
+                            spaceDoc?.status === 'FAILED'
+                          ? 'rgba(244, 67, 54, 0.2)'
+                          : 'rgba(184, 148, 150, 0.2)',
+                      color:
+                        spaceDoc?.status === 'LIVE'
+                          ? '#4caf50'
+                          : spaceDoc?.status === 'STARTING' ||
+                            spaceDoc?.status === 'SPEAKER_REQUESTED'
+                          ? '#ff9800'
+                          : spaceDoc?.status === 'LEFT' ||
+                            spaceDoc?.status === 'FAILED'
+                          ? '#f44336'
+                          : '#94a3b8',
+                      border: '1px solid',
+                      borderColor: 'currentColor',
+                    }}
+                  />
                 </Stack>
 
                 <Box sx={{ mt: 2 }}>
@@ -584,137 +611,146 @@ const Dj = () => {
                   >
                     Space Hosts & Co-Hosts
                   </Typography>
-                  <List
+                  <Box
                     sx={{
-                      '& .MuiListItem-root': {
-                        px: 0,
-                        py: 0.75,
-                        mb: 0.5,
+                      display: 'flex',
+                      gap: 2,
+                      overflowX: 'auto',
+                      pb: 1,
+                      '&::-webkit-scrollbar': {
+                        height: 8,
+                      },
+                      '&::-webkit-scrollbar-track': {
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        borderRadius: 4,
+                      },
+                      '&::-webkit-scrollbar-thumb': {
+                        background: 'rgba(255, 255, 255, 0.2)',
+                        borderRadius: 4,
+                        '&:hover': {
+                          background: 'rgba(255, 255, 255, 0.3)',
+                        },
                       },
                     }}
                   >
                     {spaceDoc?.admins?.map((admin, index) => {
                       const isCurrentUser = user?.uid === admin.userId;
                       return (
-                        <ListItem
+                        <Box
                           key={admin.userId}
                           sx={{
-                            p: 0,
-                            mb: 0.5,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            py: 1.5,
+                            px: 4,
+                            borderRadius: 2,
+                            background: isCurrentUser
+                              ? 'linear-gradient(135deg, rgba(96, 165, 250, 0.15) 0%, rgba(96, 165, 250, 0.05) 100%)'
+                              : 'rgba(255, 255, 255, 0.03)',
+                            border: isCurrentUser
+                              ? '1px solid rgba(96, 165, 250, 0.3)'
+                              : '1px solid rgba(255, 255, 255, 0.08)',
+                            backdropFilter: 'blur(10px)',
+                            transition: 'all 0.2s ease-in-out',
+                            minWidth: 'fit-content',
+                            flexShrink: 0,
+                            '&:hover': {
+                              background: isCurrentUser
+                                ? 'linear-gradient(135deg, rgba(96, 165, 250, 0.2) 0%, rgba(96, 165, 250, 0.1) 100%)'
+                                : 'rgba(255, 255, 255, 0.06)',
+                              transform: 'translateY(-1px)',
+                              boxShadow: isCurrentUser
+                                ? '0 4px 12px rgba(96, 165, 250, 0.2)'
+                                : '0 4px 12px rgba(0, 0, 0, 0.1)',
+                            },
                           }}
                         >
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 1.5,
-                              py: 1.5,
-                              px: 4,
-                              borderRadius: 2,
-                              background: isCurrentUser
-                                ? 'linear-gradient(135deg, rgba(96, 165, 250, 0.15) 0%, rgba(96, 165, 250, 0.05) 100%)'
-                                : 'rgba(255, 255, 255, 0.03)',
-                              border: isCurrentUser
-                                ? '1px solid rgba(96, 165, 250, 0.3)'
-                                : '1px solid rgba(255, 255, 255, 0.08)',
-                              backdropFilter: 'blur(10px)',
-                              transition: 'all 0.2s ease-in-out',
-                              '&:hover': {
-                                background: isCurrentUser
-                                  ? 'linear-gradient(135deg, rgba(96, 165, 250, 0.2) 0%, rgba(96, 165, 250, 0.1) 100%)'
-                                  : 'rgba(255, 255, 255, 0.06)',
-                                transform: 'translateY(-1px)',
-                                boxShadow: isCurrentUser
-                                  ? '0 4px 12px rgba(96, 165, 250, 0.2)'
-                                  : '0 4px 12px rgba(0, 0, 0, 0.1)',
-                              },
-                            }}
-                          >
-                            {isCurrentUser && (
-                              <Box
-                                sx={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  width: 24,
-                                  height: 24,
-                                  borderRadius: '50%',
-                                  background:
-                                    'linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)',
-                                  boxShadow:
-                                    '0 2px 8px rgba(96, 165, 250, 0.4)',
-                                }}
-                              >
-                                <Typography
-                                  sx={{
-                                    color: 'white',
-                                    fontSize: '0.6rem',
-                                    fontWeight: 'bold',
-                                    lineHeight: 1,
-                                  }}
-                                >
-                                  YOU
-                                </Typography>
-                              </Box>
-                            )}
-                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                          {isCurrentUser && (
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: 24,
+                                height: 24,
+                                borderRadius: '50%',
+                                background:
+                                  'linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)',
+                                boxShadow: '0 2px 8px rgba(96, 165, 250, 0.4)',
+                              }}
+                            >
                               <Typography
-                                variant="body1"
                                 sx={{
-                                  color: isCurrentUser ? '#60a5fa' : 'white',
-                                  fontWeight: '600',
-                                  fontSize: '0.95rem',
-                                  mb: 0.25,
-                                  textShadow: isCurrentUser
-                                    ? '0 0 8px rgba(96, 165, 250, 0.3)'
-                                    : 'none',
+                                  color: 'white',
+                                  fontSize: '0.6rem',
+                                  fontWeight: 'bold',
+                                  lineHeight: 1,
                                 }}
                               >
-                                {admin.displayName}
-                              </Typography>
-                              <Typography
-                                variant="body2"
-                                sx={{
-                                  color: '#94a3b8',
-                                  fontSize: '0.8rem',
-                                  fontWeight: '400',
-                                }}
-                              >
-                                @{admin.twitterScreenName}
+                                YOU
                               </Typography>
                             </Box>
-                            {isCurrentUser && (
-                              <Box
+                          )}
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography
+                              variant="body1"
+                              sx={{
+                                color: isCurrentUser ? '#60a5fa' : 'white',
+                                fontWeight: '600',
+                                fontSize: '0.95rem',
+                                mb: 0.25,
+                                textShadow: isCurrentUser
+                                  ? '0 0 8px rgba(96, 165, 250, 0.3)'
+                                  : 'none',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {admin.displayName}
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                color: '#94a3b8',
+                                fontSize: '0.8rem',
+                                fontWeight: '400',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              @{admin.twitterScreenName}
+                            </Typography>
+                          </Box>
+                          {isCurrentUser && (
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 0.5,
+                                px: 1,
+                                py: 0.5,
+                                borderRadius: 1,
+                                background: 'rgba(96, 165, 250, 0.1)',
+                                border: '1px solid rgba(96, 165, 250, 0.2)',
+                              }}
+                            >
+                              <FiberManualRecord
+                                sx={{ fontSize: 8, color: '#60a5fa' }}
+                              />
+                              <Typography
                                 sx={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: 0.5,
-                                  px: 1,
-                                  py: 0.5,
-                                  borderRadius: 1,
-                                  background: 'rgba(96, 165, 250, 0.1)',
-                                  border: '1px solid rgba(96, 165, 250, 0.2)',
+                                  color: '#60a5fa',
+                                  fontSize: '0.7rem',
+                                  fontWeight: '600',
                                 }}
                               >
-                                <FiberManualRecord
-                                  sx={{ fontSize: 8, color: '#60a5fa' }}
-                                />
-                                <Typography
-                                  sx={{
-                                    color: '#60a5fa',
-                                    fontSize: '0.7rem',
-                                    fontWeight: '600',
-                                  }}
-                                >
-                                  Host
-                                </Typography>
-                              </Box>
-                            )}
-                          </Box>
-                        </ListItem>
+                                Host
+                              </Typography>
+                            </Box>
+                          )}
+                        </Box>
                       );
                     })}
-                  </List>
+                  </Box>
                 </Box>
 
                 {/* Admin Restriction Warning */}
@@ -731,60 +767,30 @@ const Dj = () => {
                   </Alert>
                 )}
               </Stack>
+            ) : (
+              <Alert
+                severity="error"
+                sx={{
+                  mb: 4,
+                  // background: 'rgba(96, 165, 250, 0.1)',
+                  // border: '1px solid rgba(96, 165, 250, 0.3)',
+                  // color: '#60a5fa',
+                  // '& .MuiAlert-icon': {
+                  //   color: '#60a5fa',
+                  // },
+                }}
+              >
+                <Typography variant="body2">
+                  The DJ hasn't been requested to join this space yet.
+                </Typography>
+              </Alert>
             )}
 
             {/* Main Content Grid */}
             <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
-              {/* Left Column */}
+              {/* Top Row: Music Library and Play/Volume Controls */}
+              {/* Left Column - Music Library */}
               <Grid item xs={12} md={6}>
-                {/* Sound Board */}
-                <Box sx={{ mb: { xs: 3, sm: 4 } }}>
-                  <SoundBoard
-                    onSoundPlay={(audioUrl) => {
-                      addLog(`Playing sound effect`, 'info');
-                    }}
-                    onSoundStop={() => {
-                      addLog(`Stopped sound effect`, 'info');
-                    }}
-                    isConnected={isCurrentUserAdmin()}
-                    isInSpace={isCurrentUserAdmin()}
-                    userId={user?.uid}
-                    onLog={addLog}
-                    soundboardFiles={soundboardFiles}
-                    onFilesUpdated={fetchUserUploads}
-                    soundSlots={soundSlots}
-                    setSoundSlots={setSoundSlots}
-                  />
-                  <Box display={'flex'} justifyContent={'center'}>
-                    <LoadingButton
-                      disabled={
-                        spaceDoc?.soundboardStatus === 'LOADED' || isLoading
-                      }
-                      loading={spaceDoc?.soundboardStatus === 'LOADING'}
-                      sx={{ mt: 2 }}
-                      variant="contained"
-                      onClick={async () => {
-                        setIsLoading(true);
-                        await sendDjRequest(
-                          spaceId,
-                          RequestType.LOAD_SOUNDBOARD,
-                          {
-                            mp3AudioPaths: soundboardFiles.map(
-                              (file) => file.audioFullPath
-                            ),
-                          }
-                        );
-                        setIsLoading(false);
-                      }}
-                    >
-                      {spaceDoc?.soundboardStatus === 'LOADED'
-                        ? 'Soundboard Loaded'
-                        : 'Submit Soundboard'}
-                    </LoadingButton>
-                  </Box>
-                </Box>
-
-                {/* Music Uploads */}
                 <MusicLibrary
                   audioUploads={audioUploads}
                   selectedAudioFullPath={audioFullPath}
@@ -796,32 +802,76 @@ const Dj = () => {
                 />
               </Grid>
 
-              {/* Right Column */}
+              {/* Right Column - Play Music and Volume Controls */}
               <Grid item xs={12} md={6}>
+                {/* Title */}
+                <Typography
+                  variant="h6"
+                  sx={{
+                    mb: 2,
+                    color: '#60a5fa',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
+                    fontSize: { xs: '1rem', sm: '1.25rem' },
+                  }}
+                >
+                  DJ Controls
+                </Typography>
+
                 {/* Control Buttons */}
-                <Box sx={{ mb: { xs: 3, sm: 4 } }}>
-                  {/* Connection Warning */}
-                  {/* {wsStatus !== 'connected' && !isInSpace && (
-                    <Alert
-                      severity="warning"
-                      sx={{
-                        mb: 2,
-                        background: 'rgba(255, 193, 7, 0.1)',
-                        border: '1px solid rgba(255, 193, 7, 0.3)',
-                        color: '#ffc107',
-                      }}
-                    >
-                      Join a space to use the soundboard
-                    </Alert>
-                  )} */}
+                <Box
+                  sx={{
+                    mb: { xs: 3, sm: 4 },
+                    display: 'flex',
+                    gap: 2,
+                  }}
+                >
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    disabled={
+                      !isCurrentUserAdmin() ||
+                      !spaceDoc ||
+                      spaceDoc?.playStatus !== 'PLAYING'
+                    }
+                    size={isMobile ? 'large' : 'large'}
+                    sx={{
+                      height: { xs: 48, sm: 56 },
+                      transition: 'all 0.2s',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      '&::after': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        transform: 'translateX(-100%)',
+                        transition: 'transform 0.5s',
+                      },
+                      '&:hover::after': {
+                        transform: 'translateX(100%)',
+                      },
+                    }}
+                    onClick={async () => {
+                      setIsLoading(true);
+                      await sendDjRequest(spaceId, RequestType.STOP_MUSIC, {});
+                      setIsLoading(false);
+                    }}
+                  >
+                    Stop Music <Stop />
+                  </Button>
                   <Button
                     variant="contained"
                     fullWidth
                     onClick={handlePlayMusic}
                     disabled={
-                      !audioFullPath
-                      // ||
-                      // !isCurrentUserAdmin()
+                      !audioFullPath ||
+                      !isCurrentUserAdmin() ||
+                      spaceDoc?.status !== 'LIVE'
                     }
                     size={isMobile ? 'large' : 'large'}
                     sx={{
@@ -854,24 +904,12 @@ const Dj = () => {
                   >
                     {isLoading ? (
                       <CircularProgress size={24} color="inherit" />
-                    ) : musicStarted ? (
-                      <Stop />
                     ) : (
                       <>
                         Play Music <PlayArrow />
                       </>
                     )}
                   </Button>
-                </Box>
-
-                {/* Emoji Reactions */}
-                <Box sx={{ mb: { xs: 3, sm: 4 } }}>
-                  <EmojiReactions
-                    onEmojiReact={handleEmojiReact}
-                    currentEmoji={currentEmoji}
-                    isConnected={isCurrentUserAdmin()}
-                    isInSpace={isCurrentUserAdmin()}
-                  />
                 </Box>
 
                 {/* Volume Slider */}
@@ -920,22 +958,59 @@ const Dj = () => {
                       disabled={!isCurrentUserAdmin()}
                     />
                   </Paper>
+                </Box>
+              </Grid>
 
-                  {/* <Tooltip title={isMuted ? 'Unmute' : 'Mute'}>
-                    <IconButton
-                      onClick={() => {
-                        handleSwitchMute(!isMuted);
-                      }}
-                      sx={{
-                        color: isMuted ? '#f44336' : '#60a5fa',
-                        '&:hover': { transform: 'scale(1.1)' },
-                        transition: 'transform 0.2s',
-                        filter: 'drop-shadow(0 0 5px rgba(96, 165, 250, 0.5))',
+              {/* Bottom Row: Sound Board - Centered with max width */}
+              <Grid item xs={12}>
+                <Box
+                  sx={{
+                    mb: { xs: 3, sm: 4 },
+                    maxWidth: { xs: '100%', md: '600px' },
+                    mx: 'auto',
+                  }}
+                >
+                  <SoundBoard
+                    onSoundPlay={(slotIndex) => {
+                      addLog(`Playing sound effect`, 'info');
+                      sendDjRequest(spaceId, RequestType.PLAY_SOUND, {
+                        slotIndex: slotIndex,
+                      });
+                    }}
+                    canPlay={spaceDoc?.soundboardStatus === 'LOADED'}
+                    userId={user?.uid}
+                    onLog={addLog}
+                    onFilesUpdated={fetchUserUploads}
+                    soundSlots={soundSlots}
+                    setSoundSlots={setSoundSlots}
+                  />
+                  <Box display={'flex'} justifyContent={'center'}>
+                    <LoadingButton
+                      disabled={
+                        spaceDoc?.soundboardStatus === 'LOADED' ||
+                        isLoading ||
+                        !isCurrentUserAdmin()
+                      }
+                      loading={spaceDoc?.soundboardStatus === 'LOADING'}
+                      sx={{ mt: 2 }}
+                      variant="contained"
+                      onClick={async () => {
+                        await sendDjRequest(
+                          spaceId,
+                          RequestType.LOAD_SOUNDBOARD,
+                          {
+                            mp3AudioUrls: soundSlots
+                              .filter((slot) => slot.audioUrl)
+                              .map((slot) => slot.audioUrl),
+                          }
+                        );
                       }}
                     >
-                      {isMuted ? <VolumeOff /> : <VolumeUp />}
-                    </IconButton>
-                  </Tooltip> */}
+                      {spaceDoc?.soundboardStatus === 'LOADED'
+                        ? 'Soundboard Loaded'
+                        : 'Submit Soundboard'}
+                    </LoadingButton>
+                  </Box>
                 </Box>
               </Grid>
             </Grid>

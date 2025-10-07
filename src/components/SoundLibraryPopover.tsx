@@ -7,20 +7,16 @@ import {
   ListItem,
   ListItemButton,
   ListItemText,
-  ListItemIcon,
   CircularProgress,
-  Chip,
-  Divider,
   IconButton,
   Tooltip,
-  Alert,
+  Checkbox,
+  Select,
+  MenuItem,
+  FormControl,
+  Chip,
 } from '@mui/material';
-import {
-  PlayArrow,
-  MusicNote,
-  CheckCircle,
-  VolumeUp,
-} from '@mui/icons-material';
+import { PlayArrow, MusicNote } from '@mui/icons-material';
 import {
   getDefaultSoundFiles,
   getMusicUploadsByUserId,
@@ -35,6 +31,11 @@ interface SoundLibraryPopoverProps {
     slotIndex: number
   ) => void;
   availableSlots: Array<{ index: number; name: string; isLoaded: boolean }>;
+  soundSlots: Array<{
+    name: string;
+    audioUrl: string;
+    isLoaded: boolean;
+  }>;
 }
 
 interface DefaultSound {
@@ -49,13 +50,24 @@ const SoundLibraryPopover: React.FC<SoundLibraryPopoverProps> = ({
   onClose,
   onSelectSound,
   availableSlots,
+  soundSlots,
 }) => {
   const [defaultSounds, setDefaultSounds] = useState<DefaultSound[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedSound, setSelectedSound] = useState<DefaultSound | null>(null);
   const [previewAudio, setPreviewAudio] = useState<HTMLAudioElement | null>(
     null
   );
+
+  // Derive selectedSounds from soundSlots
+  const selectedSounds = React.useMemo(() => {
+    const map = new Map<string, number>();
+    soundSlots.forEach((slot, index) => {
+      if (slot.isLoaded && slot.audioUrl && slot.name !== 'Empty') {
+        map.set(slot.name, index);
+      }
+    });
+    return map;
+  }, [soundSlots]);
 
   // Fetch default sounds when popover opens
   useEffect(() => {
@@ -123,16 +135,34 @@ const SoundLibraryPopover: React.FC<SoundLibraryPopoverProps> = ({
     }
   };
 
-  const handleSoundSelect = (sound: DefaultSound) => {
-    setSelectedSound(sound);
+  const handleCheckboxChange = (sound: DefaultSound, checked: boolean) => {
+    if (checked) {
+      // Find next available slot
+      const nextSlot = getNextAvailableSlot();
+      if (nextSlot !== null) {
+        onSelectSound(sound, nextSlot);
+      }
+    } else {
+      // To uncheck, we need to clear that slot by sending an empty sound
+      const slotIndex = selectedSounds.get(sound.name);
+      if (slotIndex !== undefined) {
+        onSelectSound({ name: 'Empty', audioUrl: '' }, slotIndex);
+      }
+    }
   };
 
-  const handleSlotSelect = (slotIndex: number) => {
-    if (selectedSound) {
-      onSelectSound(selectedSound, slotIndex);
-      //   onClose();
-      setSelectedSound(null);
+  const handleSlotChange = (sound: DefaultSound, slotIndex: number) => {
+    onSelectSound(sound, slotIndex);
+  };
+
+  const getNextAvailableSlot = (): number | null => {
+    const usedSlots = new Set(selectedSounds.values());
+    for (let i = 0; i < availableSlots.length; i++) {
+      if (!usedSlots.has(i)) {
+        return i;
+      }
     }
+    return availableSlots.length > 0 ? 0 : null;
   };
 
   const handlePreviewSound = (audioUrl: string) => {
@@ -157,7 +187,6 @@ const SoundLibraryPopover: React.FC<SoundLibraryPopoverProps> = ({
       previewAudio.src = '';
       setPreviewAudio(null);
     }
-    setSelectedSound(null);
     onClose();
   };
 
@@ -220,50 +249,6 @@ const SoundLibraryPopover: React.FC<SoundLibraryPopoverProps> = ({
           </Typography>
         ) : (
           <>
-            {/* Available Slots */}
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="subtitle2" sx={{ color: '#60a5fa', mb: 1 }}>
-                Available Slots:
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {availableSlots.map((slot) => (
-                  <Chip
-                    key={slot.index}
-                    label={`Slot ${slot.index + 1}: ${slot.name}`}
-                    variant={slot.isLoaded ? 'filled' : 'outlined'}
-                    color={slot.isLoaded ? 'primary' : 'default'}
-                    size="small"
-                    onClick={() =>
-                      selectedSound && handleSlotSelect(slot.index)
-                    }
-                    disabled={!selectedSound}
-                    sx={{
-                      cursor: selectedSound ? 'pointer' : 'default',
-                      '&:hover': selectedSound
-                        ? {
-                            backgroundColor: 'rgba(96, 165, 250, 0.1)',
-                          }
-                        : {},
-                    }}
-                  />
-                ))}
-              </Box>
-            </Box>
-
-            <Divider sx={{ my: 2, borderColor: 'rgba(96, 165, 250, 0.2)' }} />
-
-            {/* Sound Selection */}
-            {selectedSound && (
-              <Alert severity="warning" sx={{ width: '100%', mb: 2, p: 2 }}>
-                Click a slot above to assign this sound
-              </Alert>
-            )}
-
-            {/* Sound Categories */}
-            <Typography variant="subtitle2" sx={{ color: '#60a5fa', mb: 1 }}>
-              Select a Sound:
-            </Typography>
-
             {Object.entries(groupedSounds).map(([category, sounds]) => (
               <Box key={category} sx={{ mb: 2 }}>
                 <Typography
@@ -273,67 +258,87 @@ const SoundLibraryPopover: React.FC<SoundLibraryPopoverProps> = ({
                   {category}
                 </Typography>
                 <List dense sx={{ p: 0 }}>
-                  {sounds.map((sound, index) => (
-                    <ListItem
-                      key={index}
-                      disablePadding
-                      sx={{
-                        mb: 0.5,
-                        borderRadius: 1,
-                        bgcolor:
-                          selectedSound?.name === sound.name
-                            ? 'rgba(96, 165, 250, 0.2)'
-                            : 'transparent',
-                        border:
-                          selectedSound?.name === sound.name
-                            ? '1px solid rgba(96, 165, 250, 0.5)'
-                            : '1px solid transparent',
-                      }}
-                    >
-                      <ListItemButton
-                        onClick={() => handleSoundSelect(sound)}
+                  {sounds.map((sound, index) => {
+                    const isSelected = selectedSounds.has(sound.name);
+                    const selectedSlot = selectedSounds.get(sound.name) ?? 0;
+
+                    return (
+                      <ListItem
+                        key={index}
+                        disablePadding
                         sx={{
+                          mb: 0.5,
                           borderRadius: 1,
+                          bgcolor: isSelected
+                            ? 'rgba(96, 165, 250, 0.1)'
+                            : 'transparent',
+                          border: '1px solid transparent',
                           '&:hover': {
-                            bgcolor: 'rgba(96, 165, 250, 0.1)',
+                            bgcolor: 'rgba(96, 165, 250, 0.05)',
                           },
                         }}
                       >
-                        <ListItemIcon sx={{ minWidth: 36 }}>
-                          {selectedSound?.name === sound.name ? (
-                            <CheckCircle sx={{ color: '#60a5fa' }} />
-                          ) : (
-                            <MusicNote sx={{ color: 'text.secondary' }} />
-                          )}
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={sound.name}
-                          primaryTypographyProps={{
-                            sx: {
-                              color:
-                                selectedSound?.name === sound.name
-                                  ? '#60a5fa'
-                                  : 'text.primary',
-                              fontWeight:
-                                selectedSound?.name === sound.name ? 600 : 400,
-                            },
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            width: '100%',
+                            px: 1,
+                            py: 0.5,
                           }}
-                        />
-                        <Tooltip title="Preview">
-                          <IconButton
-                            size="small"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handlePreviewSound(sound.audioUrl);
+                        >
+                          {/* Checkbox */}
+                          <Checkbox
+                            checked={isSelected}
+                            onChange={(e) =>
+                              handleCheckboxChange(sound, e.target.checked)
+                            }
+                            sx={{
+                              color: 'text.secondary',
+                              '&.Mui-checked': {
+                                color: '#60a5fa',
+                              },
                             }}
-                            sx={{ color: 'text.secondary' }}
-                          >
-                            <PlayArrow />
-                          </IconButton>
-                        </Tooltip>
-                      </ListItemButton>
-                    </ListItem>
-                  ))}
+                          />
+
+                          {/* Sound Name */}
+                          <ListItemText
+                            primary={sound.name}
+                            primaryTypographyProps={{
+                              sx: {
+                                color: isSelected ? '#60a5fa' : 'text.primary',
+                                fontWeight: isSelected ? 600 : 400,
+                                fontSize: '0.875rem',
+                              },
+                            }}
+                            sx={{ flex: 1, mr: 1 }}
+                          />
+
+                          {/* Slot Dropdown */}
+                          {isSelected && (
+                            <Chip
+                              label={`Slot: ${selectedSlot}`}
+                              variant="outlined"
+                            />
+                          )}
+
+                          {/* Preview Button */}
+                          <Tooltip title="Preview">
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handlePreviewSound(sound.audioUrl);
+                              }}
+                              sx={{ color: 'text.secondary' }}
+                            >
+                              <PlayArrow />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      </ListItem>
+                    );
+                  })}
                 </List>
               </Box>
             ))}

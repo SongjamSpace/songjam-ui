@@ -929,7 +929,7 @@ const MusicAgent = () => {
 
                 {/* Sound Board */}
                 <Box sx={{ mb: { xs: 3, sm: 4 } }}>
-                  <SoundBoard
+                  {/* <SoundBoard
                     onSoundPlay={(audioUrl) => {
                       addLog(`Playing sound effect`, 'info');
                     }}
@@ -945,7 +945,7 @@ const MusicAgent = () => {
                     onFilesUpdated={fetchUserUploads}
                     soundSlots={soundSlots}
                     setSoundSlots={setSoundSlots}
-                  />
+                  /> */}
                 </Box>
 
                 {/* Music Uploads */}

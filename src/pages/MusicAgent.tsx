@@ -133,13 +133,6 @@ const MusicAgent = () => {
       audioFullPath: string;
     }[]
   >([]);
-  const [soundboardFiles, setSoundboardFiles] = useState<
-    {
-      name: string;
-      audioUrl: string;
-      audioFullPath: string;
-    }[]
-  >([]);
   const [audioFullPath, setAudioFullPath] = useState('');
   const [isLibraryLoading, setIsLibraryLoading] = useState(false);
   const activityLogRef = useRef<HTMLDivElement>(null);
@@ -250,14 +243,22 @@ const MusicAgent = () => {
         )}?alt=media`,
       }))
     );
-    setSoundboardFiles(
-      slotFiles.map((file) => ({
-        name: file.name,
-        audioFullPath: file.audioFullPath,
-        audioUrl: `https://firebasestorage.googleapis.com/v0/b/lustrous-stack-453106-f6.firebasestorage.app/o/${encodeURIComponent(
-          file.audioFullPath
-        )}?alt=media`,
-      }))
+    setSoundSlots((prevSlots) =>
+      prevSlots.map((slot, index) => {
+        const slotFile = slotFiles[index];
+        if (slotFile) {
+          return {
+            ...slot,
+            name: slotFile.name,
+            fullName: slotFile.name,
+            audioUrl: `https://firebasestorage.googleapis.com/v0/b/lustrous-stack-453106-f6.firebasestorage.app/o/${encodeURIComponent(
+              slotFile.audioFullPath
+            )}?alt=media`,
+            audioFullPath: slotFile.audioFullPath,
+          } as SoundSlot & { audioFullPath: string };
+        }
+        return slot;
+      })
     );
     setIsLibraryLoading(false);
   };
@@ -933,15 +934,10 @@ const MusicAgent = () => {
                     onSoundPlay={(audioUrl) => {
                       addLog(`Playing sound effect`, 'info');
                     }}
-                    onSoundStop={() => {
-                      addLog(`Stopped sound effect`, 'info');
-                    }}
                     socket={socketRef.current}
-                    isConnected={wsStatus === 'connected'}
-                    isInSpace={isInSpace}
+                    canPlay={wsStatus === 'connected' && isInSpace}
                     userId={user?.uid}
                     onLog={addLog}
-                    soundboardFiles={soundboardFiles}
                     onFilesUpdated={fetchUserUploads}
                     soundSlots={soundSlots}
                     setSoundSlots={setSoundSlots}

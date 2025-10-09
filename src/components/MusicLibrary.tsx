@@ -28,6 +28,8 @@ interface MusicLibraryProps {
   onSelectUpload: (url: string) => void;
   onDeleteUpload: (fileName: string) => void;
   onFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  playButton: React.ReactNode;
+  stopButton: React.ReactNode;
 }
 
 const MusicLibrary: React.FC<MusicLibraryProps> = ({
@@ -38,39 +40,58 @@ const MusicLibrary: React.FC<MusicLibraryProps> = ({
   onSelectUpload,
   onDeleteUpload,
   onFileChange,
+  playButton,
+  stopButton,
 }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   return (
-    <Box sx={{ mb: { xs: 3, sm: 4 } }}>
-      <Typography
-        variant="h5"
-        sx={{
-          mb: { xs: 2, sm: 3 },
-          background: 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)',
-          backgroundClip: 'text',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          fontWeight: 600,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1.5,
-          textShadow: '0 0 20px rgba(96, 165, 250, 0.3)',
-          letterSpacing: '0.5px',
-          fontSize: { xs: '1.25rem', sm: '1.5rem' },
-        }}
+    <Box>
+      <Box
+        display={'flex'}
+        justifyContent={'space-between'}
+        alignItems={'center'}
+        mb={{ xs: 2, sm: 3 }}
       >
-        <CloudUpload sx={{ fontSize: { xs: 24, sm: 28 }, color: '#60a5fa' }} />
-        Your Music Library
-      </Typography>
+        <Typography
+          variant="h5"
+          sx={{
+            background: 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+            letterSpacing: '0.5px',
+            fontSize: { xs: '1.25rem', sm: '1.5rem' },
+          }}
+        >
+          <CloudUpload
+            sx={{ fontSize: { xs: 24, sm: 28 }, color: '#60a5fa' }}
+          />
+          Your Music Library
+        </Typography>
+        <Button
+          variant="outlined"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isLoading}
+          startIcon={<CloudUpload />}
+          size={isMobile ? 'small' : 'medium'}
+          sx={{ minWidth: 180 }}
+        >
+          {isLoading ? 'Uploading...' : 'Upload Music'}
+        </Button>
+      </Box>
 
       <Paper
         sx={{
-          p: { xs: 2, sm: 3 },
-          background: 'rgba(15, 23, 42, 0.8)',
-          borderRadius: 3,
+          p: 1,
+          background: 'rgba(0, 0, 0, 0.2)',
+          borderRadius: 1,
           maxHeight: { xs: '250px', sm: '350px' },
           overflow: 'hidden',
           border: '1px solid rgba(96, 165, 250, 0.15)',
@@ -85,7 +106,6 @@ const MusicLibrary: React.FC<MusicLibraryProps> = ({
             flex: 1,
             overflow: 'auto',
             mb: { xs: 1.5, sm: 2 },
-            pr: 1, // Add right padding to prevent content from being covered by scrollbar
             '&::-webkit-scrollbar': {
               width: '6px', // Reduced from 10px to 6px
             },
@@ -113,7 +133,7 @@ const MusicLibrary: React.FC<MusicLibraryProps> = ({
                   variant="rectangular"
                   height={isMobile ? 40 : 50}
                   sx={{
-                    borderRadius: 1,
+                    // borderRadius: 1,
                     background: 'rgba(255, 255, 255, 0.1)',
                   }}
                 />
@@ -229,10 +249,6 @@ const MusicLibrary: React.FC<MusicLibraryProps> = ({
                       size={isMobile ? 'small' : 'medium'}
                       sx={{
                         color: 'rgba(255, 107, 107, 0.7)',
-                        '&:hover': {
-                          color: '#ff6b6b',
-                          transform: 'scale(1.1)',
-                        },
                         transition: 'all 0.2s',
                         ml: { xs: 0.5, sm: 1 },
                       }}
@@ -250,31 +266,15 @@ const MusicLibrary: React.FC<MusicLibraryProps> = ({
         <Box
           sx={{
             display: 'flex',
-            justifyContent: 'center',
+            justifyContent: 'space-between',
             pt: { xs: 1, sm: 1.5 },
             borderTop: '1px solid rgba(96, 165, 250, 0.1)',
+            alignItems: 'center',
+            gap: 4,
           }}
         >
-          <Button
-            variant="outlined"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isLoading}
-            startIcon={<CloudUpload />}
-            size={isMobile ? 'small' : 'medium'}
-            sx={{
-              borderColor: 'rgba(96, 165, 250, 0.5)',
-              color: '#60a5fa',
-              '&:hover': {
-                borderColor: '#60a5fa',
-                background: 'rgba(96, 165, 250, 0.1)',
-                transform: 'scale(1.02)',
-              },
-              transition: 'all 0.2s',
-              minWidth: { xs: '120px', sm: '140px' },
-            }}
-          >
-            {isLoading ? 'Uploading...' : 'Upload Music'}
-          </Button>
+          {stopButton}
+          {playButton}
         </Box>
 
         {/* Hidden file input */}

@@ -368,7 +368,6 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
             display: 'flex',
             alignItems: 'center',
             gap: 1,
-            textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
             fontSize: { xs: '1rem', sm: '1.25rem' },
           }}
         >
@@ -388,6 +387,7 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
             disabled={canPlay}
             startIcon={<QueueMusicRoundedIcon fontSize="small" />}
             size={isMobile ? 'small' : 'medium'}
+            variant="outlined"
           >
             Library
           </Button>
@@ -412,7 +412,7 @@ const SoundBoard: React.FC<SoundBoardProps> = ({
         sx={{
           p: { xs: 2, sm: 3 },
           background: 'rgba(0, 0, 0, 0.2)',
-          borderRadius: 2,
+          borderRadius: 1,
           border: '1px solid rgba(96, 165, 250, 0.1)',
           position: 'relative',
           overflow: 'hidden',

@@ -24,10 +24,12 @@ import {
   Slider,
   // Skeleton,
   // Alert,
-  // Dialog,
   useMediaQuery,
   useTheme,
   Grid,
+  Dialog,
+  DialogContent,
+  DialogTitle,
 } from '@mui/material';
 import {
   PlayArrow,
@@ -40,10 +42,12 @@ import {
   RadioButtonChecked,
   FiberManualRecord,
   LogoutRounded,
+  Close,
 } from '@mui/icons-material';
 import EmojiReactions from '../components/EmojiReactions';
 import SoundBoard, { SoundSlot } from '../components/SoundBoard';
 import MusicLibrary from '../components/MusicLibrary';
+import HowItWorks from '../components/HowItWorks';
 import {
   deleteMusicUpload,
   getMusicUploadsByUserId,
@@ -99,12 +103,6 @@ const float = keyframes`
   100% { transform: translateY(0px) rotate(0deg); }
 `;
 
-const neonPulse = keyframes`
-  0% { text-shadow: 0 0 2px #60a5fa, 0 0 4px #60a5fa; }
-  50% { text-shadow: 0 0 4px #60a5fa, 0 0 8px #60a5fa; }
-  100% { text-shadow: 0 0 2px #60a5fa, 0 0 4px #60a5fa; }
-`;
-
 const MusicAgent = () => {
   // const { t } = useTranslation();
   const theme = useTheme();
@@ -152,6 +150,7 @@ const MusicAgent = () => {
   const [isLoadingReferral, setIsLoadingReferral] = useState(false);
   const [speakText, setSpeakText] = useState('');
   const { handleLogOut } = useDynamicContext();
+  const [showHowItWorks, setShowHowItWorks] = useState(true);
   // const [stakingInfo, setStakingInfo] = useState<StakingInfo | null>(null);
   // const [isCheckingStake, setIsCheckingStake] = useState(false);
   // const { primaryWallet } = useDynamicContext();
@@ -322,6 +321,8 @@ const MusicAgent = () => {
   const handleConnectError = () => {
     setWsStatus('disconnected');
     addLog('Failed to connect to server', 'error');
+    setIsLoading(false);
+    alert('Failed to Connect, try again after sometimes');
   };
 
   const connectSocket = (forceDisconnect: boolean = false) => {
@@ -332,6 +333,9 @@ const MusicAgent = () => {
       socketRef.current.disconnect();
       setWsStatus('disconnected');
       addLog('Disconnected from server', 'info');
+      // take everything to initial state
+      setIsLoading(false);
+      setIsInSpace(false);
       return;
     }
     setIsLoading(true);
@@ -339,9 +343,7 @@ const MusicAgent = () => {
     addLog('Connecting to server...', 'info');
     const socket = io(import.meta.env.VITE_JAM_MUSIC_AGENT_URL, {
       transports: ['websocket'],
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
+      reconnection: false,
     });
 
     // Remove previous listeners before adding new ones
@@ -357,8 +359,9 @@ const MusicAgent = () => {
   };
 
   const handleJoinSpace = async () => {
-    if (!spaceUrl || !socketRef.current?.connected || !audioFullPath || !user)
-      return;
+    if (!spaceUrl || !socketRef.current?.connected || !user) return;
+    const _spaceId = extractSpaceId(spaceUrl);
+    if (!_spaceId) return alert('Invalid space url');
     if (isInSpace) {
       const confirm = window.confirm(
         'You are already in a space. Do you want to join again?'
@@ -380,7 +383,7 @@ const MusicAgent = () => {
           addLog(`Successfully joined space: ${response.spaceId}`, 'success');
           if (user.uid) {
             createDjSpacesDoc({
-              spaceId: extractSpaceId(spaceUrl) ?? '',
+              spaceId: _spaceId,
               userId: user.uid ?? '',
               username: user?.username ?? user?.displayName ?? '',
               twitterId: user.accountId ?? '',
@@ -406,7 +409,7 @@ const MusicAgent = () => {
     });
 
     socketRef.current.emit('join-space', {
-      spaceId: spaceUrl.split('/').pop(),
+      spaceId: _spaceId,
       soundboardUrls: soundSlots.map((s) => s.audioUrl),
     });
   };
@@ -447,6 +450,30 @@ const MusicAgent = () => {
         audioFullPath
       )}?alt=media`,
     });
+  };
+
+  const handleStopMusic = () => {
+    if (!socketRef.current?.connected || !audioFullPath) return;
+
+    setIsLoading(true);
+    addLog('Requesting to stop music...', 'info');
+
+    socketRef.current.once(
+      'music-stopped',
+      async (response: { success: boolean; message?: string }) => {
+        setIsLoading(false);
+        if (response.success) {
+          addLog('Music completed stopped', 'success');
+        } else {
+          addLog(
+            `Failed to stop music: ${response.message || 'Unknown error'}`,
+            'error'
+          );
+        }
+      }
+    );
+
+    socketRef.current.emit('stop-music');
   };
 
   // Upload handler
@@ -696,7 +723,7 @@ const MusicAgent = () => {
             sx={{
               p: { xs: 2, sm: 3, md: 4 },
               background: 'rgba(15, 23, 42, 0.95)',
-              borderRadius: { xs: 2, sm: 3, md: 4 },
+              borderRadius: 2,
               border: '1px solid rgba(96, 165, 250, 0.2)',
               backdropFilter: 'blur(10px)',
               boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
@@ -742,7 +769,7 @@ const MusicAgent = () => {
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: { xs: 1, sm: 2 },
+                  gap: { xs: 1 },
                   flexDirection: { xs: 'row' },
                   textAlign: { xs: 'center', sm: 'left' },
                 }}
@@ -750,35 +777,30 @@ const MusicAgent = () => {
                 <Box
                   sx={{
                     position: 'relative',
-                    // animation: `${pulse} 2s infinite ease-in-out`,
                   }}
                 >
-                  <MusicNote
-                    sx={{
-                      fontSize: { xs: 32, sm: 36, md: 40 },
-                      color: '#60a5fa',
-                      filter: 'drop-shadow(0 0 10px rgba(96, 165, 250, 0.5))',
+                  <img
+                    src="/songjam-latest.png"
+                    style={{
+                      width: 32,
                     }}
                   />
                 </Box>
-                <Typography
-                  variant={isMobile ? 'h4' : 'h3'}
-                  sx={{
-                    background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    fontWeight: 'bold',
-                    letterSpacing: '0.5px',
-                    textShadow: '0 0 10px rgba(96, 165, 250, 0.3)',
-                    animation: `${neonPulse} 3s infinite`,
-                    fontSize: { xs: '1.5rem', sm: '2rem', md: '3rem' },
-                  }}
-                >
-                  Live Space DJ
-                </Typography>
+                <Box>
+                  <Typography
+                    variant={isMobile ? 'h4' : 'h3'}
+                    sx={{
+                      fontWeight: 'bold',
+                      fontFamily: 'Audiowide',
+                    }}
+                  >
+                    SONGJAM DJ
+                  </Typography>
+                </Box>
               </Box>
               <Stack
                 direction="row"
+                alignItems={'center'}
                 spacing={{ xs: 1, sm: 2 }}
                 sx={{
                   alignSelf: { xs: 'center', sm: 'flex-end' },
@@ -790,6 +812,8 @@ const MusicAgent = () => {
                     <IconButton
                       onClick={() => connectSocket(wsStatus === 'connected')}
                       sx={{
+                        width: 45,
+                        height: 45,
                         color: wsStatus === 'connected' ? '#4caf50' : '#f44336',
                         '&:hover': { transform: 'scale(1.1)' },
                         transition: 'transform 0.2s',
@@ -818,21 +842,6 @@ const MusicAgent = () => {
                     </IconButton>
                   </Tooltip>
                 )}
-                <Tooltip title={isMuted ? 'Unmute' : 'Mute'}>
-                  <IconButton
-                    onClick={() => {
-                      handleSwitchMute(!isMuted);
-                    }}
-                    sx={{
-                      color: isMuted ? '#f44336' : '#60a5fa',
-                      '&:hover': { transform: 'scale(1.1)' },
-                      transition: 'transform 0.2s',
-                      filter: 'drop-shadow(0 0 5px rgba(96, 165, 250, 0.5))',
-                    }}
-                  >
-                    {isMuted ? <VolumeOff /> : <VolumeUp />}
-                  </IconButton>
-                </Tooltip>
 
                 {user && user.username && (
                   <Box
@@ -854,7 +863,6 @@ const MusicAgent = () => {
                         color: '#60a5fa',
                         fontWeight: 'bold',
                         fontSize: '0.9rem',
-                        textShadow: '0 0 5px rgba(96, 165, 250, 0.5)',
                       }}
                     >
                       @{user.username}
@@ -885,10 +893,9 @@ const MusicAgent = () => {
 
             {/* Main Content Grid */}
             <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
-              {/* Left Column */}
+              {/* Row 1: Space URL (left) and Join Space Button (right) */}
               <Grid item xs={12} md={6}>
-                {/* Space URL Input */}
-                <Box sx={{ mb: { xs: 3, sm: 4 } }}>
+                <Box>
                   <Typography
                     variant="h6"
                     sx={{
@@ -897,7 +904,6 @@ const MusicAgent = () => {
                       display: 'flex',
                       alignItems: 'center',
                       gap: 1,
-                      textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
                       fontSize: { xs: '1rem', sm: '1.25rem' },
                     }}
                   >
@@ -927,11 +933,72 @@ const MusicAgent = () => {
                     }}
                   />
                 </Box>
+              </Grid>
 
-                {/* Sound Board */}
-                <Box sx={{ mb: { xs: 3, sm: 4 } }}>
-                  {/* <SoundBoard
-                    onSoundPlay={(audioUrl) => {
+              <Grid
+                item
+                xs={12}
+                md={6}
+                sx={{ display: 'flex', alignItems: 'flex-end' }}
+              >
+                <Button
+                  variant="contained"
+                  fullWidth
+                  onClick={() => connectSocket()}
+                  disabled={!spaceUrl}
+                  size={isMobile ? 'large' : 'large'}
+                  sx={{
+                    background: 'linear-gradient(135deg, #60a5fa, #3b82f6)',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                      transform: 'scale(1.02)',
+                    },
+                    height: { xs: 48, sm: 56 },
+                    transition: 'all 0.2s',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background:
+                        'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
+                      transform: 'translateX(-100%)',
+                      transition: 'transform 0.5s',
+                    },
+                    '&:hover::after': {
+                      transform: 'translateX(100%)',
+                    },
+                    boxShadow: '0 0 20px rgba(96, 165, 250, 0.3)',
+                  }}
+                >
+                  {isLoading ? (
+                    <CircularProgress size={24} color="inherit" />
+                  ) : isInSpace ? (
+                    'In Space'
+                  ) : (
+                    'Join Space'
+                  )}
+                </Button>
+              </Grid>
+
+              {/* Row 2: Soundboard (left) and Music Library with Play Button (right) */}
+              <Grid item xs={12} md={6}>
+                <Box sx={{ mb: { xs: 3, md: 0 } }}>
+                  <SoundBoard
+                    onSoundPlay={(slotIndex) => {
+                      if (
+                        wsStatus === 'connected' &&
+                        isInSpace &&
+                        socketRef.current
+                      ) {
+                        socketRef.current.emit('play-sound', {
+                          index: slotIndex,
+                        });
+                      }
                       addLog(`Playing sound effect`, 'info');
                     }}
                     socket={socketRef.current}
@@ -941,139 +1008,129 @@ const MusicAgent = () => {
                     onFilesUpdated={fetchUserUploads}
                     soundSlots={soundSlots}
                     setSoundSlots={setSoundSlots}
-                  /> */}
+                  />
                 </Box>
-
-                {/* Music Uploads */}
-                <MusicLibrary
-                  audioUploads={audioUploads}
-                  selectedAudioFullPath={audioFullPath}
-                  isLibraryLoading={isLibraryLoading}
-                  isLoading={isLoading}
-                  onSelectUpload={handleSelectUpload}
-                  onDeleteUpload={handleDeleteUpload}
-                  onFileChange={handleFileChange}
-                />
               </Grid>
 
-              {/* Right Column */}
               <Grid item xs={12} md={6}>
-                {/* Control Buttons */}
-                <Box sx={{ mb: { xs: 3, sm: 4 } }}>
-                  {/* Connection Warning */}
-                  {/* {wsStatus !== 'connected' && !isInSpace && (
-                    <Alert
-                      severity="warning"
-                      sx={{
-                        mb: 2,
-                        background: 'rgba(255, 193, 7, 0.1)',
-                        border: '1px solid rgba(255, 193, 7, 0.3)',
-                        color: '#ffc107',
-                      }}
-                    >
-                      Join a space to use the soundboard
-                    </Alert>
-                  )} */}
-                  <Stack
-                    direction={{ xs: 'column', sm: 'row' }}
-                    spacing={{ xs: 1, sm: 2 }}
-                    sx={{ width: '100%' }}
-                  >
-                    <Button
-                      variant="contained"
-                      fullWidth
-                      onClick={() => connectSocket()}
-                      disabled={!spaceUrl || !audioFullPath}
-                      size={isMobile ? 'large' : 'large'}
-                      sx={{
-                        background: 'linear-gradient(135deg, #60a5fa, #3b82f6)',
-                        '&:hover': {
+                <Box sx={{ mb: { xs: 3, md: 0 } }}>
+                  <MusicLibrary
+                    audioUploads={audioUploads}
+                    selectedAudioFullPath={audioFullPath}
+                    isLibraryLoading={isLibraryLoading}
+                    isLoading={isLoading}
+                    onSelectUpload={handleSelectUpload}
+                    onDeleteUpload={handleDeleteUpload}
+                    onFileChange={handleFileChange}
+                    playButton={
+                      <Button
+                        variant="contained"
+                        fullWidth
+                        onClick={handlePlayMusic}
+                        disabled={
+                          !socketRef.current?.connected ||
+                          !isInSpace ||
+                          !audioFullPath
+                        }
+                        size={'large'}
+                        sx={{
                           background:
-                            'linear-gradient(135deg, #3b82f6, #2563eb)',
-                          transform: 'scale(1.02)',
-                        },
-                        height: { xs: 48, sm: 56 },
-                        transition: 'all 0.2s',
-                        position: 'relative',
-                        overflow: 'hidden',
-                        '&::after': {
-                          content: '""',
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          background:
-                            'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
-                          transform: 'translateX(-100%)',
-                          transition: 'transform 0.5s',
-                        },
-                        '&:hover::after': {
-                          transform: 'translateX(100%)',
-                        },
-                        boxShadow: '0 0 20px rgba(96, 165, 250, 0.3)',
-                      }}
-                    >
-                      {isLoading ? (
-                        <CircularProgress size={24} color="inherit" />
-                      ) : isInSpace ? (
-                        'In Space'
-                      ) : (
-                        'Join Space'
-                      )}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      fullWidth
-                      onClick={handlePlayMusic}
-                      disabled={
-                        !socketRef.current?.connected ||
-                        !isInSpace ||
-                        !audioFullPath
-                      }
-                      size={isMobile ? 'large' : 'large'}
-                      sx={{
-                        background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
-                        '&:hover': {
-                          background:
-                            'linear-gradient(135deg, #7c3aed, #6d28d9)',
-                          transform: 'scale(1.02)',
-                        },
-                        height: { xs: 48, sm: 56 },
-                        transition: 'all 0.2s',
-                        position: 'relative',
-                        overflow: 'hidden',
-                        '&::after': {
-                          content: '""',
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          background:
-                            'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
-                          transform: 'translateX(-100%)',
-                          transition: 'transform 0.5s',
-                        },
-                        '&:hover::after': {
-                          transform: 'translateX(100%)',
-                        },
-                        boxShadow: '0 0 20px rgba(139, 92, 246, 0.3)',
-                      }}
-                    >
-                      {isLoading ? (
-                        <CircularProgress size={24} color="inherit" />
-                      ) : (
-                        <>
-                          Play Music <PlayArrow />
-                        </>
-                      )}
-                    </Button>
-                  </Stack>
-                </Box>
+                            'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+                          '&:hover': {
+                            background:
+                              'linear-gradient(135deg, #7c3aed, #6d28d9)',
+                            transform: 'scale(1.02)',
+                          },
+                        }}
+                      >
+                        {isLoading ? (
+                          <CircularProgress size={24} color="inherit" />
+                        ) : isMobile ? (
+                          <PlayArrow />
+                        ) : (
+                          <>
+                            Play Music <PlayArrow />
+                          </>
+                        )}
+                      </Button>
+                    }
+                    stopButton={
+                      <Button
+                        variant="outlined"
+                        fullWidth
+                        onClick={handleStopMusic}
+                        disabled={
+                          !socketRef.current?.connected ||
+                          !isInSpace ||
+                          !audioFullPath
+                        }
+                        size={'large'}
+                      >
+                        {isLoading ? (
+                          <CircularProgress size={24} color="inherit" />
+                        ) : isMobile ? (
+                          <PlayArrow />
+                        ) : (
+                          <>
+                            Stop Music <Stop />
+                          </>
+                        )}
+                      </Button>
+                    }
+                  />
 
-                {/* Emoji Reactions */}
-                <Box sx={{ mb: { xs: 3, sm: 4 } }}>
+                  {/* Play Button and Volume Control */}
+                  <Box sx={{ mt: 2 }}>
+                    {/* Volume Control */}
+                    {/* <Paper
+                      sx={{
+                        p: { xs: 1.5, sm: 2 },
+                        background: 'rgba(0, 0, 0, 0.2)',
+                        borderRadius: 2,
+                        border: '1px solid rgba(96, 165, 250, 0.1)',
+                      }}
+                    >
+                      <Box
+                        display={'flex'}
+                        justifyContent={'space-between'}
+                        alignItems={'center'}
+                        mb={1}
+                      >
+                        <Box display={'flex'} alignItems={'center'} gap={1}>
+                          <VolumeUp sx={{ color: '#60a5fa', fontSize: 20 }} />
+                          <Typography
+                            variant="body2"
+                            sx={{ color: '#60a5fa', fontSize: '0.875rem' }}
+                          >
+                            Volume
+                          </Typography>
+                        </Box>
+                        <Button
+                          onClick={() => {
+                            handleSwitchMute(!isMuted);
+                          }}
+                          sx={{ py: 0.5, px: 1.5 }}
+                          variant="outlined"
+                          size="small"
+                        >
+                          {isMuted ? 'UNMUTE' : 'MUTE'}
+                        </Button>
+                      </Box>
+                      <Slider
+                        value={volume}
+                        onChange={handleVolumeChange}
+                        min={0}
+                        max={1}
+                        step={0.1}
+                      />
+                    </Paper> */}
+                  </Box>
+                </Box>
+              </Grid>
+
+              {/* Row 3: Reactions (left) and Speak Text (right) */}
+              <Grid item xs={12} md={6}>
+                <Box sx={{ mb: { xs: 3, md: 0 } }}>
                   <EmojiReactions
                     onEmojiReact={handleEmojiReact}
                     currentEmoji={currentEmoji}
@@ -1081,9 +1138,10 @@ const MusicAgent = () => {
                     isInSpace={true}
                   />
                 </Box>
+              </Grid>
 
-                {/* Speak Text Section */}
-                <Box sx={{ mb: { xs: 3, sm: 4 } }}>
+              <Grid item xs={12} md={6}>
+                <Box sx={{ mb: { xs: 3, md: 0 } }}>
                   <Typography
                     variant="h6"
                     sx={{
@@ -1092,7 +1150,6 @@ const MusicAgent = () => {
                       display: 'flex',
                       alignItems: 'center',
                       gap: 1,
-                      textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
                       fontSize: { xs: '1rem', sm: '1.25rem' },
                     }}
                   >
@@ -1153,7 +1210,6 @@ const MusicAgent = () => {
                         onClick={handleSpeakText}
                         disabled={
                           !speakText.trim() || !socketRef.current?.connected
-                          // !isInSpace
                         }
                         fullWidth
                         sx={{
@@ -1191,8 +1247,10 @@ const MusicAgent = () => {
                     </Stack>
                   </Paper>
                 </Box>
+              </Grid>
 
-                {/* Volume Slider */}
+              {/* Row 4: Referral Code Section (Full Width) */}
+              <Grid item xs={6}>
                 <Box sx={{ mb: { xs: 3, sm: 4 } }}>
                   <Typography
                     variant="h6"
@@ -1202,55 +1260,6 @@ const MusicAgent = () => {
                       display: 'flex',
                       alignItems: 'center',
                       gap: 1,
-                      textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
-                      fontSize: { xs: '1rem', sm: '1.25rem' },
-                    }}
-                  >
-                    <VolumeUp /> Volume
-                  </Typography>
-                  <Paper
-                    sx={{
-                      p: { xs: 1.5, sm: 2 },
-                      background: 'rgba(0, 0, 0, 0.2)',
-                      borderRadius: 2,
-                      border: '1px solid rgba(96, 165, 250, 0.1)',
-                      position: 'relative',
-                      overflow: 'hidden',
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background:
-                          'radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.1) 0%, transparent 70%)',
-                        pointerEvents: 'none',
-                      },
-                    }}
-                  >
-                    <Slider
-                      value={volume}
-                      onChange={handleVolumeChange}
-                      min={0}
-                      max={1}
-                      step={0.1}
-                      // disabled={!socketRef.current?.connected || !isInSpace}
-                    />
-                  </Paper>
-                </Box>
-
-                {/* Referral Section */}
-                <Box sx={{ mb: { xs: 3, sm: 4 } }}>
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      mb: 2,
-                      color: '#60a5fa',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                      textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
                       fontSize: { xs: '1rem', sm: '1.25rem' },
                     }}
                   >
@@ -1306,7 +1315,6 @@ const MusicAgent = () => {
                               fontFamily: 'monospace',
                               fontWeight: 'bold',
                               letterSpacing: '2px',
-                              textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
                             }}
                           >
                             {referral.referralCode}
@@ -1341,92 +1349,11 @@ const MusicAgent = () => {
                           onClick={copyReferralUrl}
                           size="small"
                           sx={{
-                            // background:
-                            //   'linear-gradient(135deg, #8b5cf6, #7c3aed)',
-                            // '&:hover': {
-                            //   background:
-                            //     'linear-gradient(135deg, #7c3aed, #6d28d9)',
-                            // },
                             fontSize: { xs: '0.75rem', sm: '0.875rem' },
                           }}
                         >
                           Copy Referral URL
                         </Button>
-
-                        {/* Analytics Row */}
-                        {/* <Box
-                          sx={{
-                            display: 'flex',
-                            width: '100%',
-                            gap: 1,
-                            mt: 1,
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              flex: 1,
-                              textAlign: 'center',
-                              p: 2,
-                              borderRadius: 2,
-                              background: 'rgba(76, 175, 80, 0.1)',
-                              border: '1px solid rgba(76, 175, 80, 0.3)',
-                            }}
-                          >
-                            <Typography
-                              variant="h5"
-                              sx={{
-                                color: '#4caf50',
-                                fontWeight: 'bold',
-                                fontSize: { xs: '1.25rem', sm: '1.5rem' },
-                                mb: 0.5,
-                              }}
-                            >
-                              {referral.referralCount}
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                color: '#60a5fa',
-                                fontSize: { xs: '0.7rem', sm: '0.8rem' },
-                                fontWeight: 500,
-                              }}
-                            >
-                              Referrals
-                            </Typography>
-                          </Box>
-                          <Box
-                            sx={{
-                              flex: 1,
-                              textAlign: 'center',
-                              p: 2,
-                              borderRadius: 2,
-                              background: 'rgba(255, 152, 0, 0.1)',
-                              border: '1px solid rgba(255, 152, 0, 0.3)',
-                            }}
-                          >
-                            <Typography
-                              variant="h5"
-                              sx={{
-                                color: '#ff9800',
-                                fontWeight: 'bold',
-                                fontSize: { xs: '1.25rem', sm: '1.5rem' },
-                                mb: 0.5,
-                              }}
-                            >
-                              {referral.playCount}
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                color: '#60a5fa',
-                                fontSize: { xs: '0.7rem', sm: '0.8rem' },
-                                fontWeight: 500,
-                              }}
-                            >
-                              Plays
-                            </Typography>
-                          </Box>
-                        </Box> */}
                       </Stack>
                     ) : (
                       <Box sx={{ textAlign: 'center' }}>
@@ -1464,26 +1391,27 @@ const MusicAgent = () => {
                     )}
                   </Paper>
                 </Box>
-
-                {/* Activity Log */}
+              </Grid>
+              <Grid item xs={12} md={6}>
                 <Box>
                   <Typography
                     variant="h6"
                     sx={{
                       mb: 2,
                       color: '#60a5fa',
-                      textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
                       fontSize: { xs: '1rem', sm: '1.25rem' },
                     }}
                   >
-                    Activity Log
+                    <GraphicEq /> Activity Log
                   </Typography>
                   <Paper
                     sx={{
                       p: { xs: 1.5, sm: 2 },
                       background: 'rgba(0, 0, 0, 0.2)',
                       borderRadius: 2,
-                      // maxHeight: '200px',
                       height: { xs: '250px', sm: '300px', md: '365px' },
                       overflow: 'auto',
                       border: '1px solid rgba(96, 165, 250, 0.1)',
@@ -1531,8 +1459,6 @@ const MusicAgent = () => {
                                         ? '#f44336'
                                         : '#60a5fa',
                                     fontFamily: 'monospace',
-                                    textShadow:
-                                      '0 0 5px rgba(96, 165, 250, 0.3)',
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: 1,
@@ -1549,7 +1475,6 @@ const MusicAgent = () => {
                                           : log.type === 'error'
                                           ? '#f44336'
                                           : '#60a5fa',
-                                      // animation: `${pulse} 2s infinite`,
                                       flexShrink: 0,
                                     }}
                                   />
@@ -1569,10 +1494,87 @@ const MusicAgent = () => {
                   </Paper>
                 </Box>
               </Grid>
+
+              {/* Row 5: How It Works Section (Full Width) */}
+              <Grid item xs={12}>
+                <Box sx={{ mb: { xs: 3, sm: 4 } }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      mb: 2,
+                      color: '#60a5fa',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      fontSize: { xs: '1rem', sm: '1.25rem' },
+                    }}
+                  >
+                    How It Works
+                  </Typography>
+                  <Paper
+                    sx={{
+                      p: { xs: 1.5, sm: 2 },
+                      background: 'rgba(0, 0, 0, 0.2)',
+                      borderRadius: 2,
+                      border: '1px solid rgba(96, 165, 250, 0.1)',
+                    }}
+                  >
+                    <HowItWorks />
+                  </Paper>
+                </Box>
+              </Grid>
             </Grid>
           </Paper>
         </Fade>
+
         <LoginDialog open={showAuthDialog && !authLoading} showOnlyTwitter />
+        <Dialog
+          open={showHowItWorks && !!user}
+          onClose={() => setShowHowItWorks(false)}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            sx: {
+              background: '#1e293b',
+              borderRadius: 2,
+              color: 'white',
+            },
+          }}
+        >
+          <DialogTitle
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+              How It Works
+            </Typography>
+            <IconButton
+              onClick={() => setShowHowItWorks(false)}
+              sx={{ color: 'white' }}
+            >
+              <Close />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent>
+            <HowItWorks />
+            <Button
+              variant="contained"
+              onClick={() => setShowHowItWorks(false)}
+              fullWidth
+              sx={{
+                mt: 2,
+                background: '#60a5fa',
+                '&:hover': { background: '#3b82f6' },
+              }}
+            >
+              Got it
+            </Button>
+          </DialogContent>
+        </Dialog>
         {/* <Dialog
           open={!!user && !primaryWallet}
           onClose={() => {}}

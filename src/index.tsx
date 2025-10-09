@@ -24,10 +24,7 @@ import Dj from './pages/Dj';
 
 WebFont.load({
   google: {
-    families: [
-      'Chakra Petch:400,700&display=swap',
-      'Audiowide:400,500,600,700&display=swap',
-    ],
+    families: ['Audiowide:400,500,600,700&display=swap', 'Orbitron'],
   },
 });
 

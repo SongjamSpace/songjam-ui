@@ -401,7 +401,7 @@ const Dj = () => {
             sx={{
               p: { xs: 2, sm: 3, md: 4 },
               background: 'rgba(15, 23, 42, 0.95)',
-              borderRadius: { xs: 2, sm: 3, md: 4 },
+              borderRadius: 2,
               border: '1px solid rgba(96, 165, 250, 0.2)',
               backdropFilter: 'blur(10px)',
               boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
@@ -470,6 +470,7 @@ const Dj = () => {
                   <Typography
                     variant={isMobile ? 'h4' : 'h3'}
                     sx={{
+                      fontFamily: 'Audiowide',
                       // background: 'linear-gradient(135deg, #60a5fa, #8b5cf6)',
                       // WebkitBackgroundClip: 'text',
                       // WebkitTextFillColor: 'transparent',
@@ -479,7 +480,7 @@ const Dj = () => {
                       // fontSize: { xs: '1.5rem', sm: '2rem', md: '3rem' },
                     }}
                   >
-                    SONGJAM
+                    SONGJAM DJ
                   </Typography>
                 </Box>
               </Box>
@@ -759,6 +760,7 @@ const Dj = () => {
                   <Alert
                     severity="warning"
                     sx={{
+                      mt: 2,
                       color: '#ffc107',
                       opacity: 0.9,
                       background: 'rgba(255, 193, 7, 0.1)',
@@ -789,181 +791,8 @@ const Dj = () => {
 
             {/* Main Content Grid */}
             <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
-              {/* Top Row: Music Library and Play/Volume Controls */}
-              {/* Left Column - Music Library */}
-              <Grid item xs={12} md={6}>
-                <MusicLibrary
-                  audioUploads={audioUploads}
-                  selectedAudioFullPath={audioFullPath}
-                  isLibraryLoading={isLibraryLoading}
-                  isLoading={isLoading}
-                  onSelectUpload={handleSelectUpload}
-                  onDeleteUpload={handleDeleteUpload}
-                  onFileChange={handleFileChange}
-                />
-              </Grid>
-
-              {/* Right Column - Play Music and Volume Controls */}
-              <Grid item xs={12} md={6}>
-                {/* Title */}
-                <Typography
-                  variant="h6"
-                  sx={{
-                    mb: 2,
-                    color: '#60a5fa',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
-                    fontSize: { xs: '1rem', sm: '1.25rem' },
-                  }}
-                >
-                  DJ Controls
-                </Typography>
-
-                {/* Control Buttons */}
-                <Box
-                  sx={{
-                    mb: { xs: 3, sm: 4 },
-                    display: 'flex',
-                    gap: 2,
-                  }}
-                >
-                  <Button
-                    variant="outlined"
-                    fullWidth
-                    disabled={
-                      !isCurrentUserAdmin() ||
-                      !spaceDoc ||
-                      spaceDoc?.playStatus !== 'PLAYING'
-                    }
-                    size={isMobile ? 'large' : 'large'}
-                    sx={{
-                      height: { xs: 48, sm: 56 },
-                      transition: 'all 0.2s',
-                      position: 'relative',
-                      overflow: 'hidden',
-                      '&::after': {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        transform: 'translateX(-100%)',
-                        transition: 'transform 0.5s',
-                      },
-                      '&:hover::after': {
-                        transform: 'translateX(100%)',
-                      },
-                    }}
-                    onClick={async () => {
-                      setIsLoading(true);
-                      await sendDjRequest(spaceId, RequestType.STOP_MUSIC, {});
-                      setIsLoading(false);
-                    }}
-                  >
-                    Stop Music <Stop />
-                  </Button>
-                  <Button
-                    variant="contained"
-                    fullWidth
-                    onClick={handlePlayMusic}
-                    disabled={
-                      !audioFullPath ||
-                      !isCurrentUserAdmin() ||
-                      spaceDoc?.status !== 'LIVE'
-                    }
-                    size={isMobile ? 'large' : 'large'}
-                    sx={{
-                      background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
-                      '&:hover': {
-                        background: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
-                        transform: 'scale(1.02)',
-                      },
-                      height: { xs: 48, sm: 56 },
-                      transition: 'all 0.2s',
-                      position: 'relative',
-                      overflow: 'hidden',
-                      '&::after': {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background:
-                          'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
-                        transform: 'translateX(-100%)',
-                        transition: 'transform 0.5s',
-                      },
-                      '&:hover::after': {
-                        transform: 'translateX(100%)',
-                      },
-                      boxShadow: '0 0 20px rgba(139, 92, 246, 0.3)',
-                    }}
-                  >
-                    {isLoading ? (
-                      <CircularProgress size={24} color="inherit" />
-                    ) : (
-                      <>
-                        Play Music <PlayArrow />
-                      </>
-                    )}
-                  </Button>
-                </Box>
-
-                {/* Volume Slider */}
-                <Box sx={{ mb: { xs: 3, sm: 4 } }}>
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      mb: 2,
-                      color: '#60a5fa',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                      textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
-                      fontSize: { xs: '1rem', sm: '1.25rem' },
-                    }}
-                  >
-                    <VolumeUp /> Volume
-                  </Typography>
-                  <Paper
-                    sx={{
-                      p: { xs: 1.5, sm: 2 },
-                      background: 'rgba(0, 0, 0, 0.2)',
-                      borderRadius: 2,
-                      border: '1px solid rgba(96, 165, 250, 0.1)',
-                      position: 'relative',
-                      overflow: 'hidden',
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background:
-                          'radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.1) 0%, transparent 70%)',
-                        pointerEvents: 'none',
-                      },
-                    }}
-                  >
-                    <Slider
-                      value={volume}
-                      onChange={handleVolumeChange}
-                      min={0}
-                      max={1}
-                      step={0.1}
-                      disabled={!isCurrentUserAdmin()}
-                    />
-                  </Paper>
-                </Box>
-              </Grid>
-
               {/* Bottom Row: Sound Board - Centered with max width */}
-              <Grid item xs={12}>
+              <Grid item xs={12} md={6}>
                 <Box
                   sx={{
                     mb: { xs: 3, sm: 4 },
@@ -1014,10 +843,237 @@ const Dj = () => {
                   </Box>
                 </Box>
               </Grid>
+              {/* Left Column - Music Library */}
+              <Grid item xs={12} md={6}>
+                <MusicLibrary
+                  audioUploads={audioUploads}
+                  selectedAudioFullPath={audioFullPath}
+                  isLibraryLoading={isLibraryLoading}
+                  isLoading={isLoading}
+                  onSelectUpload={handleSelectUpload}
+                  onDeleteUpload={handleDeleteUpload}
+                  onFileChange={handleFileChange}
+                  playButton={
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      onClick={handlePlayMusic}
+                      disabled={
+                        !audioFullPath ||
+                        !isCurrentUserAdmin() ||
+                        spaceDoc?.status !== 'LIVE'
+                      }
+                      size={isMobile ? 'large' : 'large'}
+                      sx={{
+                        background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+                        '&:hover': {
+                          background:
+                            'linear-gradient(135deg, #7c3aed, #6d28d9)',
+                          transform: 'scale(1.02)',
+                        },
+                        height: { xs: 48, sm: 56 },
+                        transition: 'all 0.2s',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        '&::after': {
+                          content: '""',
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          background:
+                            'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
+                          transform: 'translateX(-100%)',
+                          transition: 'transform 0.5s',
+                        },
+                        '&:hover::after': {
+                          transform: 'translateX(100%)',
+                        },
+                        boxShadow: '0 0 20px rgba(139, 92, 246, 0.3)',
+                      }}
+                    >
+                      {isLoading ? (
+                        <CircularProgress size={24} color="inherit" />
+                      ) : (
+                        <>
+                          Play Music <PlayArrow />
+                        </>
+                      )}
+                    </Button>
+                  }
+                  stopButton={
+                    <Button
+                      variant="outlined"
+                      fullWidth
+                      disabled={
+                        !isCurrentUserAdmin() ||
+                        !spaceDoc ||
+                        spaceDoc?.playStatus !== 'PLAYING'
+                      }
+                      size={isMobile ? 'large' : 'large'}
+                      sx={{
+                        height: { xs: 48, sm: 56 },
+                        transition: 'all 0.2s',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        '&::after': {
+                          content: '""',
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          transform: 'translateX(-100%)',
+                          transition: 'transform 0.5s',
+                        },
+                        '&:hover::after': {
+                          transform: 'translateX(100%)',
+                        },
+                      }}
+                      onClick={async () => {
+                        setIsLoading(true);
+                        await sendDjRequest(
+                          spaceId,
+                          RequestType.STOP_MUSIC,
+                          {}
+                        );
+                        setIsLoading(false);
+                      }}
+                    >
+                      Stop Music <Stop />
+                    </Button>
+                  }
+                />
+                <Box sx={{ mt: 2 }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      mb: 2,
+                      color: '#60a5fa',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
+                      fontSize: { xs: '1rem', sm: '1.25rem' },
+                    }}
+                  >
+                    <VolumeUp /> Volume
+                  </Typography>
+                  <Paper
+                    sx={{
+                      p: { xs: 1.5, sm: 2 },
+                      background: 'rgba(0, 0, 0, 0.2)',
+                      borderRadius: 2,
+                      border: '1px solid rgba(96, 165, 250, 0.1)',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background:
+                          'radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.1) 0%, transparent 70%)',
+                        pointerEvents: 'none',
+                      },
+                    }}
+                  >
+                    <Slider
+                      value={volume}
+                      onChange={handleVolumeChange}
+                      min={0}
+                      max={1}
+                      step={0.1}
+                      disabled={!isCurrentUserAdmin()}
+                    />
+                  </Paper>
+                </Box>
+              </Grid>
             </Grid>
           </Paper>
         </Fade>
         <LoginDialog open={showAuthDialog && !authLoading} showOnlyTwitter />
+
+        {/* How It Works Section */}
+        <Paper
+          sx={{
+            mt: { xs: 3, sm: 4 },
+            p: { xs: 2, sm: 3 },
+            background: 'rgba(0, 0, 0, 0.2)',
+            borderRadius: 2,
+            border: '1px solid rgba(96, 165, 250, 0.2)',
+            backdropFilter: 'blur(10px)',
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{
+              mb: 2,
+              color: '#60a5fa',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              textShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
+              fontSize: { xs: '1rem', sm: '1.25rem' },
+              fontWeight: 'bold',
+            }}
+          >
+            How It Works
+          </Typography>
+          <Stack spacing={2}>
+            <Box>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  fontWeight: 600,
+                  mb: 0.5,
+                }}
+              >
+                1. For Soundboard
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 0.5 }}
+              >
+                Load short audio clips under 500KB or select from the Library.
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: 'rgba(255, 193, 7, 0.95)',
+                  fontStyle: 'italic',
+                  fontWeight: 500,
+                  fontSize: '0.85rem',
+                }}
+              >
+                Note: Submit Soundboard at the start before the music played for
+                smoother experience.
+              </Typography>
+            </Box>
+            <Box>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  fontWeight: 600,
+                  mb: 0.5,
+                }}
+              >
+                2. Access Control
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
+              >
+                Only Hosts and Co-Hosts can access the live-dj controls.
+              </Typography>
+            </Box>
+          </Stack>
+        </Paper>
       </Container>
     </Box>
   );

@@ -69,6 +69,8 @@ import {
   getReferralByTwitterId,
 } from '../services/db/referral.service';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
+import axios from 'axios';
+import { Space } from '../services/db/spaces.service';
 // import {
 //   DynamicEmbeddedWidget,
 //   useDynamicContext,
@@ -325,7 +327,7 @@ const MusicAgent = () => {
     alert('Failed to Connect, try again after sometimes');
   };
 
-  const connectSocket = (forceDisconnect: boolean = false) => {
+  const connectSocket = async (forceDisconnect: boolean = false) => {
     if (socketRef.current?.connected && !forceDisconnect) {
       return;
     }
@@ -339,6 +341,35 @@ const MusicAgent = () => {
       return;
     }
     setIsLoading(true);
+    // Get Space details and check if admin
+
+    const _spaceId = extractSpaceId(spaceUrl);
+    const spaceRes = await axios.get(
+      `${import.meta.env.VITE_JAM_SERVER_URL}/space/details?spaceId=${_spaceId}`
+    );
+    if (!spaceRes.data.success) {
+      alert('Space not found');
+      setIsLoading(false);
+      setIsInSpace(false);
+      return;
+    }
+    const spaceData = spaceRes.data.result as Space;
+    if (spaceData.state !== 'Running') {
+      alert('Space is not running');
+      setIsLoading(false);
+      setIsInSpace(false);
+      return;
+    }
+    const foundAsAdmin = spaceData.admins.some(
+      (admin) => admin.userId === user?.accountId
+    );
+    if (!foundAsAdmin) {
+      alert('You are not an admin of this space');
+      setIsLoading(false);
+      setIsInSpace(false);
+      setSpaceUrl('');
+      return;
+    }
     setWsStatus('connecting');
     addLog('Connecting to server...', 'info');
     const socket = io(import.meta.env.VITE_JAM_MUSIC_AGENT_URL, {

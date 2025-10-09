@@ -14,7 +14,29 @@ const HowItWorks: React.FC = () => {
         <ListItemText
           primary={
             <Typography variant="body1" sx={{ fontWeight: 600, mb: 0.5 }}>
-              1. Space URL format:
+              1. Access Control:
+            </Typography>
+          }
+          secondary={
+            <Typography
+              variant="body2"
+              sx={{
+                color: 'rgba(255, 255, 255, 0.7)',
+                fontFamily: 'monospace',
+                fontSize: '0.85rem',
+              }}
+            >
+              Only Hosts and Co-Hosts can summon the DJ.
+            </Typography>
+          }
+        />
+      </ListItem>
+      <Divider sx={{ my: 1.5, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+      <ListItem>
+        <ListItemText
+          primary={
+            <Typography variant="body1" sx={{ fontWeight: 600, mb: 0.5 }}>
+              2. Space URL format:
             </Typography>
           }
           secondary={
@@ -36,7 +58,7 @@ const HowItWorks: React.FC = () => {
         <ListItemText
           primary={
             <Typography variant="body1" sx={{ fontWeight: 600, mb: 0.5 }}>
-              2. Load soundboard before joining
+              3. Load soundboard before joining
             </Typography>
           }
           secondary={
@@ -55,7 +77,7 @@ const HowItWorks: React.FC = () => {
         <ListItemText
           primary={
             <Typography variant="body1" sx={{ fontWeight: 600, mb: 0.5 }}>
-              3. Select music from library
+              4. Select music from library
             </Typography>
           }
           secondary={
@@ -73,7 +95,7 @@ const HowItWorks: React.FC = () => {
         <ListItemText
           primary={
             <Typography variant="body1" sx={{ fontWeight: 600, mb: 0.5 }}>
-              4. Approve speaker request
+              5. Approve speaker request
             </Typography>
           }
           secondary={

@@ -72,7 +72,7 @@ const LoginDialog: React.FC<LoginDialogProps> = ({
             mb: 3,
           }}
         >
-          Sign in with your Twitter to access Space analytics, audience
+          Sign in with your Twitter to access Space analytics, DJ, audience
           insights, and AI-powered tools.
         </DialogContentText>
         {loading || (isProcessing && <LinearProgress sx={{ mb: 3 }} />)}
@@ -114,13 +114,18 @@ const LoginDialog: React.FC<LoginDialogProps> = ({
             <Button
               disabled={loading || isProcessing}
               onClick={() => signInWithSocialAccount(ProviderEnum.Twitter)}
-              variant="contained"
+              // variant="contained"
+              // color="info"
               sx={{
-                // backgroundColor: '#000000',
+                '& .MuiButton-endIcon': {
+                  marginLeft: 0,
+                },
+                bgcolor: '#000000',
+                color: '#ffffff',
                 // "&:hover": {
                 //   backgroundColor: "#272727",
                 // },
-                borderRadius: '4px',
+                // borderRadius: '4px',
                 padding: '0 32px',
                 height: '40px',
                 // width: '250px',
@@ -130,8 +135,16 @@ const LoginDialog: React.FC<LoginDialogProps> = ({
                 fontWeight: 500,
                 fontSize: '14px',
               }}
+              endIcon={
+                <img
+                  src="/logos/twitter.png"
+                  alt="Twitter"
+                  width={14}
+                  height={14}
+                />
+              }
             >
-              {loading ? 'Connecting...' : 'Login with X'}
+              {loading ? 'Connecting...' : 'Continue with'}
             </Button>
           ) : (
             <DynamicLogin />

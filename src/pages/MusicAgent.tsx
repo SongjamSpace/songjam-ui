@@ -1113,7 +1113,7 @@ const MusicAgent = () => {
                   {/* Play Button and Volume Control */}
                   <Box sx={{ mt: 2 }}>
                     {/* Volume Control */}
-                    {/* <Paper
+                    <Paper
                       sx={{
                         p: { xs: 1.5, sm: 2 },
                         background: 'rgba(0, 0, 0, 0.2)',
@@ -1154,7 +1154,7 @@ const MusicAgent = () => {
                         max={1}
                         step={0.1}
                       />
-                    </Paper> */}
+                    </Paper>
                   </Box>
                 </Box>
               </Grid>

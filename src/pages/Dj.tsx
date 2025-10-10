@@ -134,6 +134,8 @@ const Dj = () => {
   );
   const { handleLogOut } = useDynamicContext();
   const [spaceDoc, setSpaceDoc] = useState<DjLurkySpace | null>(null);
+  const [speakText, setSpeakText] = useState('');
+  // const [spaceUrl, setSpaceUrl] = useState('');
 
   // Check if current user is an admin
   const isCurrentUserAdmin = () => {
@@ -237,7 +239,7 @@ const Dj = () => {
       setIsLoading(true);
       await uploadMusic(file, user.uid);
       // setAudioFullPath(audioUrl);
-      // addLog(`Uploaded music to ${_uploadedAudioFullPath}`, 'success');
+      addLog(`Uploaded music`, 'success');
       // Refresh uploads list
       await fetchUserUploads();
       setIsLoading(false);
@@ -306,6 +308,17 @@ const Dj = () => {
     const _spaceId = urlParams.get('spaceId');
     if (_spaceId) setSpaceId(_spaceId);
   }, []);
+
+  const handleSpeakText = async () => {
+    if (isCurrentUserAdmin() && user && speakText.trim()) {
+      await sendDjRequest(spaceId, RequestType.SPEAK_TEXT, {
+        text: speakText.trim(),
+        voiceId: '',
+      });
+      addLog(`Speaking text: ${speakText.trim()}`, 'info');
+      setSpeakText(''); // Clear the input after sending
+    }
+  };
 
   return (
     <Box
@@ -791,6 +804,98 @@ const Dj = () => {
 
             {/* Main Content Grid */}
             <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
+              {/* {!spaceDoc && <>
+                <Grid item xs={12} md={6}>
+                <Box>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      mb: 2,
+                      color: '#60a5fa',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      fontSize: { xs: '1rem', sm: '1.25rem' },
+                    }}
+                  >
+                    <Link /> Space URL
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    value={spaceUrl}
+                    onChange={(e) => setSpaceUrl(e.target.value)}
+                    placeholder="Enter space URL"
+                    variant="outlined"
+                    size={isMobile ? 'small' : 'medium'}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        color: 'white',
+                        '& fieldset': {
+                          borderColor: 'rgba(96, 165, 250, 0.5)',
+                        },
+                        '&:hover fieldset': {
+                          borderColor: '#60a5fa',
+                        },
+                        '&.Mui-focused fieldset': {
+                          borderColor: '#60a5fa',
+                          boxShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
+                        },
+                      },
+                    }}
+                  />
+                </Box>
+              </Grid>
+
+              <Grid
+                item
+                xs={12}
+                md={6}
+                sx={{ display: 'flex', alignItems: 'flex-end' }}
+              >
+                <Button
+                  variant="contained"
+                  fullWidth
+                  onClick={async () => {
+                    // TODO
+                    await axios.post(``, {spaceId: ''})
+                  }}
+                  disabled={!spaceUrl}
+                  size={isMobile ? 'large' : 'large'}
+                  sx={{
+                    background: 'linear-gradient(135deg, #60a5fa, #3b82f6)',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                      transform: 'scale(1.02)',
+                    },
+                    height: { xs: 48, sm: 56 },
+                    transition: 'all 0.2s',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background:
+                        'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
+                      transform: 'translateX(-100%)',
+                      transition: 'transform 0.5s',
+                    },
+                    '&:hover::after': {
+                      transform: 'translateX(100%)',
+                    },
+                    boxShadow: '0 0 20px rgba(96, 165, 250, 0.3)',
+                  }}
+                >
+                  {isLoading ? (
+                    <CircularProgress size={24} color="inherit" />
+                  ) : (
+                    'Join Space'
+                  )}
+                </Button>
+              </Grid></>} */}
               {/* Bottom Row: Sound Board - Centered with max width */}
               <Grid item xs={12} md={6}>
                 <Box
@@ -989,6 +1094,215 @@ const Dj = () => {
                       step={0.1}
                       disabled={!isCurrentUserAdmin()}
                     />
+                  </Paper>
+                </Box>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Box sx={{ mb: { xs: 3, md: 0 } }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      mb: 2,
+                      color: '#60a5fa',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      fontSize: { xs: '1rem', sm: '1.25rem' },
+                    }}
+                  >
+                    <VolumeUp /> Speak Text
+                  </Typography>
+                  <Paper
+                    sx={{
+                      p: { xs: 1.5, sm: 2 },
+                      background: 'rgba(0, 0, 0, 0.2)',
+                      borderRadius: 2,
+                      border: '1px solid rgba(96, 165, 250, 0.1)',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background:
+                          'radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.1) 0%, transparent 70%)',
+                        pointerEvents: 'none',
+                      },
+                    }}
+                  >
+                    <Stack spacing={2}>
+                      <TextField
+                        fullWidth
+                        value={speakText}
+                        onChange={(e) => setSpeakText(e.target.value)}
+                        placeholder="Enter text"
+                        variant="outlined"
+                        size={isMobile ? 'small' : 'medium'}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            color: 'white',
+                            '& fieldset': {
+                              borderColor: 'rgba(96, 165, 250, 0.5)',
+                            },
+                            '&:hover fieldset': {
+                              borderColor: '#60a5fa',
+                            },
+                            '&.Mui-focused fieldset': {
+                              borderColor: '#60a5fa',
+                              boxShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
+                            },
+                          },
+                        }}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            handleSpeakText();
+                          }
+                        }}
+                      />
+                      <Button
+                        variant="contained"
+                        onClick={handleSpeakText}
+                        disabled={!speakText.trim() || !isCurrentUserAdmin()}
+                        fullWidth
+                        sx={{
+                          background:
+                            'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+                          '&:hover': {
+                            background:
+                              'linear-gradient(135deg, #7c3aed, #6d28d9)',
+                            transform: 'scale(1.02)',
+                          },
+                          height: { xs: 40, sm: 48 },
+                          transition: 'all 0.2s',
+                          position: 'relative',
+                          overflow: 'hidden',
+                          '&::after': {
+                            content: '""',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            background:
+                              'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
+                            transform: 'translateX(-100%)',
+                            transition: 'transform 0.5s',
+                          },
+                          '&:hover::after': {
+                            transform: 'translateX(100%)',
+                          },
+                          boxShadow: '0 0 20px rgba(139, 92, 246, 0.3)',
+                        }}
+                      >
+                        Speak Now
+                      </Button>
+                    </Stack>
+                  </Paper>
+                </Box>
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <Box>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      mb: 2,
+                      color: '#60a5fa',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      fontSize: { xs: '1rem', sm: '1.25rem' },
+                    }}
+                  >
+                    <GraphicEq /> Activity Log
+                  </Typography>
+                  <Paper
+                    sx={{
+                      p: { xs: 1.5, sm: 2 },
+                      background: 'rgba(0, 0, 0, 0.2)',
+                      borderRadius: 2,
+                      height: { xs: '250px', sm: '300px', md: '365px' },
+                      overflow: 'auto',
+                      border: '1px solid rgba(96, 165, 250, 0.1)',
+                      '&::-webkit-scrollbar': {
+                        width: '8px',
+                      },
+                      '&::-webkit-scrollbar-track': {
+                        background: 'rgba(0, 0, 0, 0.1)',
+                        borderRadius: '4px',
+                      },
+                      '&::-webkit-scrollbar-thumb': {
+                        background: 'rgba(96, 165, 250, 0.3)',
+                        borderRadius: '4px',
+                        '&:hover': {
+                          background: 'rgba(96, 165, 250, 0.5)',
+                        },
+                      },
+                      position: 'relative',
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background:
+                          'linear-gradient(to bottom, rgba(96, 165, 250, 0.1) 0%, transparent 100%)',
+                        pointerEvents: 'none',
+                      },
+                    }}
+                  >
+                    <List dense>
+                      {[...logs].reverse().map((log, index) => (
+                        <React.Fragment key={index}>
+                          <ListItem sx={{ px: { xs: 1, sm: 2 } }}>
+                            <ListItemText
+                              primary={
+                                <Typography
+                                  variant="body2"
+                                  sx={{
+                                    color:
+                                      log.type === 'success'
+                                        ? '#4caf50'
+                                        : log.type === 'error'
+                                        ? '#f44336'
+                                        : '#60a5fa',
+                                    fontFamily: 'monospace',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 1,
+                                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                                    wordBreak: 'break-word',
+                                  }}
+                                >
+                                  <FiberManualRecord
+                                    sx={{
+                                      fontSize: 8,
+                                      color:
+                                        log.type === 'success'
+                                          ? '#4caf50'
+                                          : log.type === 'error'
+                                          ? '#f44336'
+                                          : '#60a5fa',
+                                      flexShrink: 0,
+                                    }}
+                                  />
+                                  [{log.timestamp}] {log.message}
+                                </Typography>
+                              }
+                            />
+                          </ListItem>
+                          {index < logs.length - 1 && (
+                            <Divider
+                              sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
+                            />
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </List>
                   </Paper>
                 </Box>
               </Grid>

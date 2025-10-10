@@ -69,6 +69,8 @@ type RequstData = {
   mp3AudioUrls?: string[];
   volume?: number;
   slotIndex?: number;
+  text?: string;
+  voiceId?: string;
 };
 
 type LurkySpaceDjRequest = {

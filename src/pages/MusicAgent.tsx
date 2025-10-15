@@ -360,16 +360,16 @@ const MusicAgent = () => {
       setIsInSpace(false);
       return;
     }
-    const foundAsAdmin = spaceData.admins.some(
-      (admin) => admin.userId === user?.accountId
-    );
-    if (!foundAsAdmin) {
-      alert('You are not an admin of this space');
-      setIsLoading(false);
-      setIsInSpace(false);
-      setSpaceUrl('');
-      return;
-    }
+    // const foundAsAdmin = spaceData.admins.some(
+    //   (admin) => admin.userId === user?.accountId
+    // );
+    // if (!foundAsAdmin) {
+    //   alert('You are not an admin of this space');
+    //   setIsLoading(false);
+    //   setIsInSpace(false);
+    //   setSpaceUrl('');
+    //   return;
+    // }
     setWsStatus('connecting');
     addLog('Connecting to server...', 'info');
     const socket = io(import.meta.env.VITE_JAM_MUSIC_AGENT_URL, {

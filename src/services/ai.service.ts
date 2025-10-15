@@ -19,17 +19,17 @@ export interface AIStreamCallback {
 }
 
 export const AI_MODELS: AIModel[] = [
-  {
-    id: 'gemini',
-    name: 'Gemini Pro',
-    capabilities: [
-      'Advanced reasoning',
-      'Multimodal understanding',
-      'Code generation',
-    ],
-    contextWindow: 32768,
-    specialFeatures: ['Image analysis', 'Code completion'],
-  },
+  // {
+  //   id: 'gemini',
+  //   name: 'Gemini Pro',
+  //   capabilities: [
+  //     'Advanced reasoning',
+  //     'Multimodal understanding',
+  //     'Code generation',
+  //   ],
+  //   contextWindow: 32768,
+  //   specialFeatures: ['Image analysis', 'Code completion'],
+  // },
   {
     id: 'grok',
     name: 'Grok',
@@ -41,13 +41,13 @@ export const AI_MODELS: AIModel[] = [
     contextWindow: 50000,
     specialFeatures: ['Web browsing', 'Data visualization'],
   },
-  {
-    id: 'claude',
-    name: 'Claude',
-    capabilities: ['Long context', 'Creative writing', 'Detailed analysis'],
-    contextWindow: 200000,
-    specialFeatures: ['Code generation', 'Document analysis'],
-  },
+  // {
+  //   id: 'claude',
+  //   name: 'Claude',
+  //   capabilities: ['Long context', 'Creative writing', 'Detailed analysis'],
+  //   contextWindow: 200000,
+  //   specialFeatures: ['Code generation', 'Document analysis'],
+  // },
 ];
 
 export const generateContent = async (

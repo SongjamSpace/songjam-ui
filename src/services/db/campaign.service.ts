@@ -20,7 +20,7 @@ import { SpaceListener } from './spaces.service';
 
 export type Campaign = {
   id?: string;
-  ctaType: 'follow' | 'space' | 'live';
+  ctaType: 'follow' | 'space' | 'live' | 'auto-dms';
   ctaTarget: string;
   spaceId: string;
   spaceTitle: string;

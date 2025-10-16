@@ -21,6 +21,7 @@ import SignPointsLeaderboard from './components/SignPointsLeaderboard';
 import MapView from './pages/MapView';
 import Admin from './pages/Admin';
 import Dj from './pages/Dj';
+import AutoDms from './pages/AutoDms';
 
 WebFont.load({
   google: {
@@ -43,6 +44,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
               <Routes>
                 <Route path="/" element={<Leaderboard />} />
                 <Route path="/spaces-crm" element={<App />} />
+                <Route path="/auto-dms/:campaignId?" element={<AutoDms />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/crm/:spaceId" element={<SpaceCRM />} />
                 <Route

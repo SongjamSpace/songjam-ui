@@ -378,7 +378,7 @@ const CampaignManager: React.FC<{
         )}
         <Box width={'100%'}>
           {campaign.status !== 'DRAFT' && campaign.id && (
-            <CampaignListeners
+            <CampaignMessages
               campaignId={campaign.id}
               campaign={campaign}
               t={t}
@@ -487,7 +487,7 @@ const ListenerCardContent = ({
     </>
   );
 };
-export const CampaignListeners = ({
+export const CampaignMessages = ({
   campaignId,
   campaign,
   t,

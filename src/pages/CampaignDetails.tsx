@@ -24,7 +24,7 @@ import { useAuthContext } from '../contexts/AuthContext';
 
 import axios from 'axios';
 import { getDynamicToken, getPlanLimits } from '../utils';
-import { CampaignListeners } from '../components/SpaceCRM/CampaignManager';
+import { CampaignMessages } from '../components/SpaceCRM/CampaignManager';
 import { useTranslation } from 'react-i18next';
 import LoginDialog from '../components/LoginDialog';
 import { LoadingButton } from '@mui/lab';
@@ -943,7 +943,7 @@ const CampaignDetails = (props: Props) => {
                     // )
                     <Stack position={'relative'}>
                       <Box sx={{ overflowY: 'auto', maxHeight: '75vh' }}>
-                        <CampaignListeners
+                        <CampaignMessages
                           campaignId={id}
                           campaign={campaign}
                           t={t}
@@ -1145,7 +1145,7 @@ const CampaignDetails = (props: Props) => {
                   // )
                   <Stack position={'relative'}>
                     <Box sx={{ overflowY: 'auto', maxHeight: '75vh' }}>
-                      <CampaignListeners
+                      <CampaignMessages
                         campaignId={id}
                         campaign={campaign}
                         t={t}

@@ -142,7 +142,7 @@ const AutoDms = (props: Props) => {
           campaignTitle,
           campaignDescription,
           promptSettings,
-          ctaType: campaign?.ctaType || 'auto-dms',
+          ctaType: 'auto',
         },
         {
           headers: {

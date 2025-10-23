@@ -63,3 +63,21 @@ export const canRequestAiAssistant = (user: SongjamUser) => {
   const planLimits = getPlanLimits(user.currentPlan);
   return user.usage.aiAssistantRequests < planLimits.aiAssistantRequests;
 };
+
+export const removeOAuthParamsFromUrl = () => {
+  const url = new URL(window.location.href);
+  const paramsToRemove = ['dynamicOauthCode', 'dynamicOauthState'];
+
+  let hasChanges = false;
+  paramsToRemove.forEach((param) => {
+    if (url.searchParams.has(param)) {
+      url.searchParams.delete(param);
+      hasChanges = true;
+    }
+  });
+
+  if (hasChanges) {
+    // Use replaceState to update URL without page refresh
+    window.history.replaceState({}, '', url.toString());
+  }
+};

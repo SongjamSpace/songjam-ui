@@ -10,7 +10,7 @@ import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { auth, logFirebaseEvent } from '../services/firebase.service';
 import { signInWithCustomToken } from 'firebase/auth';
 import axios from 'axios';
-import { getDynamicToken } from '../utils';
+import { getDynamicToken, removeOAuthParamsFromUrl } from '../utils';
 // import {
 //   getActiveSubscription,
 //   getPlanFromPriceId,
@@ -108,6 +108,8 @@ export function useAuth() {
           //   }
           // }
           setUser(userDoc);
+          // Remove OAuth parameters from URL after successful authentication
+          removeOAuthParamsFromUrl();
         } else {
           // Create new user document if it doesn't exist
           const newUser: SongjamUser = {
@@ -152,6 +154,8 @@ export function useAuth() {
           });
           await createUser(dynamicUser.userId, newUser);
           setUser({ ...newUser, isSignUp: true });
+          // Remove OAuth parameters from URL after successful authentication
+          removeOAuthParamsFromUrl();
         }
       } catch (error) {
         console.error('Error processing dynamic user:', error);

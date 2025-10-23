@@ -26,31 +26,6 @@ import { useAuthContext } from './contexts/AuthContext';
 import AIDemoPreview from './components/AIDemoPreview';
 import { keyframes } from '@mui/system';
 import 'katex/dist/katex.min.css';
-import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
-
-const electrifyPulse = keyframes`
-  0% { text-shadow: 0 0 1px #60a5fa, 0 0 2px #60a5fa, 0 0 3px rgba(236, 72, 153, 0.5); }
-  50% { text-shadow: 0 0 2px #60a5fa, 0 0 4px #60a5fa, 0 0 6px rgba(236, 72, 153, 0.8), 0 0 10px rgba(236, 72, 153, 0.4); }
-  100% { text-shadow: 0 0 1px #60a5fa, 0 0 2px #60a5fa, 0 0 3px rgba(236, 72, 153, 0.5); }
-`;
-
-const chartGlowPulse = keyframes`
-  0% { box-shadow: 0 0 40px rgba(139, 92, 246, 0.7); }
-  50% { box-shadow: 0 0 80px rgba(139, 92, 246, 1); }
-  100% { box-shadow: 0 0 40px rgba(139, 92, 246, 0.7); }
-`;
-
-const panelBorderGlow = keyframes`
-  0% { box-shadow: 0 0 20px rgba(96, 165, 250, 0.5); }
-  50% { box-shadow: 0 0 40px rgba(96, 165, 250, 0.9); }
-  100% { box-shadow: 0 0 20px rgba(96, 165, 250, 0.5); }
-`;
-
-const neonPulse = keyframes`
-  0% { text-shadow: 0 0 10px rgba(255, 255, 255, 0.3); }
-  50% { text-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
-  100% { text-shadow: 0 0 10px rgba(255, 255, 255, 0.3); }
-`;
 
 const textPulse = keyframes`
   0% { opacity: 0.7; }
@@ -385,6 +360,17 @@ export default function App() {
               }}
             >
               Pricing
+            </Button>
+            <Button
+              onClick={() => navigate('/upgrade')}
+              variant="text"
+              size="small"
+              sx={{
+                color: 'white',
+                '&:hover': { textDecoration: 'underline' },
+              }}
+            >
+              Upgrade
             </Button>
             <Button
               onClick={() => {

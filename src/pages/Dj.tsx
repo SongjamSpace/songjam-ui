@@ -505,7 +505,7 @@ const Dj = () => {
                   mt: { xs: 1, sm: 0 },
                 }}
               >
-                {user && user.username && (
+                {user && (user.username || user.email) && (
                   <Box
                     sx={{
                       display: 'flex',
@@ -527,7 +527,7 @@ const Dj = () => {
                         fontSize: '0.9rem',
                       }}
                     >
-                      @{user.username}
+                      {user.username ? `@${user.username}` : user.email}
                     </Typography>
                     <Tooltip title="Logout">
                       <IconButton

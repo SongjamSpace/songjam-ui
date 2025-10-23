@@ -16,6 +16,9 @@ import {
   Alert,
   Menu,
   IconButton,
+  Dialog,
+  DialogContent,
+  DialogTitle,
 } from '@mui/material';
 import { useAuthContext } from '../contexts/AuthContext';
 import axios from 'axios';
@@ -29,7 +32,6 @@ import CampaignPromptCustomizer, {
 import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import SendIcon from '@mui/icons-material/Send';
 import TuneIcon from '@mui/icons-material/Tune';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -42,6 +44,8 @@ import {
 } from '../services/db/campaign.service';
 import { CampaignMessages } from '../components/SpaceCRM/CampaignManager';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
+import CryptoPricing from '../components/CryptoPricing';
+import { getSnapJobsByUserId, SnapJob } from '../services/db/snapJobs.service';
 
 type Props = {};
 
@@ -69,6 +73,12 @@ const AutoDms = (props: Props) => {
   const [campaignDescription, setCampaignDescription] = useState('');
   const [numListeners, setNumListeners] = useState(10);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [showPricingDialog, setShowPricingDialog] = useState(false);
+  const [snapJobs, setSnapJobs] = useState<SnapJob[]>([]);
+  const [selectedSnapJobs, setSelectedSnapJobs] = useState<string[]>([]);
+  const [isCustomMode, setIsCustomMode] = useState(true);
+  const [selectedSnapJobProfilesCount, setSelectedSnapJobProfilesCount] =
+    useState(0);
 
   const planLimits = getPlanLimits(user?.currentPlan || 'free');
   const maxDms = planLimits.autoDms;
@@ -79,6 +89,40 @@ const AutoDms = (props: Props) => {
 
   const handleMenuClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleSnapJobToggle = (snapJobId: string) => {
+    setSelectedSnapJobs((prev) => {
+      const newSelection = prev.includes(snapJobId)
+        ? prev.filter((id) => id !== snapJobId)
+        : [...prev, snapJobId];
+
+      // Calculate total profiles count from selected snapJobs
+      const totalProfilesCount = snapJobs
+        .filter((job) => newSelection.includes(job.id!))
+        .reduce((sum, job) => sum + job.profilesCount, 0);
+
+      setSelectedSnapJobProfilesCount(totalProfilesCount);
+
+      // If any snapJob is selected, switch to snapJob mode
+      if (newSelection.length > 0) {
+        setIsCustomMode(false);
+        setNumListeners(totalProfilesCount);
+      } else {
+        // If no snapJobs selected, switch back to custom mode
+        setIsCustomMode(true);
+        setNumListeners(10); // Reset to default
+      }
+
+      return newSelection;
+    });
+  };
+
+  const handleCustomModeToggle = () => {
+    setIsCustomMode(true);
+    setSelectedSnapJobs([]);
+    setSelectedSnapJobProfilesCount(0);
+    setNumListeners(10); // Reset to default
   };
 
   const handleDashboardClick = () => {
@@ -124,6 +168,13 @@ const AutoDms = (props: Props) => {
 
     fetchCampaign();
   }, [campaignId, user]);
+
+  // Fetch snapJobs when user is available
+  useEffect(() => {
+    if (user?.uid) {
+      getSnapJobsByUserId(user.uid).then(setSnapJobs);
+    }
+  }, [user?.uid]);
 
   const handleGenerateSampleDM = async () => {
     if (!campaignTitle.trim()) {
@@ -227,6 +278,7 @@ const AutoDms = (props: Props) => {
           noOfDms: numListeners,
           promptSettings,
           lang: 'en',
+          snapJobIds: selectedSnapJobs,
         },
         {
           headers: {
@@ -291,14 +343,16 @@ const AutoDms = (props: Props) => {
             <AutoAwesomeIcon /> Auto DMs Studio
           </Typography>
           {user && (
-            <Chip
-              label={`Plan: ${user.currentPlan?.toUpperCase() || 'FREE'}`}
-              sx={{
-                bgcolor: 'rgba(96, 165, 250, 0.2)',
-                color: '#60A5FA',
-                fontWeight: 600,
-              }}
-            />
+            <>
+              <Chip
+                label={`Plan: ${user.currentPlan?.toUpperCase() || 'FREE'}`}
+                sx={{
+                  bgcolor: 'rgba(96, 165, 250, 0.2)',
+                  color: '#60A5FA',
+                  fontWeight: 600,
+                }}
+              />
+            </>
           )}
         </Box>
         {user ? (
@@ -498,32 +552,201 @@ const AutoDms = (props: Props) => {
               </Typography>
             </Box>
 
+            {/* SnapJobs Selection */}
+            {snapJobs.length > 0 ? (
+              <Box mb={3}>
+                <Typography
+                  variant="subtitle2"
+                  sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 2 }}
+                >
+                  Select SnapJobs to include in DM generation:
+                </Typography>
+                {snapJobs.filter((job) => job.status === 'COMPLETED').length >
+                0 ? (
+                  <>
+                    <Box display="flex" flexWrap="wrap" gap={1}>
+                      {snapJobs
+                        .filter((job) => job.status === 'COMPLETED')
+                        .map((job) => (
+                          <Chip
+                            key={job.id}
+                            label={`${job.searchQuery} (${job.profilesCount} DMs)`}
+                            onClick={() => handleSnapJobToggle(job.id!)}
+                            variant={
+                              selectedSnapJobs.includes(job.id!)
+                                ? 'filled'
+                                : 'outlined'
+                            }
+                            sx={{
+                              bgcolor: selectedSnapJobs.includes(job.id!)
+                                ? 'rgba(96, 165, 250, 0.2)'
+                                : 'transparent',
+                              borderColor: selectedSnapJobs.includes(job.id!)
+                                ? '#60A5FA'
+                                : 'rgba(255, 255, 255, 0.3)',
+                              color: selectedSnapJobs.includes(job.id!)
+                                ? '#60A5FA'
+                                : 'rgba(255, 255, 255, 0.7)',
+                              cursor: 'pointer',
+                              '&:hover': {
+                                bgcolor: selectedSnapJobs.includes(job.id!)
+                                  ? 'rgba(96, 165, 250, 0.3)'
+                                  : 'rgba(255, 255, 255, 0.1)',
+                              },
+                            }}
+                          />
+                        ))}
+                      {/* Custom chip */}
+                      <Chip
+                        label="Custom"
+                        onClick={handleCustomModeToggle}
+                        variant={isCustomMode ? 'filled' : 'outlined'}
+                        sx={{
+                          bgcolor: isCustomMode
+                            ? 'rgba(236, 72, 153, 0.2)'
+                            : 'transparent',
+                          borderColor: isCustomMode
+                            ? '#EC4899'
+                            : 'rgba(255, 255, 255, 0.3)',
+                          color: isCustomMode
+                            ? '#EC4899'
+                            : 'rgba(255, 255, 255, 0.7)',
+                          cursor: 'pointer',
+                          '&:hover': {
+                            bgcolor: isCustomMode
+                              ? 'rgba(236, 72, 153, 0.3)'
+                              : 'rgba(255, 255, 255, 0.1)',
+                          },
+                        }}
+                      />
+                    </Box>
+                    {selectedSnapJobs.length > 0 && (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: 'rgba(96, 165, 250, 0.8)',
+                          mt: 1,
+                          display: 'block',
+                        }}
+                      >
+                        {selectedSnapJobs.length} SnapJob
+                        {selectedSnapJobs.length > 1 ? 's' : ''} selected -{' '}
+                        {selectedSnapJobProfilesCount} profiles
+                      </Typography>
+                    )}
+                    {isCustomMode && selectedSnapJobs.length === 0 && (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: 'rgba(236, 72, 153, 0.8)',
+                          mt: 1,
+                          display: 'block',
+                        }}
+                      >
+                        Custom mode - Enter number of DMs manually
+                      </Typography>
+                    )}
+                  </>
+                ) : (
+                  <Box display="flex" flexWrap="wrap" gap={1}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: 'rgba(255, 255, 255, 0.5)',
+                        fontStyle: 'italic',
+                        mr: 2,
+                      }}
+                    >
+                      No completed SnapJobs available.
+                    </Typography>
+                    <Chip
+                      label="Custom"
+                      onClick={handleCustomModeToggle}
+                      variant={isCustomMode ? 'filled' : 'outlined'}
+                      sx={{
+                        bgcolor: isCustomMode
+                          ? 'rgba(236, 72, 153, 0.2)'
+                          : 'transparent',
+                        borderColor: isCustomMode
+                          ? '#EC4899'
+                          : 'rgba(255, 255, 255, 0.3)',
+                        color: isCustomMode
+                          ? '#EC4899'
+                          : 'rgba(255, 255, 255, 0.7)',
+                        cursor: 'pointer',
+                        '&:hover': {
+                          bgcolor: isCustomMode
+                            ? 'rgba(236, 72, 153, 0.3)'
+                            : 'rgba(255, 255, 255, 0.1)',
+                        },
+                      }}
+                    />
+                  </Box>
+                )}
+              </Box>
+            ) : (
+              <Box mb={3}>
+                <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: 'rgba(255, 255, 255, 0.5)',
+                      fontStyle: 'italic',
+                    }}
+                  >
+                    No DBs created
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={() => navigate('/create-db')}
+                    startIcon={<RocketLaunchIcon />}
+                    sx={{
+                      background: 'linear-gradient(90deg, #60A5FA, #8B5CF6)',
+                      color: 'white',
+                      fontWeight: 600,
+                      px: 2,
+                      py: 0.5,
+                      '&:hover': {
+                        background: 'linear-gradient(90deg, #3b82f6, #7c3aed)',
+                      },
+                    }}
+                  >
+                    Create DB
+                  </Button>
+                </Box>
+              </Box>
+            )}
+
             {/* Generate DMs Input & Usage Stats */}
             <Grid container spacing={4} mb={3}>
               <Grid item xs={2}>
                 <Typography
                   variant="caption"
                   sx={{
-                    color: '#22C55E',
+                    color: isCustomMode ? '#22C55E' : 'rgba(96, 165, 250, 0.8)',
                     fontWeight: 600,
                     display: 'block',
                     mb: 0.5,
                   }}
                 >
-                  DMs to Generate
+                  {isCustomMode ? 'DMs to Generate' : 'DMs from SnapJobs'}
                 </Typography>
                 <Box display="flex" gap={1}>
                   <TextField
                     size="small"
-                    placeholder="Enter #"
+                    placeholder={isCustomMode ? 'Enter #' : 'Auto-calculated'}
                     type="number"
                     value={numListeners}
+                    disabled={!isCustomMode}
                     onChange={(e) => {
-                      const value = parseInt(e.target.value);
-                      if (!isNaN(value)) {
-                        setNumListeners(Math.min(Math.max(value, 1), 1000));
-                      } else if (e.target.value === '') {
-                        setNumListeners(0);
+                      if (isCustomMode) {
+                        const value = parseInt(e.target.value);
+                        if (!isNaN(value)) {
+                          setNumListeners(Math.min(Math.max(value, 1), 1000));
+                        } else if (e.target.value === '') {
+                          setNumListeners(0);
+                        }
                       }
                     }}
                     inputProps={{
@@ -533,11 +756,21 @@ const AutoDms = (props: Props) => {
                     sx={{
                       flex: 1,
                       '& .MuiOutlinedInput-root': {
-                        bgcolor: 'rgba(34, 197, 94, 0.05)',
-                        border: '1px solid rgba(34, 197, 94, 0.3)',
+                        bgcolor: isCustomMode
+                          ? 'rgba(34, 197, 94, 0.05)'
+                          : 'rgba(96, 165, 250, 0.05)',
+                        border: isCustomMode
+                          ? '1px solid rgba(34, 197, 94, 0.3)'
+                          : '1px solid rgba(96, 165, 250, 0.3)',
                         '& input': {
-                          color: '#22C55E',
+                          color: isCustomMode ? '#22C55E' : '#60A5FA',
                           fontWeight: 600,
+                        },
+                        '&.Mui-disabled': {
+                          bgcolor: 'rgba(96, 165, 250, 0.1)',
+                          '& input': {
+                            color: '#60A5FA',
+                          },
                         },
                       },
                     }}
@@ -596,21 +829,36 @@ const AutoDms = (props: Props) => {
               </Grid>
             </Grid>
 
-            {(user?.usage.autoDms || 0) + numListeners > maxDms && (
+            {user?.currentPlan === 'free' && (
               <Alert
-                severity="error"
+                severity="warning"
+                action={
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={() => setShowPricingDialog(true)}
+                    sx={{
+                      color: '#10b981',
+                      fontWeight: 600,
+                      '&:hover': {
+                        bgcolor: 'rgba(16, 185, 129, 0.1)',
+                      },
+                    }}
+                  >
+                    Upgrade Now
+                  </Button>
+                }
                 sx={{
-                  mb: 2,
-                  bgcolor: 'rgba(239, 68, 68, 0.1)',
-                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  bgcolor: 'rgba(245, 158, 11, 0.1)',
+                  border: '1px solid rgba(245, 158, 11, 0.3)',
                   color: 'white',
                   '& .MuiAlert-icon': {
-                    color: '#EF4444',
+                    color: '#F59E0B',
                   },
                 }}
               >
-                This exceeds your plan limit. Please reduce the number or
-                upgrade your plan.
+                You're on the free plan with limited features. Upgrade to unlock
+                unlimited Auto DMs and advanced features.
               </Alert>
             )}
 
@@ -774,6 +1022,41 @@ const AutoDms = (props: Props) => {
 
       <LoginDialog open={showAuthDialog && !authLoading} />
       <Toaster position="bottom-right" />
+
+      {/* Pricing Dialog */}
+      <Dialog
+        open={showPricingDialog}
+        onClose={() => setShowPricingDialog(false)}
+        // maxWidth="md"
+        fullWidth
+        // PaperProps={{
+        //   sx: {
+        //     bgcolor: 'transparent',
+        //     boxShadow: 'none',
+        //     overflow: 'visible',
+        //   },
+        // }}
+      >
+        <DialogContent
+          sx={{
+            bgcolor: 'rgba(15, 23, 42, 0.95)',
+            p: 0,
+          }}
+        >
+          <CryptoPricing
+            user={user}
+            onSuccess={() => {
+              setShowPricingDialog(false);
+              toast.success(
+                'Successfully upgraded to Pro! Refresh to see changes.'
+              );
+              setTimeout(() => {
+                window.location.reload();
+              }, 2000);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };

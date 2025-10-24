@@ -45,7 +45,7 @@ import {
 import { CampaignMessages } from '../components/SpaceCRM/CampaignManager';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import CryptoPricing from '../components/CryptoPricing';
-import { getSnapJobsByUserId, SnapJob } from '../services/db/snapJobs.service';
+import { getSnapJobsByUserId, SnapJob } from '../services/db/snaps.service';
 
 type Props = {};
 
@@ -75,7 +75,7 @@ const AutoDms = (props: Props) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [showPricingDialog, setShowPricingDialog] = useState(false);
   const [snapJobs, setSnapJobs] = useState<SnapJob[]>([]);
-  const [selectedSnapJobs, setSelectedSnapJobs] = useState<string[]>([]);
+  const [selectedSnapIds, setSelectedSnapIds] = useState<string[]>([]);
   const [isCustomMode, setIsCustomMode] = useState(true);
   const [selectedSnapJobProfilesCount, setSelectedSnapJobProfilesCount] =
     useState(0);
@@ -92,7 +92,7 @@ const AutoDms = (props: Props) => {
   };
 
   const handleSnapJobToggle = (snapJobId: string) => {
-    setSelectedSnapJobs((prev) => {
+    setSelectedSnapIds((prev) => {
       const newSelection = prev.includes(snapJobId)
         ? prev.filter((id) => id !== snapJobId)
         : [...prev, snapJobId];
@@ -120,7 +120,7 @@ const AutoDms = (props: Props) => {
 
   const handleCustomModeToggle = () => {
     setIsCustomMode(true);
-    setSelectedSnapJobs([]);
+    setSelectedSnapIds([]);
     setSelectedSnapJobProfilesCount(0);
     setNumListeners(10); // Reset to default
   };
@@ -278,7 +278,7 @@ const AutoDms = (props: Props) => {
           noOfDms: numListeners,
           promptSettings,
           lang: 'en',
-          snapJobIds: selectedSnapJobs,
+          snapIds: selectedSnapIds,
         },
         {
           headers: {
@@ -573,23 +573,23 @@ const AutoDms = (props: Props) => {
                             label={`${job.searchQuery} (${job.profilesCount} DMs)`}
                             onClick={() => handleSnapJobToggle(job.id!)}
                             variant={
-                              selectedSnapJobs.includes(job.id!)
+                              selectedSnapIds.includes(job.id!)
                                 ? 'filled'
                                 : 'outlined'
                             }
                             sx={{
-                              bgcolor: selectedSnapJobs.includes(job.id!)
+                              bgcolor: selectedSnapIds.includes(job.id!)
                                 ? 'rgba(96, 165, 250, 0.2)'
                                 : 'transparent',
-                              borderColor: selectedSnapJobs.includes(job.id!)
+                              borderColor: selectedSnapIds.includes(job.id!)
                                 ? '#60A5FA'
                                 : 'rgba(255, 255, 255, 0.3)',
-                              color: selectedSnapJobs.includes(job.id!)
+                              color: selectedSnapIds.includes(job.id!)
                                 ? '#60A5FA'
                                 : 'rgba(255, 255, 255, 0.7)',
                               cursor: 'pointer',
                               '&:hover': {
-                                bgcolor: selectedSnapJobs.includes(job.id!)
+                                bgcolor: selectedSnapIds.includes(job.id!)
                                   ? 'rgba(96, 165, 250, 0.3)'
                                   : 'rgba(255, 255, 255, 0.1)',
                               },
@@ -620,7 +620,7 @@ const AutoDms = (props: Props) => {
                         }}
                       />
                     </Box>
-                    {selectedSnapJobs.length > 0 && (
+                    {selectedSnapIds.length > 0 && (
                       <Typography
                         variant="caption"
                         sx={{
@@ -629,12 +629,12 @@ const AutoDms = (props: Props) => {
                           display: 'block',
                         }}
                       >
-                        {selectedSnapJobs.length} SnapJob
-                        {selectedSnapJobs.length > 1 ? 's' : ''} selected -{' '}
+                        {selectedSnapIds.length} SnapJob
+                        {selectedSnapIds.length > 1 ? 's' : ''} selected -{' '}
                         {selectedSnapJobProfilesCount} profiles
                       </Typography>
                     )}
-                    {isCustomMode && selectedSnapJobs.length === 0 && (
+                    {isCustomMode && selectedSnapIds.length === 0 && (
                       <Typography
                         variant="caption"
                         sx={{
@@ -730,7 +730,7 @@ const AutoDms = (props: Props) => {
                     mb: 0.5,
                   }}
                 >
-                  {isCustomMode ? 'DMs to Generate' : 'DMs from SnapJobs'}
+                  {isCustomMode ? 'DMs to Generate' : 'DMs from DB'}
                 </Typography>
                 <Box display="flex" gap={1}>
                   <TextField
@@ -966,7 +966,7 @@ const AutoDms = (props: Props) => {
                   py: 1.5,
                 }}
               >
-                Generate {numListeners} DMs
+                Generate DMs
               </LoadingButton>
 
               <LoadingButton

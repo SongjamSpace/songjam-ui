@@ -5,6 +5,7 @@ import {
   orderBy,
   getDocs,
   onSnapshot,
+  doc,
 } from 'firebase/firestore';
 import { db } from '../firebase.service';
 
@@ -21,7 +22,17 @@ export interface SnapJob {
   userId: string;
 }
 
-const SNAPJOBS_COLLECTION = 'snapJobs';
+const SNAPJOBS_COLLECTION = 'snaps';
+
+export const getSnapListenerById = (
+  snapId: string,
+  listener: (snap: SnapJob) => void
+) => {
+  const snapRef = doc(db, SNAPJOBS_COLLECTION, snapId);
+  return onSnapshot(snapRef, (snapshot) => {
+    listener(snapshot.data() as SnapJob);
+  });
+};
 
 export const getSnapJobsByUserId = async (
   userId: string,

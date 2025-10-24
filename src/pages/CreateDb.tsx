@@ -24,6 +24,7 @@ import { doc, onSnapshot } from 'firebase/firestore';
 import { MongoTweet, Profile } from '../types/backend.types';
 import TwitterCard from '../components/TwitterCard';
 import ProfileCard from '../components/ProfileCard';
+import { getSnapListenerById } from '../services/db/snaps.service';
 
 // SnapJob interface
 export interface SnapJob {
@@ -61,52 +62,39 @@ export default function CreateDb() {
   useEffect(() => {
     if (!currentJobId) return;
 
-    const jobRef = doc(db, 'snapJobs', currentJobId);
+    const unsubscribe = getSnapListenerById(currentJobId, (snap) => {
+      if (!snap) {
+        console.error('Job document not found');
+        setSearchMessage('Job not found');
+        setIsSearching(false);
+        return;
+      }
+      setCurrentJob(snap);
+      if (snap.searchQuery) {
+        setSearchQuery(snap.searchQuery);
+      }
 
-    const unsubscribe = onSnapshot(
-      jobRef,
-      (doc) => {
-        if (doc.exists()) {
-          const job = doc.data() as SnapJob;
-          setCurrentJob(job);
+      // Update progress and message based on job status
+      if (snap.status === 'PROCESSING') {
+        setSearchMessage(
+          `Processing... Found ${snap.tweetsCount} tweets and ${snap.profilesCount} profiles`
+        );
+        setSearchProgress(Math.min((snap.tweetsCount / maxCount) * 100, 90));
+      } else if (snap.status === 'COMPLETED') {
+        setSearchProgress(100);
+        setSearchMessage(
+          `Completed! Found ${snap.tweetsCount} tweets and ${snap.profilesCount} profiles`
+        );
+        setIsSearching(false);
+        setShowResults(true);
 
-          // Load search query from job when job exists
-          if (job.searchQuery) {
-            setSearchQuery(job.searchQuery);
-          }
-
-          // Update progress and message based on job status
-          if (job.status === 'PROCESSING') {
-            setSearchMessage(
-              `Processing... Found ${job.tweetsCount} tweets and ${job.profilesCount} profiles`
-            );
-            setSearchProgress(Math.min((job.tweetsCount / maxCount) * 100, 90));
-          } else if (job.status === 'COMPLETED') {
-            setSearchProgress(100);
-            setSearchMessage(
-              `Completed! Found ${job.tweetsCount} tweets and ${job.profilesCount} profiles`
-            );
-            setIsSearching(false);
-            setShowResults(true);
-
-            // Fetch the actual tweets
-            fetchSampleTweets(currentJobId);
-          } else if (job.status === 'FAILED') {
-            setSearchMessage(`Failed: ${job.error || 'Unknown error'}`);
-            setIsSearching(false);
-          }
-        } else {
-          console.error('Job document not found');
-          setSearchMessage('Job not found');
-          setIsSearching(false);
-        }
-      },
-      (error) => {
-        console.error('Error listening to job status:', error);
-        setSearchMessage('Error monitoring job status');
+        // Fetch the actual tweets
+        fetchSampleTweets(currentJobId);
+      } else if (snap.status === 'FAILED') {
+        setSearchMessage(`Failed: ${snap.error || 'Unknown error'}`);
         setIsSearching(false);
       }
-    );
+    });
 
     return () => unsubscribe();
   }, [currentJobId, maxCount]);
@@ -306,7 +294,7 @@ export default function CreateDb() {
           {/* Search Type and Max Tweets Section */}
           <Box sx={{ mb: 4 }}>
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-              <Box>
+              {/* <Box>
                 <Typography
                   variant="body2"
                   sx={{ mb: 1, color: 'text.secondary' }}
@@ -345,10 +333,12 @@ export default function CreateDb() {
                     },
                   }}
                 >
-                  <MenuItem value="TWEETS">Tweets</MenuItem>
+                  <MenuItem disabled value="TWEETS">
+                    Tweets
+                  </MenuItem>
                   <MenuItem value="PROFILES">Profiles</MenuItem>
                 </Select>
-              </Box>
+              </Box> */}
               <Box>
                 <Typography
                   variant="body2"
@@ -505,12 +495,12 @@ export default function CreateDb() {
                 </Typography>
                 {currentJob && (
                   <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Chip
+                    {/* <Chip
                       label={`${currentJob.tweetsCount} tweets`}
                       size="small"
                       color="primary"
                       variant="outlined"
-                    />
+                    /> */}
                     <Chip
                       label={`${currentJob.profilesCount} profiles`}
                       size="small"

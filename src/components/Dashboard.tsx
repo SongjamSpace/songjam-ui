@@ -56,7 +56,6 @@ import {
   updateSpaceToProject,
 } from '../services/db/projects.service';
 import { canRequestSpace, extractSpaceId } from '../utils';
-// import AddCampaignDialog from './NewCampaign/AddCampaignDialog';
 import {
   Campaign,
   campaignsByProjectSpaceId,
@@ -1532,12 +1531,6 @@ export default function Dashboard() {
         />
       </Container>
       <Toaster position="bottom-right" reverseOrder={false} />
-      {/* {isShowNewCampaign && (
-        <AddCampaignDialog
-          onClose={() => setIsShowNewCampaign(false)}
-          space={campaignSpaceDetails}
-        />
-      )} */}
     </Box>
   );
 }

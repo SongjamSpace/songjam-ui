@@ -270,7 +270,7 @@ const MusicAgent = () => {
         alert('Please sign in with X (twitter) to create a referral code');
         if (user && !user?.accountId) {
           await handleLogOut();
-          setShowAuthDialog(true);
+          window.location.reload();
         }
       }
       return;
@@ -874,51 +874,96 @@ const MusicAgent = () => {
                   </Tooltip>
                 )}
 
-                {user && user.username && (
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                      ml: 'auto',
-                      p: 1,
-                      borderRadius: 2,
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                    }}
-                  >
-                    <Typography
-                      variant="body2"
+                {user &&
+                  (user.username ? (
+                    <Box
                       sx={{
-                        color: '#60a5fa',
-                        fontWeight: 'bold',
-                        fontSize: '0.9rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        ml: 'auto',
+                        p: 1,
+                        borderRadius: 2,
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
                       }}
                     >
-                      @{user.username}
-                    </Typography>
-                    <Tooltip title="Logout">
-                      <IconButton
-                        size="small"
-                        onClick={async () => {
-                          await handleLogOut();
-                          setShowAuthDialog(true);
-                        }}
+                      <Typography
+                        variant="body2"
                         sx={{
-                          color: '#ff6b6b',
-                          '&:hover': {
-                            backgroundColor: 'rgba(255, 107, 107, 0.1)',
-                            transform: 'scale(1.1)',
-                          },
-                          transition: 'all 0.2s ease-in-out',
+                          color: '#60a5fa',
+                          fontWeight: 'bold',
+                          fontSize: '0.9rem',
                         }}
                       >
-                        <LogoutRounded fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                )}
+                        @{user.username}
+                      </Typography>
+                      <Tooltip title="Logout">
+                        <IconButton
+                          size="small"
+                          onClick={async () => {
+                            await handleLogOut();
+                            window.location.reload();
+                          }}
+                          sx={{
+                            color: '#ff6b6b',
+                            '&:hover': {
+                              backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                              transform: 'scale(1.1)',
+                            },
+                            transition: 'all 0.2s ease-in-out',
+                          }}
+                        >
+                          <LogoutRounded fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  ) : (
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        ml: 'auto',
+                        p: 1,
+                        borderRadius: 2,
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: '#60a5fa',
+                          fontWeight: 'bold',
+                          fontSize: '0.9rem',
+                        }}
+                      >
+                        {user?.email}
+                      </Typography>
+                      <Tooltip title="Logout">
+                        <IconButton
+                          size="small"
+                          onClick={async () => {
+                            await handleLogOut();
+                            window.location.reload();
+                          }}
+                          sx={{
+                            color: '#ff6b6b',
+                            '&:hover': {
+                              backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                              transform: 'scale(1.1)',
+                            },
+                            transition: 'all 0.2s ease-in-out',
+                          }}
+                        >
+                          <LogoutRounded fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  ))}
               </Stack>
             </Box>
 

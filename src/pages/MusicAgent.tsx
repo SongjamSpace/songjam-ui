@@ -1181,7 +1181,7 @@ const MusicAgent = () => {
                             Volume
                           </Typography>
                         </Box>
-                        <Button
+                        {/* <Button
                           onClick={() => {
                             handleSwitchMute(!isMuted);
                           }}
@@ -1190,7 +1190,7 @@ const MusicAgent = () => {
                           size="small"
                         >
                           {isMuted ? 'UNMUTE' : 'MUTE'}
-                        </Button>
+                        </Button> */}
                       </Box>
                       <Slider
                         value={volume}
@@ -1260,6 +1260,7 @@ const MusicAgent = () => {
                         placeholder="Enter text"
                         variant="outlined"
                         size={isMobile ? 'small' : 'medium'}
+                        multiline
                         sx={{
                           '& .MuiOutlinedInput-root': {
                             color: 'white',

@@ -58,6 +58,18 @@ export default function CreateDb() {
     'PROFILES'
   );
 
+  // Check for snapId URL parameter on component mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const snapId = urlParams.get('snapId');
+
+    if (snapId) {
+      setCurrentJobId(snapId);
+      setIsSearching(true);
+      setSearchMessage('Loading job details...');
+    }
+  }, []);
+
   // Job monitoring with Firebase real-time listener
   useEffect(() => {
     if (!currentJobId) return;
@@ -97,7 +109,7 @@ export default function CreateDb() {
     });
 
     return () => unsubscribe();
-  }, [currentJobId, maxCount]);
+  }, [currentJobId]);
 
   const fetchSampleTweets = async (jobId: string) => {
     const token = localStorage.getItem('dynamic_authentication_token');

@@ -19,8 +19,6 @@ import { useTheme } from '@mui/material/styles';
 import { LoadingButton } from '@mui/lab';
 import { Search, Storage } from '@mui/icons-material';
 import axios from 'axios';
-import { db } from '../services/firebase.service';
-import { doc, onSnapshot } from 'firebase/firestore';
 import { MongoTweet, Profile } from '../types/backend.types';
 import TwitterCard from '../components/TwitterCard';
 import ProfileCard from '../components/ProfileCard';
@@ -57,6 +55,9 @@ export default function CreateDb() {
   const [searchType, setSearchType] = useState<'PROFILES' | 'TWEETS'>(
     'PROFILES'
   );
+  const [messageStatus, setMessageStatus] = useState<
+    'CREATED' | 'PROCESSING' | 'COMPLETED' | 'FAILED'
+  >('CREATED');
 
   // Check for snapId URL parameter on component mount
   useEffect(() => {
@@ -88,11 +89,13 @@ export default function CreateDb() {
 
       // Update progress and message based on job status
       if (snap.status === 'PROCESSING') {
+        setMessageStatus('PROCESSING');
         setSearchMessage(
           `Processing... Found ${snap.tweetsCount} tweets and ${snap.profilesCount} profiles`
         );
         setSearchProgress(Math.min((snap.tweetsCount / maxCount) * 100, 90));
       } else if (snap.status === 'COMPLETED') {
+        setMessageStatus('COMPLETED');
         setSearchProgress(100);
         setSearchMessage(
           `Completed! Found ${snap.tweetsCount} tweets and ${snap.profilesCount} profiles`
@@ -103,7 +106,11 @@ export default function CreateDb() {
         // Fetch the actual tweets
         fetchSampleTweets(currentJobId);
       } else if (snap.status === 'FAILED') {
-        setSearchMessage(`Failed: ${snap.error || 'Unknown error'}`);
+        setMessageStatus('FAILED');
+        console.log(`Failed: ${snap.error || 'Unknown error'}`);
+        setSearchMessage(
+          `oh uh, failed to create database. Please try again later`
+        );
         setIsSearching(false);
       }
     });
@@ -174,8 +181,8 @@ export default function CreateDb() {
       );
 
       if (response.data.success) {
-        const { jobId } = response.data;
-        setCurrentJobId(jobId);
+        const { snapId } = response.data;
+        setCurrentJobId(snapId);
         setSearchMessage('Process started...');
         // setSearchProgress(10);
       } else {
@@ -476,9 +483,18 @@ export default function CreateDb() {
           </Box>
 
           {/* Progress Section */}
-          {isSearching && (
+          {(isSearching || messageStatus === 'FAILED') && (
             <Box sx={{ mt: 4 }}>
-              <Alert severity="info" sx={{ mb: 2 }}>
+              <Alert
+                severity={
+                  messageStatus === 'COMPLETED'
+                    ? 'success'
+                    : messageStatus === 'FAILED'
+                    ? 'error'
+                    : 'info'
+                }
+                sx={{ mb: 2 }}
+              >
                 {searchMessage}
               </Alert>
               <LinearProgress

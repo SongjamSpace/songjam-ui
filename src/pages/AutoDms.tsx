@@ -562,7 +562,7 @@ const AutoDms = (props: Props) => {
                   Select SnapJobs to include in DM generation:
                 </Typography>
                 {snapJobs.filter((job) => job.status === 'COMPLETED').length >
-                0 ? (
+                  0 ? (
                   <>
                     <Box display="flex" flexWrap="wrap" gap={1}>
                       {snapJobs
@@ -619,6 +619,24 @@ const AutoDms = (props: Props) => {
                           },
                         }}
                       />
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => navigate('/create-db')}
+                        startIcon={<RocketLaunchIcon />}
+                        sx={{
+                          background: 'linear-gradient(90deg, #60A5FA, #8B5CF6)',
+                          color: 'white',
+                          fontWeight: 600,
+                          px: 2,
+                          py: 0.5,
+                          '&:hover': {
+                            background: 'linear-gradient(90deg, #3b82f6, #7c3aed)',
+                          },
+                        }}
+                      >
+                        Create DB
+                      </Button>
                     </Box>
                     {selectedSnapIds.length > 0 && (
                       <Typography
@@ -1029,13 +1047,13 @@ const AutoDms = (props: Props) => {
         onClose={() => setShowPricingDialog(false)}
         // maxWidth="md"
         fullWidth
-        // PaperProps={{
-        //   sx: {
-        //     bgcolor: 'transparent',
-        //     boxShadow: 'none',
-        //     overflow: 'visible',
-        //   },
-        // }}
+      // PaperProps={{
+      //   sx: {
+      //     bgcolor: 'transparent',
+      //     boxShadow: 'none',
+      //     overflow: 'visible',
+      //   },
+      // }}
       >
         <DialogContent
           sx={{

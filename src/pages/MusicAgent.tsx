@@ -112,6 +112,7 @@ const MusicAgent = () => {
   const { user, loading: authLoading } = useAuthContext();
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [spaceUrl, setSpaceUrl] = useState('');
+  const [cookieString, setCookieString] = useState('');
   const [isMuted, setIsMuted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [wsStatus, setWsStatus] = useState<
@@ -442,6 +443,7 @@ const MusicAgent = () => {
     socketRef.current.emit('join-space', {
       spaceId: _spaceId,
       soundboardUrls: soundSlots.map((s) => s.audioUrl),
+      cookieString: cookieString,
     });
   };
 
@@ -1011,10 +1013,51 @@ const MusicAgent = () => {
                 </Box>
               </Grid>
 
+              <Grid item xs={12} md={6}>
+                <Box>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      mb: 2,
+                      color: '#60a5fa',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      fontSize: { xs: '1rem', sm: '1.25rem' },
+                    }}
+                  >
+                    <Link /> Cookie String
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    value={cookieString}
+                    onChange={(e) => setCookieString(e.target.value)}
+                    placeholder="Enter cookie string (ct0=...; auth_token=...)"
+                    variant="outlined"
+                    size={isMobile ? 'small' : 'medium'}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        color: 'white',
+                        '& fieldset': {
+                          borderColor: 'rgba(96, 165, 250, 0.5)',
+                        },
+                        '&:hover fieldset': {
+                          borderColor: '#60a5fa',
+                        },
+                        '&.Mui-focused fieldset': {
+                          borderColor: '#60a5fa',
+                          boxShadow: '0 0 10px rgba(96, 165, 250, 0.5)',
+                        },
+                      },
+                    }}
+                  />
+                </Box>
+              </Grid>
+
               <Grid
                 item
                 xs={12}
-                md={6}
+                md={12}
                 sx={{ display: 'flex', alignItems: 'flex-end' }}
               >
                 <Button

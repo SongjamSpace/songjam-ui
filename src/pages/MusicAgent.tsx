@@ -43,6 +43,7 @@ import {
   FiberManualRecord,
   LogoutRounded,
   Close,
+  InfoOutlined,
 } from '@mui/icons-material';
 import EmojiReactions from '../components/EmojiReactions';
 import SoundBoard, { SoundSlot } from '../components/SoundBoard';
@@ -112,9 +113,17 @@ const MusicAgent = () => {
   const { user, loading: authLoading } = useAuthContext();
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [spaceUrl, setSpaceUrl] = useState('');
-  const [ct0, setCt0] = useState('');
-  const [authToken, setAuthToken] = useState('');
+  const [ct0, setCt0] = useState(() => localStorage.getItem('dj_ct0') || '');
+  const [authToken, setAuthToken] = useState(() => localStorage.getItem('dj_auth_token') || '');
   const [isMuted, setIsMuted] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('dj_ct0', ct0);
+  }, [ct0]);
+
+  useEffect(() => {
+    localStorage.setItem('dj_auth_token', authToken);
+  }, [authToken]);
   const [isLoading, setIsLoading] = useState(false);
   const [wsStatus, setWsStatus] = useState<
     'connecting' | 'connected' | 'disconnected'
@@ -1029,6 +1038,11 @@ const MusicAgent = () => {
                       }}
                     >
                       <Link /> ct0
+                      <Tooltip title="To get this: Open x.com > Developer Tools (F12) > Application tab > Cookies > https://x.com > copy 'ct0' value">
+                        <IconButton size="small" sx={{ p: 0, color: 'rgba(255, 255, 255, 0.7)', '&:hover': { color: '#60a5fa' } }}>
+                          <InfoOutlined fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     </Typography>
                     <TextField
                       fullWidth
@@ -1067,6 +1081,11 @@ const MusicAgent = () => {
                       }}
                     >
                       <Link /> auth_token
+                      <Tooltip title="To get this: Open x.com > Developer Tools (F12) > Application tab > Cookies > https://x.com > copy 'auth_token' value">
+                        <IconButton size="small" sx={{ p: 0, color: 'rgba(255, 255, 255, 0.7)', '&:hover': { color: '#60a5fa' } }}>
+                          <InfoOutlined fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     </Typography>
                     <TextField
                       fullWidth

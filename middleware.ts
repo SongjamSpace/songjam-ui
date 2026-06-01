@@ -18,7 +18,7 @@ export default function middleware(request: Request, event: any) {
       project: "bot-or-human",
       channel: "visits",
       event: bot ? "Bot Visit" : "Human Visit",
-      description: bot ? `Bot: ${bot.name} (${bot.provider})` : `User Agent: ${userAgent}`,
+      description: bot ? `[app.songjam.space] Bot: ${bot.name} (${bot.provider})` : `[app.songjam.space] User Agent: ${userAgent}`,
       icon: bot ? "🤖" : "👤",
       tags: { 
         category: bot?.category || "human",

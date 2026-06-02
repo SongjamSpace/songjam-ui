@@ -18,13 +18,13 @@ export default function middleware(request: Request, event: any) {
       project: "bot-or-human",
       channel: "visits",
       event: bot ? "Bot Visit" : "Human Visit",
-      description: bot ? `[app.songjam.space] Bot: ${bot.name} (${bot.provider})` : `[app.songjam.space] User Agent: ${userAgent}`,
+      description: bot ? `Bot: ${bot.name} (${bot.provider})` : `User Agent: ${userAgent}`,
       icon: bot ? "🤖" : "👤",
       tags: { 
         category: bot?.category || "human",
         name: bot?.name || "unknown",
-        is_ai: isAI ? "true" : "false",
-        siteName: "app.songjam.space"
+        ai: isAI ? "true" : "false",
+        site: "app.songjam.space"
       }
     })
   }).catch(err => console.error("LogSnag Error:", err));
